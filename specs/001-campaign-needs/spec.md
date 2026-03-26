@@ -118,7 +118,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - **FR-016**: System MUST allow any authenticated account to create a need.
 - **FR-017**: Need creation MUST require title, nature, intensity and location.
 - **FR-018**: Need creation MUST support optional association to a campaign.
-- **FR-019**: Need nature has one or more of these flags set: object, competence, tooling.
+- **FR-019**: Need nature has one or more of these flags set: object required, competence required, tooling required, multiple people required.
 - **FR-020**: Need intensity MUST be one of: leg up, sharing, commitment, rare contribution.
 - **FR-021**: System MUST allow campaign creator to accept or reject needs joined to that creator campaign.
 - **FR-022**: System MUST deny accept or reject actions by non-creator accounts.
@@ -129,7 +129,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 - **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional manager note from creator, creator account id, and moderation status.
 - **CampaignModerationNote**: Manager-authored note attached to a campaign, with campaign id, manager account id, note body, and created datetime.
-- **Need**: User-created need with title, nature, intensity, location, creator account id, 'is active' flag, optional expiration datetime, and optional campaign association.
+- **Need**: User-created need with title, description, nature, intensity, location, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
 - **CampaignNeedTriage**: Relation state for a need joined to a campaign, with campaign id, need id, triage status, actor account id, and action datetime.
 - **AccountRole**: Role classification for permissions, including Mutuity manager and standard account.
 
