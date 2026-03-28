@@ -58,17 +58,18 @@ As the Mutuity manager, I can approve a campaign so it becomes visible on the pl
 
 ### User Story 4 - Account Creates Need (Priority: P1)
 
-As any authenticated account, I can create a need either attached to a campaign or standalone, with type and intensity classification.
+As any authenticated account, I can create a need either attached to a campaign or standalone, with type and intensity classification and optionally a proposed Topes amount.
 
 **Why this priority**: Needs are core product data and can exist independently from campaigns.
 
-**Independent Test**: Create one standalone need and one campaign-linked need with valid classification values.
+**Independent Test**: Create one standalone need and one campaign-linked need with valid classification values and a Topes amount consistent with the selected intensity range.
 
 **Acceptance Scenarios**:
 
 1. **Given** an authenticated account, **When** the user creates a need without campaign reference, **Then** the system stores it as a standalone need.
 2. **Given** an authenticated account and an existing campaign, **When** the user creates a need linked to that campaign, **Then** the system stores it as a standalone need **And** the system stores the need's association to the campaign in a 'pending approval' state.
 3. **Given** an authenticated account, **When** the user sets intensity outside leg up, sharing, commitment, rare contribution, **Then** the system rejects the submission with a validation error.
+4. **Given** an authenticated account, **When** the user sets a Topes amount outside the allowed range for the selected intensity, **Then** the system rejects the submission with a validation error.
 
 ---
 
@@ -88,13 +89,13 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 ### Edge Cases
 
-- Campaign submission where start datetime equals end datetime.
-- Campaign submission where airdrop datetime is earlier than start datetime.
-- Campaign submission where airdrop datetime is later than end datetime.
-- Need creation linked to a campaign that is deleted or not accessible.
-- Duplicate moderation notes submitted quickly by manager due to retries.
-- Campaign creator attempts to triage need that is not joined to that creator campaign.
-- Need linked to an unapproved campaign and visibility behavior on public interfaces.
+- Campaign submission where start datetime equals end datetime => the system should prevent campaign creation with a validation error
+- Campaign submission where airdrop datetime is earlier than start datetime => the system should prevent campaign creation with a validation error
+- Campaign submission where airdrop datetime is later than end datetime => the system should prevent campaign creation with a validation error
+- Need creation linked to a campaign that is deleted or not accessible => the UI should not provide the option to link a need to such a campaign. Furthermore, the system should reject this linking operation with a 'unsuitable campaign' error
+- Duplicate moderation notes submitted quickly by manager due to retries => the system accepts duplicate notes and stores them as separate entries
+- Campaign creator attempts to triage need that is not joined to that creator campaign => The triage UI only shows needs that are joined to the currently looked at campaign. Furthermore, the 'accept' and 'reject' operations on needs joined to campaigns check the caller is the campaign's creator, and fails if not.
+- Need linked to an unapproved campaign and visibility behavior on public interfaces => Only approved and active (current time is within its lifetime) campaigns are shown in any UI allowing to join a need. Furthermore, the joining operation checks that the campaign is approved, and that the current time is within its lifetime, and fails if not.
 
 ## Requirements *(mandatory)*
 
@@ -120,6 +121,8 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - **FR-018**: Need creation MUST support optional association to a campaign.
 - **FR-019**: Need nature has one or more of these flags set: object required, competence required, tooling required, multiple people required.
 - **FR-020**: Need intensity MUST be one of: leg up, sharing, commitment, rare contribution.
+- **FR-020a**: When provided at need creation, Topes amount MUST follow the intensity range mapping: leg up (10 to 50), sharing (100 to 500), commitment (1000 to 3000), rare contribution (5000 or more).
+- **FR-020b**: Public and user-facing copy MUST avoid fiat currency equivalence wording and instead describe Topes as meaningful social gratitude.
 - **FR-021**: System MUST allow campaign creator to accept or reject needs joined to that creator campaign.
 - **FR-022**: System MUST deny accept or reject actions by non-creator accounts.
 - **FR-023**: Need-campaign relation status MUST support at least pending, accepted, and rejected states.
@@ -129,7 +132,18 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 - **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional manager note from creator, creator account id, and moderation status.
 - **CampaignModerationNote**: Manager-authored note attached to a campaign, with campaign id, manager account id, note body, and created datetime.
-- **Need**: User-created need with title, description, nature, intensity, location, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
+- **Need**: User-created need with title, description, nature, intensity, location, optional proposed Topes amount, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
+
+### Intensity To Topes Reference
+
+| Appreciation Level | Typical Use Case | Reference (in Topes) |
+| :--- | :--- | :--- |
+| **The Quick Hand** | Lending a simple tool, sharing garden surplus, 5-min advice. | **10 to 50** |
+| **The Sharing** | Lending valuable equipment, one hour of physical help. | **100 to 500** |
+| **The Commitment** | Skill sharing, long-term vehicle loan, dedicated time. | **1,000 to 3,000** |
+| **The Rare Resource** | Providing a workspace, rare expertise, valuable item. | **5,000 +** |
+
+Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "100 Topes represents a meaningful gesture of sharing." This preserves non-fiat social value framing.
 - **CampaignNeedTriage**: Relation state for a need joined to a campaign, with campaign id, need id, triage status, actor account id, and action datetime.
 - **AccountRole**: Role classification for permissions, including Mutuity manager and standard account.
 
