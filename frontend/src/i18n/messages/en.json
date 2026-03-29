@@ -1,0 +1,20 @@
+{
+  "app.title": "Mutuity",
+  "app.bootstrap": "Frontend scaffold initialized",
+  "campaigns.create.title": "Create a campaign",
+  "campaigns.create.submit": "Submit for moderation",
+  "campaigns.create.fields.title": "Campaign title",
+  "campaigns.create.fields.theme": "Theme",
+  "campaigns.create.fields.startAt": "Start date",
+  "campaigns.create.fields.airdropAt": "Airdrop date",
+  "campaigns.create.fields.endAt": "End date",
+  "campaigns.create.validation.required": "This field is required",
+  "campaigns.create.validation.dateOrder": "Dates must be chronologically valid",
+  "needs.create.title": "Create a need",
+  "needs.create.submit": "Publish need",
+  "needs.create.fields.title": "Need title",
+  "needs.create.fields.description": "Description",
+  "needs.create.fields.intensity": "Intensity",
+  "needs.create.fields.topes": "Proposed Topes amount",
+  "needs.create.validation.topesRange": "Topes amount does not match selected intensity"
+}

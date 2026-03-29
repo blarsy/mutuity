@@ -121,7 +121,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - **FR-018**: Need creation MUST support optional association to a campaign.
 - **FR-019**: Need nature has one or more of these flags set: object required, competence required, tooling required, multiple people required.
 - **FR-020**: Need intensity MUST be one of: leg up, sharing, commitment, rare contribution.
-- **FR-020a**: When provided at need creation, Topes amount MUST follow the intensity range mapping: leg up (10 to 50), sharing (100 to 500), commitment (1000 to 3000), rare contribution (5000 or more).
+- **FR-020a**: When provided at need creation, Topes amount MUST follow the intensity range mapping: leg up (10 to 99), sharing (100 to 999), commitment (1000 to 4999), rare contribution (5000 or more).
 - **FR-020b**: Public and user-facing copy MUST avoid fiat currency equivalence wording and instead describe Topes as meaningful social gratitude.
 - **FR-021**: System MUST allow campaign creator to accept or reject needs joined to that creator campaign.
 - **FR-022**: System MUST deny accept or reject actions by non-creator accounts.

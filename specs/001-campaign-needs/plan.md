@@ -1,13 +1,11 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Campaign And Need Management
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Branch**: `001-campaign-needs` | **Date**: 2026-03-28 | **Spec**: `/specs/001-campaign-needs/spec.md`
+**Input**: Feature specification from `/specs/001-campaign-needs/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Implement the first vertical slice of Mutuity core workflows: campaign creation and moderation, need creation with optional campaign association, optional Topes proposal bounded by intensity, and campaign-side triage of joined needs. The implementation uses a PostgreSQL-first stack with PostGraphile as the primary GraphQL API surface and Graphile Worker for recurring/background tasks.
 
 ## Technical Context
 
@@ -17,28 +15,32 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript (strict mode) for frontend and backend; SQL/PL-pgSQL for database logic  
+**Primary Dependencies**: React, MUI v5, Apollo Client, Formik + Yup, PostgreSQL, PostGraphile, Graphile Worker  
+**Storage**: PostgreSQL  
+**Testing**: Jest; Storybook for reusable UI components; integration tests for API and DB-backed workflows  
+**Target Platform**: Web application for desktop/mobile browsers; Node.js backend for PostGraphile and Graphile Worker jobs
+**Project Type**: Web application with separate frontend and backend  
+**Performance Goals**: Campaign and need create/update actions should complete within 2 seconds in normal conditions; public listings and moderation screens should return the first page within 1 second server-side at MVP scale; validation feedback should be shown immediately on the client before submission when possible  
+**Constraints**: API-first backend via PostGraphile; no mobile app implementation in this phase; all user-facing strings through i18n; RLS-aware authorization model; explicit moderation and visibility states; recurring jobs implemented via Graphile Worker  
+**Scale/Scope**: Initial MVP for campaign authoring, moderation, need creation, and campaign need triage
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Pass: Solution uses PostgreSQL as source of truth and keeps business rules close to the data model where appropriate.
+- Pass: Architecture remains API-first, with frontend as a thin client and moderation logic enforced through PostgreSQL policies/functions exposed by PostGraphile.
+- Pass: User-facing strings, moderation states, validation messages, and empty/error/loading states must be included from the start.
+- Pass: Feature requires reusable UI, so Storybook coverage is expected for extracted components.
+- Pass: Backend stack is fixed to PostGraphile + Graphile Worker over PostgreSQL; implementation must preserve strict TypeScript and integration-testability.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
+specs/001-campaign-needs/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
@@ -56,43 +58,30 @@ specs/[###-feature]/
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
 backend/
 ├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
+│   ├── postgraphile/
+│   ├── worker/
+│   ├── db/
+│   └── auth/
 └── tests/
+  ├── contract/
+  └── integration/
 
 frontend/
 ├── src/
 │   ├── components/
 │   ├── pages/
+│   ├── features/
 │   └── services/
 └── tests/
 
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+database/
+├── migrations/
+└── functions/
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Use a web application split into `frontend/`, `backend/`, and `database/` to match the constitution's separation of concerns. Domain API is generated by PostGraphile from PostgreSQL schema, grants, policies, and SQL functions. Recurring/background operations are handled by Graphile Worker jobs. Frontend handles forms and user flows without owning business logic.
 
 ## Complexity Tracking
 
@@ -100,5 +89,4 @@ directories captured above]
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| None | N/A | N/A |
