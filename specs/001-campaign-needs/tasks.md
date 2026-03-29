@@ -10,22 +10,22 @@
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Create initial folder skeleton for `backend/`, `frontend/`, and `database/`
-- [ ] T002 [P] Initialize backend TypeScript project in `backend/` with PostGraphile server foundation
-- [ ] T003 [P] Initialize frontend Next.js project in `frontend/` with MUI + i18n baseline
-- [ ] T004 [P] Configure shared linting/formatting and strict TypeScript settings in `backend/` and `frontend/`
-- [ ] T005 Configure environment variables and local dev bootstrap in `backend/.env.example` and `frontend/.env.example` including PostGraphile and Graphile Worker settings
-- [ ] T006 Create initial migration framework in `database/migrations/`
-- [ ] T007 [P] Initialize Graphile Worker runtime in `backend/src/worker/` with base worker bootstrap
+- [x] T001 Create initial folder skeleton for `backend/`, `frontend/`, and `database/`
+- [x] T002 [P] Initialize backend TypeScript project in `backend/` with PostGraphile server foundation
+- [x] T003 [P] Initialize frontend Next.js project in `frontend/` with MUI + i18n baseline
+- [x] T004 [P] Configure shared linting/formatting and strict TypeScript settings in `backend/` and `frontend/`
+- [x] T005 Configure environment variables and local dev bootstrap in `backend/.env.example` and `frontend/.env.example` including PostGraphile and Graphile Worker settings
+- [x] T006 Create initial migration framework in `database/migrations/`
+- [x] T007 [P] Initialize Graphile Worker runtime in `backend/src/worker/` with base worker bootstrap
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] T008 Create base account role model, grants, and RLS scaffolding in `database/migrations/001_roles_grants_rls.sql`
-- [ ] T009 [P] Add DB enums and base tables for campaign and need domains in `database/migrations/002_base_campaign_need.sql`
-- [ ] T010 [P] Add audit logging utilities and audit table in `database/migrations/003_audit.sql`
-- [ ] T011 Configure PostGraphile schema exposure and plugin settings in `backend/src/postgraphile/server.ts`
-- [ ] T012 Add common SQL-level validation helpers for date and numeric rules in `database/functions/validation.sql`
-- [ ] T013 Add i18n key namespaces for campaigns and needs in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
+- [x] T008 Create base account role model, grants, and RLS scaffolding in `database/migrations/001_roles_grants_rls.sql`
+- [x] T009 [P] Add DB enums and base tables for campaign and need domains in `database/migrations/002_base_campaign_need.sql`
+- [x] T010 [P] Add audit logging utilities and audit table in `database/migrations/003_audit.sql`
+- [x] T011 Configure PostGraphile schema exposure and plugin settings in `backend/src/postgraphile/server.ts`
+- [x] T012 Add common SQL-level validation helpers for date and numeric rules in `database/functions/validation.sql`
+- [x] T013 Add i18n key namespaces for campaigns and needs in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
 
 ## Phase 3: User Story 1 - Account Creates Campaign (Priority: P1)
 
@@ -35,17 +35,17 @@
 
 ### Tests (US1)
 
-- [ ] T014 [P] [US1] Add integration tests for campaign creation validation in `backend/tests/integration/campaign-create.spec.ts`
-- [ ] T015 [P] [US1] Add GraphQL contract tests for PostGraphile-exposed `createCampaign` mutation in `backend/tests/contract/campaign.contract.spec.ts`
+- [x] T014 [P] [US1] Add integration tests for campaign creation validation in `backend/tests/integration/campaign-create.spec.ts`
+- [x] T015 [P] [US1] Add GraphQL contract tests for PostGraphile-exposed `createCampaign` mutation in `backend/tests/contract/campaign.contract.spec.ts`
 
 ### Implementation (US1)
 
-- [ ] T016 [US1] Implement campaign table constraints and indexes in `database/migrations/004_campaign_constraints.sql`
-- [ ] T017 [US1] Implement SQL function `create_campaign` in `database/functions/campaign/create_campaign.sql`
-- [ ] T018 [US1] Expose `create_campaign` through PostGraphile schema configuration in `backend/src/postgraphile/server.ts`
-- [ ] T019 [US1] Build campaign creation form page in `frontend/src/features/campaigns/CreateCampaignPage.tsx`
-- [ ] T020 [US1] Add frontend validation schema for campaign creation in `frontend/src/features/campaigns/createCampaign.validation.ts`
-- [ ] T021 [US1] Add pending-status handling in campaign list GraphQL queries from frontend in `frontend/src/features/campaigns/campaigns.queries.ts`
+- [x] T016 [US1] Implement campaign table constraints and indexes in `database/migrations/004_campaign_constraints.sql`
+- [x] T017 [US1] Implement SQL function `create_campaign` in `database/functions/campaign/create_campaign.sql`
+- [x] T018 [US1] Expose `create_campaign` through PostGraphile schema configuration in `backend/src/postgraphile/server.ts`
+- [x] T019 [US1] Build campaign creation form page in `frontend/src/features/campaigns/CreateCampaignPage.tsx`
+- [x] T020 [US1] Add frontend validation schema for campaign creation in `frontend/src/features/campaigns/createCampaign.validation.ts`
+- [x] T021 [US1] Add pending-status handling in campaign list GraphQL queries from frontend in `frontend/src/features/campaigns/campaigns.queries.ts`
 
 ## Phase 4: User Story 2 - Manager Moderates With Note (Priority: P1)
 
