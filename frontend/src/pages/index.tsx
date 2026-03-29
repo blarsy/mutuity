@@ -1,4 +1,5 @@
-import { Box, Container, Typography } from "@mui/material";
+import NextLink from "next/link";
+import { Box, Button, Container, Typography } from "@mui/material";
 
 export default function HomePage() {
   return (
@@ -10,6 +11,9 @@ export default function HomePage() {
         <Typography>
           Phase 1 scaffold is ready. Campaign and need feature pages will be added in subsequent tasks.
         </Typography>
+        <Button component={NextLink} href="/campaigns/create" sx={{ mt: 3 }} variant="contained">
+          Create Campaign
+        </Button>
       </Box>
     </Container>
   );
