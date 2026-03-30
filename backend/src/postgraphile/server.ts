@@ -13,6 +13,8 @@ if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
 }
 
+// SQL functions in app_public (for example createCampaign and addCampaignModerationNote)
+// are exposed as GraphQL mutations by PostGraphile.
 app.use(
   postgraphile(DATABASE_URL, process.env.GRAPHILE_SCHEMA ?? "app_public", {
     graphiql: true,

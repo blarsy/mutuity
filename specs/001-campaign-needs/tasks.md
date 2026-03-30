@@ -55,17 +55,17 @@
 
 ### Tests (US2)
 
-- [ ] T022 [P] [US2] Add integration tests for moderation note authorization in `backend/tests/integration/campaign-moderation-note.spec.ts`
-- [ ] T023 [P] [US2] Add contract tests for PostGraphile-exposed `addCampaignModerationNote` in `backend/tests/contract/campaign-moderation.contract.spec.ts`
+- [x] T022 [P] [US2] Add integration tests for moderation note authorization in `backend/tests/integration/campaign-moderation-note.spec.ts`
+- [x] T023 [P] [US2] Add contract tests for PostGraphile-exposed `addCampaignModerationNote` in `backend/tests/contract/campaign-moderation.contract.spec.ts`
 
 ### Implementation (US2)
 
-- [ ] T024 [US2] Create moderation notes migration in `database/migrations/005_campaign_moderation_notes.sql`
-- [ ] T025 [US2] Implement SQL function `add_campaign_moderation_note` in `database/functions/campaign/add_campaign_moderation_note.sql`
-- [ ] T026 [US2] Expose moderation-note mutation through PostGraphile in `backend/src/postgraphile/server.ts`
-- [ ] T027 [US2] Add campaign moderation history GraphQL query in frontend data layer `frontend/src/features/campaigns/campaignModeration.queries.ts`
-- [ ] T028 [US2] Build manager moderation notes panel UI in `frontend/src/features/campaigns/ModerationNotesPanel.tsx`
-- [ ] T029 [US2] Build creator-facing moderation history UI in `frontend/src/features/campaigns/CampaignModerationHistory.tsx`
+- [x] T024 [US2] Create moderation notes migration in `database/migrations/005_campaign_moderation_notes.sql`
+- [x] T025 [US2] Implement SQL function `add_campaign_moderation_note` in `database/functions/campaign/add_campaign_moderation_note.sql`
+- [x] T026 [US2] Expose moderation-note mutation through PostGraphile in `backend/src/postgraphile/server.ts`
+- [x] T027 [US2] Add campaign moderation history GraphQL query in frontend data layer `frontend/src/features/campaigns/campaignModeration.queries.ts`
+- [x] T028 [US2] Build manager moderation notes panel UI in `frontend/src/features/campaigns/ModerationNotesPanel.tsx`
+- [x] T029 [US2] Build creator-facing moderation history UI in `frontend/src/features/campaigns/CampaignModerationHistory.tsx`
 
 ## Phase 5: User Story 3 - Manager Approves Campaign (Priority: P1)
 
