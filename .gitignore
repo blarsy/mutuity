@@ -6,3 +6,4 @@ coverage/
 .env.local
 frontend/tsconfig.tsbuildinfo
 .vscode/
+.DS_Store
