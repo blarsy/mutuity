@@ -65,3 +65,9 @@ Validate the Feature 1 workflow end-to-end in a local development environment.
 - Invalid Topes amount for selected intensity is rejected.
 - Non-manager cannot approve campaign or create moderation note.
 - Non-creator cannot triage campaign-linked needs.
+
+## Error Handling Validation
+- Unauthenticated user attempting campaign creation sees generic error message (e.g., "You must sign in to continue") without database or schema details.
+- Unauthenticated user attempting need creation sees generic error message without technical details.
+- Server logs capture full technical error details for backend debugging.
+- Validation errors (invalid range, datetime) display specific user-friendly messages (e.g., "Rewards multiplier must be between 5 and 10").

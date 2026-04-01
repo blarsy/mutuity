@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { Alert, Box, CircularProgress, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CAMPAIGN_MODERATION_HISTORY_QUERY } from "./campaignModeration.queries";
 
 type CampaignModerationHistoryProps = {
@@ -28,13 +29,14 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
       variables: { campaignId }
     }
   );
+  const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   if (loading) {
     return <CircularProgress size={20} />;
   }
 
-  if (error) {
-    return <Alert severity="error">{error.message}</Alert>;
+  if (errorMessage) {
+    return <Alert severity="error">{errorMessage}</Alert>;
   }
 
   const notes = data?.allCampaignModerationNotes.nodes ?? [];

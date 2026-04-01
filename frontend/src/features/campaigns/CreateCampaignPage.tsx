@@ -2,6 +2,7 @@ import { useMutation } from "@apollo/client/react";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { CREATE_CAMPAIGN_MUTATION } from "./campaigns.queries";
+import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
   createCampaignInitialValues,
   createCampaignValidationSchema,
@@ -34,6 +35,7 @@ export default function CreateCampaignPage() {
     CreateCampaignMutationData,
     CreateCampaignMutationVariables
   >(CREATE_CAMPAIGN_MUTATION);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   const submit = async (values: CreateCampaignValues) => {
     await createCampaign({
@@ -60,7 +62,7 @@ export default function CreateCampaignPage() {
           Campaigns are created in pending moderation state.
         </Typography>
 
-        {error ? <Alert severity="error">{error.message}</Alert> : null}
+        {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
         {data?.createCampaign?.campaign ? (
           <Alert sx={{ mb: 2 }} severity="success">
             Campaign created with status {data.createCampaign.campaign.moderationStatus}.

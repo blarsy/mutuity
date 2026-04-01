@@ -38,6 +38,7 @@ cp frontend/.env.example frontend/.env.local
 ```
 
 If your PostgreSQL credentials differ, update `DATABASE_URL` in `backend/.env`.
+For browser access from local frontend, set `BACKEND_CORS_ORIGINS` (comma-separated if needed).
 
 ### 3. Create database and run migrations
 
@@ -69,8 +70,8 @@ npm run dev:frontend
 ### 5. Open app endpoints
 
 - Frontend: `http://localhost:3000`
-- GraphQL endpoint: `http://localhost:5000/graphql`
-- GraphiQL: `http://localhost:5000/graphiql`
+- GraphQL endpoint: `http://localhost:5050/graphql`
+- GraphiQL: `http://localhost:5050/graphiql`
 
 ## Local Deployment With Docker Compose
 
@@ -100,7 +101,7 @@ docker compose up --build -d backend worker frontend
 
 ```bash
 docker compose ps
-curl http://localhost:5000/health
+curl http://localhost:5050/health
 ```
 
 ### 5. Stop stack

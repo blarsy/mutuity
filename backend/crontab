@@ -1,0 +1,7 @@
+# Graphile Worker crontab
+# Format: <cron expression> <task_name> [?options=json]
+# Docs: https://worker.graphile.org/docs/cron
+#
+# expire_needs: mark campaign-needs past their target date as expired.
+# Runs once per hour at minute 0. Real expiry logic lands in Feature 2.
+0 * * * * expire_needs

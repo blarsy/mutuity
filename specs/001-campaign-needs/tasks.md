@@ -37,6 +37,7 @@
 
 - [x] T014 [P] [US1] Add integration tests for campaign creation validation in `backend/tests/integration/campaign-create.spec.ts`
 - [x] T015 [P] [US1] Add GraphQL contract tests for PostGraphile-exposed `createCampaign` mutation in `backend/tests/contract/campaign.contract.spec.ts`
+- [ ] T060 [P] [US1] Add integration tests for unauthenticated `createCampaign` mutation returning sanitized `UNAUTHENTICATED` error in `backend/tests/integration/campaign-create-auth.spec.ts`
 
 ### Implementation (US1)
 
@@ -96,11 +97,12 @@
 
 - [ ] T037 [P] [US4] Add integration tests for need creation and Topes-by-intensity validation in `backend/tests/integration/need-create.spec.ts`
 - [ ] T038 [P] [US4] Add contract tests for PostGraphile-exposed `createNeed` mutation in `backend/tests/contract/need.contract.spec.ts`
+- [ ] T061 [P] [US4] Add integration tests for unauthenticated `createNeed` mutation returning sanitized `UNAUTHENTICATED` error in `backend/tests/integration/need-create-auth.spec.ts`
 
 ### Implementation (US4)
 
-- [ ] T039 [US4] Create needs migration with optional Topes and nature flags in `database/migrations/006_needs.sql`
-- [ ] T040 [US4] Create campaign-need relation migration with pending status in `database/migrations/007_campaign_need.sql`
+- [ ] T039 [US4] Create needs migration with optional Topes and nature flags in `database/migrations/007_needs.sql`
+- [ ] T040 [US4] Create campaign-need relation migration with pending status in `database/migrations/008_campaign_need.sql`
 - [ ] T041 [US4] Implement SQL function `create_need` in `database/functions/need/create_need.sql`
 - [ ] T042 [US4] Implement SQL helper `validate_campaign_linkability` in `database/functions/campaign/validate_campaign_linkability.sql`
 - [ ] T043 [US4] Expose need creation mutation through PostGraphile in `backend/src/postgraphile/server.ts`

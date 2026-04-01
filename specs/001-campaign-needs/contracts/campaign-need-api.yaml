@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Mutuity Campaign and Need Management API
+  title: Mutuity Campaign and Need Management GraphQL API
   version: 0.1.0
 paths:
-  /campaigns:
+  /graphql:
     post:
-      summary: Create campaign
+      summary: Execute GraphQL operation (PostGraphile)
       requestBody:
         required: true
         content:
@@ -13,200 +13,61 @@ paths:
             schema:
               type: object
               required:
-                - title
-                - theme
-                - rewardsMultiplier
-                - startAt
-                - airdropAt
-                - airdropAmount
-                - endAt
+                - query
               properties:
-                title:
-                  type: string
-                theme:
-                  type: string
-                rewardsMultiplier:
-                  type: integer
-                  minimum: 5
-                  maximum: 10
-                startAt:
-                  type: string
-                  format: date-time
-                airdropAt:
-                  type: string
-                  format: date-time
-                airdropAmount:
-                  type: integer
-                  minimum: 3000
-                  maximum: 8000
-                endAt:
-                  type: string
-                  format: date-time
-                managerNoteFromCreator:
+                operationName:
                   type: string
                   nullable: true
-      responses:
-        '201':
-          description: Campaign created in pending moderation state
-        '400':
-          description: Validation error
-        '401':
-          description: Authentication required
-  /campaigns/{campaignId}/moderation-notes:
-    post:
-      summary: Add moderation note to campaign
-      parameters:
-        - in: path
-          name: campaignId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - body
-              properties:
-                body:
+                query:
                   type: string
-      responses:
-        '201':
-          description: Note stored
-        '403':
-          description: Manager role required
-        '404':
-          description: Campaign not found
-  /campaigns/{campaignId}/approve:
-    post:
-      summary: Approve campaign
-      parameters:
-        - in: path
-          name: campaignId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Campaign approved
-        '403':
-          description: Manager role required
-        '404':
-          description: Campaign not found
-  /needs:
-    post:
-      summary: Create need
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - title
-                - location
-                - intensity
-                - objectRequired
-                - competenceRequired
-                - toolingRequired
-                - multiplePeopleRequired
-              properties:
-                title:
-                  type: string
-                description:
-                  type: string
-                  nullable: true
-                location:
+                variables:
                   type: object
-                  required:
-                    - latitude
-                    - longitude
-                  properties:
-                    latitude:
-                      type: number
-                    longitude:
-                      type: number
-                intensity:
-                  type: string
-                  enum: [leg_up, sharing, commitment, rare_contribution]
-                proposedTopesAmount:
-                  type: integer
                   nullable: true
-                objectRequired:
-                  type: boolean
-                competenceRequired:
-                  type: boolean
-                toolingRequired:
-                  type: boolean
-                multiplePeopleRequired:
-                  type: boolean
-                requiredCompetenceText:
-                  type: string
-                  nullable: true
-                requiredToolingText:
-                  type: string
-                  nullable: true
-                requiredPeopleCount:
-                  type: integer
-                  nullable: true
-                campaignId:
-                  type: string
-                  format: uuid
-                  nullable: true
-      responses:
-        '201':
-          description: Need created
-        '400':
-          description: Validation error
-        '401':
-          description: Authentication required
-  /campaigns/{campaignId}/needs/{needId}/accept:
-    post:
-      summary: Accept need linked to campaign
-      parameters:
-        - in: path
-          name: campaignId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: needId
-          required: true
-          schema:
-            type: string
-            format: uuid
+      description: |
+        The API is GraphQL-first via PostGraphile.
+
+        Example operations supported by this feature include:
+        - `createCampaign`
+        - `addCampaignModerationNote`
+        - `approveCampaign`
+        - `createNeed`
+        - `acceptCampaignNeed`
+        - `rejectCampaignNeed`
       responses:
         '200':
-          description: Need accepted for campaign
-        '403':
-          description: Campaign creator required
-        '404':
-          description: Campaign-need relation not found
-  /campaigns/{campaignId}/needs/{needId}/reject:
-    post:
-      summary: Reject need linked to campaign
-      parameters:
-        - in: path
-          name: campaignId
-          required: true
-          schema:
+          description: GraphQL response envelope
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                  errors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GraphQLError'
+
+components:
+  schemas:
+    GraphQLError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: User-facing message after backend sanitization.
+        path:
+          type: array
+          items:
             type: string
-            format: uuid
-        - in: path
-          name: needId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Need rejected for campaign
-        '403':
-          description: Campaign creator required
-        '404':
-          description: Campaign-need relation not found
+        extensions:
+          type: object
+          properties:
+            code:
+              type: string
+              description: |
+                Error code returned by GraphQL layer.
+                Includes `UNAUTHENTICATED` for missing authentication.

@@ -7,13 +7,13 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Account Creates Campaign (Priority: P1)
+### User Story 1 - Authenticated Account Creates Campaign (Priority: P1)
 
 As any authenticated account, I can create a campaign with required scheduling and reward parameters so I can propose a contribution campaign for moderation.
 
 **Why this priority**: This is the entry point for all campaign-related value and moderation workflow.
 
-**Independent Test**: Create a campaign with valid values and verify it is stored as pending moderation and not publicly visible.
+**Independent Test**: Create a campaign with valid values and verify it is stored as pending moderation and not publicly visible. Also verify that unauthenticated requests return a generic error message.
 
 **Acceptance Scenarios**:
 
@@ -21,6 +21,7 @@ As any authenticated account, I can create a campaign with required scheduling a
 2. **Given** an authenticated account, **When** the user sets rewards multiplier outside 5 to 10, **Then** the system rejects the submission with a validation error.
 3. **Given** an authenticated account, **When** the user sets airdrop amount outside 3000 to 8000, **Then** the system rejects the submission with a validation error.
 4. **Given** an authenticated account, **When** start datetime is not before end datetime or airdrop datetime is outside campaign time bounds, **Then** the system rejects the submission with a validation error.
+5. **Given** an unauthenticated user, **When** the user attempts to create a campaign, **Then** the system returns an authentication error with a user-friendly message (e.g., "You must sign in to continue") and does not reveal technical database or schema details.
 
 ---
 
@@ -56,13 +57,13 @@ As the Mutuity manager, I can approve a campaign so it becomes visible on the pl
 
 ---
 
-### User Story 4 - Account Creates Need (Priority: P1)
+### User Story 4 - Authenticated Account Creates Need (Priority: P1)
 
 As any authenticated account, I can create a need either attached to a campaign or standalone, with type and intensity classification and optionally a proposed Topes amount.
 
 **Why this priority**: Needs are core product data and can exist independently from campaigns.
 
-**Independent Test**: Create one standalone need and one campaign-linked need with valid classification values and a Topes amount consistent with the selected intensity range.
+**Independent Test**: Create one standalone need and one campaign-linked need with valid classification values and a Topes amount consistent with the selected intensity range. Also verify that unauthenticated requests return a generic error message.
 
 **Acceptance Scenarios**:
 
@@ -70,6 +71,7 @@ As any authenticated account, I can create a need either attached to a campaign 
 2. **Given** an authenticated account and an existing campaign, **When** the user creates a need linked to that campaign, **Then** the system stores it as a standalone need **And** the system stores the need's association to the campaign in a 'pending approval' state.
 3. **Given** an authenticated account, **When** the user sets intensity outside leg up, sharing, commitment, rare contribution, **Then** the system rejects the submission with a validation error.
 4. **Given** an authenticated account, **When** the user sets a Topes amount outside the allowed range for the selected intensity, **Then** the system rejects the submission with a validation error.
+5. **Given** an unauthenticated user, **When** the user attempts to create a need, **Then** the system returns an authentication error with a user-friendly message (e.g., "You must sign in to continue") and does not reveal technical database or schema details.
 
 ---
 
@@ -99,9 +101,16 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 ## Requirements *(mandatory)*
 
+### Security & Error Handling Requirements
+
+- **SR-001**: All GraphQL mutations MUST enforce authentication via database Row Level Security policies. Unauthenticated requests MUST be rejected with code `UNAUTHENTICATED`.
+- **SR-002**: GraphQL error messages returned to the client MUST NOT reveal technical database or schema details (e.g., "permission denied for schema app_private"). Instead, the system MUST return generic user-friendly messages (e.g., "You must sign in to continue" for authentication errors, "Something went wrong" for unexpected server errors).
+- **SR-003**: The backend MUST log full technical error details (stack traces, original error messages) server-side for debugging and monitoring, while the client receives sanitized messages.
+- **SR-004**: Validation errors (e.g., invalid multiplier range, datetime ordering) MAY be surfaced to the client as-is, as they reveal intent rather than system internals.
+
 ### Functional Requirements
 
-- **FR-001**: System MUST allow any authenticated account to create a campaign.
+- **FR-001**: System MUST allow any authenticated account to create a campaign. Unauthenticated requests MUST be rejected (see SR-001, SR-002).
 - **FR-002**: Campaign creation MUST require theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, and title.
 - **FR-003**: Campaign creation MUST allow an optional textual note for Mutuity manager.
 - **FR-004**: Rewards multiplier MUST be validated as an integer from 5 to 10 inclusive.
@@ -157,3 +166,5 @@ Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "
 - **SC-004**: 100 percent of approved campaigns become visible on the public interface within one minute of approval.
 - **SC-005**: 100 percent of non-owner attempts to accept or reject joined needs are denied.
 - **SC-006**: 100 percent of moderation notes and need triage actions are present in audit history during verification.
+- **SC-007**: 100 percent of unauthenticated mutation attempts return sanitized user-facing messages and MUST NOT expose internal schema/database details.
+- **SC-008**: 100 percent of backend-handled unexpected GraphQL errors are logged with full technical details server-side.

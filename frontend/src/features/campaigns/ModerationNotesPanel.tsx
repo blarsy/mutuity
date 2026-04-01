@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client/react";
 import { Alert, Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
+import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { ADD_CAMPAIGN_MODERATION_NOTE_MUTATION, CAMPAIGN_MODERATION_HISTORY_QUERY } from "./campaignModeration.queries";
 
 type ModerationNotesPanelProps = {
@@ -12,6 +13,7 @@ export function ModerationNotesPanel({ campaignId }: ModerationNotesPanelProps) 
   const [createNote, { loading, error }] = useMutation(ADD_CAMPAIGN_MODERATION_NOTE_MUTATION, {
     refetchQueries: [{ query: CAMPAIGN_MODERATION_HISTORY_QUERY, variables: { campaignId } }]
   });
+  const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   const onSubmit = async () => {
     if (!body.trim()) {
@@ -34,7 +36,7 @@ export function ModerationNotesPanel({ campaignId }: ModerationNotesPanelProps) 
         Add Moderation Note
       </Typography>
       <Stack spacing={2}>
-        {error ? <Alert severity="error">{error.message}</Alert> : null}
+        {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
         <TextField
           multiline
           minRows={3}

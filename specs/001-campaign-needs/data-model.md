@@ -5,6 +5,7 @@
 - Use grants and Row Level Security as the primary authorization mechanism consumed by PostGraphile.
 - Expose domain mutations through SQL functions rather than ad hoc app-layer write logic.
 - Ensure SQL functions that can be invoked by PostGraphile are explicit about role checks and side effects.
+- Authentication checks MUST be enforced at the RLS layer (via `current_user_id` or similar context). The PostGraphile `handleErrors` callback MUST sanitize error messages before returning them to the client (see Security & Error Handling Requirements in spec.md).
 
 ## Campaign
 - `id`: UUID, primary key
@@ -65,7 +66,7 @@
 - `updated_at`: timestamptz, required
 
 ### Rules
-- At least one nature flag may be set; any combination is allowed.
+- At least one nature flag MUST be true; any combination is allowed.
 - `proposed_topes_amount` is optional.
 - If `proposed_topes_amount` is present, it must satisfy:
   - `leg_up`: 10..99

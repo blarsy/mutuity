@@ -9,12 +9,6 @@ Implement the first vertical slice of Mutuity core workflows: campaign creation 
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
 **Language/Version**: TypeScript (strict mode) for frontend and backend; SQL/PL-pgSQL for database logic  
 **Primary Dependencies**: React, MUI v5, Apollo Client, Formik + Yup, PostgreSQL, PostGraphile, Graphile Worker  
 **Storage**: PostgreSQL  
@@ -22,7 +16,7 @@ Implement the first vertical slice of Mutuity core workflows: campaign creation 
 **Target Platform**: Web application for desktop/mobile browsers; Node.js backend for PostGraphile and Graphile Worker jobs
 **Project Type**: Web application with separate frontend and backend  
 **Performance Goals**: Campaign and need create/update actions should complete within 2 seconds in normal conditions; public listings and moderation screens should return the first page within 1 second server-side at MVP scale; validation feedback should be shown immediately on the client before submission when possible  
-**Constraints**: API-first backend via PostGraphile; no mobile app implementation in this phase; all user-facing strings through i18n; RLS-aware authorization model; explicit moderation and visibility states; recurring jobs implemented via Graphile Worker  
+**Constraints**: API-first backend via PostGraphile; no mobile app implementation in this phase; all user-facing strings through i18n; RLS-aware authorization model; explicit moderation and visibility states; recurring jobs implemented via Graphile Worker; authentication-aware error sanitization ensures technical details never leak to client (see SR-001, SR-002 in spec.md)  
 **Scale/Scope**: Initial MVP for campaign authoring, moderation, need creation, and campaign need triage
 
 ## Constitution Check
@@ -50,12 +44,6 @@ specs/001-campaign-needs/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
 backend/

@@ -24,7 +24,8 @@ RUN npm ci --omit=dev
 
 COPY --from=builder /app/backend/dist backend/dist
 COPY backend/.env.example backend/.env.example
+COPY backend/crontab backend/crontab
 
-EXPOSE 5000
+EXPOSE 5050
 
 CMD ["npm", "--workspace", "backend", "run", "start"]
