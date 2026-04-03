@@ -78,37 +78,37 @@ As a need creator or claimer, I can exchange instant messages in a claim convers
 
 ### User Story 5 - Need Creator Settles Claim (Priority: P2)
 
-As the need creator, I can settle a claim so the claimer receives token transfer for completed contribution.
+As the need creator, I can settle a claim, triggering, if applicable, the transfer of the Topes linked to the need.
 
 **Why this priority**: Settlement closes the loop and enforces incentive mechanics.
 
-**Independent Test**: Creator settles a valid claim and token transfer event is recorded for claimer.
+**Independent Test**: Creator settles a valid claim and, if a Topes amount is specified on the claim, token transfer event is recorded for claimer.
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid claim on a need, **When** need creator settles the claim, **Then** system records settlement and triggers token transfer to claimer.
+1. **Given** a valid claim on a need, **When** need creator settles the claim, **Then** system records settlement and, if an amount of Topes is set on the need, triggers token transfer to claimer.
 2. **Given** a user who is not the need creator, **When** they attempt to settle a claim, **Then** system denies the action.
 3. **Given** a settled claim, **When** settlement status is queried, **Then** claim is shown as settled and cannot be settled twice.
 
 ### Edge Cases
 
 - Query location unavailable from both account and browser; fallback must use Tournai city center coordinates.
-- Needs with identical weighted score; tie-breaking must be deterministic.
-- Expiration datetime reached exactly at query time.
-- Text filter includes accents, case differences, or partial words.
-- Tri-state filters in conflicting combinations produce zero results.
-- Claimer submits empty optional message.
-- Multiple claims for the same need created close in time.
-- Need creator sends first message when claim has no optional message.
-- Message with large image count or unsupported image formats.
-- Settlement attempted after need expiration or claim withdrawal.
+- Needs with identical weighted score; tie-breaking must be deterministic: sort by the most recently created
+- Expiration datetime reached exactly at query time: exclude from query result
+- Text filter includes accents, case differences, or partial words: search is case-insensitive, accent-insensitive, and supports partial matches.
+- Tri-state filters in conflicting combinations produce zero results: The query remains valid and returns an empty list when no need matches all selected criteria.
+- Claimer submits with omitted optional message: the system registers the claim with an empty (null) note
+- Multiple claims for the same need created close in time: Once one claim is settled, all other open claims become closed/declined automatically, in the same settlement operation. Settlement must be atomic and idempotent so only one claim can transition to settled.
+- Need creator sends first message when claim has no optional message: The conversation starts only with that first message
+- Message with large image count or unsupported image formats: images will be stored in an external image service provider, which will handle enforcing the correct formats and size limits
+- Settlement attempted after need expiration or claim withdrawal: the settlement operation checks that both the need and the claim are in an active and non expired state, and fails if not. Furthermore, the system polls the needs every 10 minutes for just expired ones, and cancels the linked claims automatically, generating a notification for the claimer, and adding an event to the claimer and the need creator's claims history.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: System MUST allow any visitor to query needs that are active and not expired.
-- **FR-002**: Default query MUST return at most 50 needs.
+- **FR-002**: Any query MUST return at most 50 needs.
 - **FR-003**: Default ranking MUST be based on weighted score composed of closeness (50%), ease of setup (30%), and ascending delay of expiration (20%).
 - **FR-004**: System MUST compute ease of setup as 100% baseline and reduce by 25% for each set flag among tooling required, competence required, and multiple people required.
 - **FR-005**: Query MUST require a location parameter for scoring closeness.
@@ -133,7 +133,7 @@ As the need creator, I can settle a claim so the claimer receives token transfer
 - **FR-024**: Each instant message MUST include created datetime, optional read datetime, and zero or more images.
 - **FR-025**: Only conversation participants MUST have access to conversation messages.
 - **FR-026**: Need creator MUST be able to settle a claim.
-- **FR-027**: Settling a claim MUST trigger token transfer to the claimer and persist settlement status.
+- **FR-027**: Settling a claim having a proposed amount of Topes MUST trigger token transfer to the claimer and persist settlement status.
 - **FR-028**: A settled claim MUST not be settled more than once.
 - **FR-029**: System MUST maintain an audit trail for claims, notifications, conversation creation, messages, read events, and settlements.
 
@@ -145,7 +145,7 @@ As the need creator, I can settle a claim so the claimer receives token transfer
 - **NeedClaimNotification**: Realtime event payload emitted to need creator when claim is created.
 - **ClaimConversation**: Conversation channel associated with one need claim and its two participants.
 - **ClaimMessage**: Instant message with sender id, created datetime, optional read datetime, optional images, and content.
-- **ClaimSettlement**: Settlement event that records claim completion and token transfer execution.
+- **ClaimSettlement**: Settlement event that records claim completion and token transfer execution (if applicable).
 
 ## Success Criteria *(mandatory)*
 
@@ -158,4 +158,4 @@ As the need creator, I can settle a claim so the claimer receives token transfer
 - **SC-005**: 100% of unauthenticated claim attempts are denied.
 - **SC-006**: 100% of successful claims generate a persisted claim record and realtime notification to need creator.
 - **SC-007**: 100% of first creator messages create conversation and include claim optional message as first message when present.
-- **SC-008**: 100% of settled claims trigger exactly one token transfer record.
+- **SC-008**: 100% of settled claims trigger zero or one token transfer record, depending on the presence of a Topes amount on the need.

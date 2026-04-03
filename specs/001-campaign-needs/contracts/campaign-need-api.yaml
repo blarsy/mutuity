@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Mutuity Campaign and Need Management GraphQL API
+  version: 0.1.0
+paths:
+  /graphql:
+    post:
+      summary: Execute GraphQL operation (PostGraphile)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                operationName:
+                  type: string
+                  nullable: true
+                query:
+                  type: string
+                variables:
+                  type: object
+                  nullable: true
+      description: |
+        The API is GraphQL-first via PostGraphile.
+
+        Example operations supported by this feature include:
+        - `createCampaign`
+        - `addCampaignModerationNote`
+        - `approveCampaign`
+        - `createNeed`
+        - `acceptCampaignNeed`
+        - `rejectCampaignNeed`
+      responses:
+        '200':
+          description: GraphQL response envelope
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                  errors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GraphQLError'
+
+components:
+  schemas:
+    GraphQLError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: User-facing message after backend sanitization.
+        path:
+          type: array
+          items:
+            type: string
+        extensions:
+          type: object
+          properties:
+            code:
+              type: string
+              description: |
+                Error code returned by GraphQL layer.
+                Includes `UNAUTHENTICATED` for missing authentication.
