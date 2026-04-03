@@ -16,5 +16,12 @@
   "needs.create.fields.description": "Description",
   "needs.create.fields.intensity": "Intensite",
   "needs.create.fields.topes": "Montant Topes propose",
-  "needs.create.validation.topesRange": "Le montant Topes ne correspond pas a l'intensite"
+  "needs.create.validation.topesRange": "Le montant Topes ne correspond pas a l'intensite",
+  "auth.login.title": "Se connecter",
+  "auth.login.subtitle": "Acceder aux actions protegees et a votre session.",
+  "auth.login.action": "Se connecter",
+  "auth.logout.action": "Se deconnecter",
+  "auth.error.invalidCredentials": "Impossible de se connecter avec ces identifiants.",
+  "auth.error.sessionExpired": "Vous devez vous connecter pour continuer.",
+  "auth.redirect.required": "Veuillez vous connecter pour acceder a cette page."
 }

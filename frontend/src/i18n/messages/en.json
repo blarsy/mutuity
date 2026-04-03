@@ -16,5 +16,12 @@
   "needs.create.fields.description": "Description",
   "needs.create.fields.intensity": "Intensity",
   "needs.create.fields.topes": "Proposed Topes amount",
-  "needs.create.validation.topesRange": "Topes amount does not match selected intensity"
+  "needs.create.validation.topesRange": "Topes amount does not match selected intensity",
+  "auth.login.title": "Sign in",
+  "auth.login.subtitle": "Access protected actions and your account session.",
+  "auth.login.action": "Sign in",
+  "auth.logout.action": "Sign out",
+  "auth.error.invalidCredentials": "Unable to sign in with those credentials.",
+  "auth.error.sessionExpired": "You must sign in to continue.",
+  "auth.redirect.required": "Please sign in to access this page."
 }

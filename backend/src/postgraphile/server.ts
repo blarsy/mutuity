@@ -1,9 +1,14 @@
 import "dotenv/config";
 
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import { GraphQLError } from "graphql";
+import { Pool } from "pg";
 import { postgraphile } from "postgraphile";
+
+import { createAuthRouter } from "../auth/routes.js";
+import { createAuthSessionMiddleware } from "../auth/session.js";
 
 const app = express();
 const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "manager", "admin"]);
@@ -32,6 +37,8 @@ const AUTHENTICATION_ERROR_PATTERNS = [
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const port = Number(process.env.BACKEND_PORT ?? 5050);
+const allowDevAuthHeaders = process.env.ALLOW_DEV_AUTH_HEADERS !== "false";
+const sessionSecret = process.env.SESSION_SECRET ?? "dev-only-change-me";
 const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:3000")
   .split(",")
   .map(origin => origin.trim())
@@ -40,6 +47,14 @@ const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:300
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
 }
+
+if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+  throw new Error("Missing SESSION_SECRET in production.");
+}
+
+const pool = new Pool({
+  connectionString: DATABASE_URL
+});
 
 function toLoggedError(error: GraphQLError) {
   const originalError =
@@ -99,8 +114,11 @@ function sanitizeGraphQLError(error: GraphQLError) {
   );
 }
 
+app.use(cookieParser(sessionSecret));
+app.use(createAuthSessionMiddleware(pool));
 app.use(
   cors({
+    credentials: true,
     origin: (origin, callback) => {
       // Allow same-origin and non-browser requests (no Origin header).
       if (!origin) {
@@ -117,6 +135,7 @@ app.use(
     }
   })
 );
+app.use("/auth", createAuthRouter(pool));
 
 // SQL functions in app_public (for example createCampaign and addCampaignModerationNote)
 // are exposed as GraphQL mutations by PostGraphile.
@@ -137,8 +156,28 @@ app.use(
       return errors.map(sanitizeGraphQLError);
     },
     pgSettings: req => {
-      const accountIdHeader = String(req.headers["x-account-id"] ?? "");
-      const requestedRole = String(req.headers["x-role"] ?? process.env.PG_DEFAULT_ROLE ?? "anonymous");
+      const session = (
+        req as express.Request & {
+          authSession?: {
+            accountId: string;
+            role: string;
+          } | null;
+        }
+      ).authSession ?? null;
+
+      if (session) {
+        return {
+          role: session.role,
+          "jwt.claims.role": session.role,
+          "jwt.claims.account_id": session.accountId
+        };
+      }
+
+      const canUseDevHeaders = allowDevAuthHeaders && process.env.NODE_ENV !== "production";
+      const accountIdHeader = canUseDevHeaders ? String(req.headers["x-account-id"] ?? "") : "";
+      const requestedRole = canUseDevHeaders
+        ? String(req.headers["x-role"] ?? process.env.PG_DEFAULT_ROLE ?? "anonymous")
+        : "anonymous";
       const role = ALLOWED_PG_ROLES.has(requestedRole) ? requestedRole : "anonymous";
 
       return {

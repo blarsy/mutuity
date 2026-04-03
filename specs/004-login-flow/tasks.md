@@ -10,20 +10,20 @@
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Create auth feature folders in `backend/src/auth/` and `frontend/src/features/auth/`
-- [ ] T002 [P] Add backend auth/session dependencies and env placeholders in `backend/package.json` and `backend/.env.example`
-- [ ] T003 [P] Add frontend auth route placeholders and shared auth types in `frontend/src/features/auth/` and `frontend/src/services/`
+- [x] T001 Create auth feature folders in `backend/src/auth/` and `frontend/src/features/auth/`
+- [x] T002 [P] Add backend auth/session dependencies and env placeholders in `backend/package.json` and `backend/.env.example`
+- [x] T003 [P] Add frontend auth route placeholders and shared auth types in `frontend/src/features/auth/` and `frontend/src/services/`
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] T004 Create database migration for account credentials and sessions in `database/migrations/007_auth_sessions.sql`
-- [ ] T005 [P] Add SQL helpers for session lookup and revocation in `database/functions/auth/`
-- [ ] T006 [P] Add password hashing and credential verification service in `backend/src/auth/credentials.ts`
-- [ ] T007 Wire secure cookie/session middleware into `backend/src/postgraphile/server.ts`
-- [ ] T008 Add backend endpoint or handler for `POST /auth/login`, `POST /auth/logout`, and `GET /auth/session` in `backend/src/auth/`
-- [ ] T009 Add frontend auth service wrappers for login/logout/current-session in `frontend/src/features/auth/auth.api.ts`
-- [ ] T010 Add auth context/provider for current account state in `frontend/src/features/auth/AuthProvider.tsx`
-- [ ] T011 Add i18n strings for login, logout, and auth errors in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
+- [x] T004 Create database migration for account credentials and sessions in `database/migrations/007_auth_sessions.sql`
+- [x] T005 [P] Add SQL helpers for session lookup and revocation in `database/functions/auth/`
+- [x] T006 [P] Add password hashing and credential verification service in `backend/src/auth/credentials.ts`
+- [x] T007 Wire secure cookie/session middleware into `backend/src/postgraphile/server.ts`
+- [x] T008 Add backend endpoint or handler for `POST /auth/login`, `POST /auth/logout`, and `GET /auth/session` in `backend/src/auth/`
+- [x] T009 Add frontend auth service wrappers for login/logout/current-session in `frontend/src/features/auth/auth.api.ts`
+- [x] T010 Add auth context/provider for current account state in `frontend/src/features/auth/AuthProvider.tsx`
+- [x] T011 Add i18n strings for login, logout, and auth errors in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
 
 ## Phase 3: User Story 1 - Account Signs In (Priority: P1)
 
@@ -38,10 +38,10 @@
 
 ### Implementation (US1)
 
-- [ ] T014 [US1] Build `LoginPage` UI in `frontend/src/pages/login.tsx`
-- [ ] T015 [US1] Add login form validation in `frontend/src/features/auth/login.validation.ts`
-- [ ] T016 [US1] Connect login form to auth API and shared auth context in `frontend/src/features/auth/`
-- [ ] T017 [US1] Add authenticated navigation state on the home page or shared layout in `frontend/src/pages/_app.tsx` and/or `frontend/src/pages/index.tsx`
+- [x] T014 [US1] Build `LoginPage` UI in `frontend/src/pages/login.tsx`
+- [x] T015 [US1] Add login form validation in `frontend/src/features/auth/login.validation.ts`
+- [x] T016 [US1] Connect login form to auth API and shared auth context in `frontend/src/features/auth/`
+- [x] T017 [US1] Add authenticated navigation state on the home page or shared layout in `frontend/src/pages/_app.tsx` and/or `frontend/src/pages/index.tsx`
 
 ## Phase 4: User Story 2 - Protected Actions Redirect To Login (Priority: P1)
 

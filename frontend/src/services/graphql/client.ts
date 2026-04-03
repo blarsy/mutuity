@@ -5,6 +5,7 @@ const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:5050
 export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
   link: new HttpLink({
-    uri: graphqlUrl
+    uri: graphqlUrl,
+    credentials: "include"
   })
 });
