@@ -2,9 +2,10 @@ import NextLink from "next/link";
 import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { LogoutButton } from "../features/auth/LogoutButton";
 
 export default function HomePage() {
-  const { session, signOut, status } = useAuth();
+  const { session, status } = useAuth();
   const createCampaignHref = session.authenticated
     ? "/campaigns/create"
     : "/login?next=%2Fcampaigns%2Fcreate";
@@ -40,9 +41,9 @@ export default function HomePage() {
             Create Campaign
           </Button>
           {session.authenticated ? (
-            <Button color="inherit" onClick={() => void signOut()} variant="outlined">
+            <LogoutButton color="inherit" redirectTo="/login" variant="outlined">
               Sign out
-            </Button>
+            </LogoutButton>
           ) : (
             <Button component={NextLink} href="/login" variant="outlined">
               Sign in

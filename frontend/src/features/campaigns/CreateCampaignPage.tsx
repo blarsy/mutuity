@@ -2,6 +2,7 @@ import { useMutation } from "@apollo/client/react";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { CREATE_CAMPAIGN_MUTATION } from "./campaigns.queries";
+import { useRequireAuth } from "../../features/auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
   createCampaignInitialValues,
@@ -35,6 +36,7 @@ export default function CreateCampaignPage() {
     CreateCampaignMutationData,
     CreateCampaignMutationVariables
   >(CREATE_CAMPAIGN_MUTATION);
+  const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   const submit = async (values: CreateCampaignValues) => {
@@ -51,6 +53,21 @@ export default function CreateCampaignPage() {
       }
     });
   };
+
+  if (!isAuthenticated) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 6 }}>
+          <Typography component="h1" gutterBottom variant="h4">
+            Create a campaign
+          </Typography>
+          <Alert severity="info">
+            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+          </Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="sm">

@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { getCurrentSession, login as loginRequest, logout as logoutRequest } from "./auth.api";
+import { AUTH_REQUIRED_EVENT } from "./events";
 import type { AuthSession, LoginInput } from "./types";
 
 type AuthStatus = "loading" | "authenticated" | "anonymous";
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const nextSession = await logoutRequest();
       applySession(nextSession);
+      return;
     } catch (error) {
       console.error("[auth] Failed to sign out", error);
       applySession(anonymousSession);
@@ -71,6 +73,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refreshSession();
   }, [refreshSession]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleAuthRequired = () => {
+      applySession(anonymousSession);
+
+      if (window.location.pathname === "/login") {
+        return;
+      }
+
+      const nextPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      window.location.assign(`/login?next=${encodeURIComponent(nextPath || "/")}`);
+    };
+
+    window.addEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+
+    return () => {
+      window.removeEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+    };
+  }, [applySession]);
 
   const value = useMemo(
     () => ({

@@ -19,6 +19,7 @@ export default function LoginPage() {
     const candidate = router.query.next;
     return typeof candidate === "string" && candidate.startsWith("/") ? candidate : "/";
   }, [router.query.next]);
+  const isProtectedRedirect = nextDestination !== "/";
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -44,6 +45,12 @@ export default function LoginPage() {
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           Access protected actions and your account session.
         </Typography>
+
+        {isProtectedRedirect && !session.authenticated ? (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Please sign in to access that page. You’ll return there after login.
+          </Alert>
+        ) : null}
 
         {status === "loading" ? (
           <Alert severity="info" sx={{ mb: 2 }}>

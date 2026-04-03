@@ -33,8 +33,8 @@
 
 ### Tests (US1)
 
-- [ ] T012 [P] [US1] Add backend integration tests for valid and invalid login attempts in `backend/tests/integration/auth-login.spec.ts`
-- [ ] T013 [P] [US1] Add contract tests for login/session HTTP behavior in `backend/tests/contract/auth.contract.spec.ts`
+- [x] T012 [P] [US1] Add backend integration tests for valid and invalid login attempts in `backend/tests/integration/auth-login.spec.ts`
+- [x] T013 [P] [US1] Add contract tests for login/session HTTP behavior in `backend/tests/contract/auth.contract.spec.ts`
 
 ### Implementation (US1)
 
@@ -52,13 +52,13 @@
 ### Tests (US2)
 
 - [ ] T018 [P] [US2] Add frontend/integration tests for protected route redirects and return-to behavior in `frontend/tests/auth/protected-routes.spec.tsx`
-- [ ] T019 [P] [US2] Add backend integration test verifying unauthenticated GraphQL mutations still return sanitized `UNAUTHENTICATED` errors in `backend/tests/integration/auth-graphql-fallback.spec.ts`
+- [x] T019 [P] [US2] Add backend integration test verifying unauthenticated GraphQL mutations still return sanitized `UNAUTHENTICATED` errors in `backend/tests/integration/auth-graphql-fallback.spec.ts`
 
 ### Implementation (US2)
 
-- [ ] T020 [US2] Add route guard utility for protected pages in `frontend/src/features/auth/requireAuth.ts`
-- [ ] T021 [US2] Apply auth guard to campaign creation and future protected pages in `frontend/src/features/campaigns/CreateCampaignPage.tsx` and related pages
-- [ ] T022 [US2] Preserve and restore intended destination via query param or router state in `frontend/src/pages/login.tsx`
+- [x] T020 [US2] Add route guard utility for protected pages in `frontend/src/features/auth/requireAuth.ts`
+- [x] T021 [US2] Apply auth guard to campaign creation and future protected pages in `frontend/src/features/campaigns/CreateCampaignPage.tsx` and related pages
+- [x] T022 [US2] Preserve and restore intended destination via query param or router state in `frontend/src/pages/login.tsx`
 
 ## Phase 5: User Story 3 - Session Persists And Expires Safely (Priority: P1)
 
@@ -68,13 +68,13 @@
 
 ### Tests (US3)
 
-- [ ] T023 [P] [US3] Add backend integration tests for session lookup, expiry, and revocation in `backend/tests/integration/auth-session.spec.ts`
+- [x] T023 [P] [US3] Add backend integration tests for session lookup, expiry, and revocation in `backend/tests/integration/auth-session.spec.ts`
 - [ ] T024 [P] [US3] Add frontend tests for restoring current account state on app load in `frontend/tests/auth/session-bootstrap.spec.tsx`
 
 ### Implementation (US3)
 
-- [ ] T025 [US3] Load current session during app bootstrap in `frontend/src/pages/_app.tsx` or `frontend/src/features/auth/AuthProvider.tsx`
-- [ ] T026 [US3] Add expired-session handling that clears auth state and redirects on protected action failure in `frontend/src/services/graphql/` and `frontend/src/features/auth/`
+- [x] T025 [US3] Load current session during app bootstrap in `frontend/src/pages/_app.tsx` or `frontend/src/features/auth/AuthProvider.tsx`
+- [x] T026 [US3] Add expired-session handling that clears auth state and redirects on protected action failure in `frontend/src/services/graphql/` and `frontend/src/features/auth/`
 
 ## Phase 6: User Story 4 - Account Signs Out (Priority: P1)
 
@@ -84,13 +84,13 @@
 
 ### Tests (US4)
 
-- [ ] T027 [P] [US4] Add backend integration tests for logout/session revocation in `backend/tests/integration/auth-logout.spec.ts`
+- [x] T027 [P] [US4] Add backend integration tests for logout/session revocation in `backend/tests/integration/auth-logout.spec.ts`
 - [ ] T028 [P] [US4] Add frontend tests for sign-out UI state reset in `frontend/tests/auth/logout.spec.tsx`
 
 ### Implementation (US4)
 
-- [ ] T029 [US4] Add logout action/button to shared authenticated UI in `frontend/src/features/auth/LogoutButton.tsx`
-- [ ] T030 [US4] Clear auth context and redirect after logout in `frontend/src/features/auth/`
+- [x] T029 [US4] Add logout action/button to shared authenticated UI in `frontend/src/features/auth/LogoutButton.tsx`
+- [x] T030 [US4] Clear auth context and redirect after logout in `frontend/src/features/auth/`
 
 ## Phase 7: Polish & Cross-Cutting
 
