@@ -70,8 +70,43 @@ npm run dev:frontend
 ### 5. Open app endpoints
 
 - Frontend: `http://localhost:3000`
+- Login page: `http://localhost:3000/login`
 - GraphQL endpoint: `http://localhost:5050/graphql`
 - GraphiQL: `http://localhost:5050/graphiql`
+
+### 6. Local auth test flow
+
+The browser login flow now uses server-managed sessions. For local testing, you can seed a demo account into PostgreSQL and then sign in through the UI or curl:
+
+```bash
+HASH=$(node --input-type=module -e "import { hashSync } from 'bcryptjs'; console.log(hashSync('password123', 12));")
+
+psql postgres://postgres:postgres@localhost:5432/mutuity <<SQL
+insert into app_public.account (external_subject, display_name)
+values ('demo@example.com', 'Demo User')
+on conflict (external_subject) do update
+set display_name = excluded.display_name,
+    updated_at = now();
+
+insert into app_private.account_credential (account_id, login_identifier, password_hash, role_name, is_active)
+select id, 'demo@example.com', '$HASH', 'identified_account', true
+from app_public.account
+where external_subject = 'demo@example.com'
+on conflict (account_id) do update
+set login_identifier = excluded.login_identifier,
+    password_hash = excluded.password_hash,
+    role_name = excluded.role_name,
+    is_active = excluded.is_active,
+    updated_at = now();
+SQL
+```
+
+Then sign in with:
+
+- **identifier**: `demo@example.com`
+- **password**: `password123`
+
+For local-only manual testing, dev headers (`x-role`, `x-account-id`) are still supported when `ALLOW_DEV_AUTH_HEADERS=true`, but the browser flow should use the real session cookie path above.
 
 ## Local Deployment With Docker Compose
 

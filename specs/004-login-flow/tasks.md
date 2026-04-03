@@ -94,10 +94,10 @@
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T031 [P] Add rate-limit and audit logging coverage for failed login attempts in `backend/src/auth/` and `backend/tests/integration/`
-- [ ] T032 [P] Ensure all login/logout/auth strings are translated and user-friendly in `frontend/src/i18n/messages/`
-- [ ] T033 Document local auth test flow in `README.md` and/or feature quickstart notes
-- [ ] T034 Run end-to-end auth validation and capture any spec divergences back into `specs/004-login-flow/spec.md`
+- [x] T031 [P] Add rate-limit and audit logging coverage for failed login attempts in `backend/src/auth/` and `backend/tests/integration/`
+- [x] T032 [P] Ensure all login/logout/auth strings are translated and user-friendly in `frontend/src/i18n/messages/`
+- [x] T033 Document local auth test flow in `README.md` and/or feature quickstart notes
+- [x] T034 Run end-to-end auth validation and capture any spec divergences back into `specs/004-login-flow/spec.md`
 
 ## Dependencies & Execution Order
 

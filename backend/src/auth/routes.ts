@@ -12,6 +12,10 @@ import {
 
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 const INVALID_CREDENTIALS_MESSAGE = "Unable to sign in with those credentials.";
+const TOO_MANY_ATTEMPTS_MESSAGE = "Too many sign-in attempts. Please wait a moment and try again.";
+const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 5 * 60 * 1000);
+const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = Number(process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS ?? 5);
+const loginAttemptTracker = new Map<string, number[]>();
 
 type LoginCandidate = {
   account_id: string;
@@ -20,6 +24,33 @@ type LoginCandidate = {
   password_hash: string;
   role_name: string;
 };
+
+function getRateLimitKey(req: express.Request, identifier: string) {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const forwardedIp = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor?.split(",")[0];
+  const ip = forwardedIp?.trim() || req.ip || "unknown";
+  return `${ip.toLowerCase()}::${identifier.toLowerCase()}`;
+}
+
+function isLoginRateLimited(key: string) {
+  const now = Date.now();
+  const recentAttempts = (loginAttemptTracker.get(key) ?? []).filter(
+    timestamp => now - timestamp < LOGIN_RATE_LIMIT_WINDOW_MS
+  );
+
+  loginAttemptTracker.set(key, recentAttempts);
+  return recentAttempts.length >= LOGIN_RATE_LIMIT_MAX_ATTEMPTS;
+}
+
+function recordFailedLoginAttempt(key: string) {
+  const attempts = loginAttemptTracker.get(key) ?? [];
+  attempts.push(Date.now());
+  loginAttemptTracker.set(key, attempts);
+}
+
+function clearFailedLoginAttempts(key: string) {
+  loginAttemptTracker.delete(key);
+}
 
 function toSessionPayload(req: express.Request) {
   const session = req.authSession ?? null;
@@ -57,8 +88,15 @@ export function createAuthRouter(pool: Pool) {
   router.post("/login", async (req, res) => {
     const identifier = String(req.body?.identifier ?? "").trim();
     const password = String(req.body?.password ?? "");
+    const rateLimitKey = getRateLimitKey(req, identifier || "anonymous");
+
+    if (isLoginRateLimited(rateLimitKey)) {
+      res.status(429).json({ message: TOO_MANY_ATTEMPTS_MESSAGE });
+      return;
+    }
 
     if (identifier.length === 0 || password.length === 0) {
+      recordFailedLoginAttempt(rateLimitKey);
       res.status(401).json({ message: INVALID_CREDENTIALS_MESSAGE });
       return;
     }
@@ -85,9 +123,12 @@ export function createAuthRouter(pool: Pool) {
       const isValid = candidate ? await verifyPassword(password, candidate.password_hash) : false;
 
       if (!candidate || !isValid) {
+        recordFailedLoginAttempt(rateLimitKey);
         res.status(401).json({ message: INVALID_CREDENTIALS_MESSAGE });
         return;
       }
+
+      clearFailedLoginAttempts(rateLimitKey);
 
       const { sessionId, sessionToken, expiresAt } = await createSessionForAccount(pool, {
         accountId: candidate.account_id,

@@ -71,11 +71,12 @@ As an authenticated account, I can sign out so my device no longer has access to
 
 ## Edge Cases
 
-- Invalid credentials repeatedly submitted => the system returns the same generic error copy and rate-limits attempts according to policy.
+- Invalid credentials repeatedly submitted => the system returns the same generic error copy and applies an MVP in-memory rate limit of 5 attempts per 5-minute window per identifier/IP pair.
 - Signed-out user deep-links directly to `/campaigns/create` or `/needs/create` => the system redirects to login and then returns to the original route after successful sign-in.
-- Session expires while a mutation is submitted => the user sees a sanitized authentication message such as "You must sign in to continue." and is prompted to log in again.
+- Session expires while a mutation is submitted => the user sees a sanitized authentication message such as "You must sign in to continue.", local auth state is cleared, and the browser redirects back to login with the original destination preserved.
 - Non-manager account signs in and navigates to moderation or approval flows => the UI hides manager-only actions and the backend still denies protected manager mutations.
 - Browser refresh after sign-in => the authenticated navigation state is restored from the server-managed session rather than client-managed role headers.
+- Local development verification uses a seeded demo account (`demo@example.com` / `password123`) to exercise the browser login flow and curl-based auth route checks.
 
 ## Requirements *(mandatory)*
 
@@ -86,7 +87,7 @@ As an authenticated account, I can sign out so my device no longer has access to
 - **SR-003**: Passwords or equivalent credential secrets MUST be stored only as strong salted hashes.
 - **SR-004**: Failed login attempts MUST return generic user-facing copy and MUST NOT reveal whether an email or account identifier exists.
 - **SR-005**: Authentication and session errors returned to the client MUST remain sanitized, while the backend logs technical details for investigation.
-- **SR-006**: Login attempts SHOULD be rate-limited per identifier and/or IP to reduce brute-force risk.
+- **SR-006**: Login attempts SHOULD be rate-limited per identifier and/or IP to reduce brute-force risk. For the MVP implementation, the backend applies an in-memory rate limit of 5 attempts per 5-minute window; future hosted deployments may replace this with a shared store–backed limiter.
 
 ### Functional Requirements
 
@@ -102,6 +103,8 @@ As an authenticated account, I can sign out so my device no longer has access to
 - **FR-010**: The existing sanitized `UNAUTHENTICATED` error behavior MUST remain the backend fallback for unauthenticated GraphQL access.
 - **FR-011**: User-facing strings for login, logout, redirects, and error states MUST go through i18n.
 - **FR-012**: Development-only header-based role/account simulation MAY remain available for local manual testing, but MUST be bypassed by the browser login flow in production-like usage.
+- **FR-013**: When a protected GraphQL request returns `UNAUTHENTICATED`, the frontend MUST clear local auth state and redirect the user back to the login page while preserving the intended destination.
+- **FR-014**: The local development workflow MUST support seeding a demo account for manual browser and curl-based login validation.
 
 ### Key Entities *(include if feature involves data)*
 
