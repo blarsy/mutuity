@@ -48,14 +48,14 @@
 
 ### Tests (US2)
 
-- [ ] T015 [P] [US2] Add frontend tests for tri-state toggle cycling and filter-to-query mapping in `frontend/tests/needs/need-filters.spec.tsx`
-- [ ] T016 [P] [US2] Add backend integration tests for text matching and location fallback order in `backend/tests/integration/need-filtering.spec.ts`
+- [x] T015 [P] [US2] Add frontend tests for tri-state toggle cycling and filter-to-query mapping in `frontend/tests/needs/need-filters.spec.ts`
+- [x] T016 [P] [US2] Add backend integration tests for text matching and location fallback order in `backend/tests/integration/need-filtering.spec.ts`
 
 ### Implementation (US2)
 
-- [ ] T017 [US2] Add tri-state filter helpers and query-state management in `frontend/src/features/needs/needFilters.ts`
-- [ ] T018 [US2] Connect text + tri-state controls to the discovery page in `frontend/src/features/needs/PublicNeedsPage.tsx`
-- [ ] T019 [US2] Implement account/browser/Tournai coordinate fallback in `frontend/src/features/needs/locationFallback.ts` and the search query adapter
+- [x] T017 [US2] Add tri-state filter helpers and query-state management in `frontend/src/features/needs/needFilters.ts`
+- [x] T018 [US2] Connect text + tri-state controls to the discovery page in `frontend/src/features/needs/PublicNeedsPage.tsx`
+- [x] T019 [US2] Implement account/browser/Tournai coordinate fallback in `frontend/src/features/needs/locationFallback.ts` and the search query adapter
 
 ## Phase 5: User Story 3 - Authenticated User Claims Need (Priority: P1)
 

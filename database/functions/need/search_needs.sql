@@ -1,6 +1,24 @@
+drop function if exists app_public.search_needs(
+  numeric,
+  numeric,
+  text,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  integer
+);
+
+drop function if exists app_private.resolve_need_search_coordinates(
+  numeric,
+  numeric
+);
+
 create or replace function app_private.resolve_need_search_coordinates(
   p_latitude numeric,
-  p_longitude numeric
+  p_longitude numeric,
+  p_browser_latitude numeric default null,
+  p_browser_longitude numeric default null
 )
 returns table (
   latitude numeric,
@@ -32,6 +50,11 @@ begin
     if found then
       return;
     end if;
+  end if;
+
+  if p_browser_latitude is not null and p_browser_longitude is not null then
+    return query select p_browser_latitude, p_browser_longitude, 'browser'::text;
+    return;
   end if;
 
   return query select 50.6072::numeric, 3.3889::numeric, 'fallback'::text;
@@ -125,6 +148,8 @@ $$;
 create or replace function app_public.search_needs(
   latitude numeric default null,
   longitude numeric default null,
+  browser_latitude numeric default null,
+  browser_longitude numeric default null,
   search_text text default null,
   multiple_people_required app_public.tri_state_filter default 'neutral',
   tooling_required app_public.tri_state_filter default 'neutral',
@@ -168,7 +193,12 @@ set search_path = app_public, app_private, public
 as $$
   with resolved_location as (
     select latitude as query_latitude, longitude as query_longitude
-    from app_private.resolve_need_search_coordinates(search_needs.latitude, search_needs.longitude)
+    from app_private.resolve_need_search_coordinates(
+      search_needs.latitude,
+      search_needs.longitude,
+      search_needs.browser_latitude,
+      search_needs.browser_longitude
+    )
   ),
   filtered_needs as (
     select
@@ -243,6 +273,8 @@ as $$
 $$;
 
 comment on function app_public.search_needs(
+  numeric,
+  numeric,
   numeric,
   numeric,
   text,

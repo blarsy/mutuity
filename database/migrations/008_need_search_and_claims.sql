@@ -301,9 +301,27 @@ grant select, insert, update on app_public.claim_message to identified_account, 
 grant select, insert on app_public.claim_message_image to identified_account, manager, admin;
 grant select on app_public.need_claim_settlement_event to identified_account, manager, admin;
 
+drop function if exists app_public.search_needs(
+  numeric,
+  numeric,
+  text,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  integer
+);
+
+drop function if exists app_private.resolve_need_search_coordinates(
+  numeric,
+  numeric
+);
+
 create or replace function app_private.resolve_need_search_coordinates(
   p_latitude numeric,
-  p_longitude numeric
+  p_longitude numeric,
+  p_browser_latitude numeric default null,
+  p_browser_longitude numeric default null
 )
 returns table (
   latitude numeric,
@@ -335,6 +353,11 @@ begin
     if found then
       return;
     end if;
+  end if;
+
+  if p_browser_latitude is not null and p_browser_longitude is not null then
+    return query select p_browser_latitude, p_browser_longitude, 'browser'::text;
+    return;
   end if;
 
   return query select 50.6072::numeric, 3.3889::numeric, 'fallback'::text;
@@ -460,6 +483,8 @@ $$;
 create or replace function app_public.search_needs(
   latitude numeric default null,
   longitude numeric default null,
+  browser_latitude numeric default null,
+  browser_longitude numeric default null,
   search_text text default null,
   multiple_people_required app_public.tri_state_filter default 'neutral',
   tooling_required app_public.tri_state_filter default 'neutral',
@@ -503,7 +528,12 @@ set search_path = app_public, app_private, public
 as $$
   with resolved_location as (
     select latitude as query_latitude, longitude as query_longitude
-    from app_private.resolve_need_search_coordinates(search_needs.latitude, search_needs.longitude)
+    from app_private.resolve_need_search_coordinates(
+      search_needs.latitude,
+      search_needs.longitude,
+      search_needs.browser_latitude,
+      search_needs.browser_longitude
+    )
   ),
   filtered_needs as (
     select
@@ -983,6 +1013,8 @@ $$;
 grant execute on function app_public.search_needs(
   numeric,
   numeric,
+  numeric,
+  numeric,
   text,
   app_public.tri_state_filter,
   app_public.tri_state_filter,
@@ -998,7 +1030,7 @@ grant execute on function app_public.settle_need_claim(uuid) to identified_accou
 
 grant execute on function app_private.expire_overdue_needs_and_claims() to identified_account, manager, admin;
 
-grant execute on function app_private.resolve_need_search_coordinates(numeric, numeric) to anonymous, identified_account, manager, admin;
+grant execute on function app_private.resolve_need_search_coordinates(numeric, numeric, numeric, numeric) to anonymous, identified_account, manager, admin;
 grant execute on function app_private.matches_tri_state_filter(app_public.tri_state_filter, boolean) to anonymous, identified_account, manager, admin;
 grant execute on function app_private.calculate_need_closeness_score(numeric, numeric, numeric, numeric) to anonymous, identified_account, manager, admin;
 grant execute on function app_private.calculate_need_ease_of_setup_score(boolean, boolean, boolean) to anonymous, identified_account, manager, admin;
@@ -1013,6 +1045,8 @@ comment on table app_public.claim_message is 'Participant messages inside a clai
 comment on table app_public.need_claim_settlement_event is 'Recorded settlement and Topes transfer summary for a settled claim.';
 
 comment on function app_public.search_needs(
+  numeric,
+  numeric,
   numeric,
   numeric,
   text,
