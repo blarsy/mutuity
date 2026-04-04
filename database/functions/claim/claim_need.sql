@@ -75,7 +75,7 @@ begin
     nullif(btrim(claim_need.message), ''),
     'open'
   )
-  on conflict (need_id, claimer_account_id) do update
+  on conflict on constraint need_claim_unique_per_account do update
   set message = excluded.message,
       status = case
         when app_public.need_claim.status in ('declined', 'withdrawn', 'expired') then 'open'::app_public.need_claim_status

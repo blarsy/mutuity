@@ -28,11 +28,11 @@ begin
     raise exception using message = 'Only claim participants can read messages';
   end if;
 
-  update app_public.claim_message
-  set read_at = coalesce(read_at, now())
-  where conversation_id = mark_claim_messages_read.conversation_id
-    and sender_account_id <> v_account_id
-    and read_at is null;
+  update app_public.claim_message as cm
+  set read_at = coalesce(cm.read_at, now())
+  where cm.conversation_id = mark_claim_messages_read.conversation_id
+    and cm.sender_account_id <> v_account_id
+    and cm.read_at is null;
 
   get diagnostics v_count = row_count;
   return v_count;

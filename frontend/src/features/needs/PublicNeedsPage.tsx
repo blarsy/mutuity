@@ -19,12 +19,16 @@ import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
+import { ClaimNotificationsPanel } from "./ClaimNotificationsPanel";
+import { NeedClaimDialog } from "./NeedClaimDialog";
 import { getBrowserLocation } from "./locationFallback";
+import { VIEWER_CLAIM_OVERVIEW_QUERY } from "./needClaims.queries";
 import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
 
 type NeedNode = {
   id: string;
+  creatorAccountId: string;
   creatorDisplayName: string;
   title: string;
   description: string | null;
@@ -50,6 +54,53 @@ type NeedNode = {
 type PublicNeedsQueryData = {
   searchNeeds: {
     nodes: NeedNode[];
+  };
+};
+
+type ClaimOverviewNode = {
+  id: string;
+  needId: string;
+  claimerAccountId: string;
+  message: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  settledAt: string | null;
+  needByNeedId: {
+    id: string;
+    title: string;
+    creatorAccountId: string;
+  };
+  accountByClaimerAccountId: {
+    id: string;
+    displayName: string | null;
+    externalSubject: string;
+  };
+  claimConversationByNeedClaimId: {
+    id: string;
+    createdAt: string;
+  } | null;
+};
+
+type ClaimNotificationNode = {
+  id: string;
+  needClaimId: string;
+  eventType: string;
+  payload: {
+    needId?: string;
+    claimerAccountId?: string;
+    status?: string;
+  };
+  createdAt: string;
+  readAt: string | null;
+};
+
+type ViewerClaimOverviewData = {
+  allNeedClaims: {
+    nodes: ClaimOverviewNode[];
+  };
+  allNeedClaimNotifications: {
+    nodes: ClaimNotificationNode[];
   };
 };
 
@@ -89,10 +140,15 @@ function filterVariant(value: TriStateFilter) {
   return value === "neutral" ? "outlined" : "contained";
 }
 
+function formatClaimStatus(status: string) {
+  return status.replaceAll("_", " ").toLowerCase();
+}
+
 export default function PublicNeedsPage() {
   const { session, status } = useAuth();
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
+  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [locationStatus, setLocationStatus] = useState(
     "Using account or Tournai fallback when no explicit coordinates are provided."
   );
@@ -125,15 +181,47 @@ export default function PublicNeedsPage() {
       variables
     }
   );
+  const {
+    data: claimOverviewData,
+    error: claimOverviewError,
+    refetch: refetchClaimOverview
+  } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
+    skip: !session.authenticated,
+    pollInterval: session.authenticated ? 15000 : 0
+  });
 
   const needs = data?.searchNeeds.nodes ?? [];
+  const claims = claimOverviewData?.allNeedClaims.nodes ?? [];
+  const notifications = claimOverviewData?.allNeedClaimNotifications.nodes ?? [];
+  const myClaimsByNeedId = new Map(
+    claims
+      .filter(claim => claim.claimerAccountId === session.account?.id)
+      .map(claim => [claim.needId, claim] as const)
+  );
+  const incomingClaimCountsByNeedId = new Map<string, number>();
+
+  claims
+    .filter(claim => claim.needByNeedId.creatorAccountId === session.account?.id)
+    .forEach(claim => {
+      incomingClaimCountsByNeedId.set(
+        claim.needId,
+        (incomingClaimCountsByNeedId.get(claim.needId) ?? 0) + 1
+      );
+    });
+
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const claimOverviewMessage = getUserFacingGraphQLErrorMessage(claimOverviewError);
 
   const toggleFilter = (key: ToggleFilterKey) => {
     setFilters(current => ({
       ...current,
       [key]: cycleTriStateFilter(current[key])
     }));
+  };
+
+  const handleClaimed = (claimId: string) => {
+    setSelectedClaimId(claimId);
+    void refetchClaimOverview();
   };
 
   return (
@@ -192,6 +280,22 @@ export default function PublicNeedsPage() {
           {locationStatus}
         </Alert>
 
+        {claimOverviewMessage ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {claimOverviewMessage}
+          </Alert>
+        ) : null}
+
+        {session.authenticated && session.account?.id ? (
+          <ClaimNotificationsPanel
+            claims={claims}
+            currentAccountId={session.account.id}
+            notifications={notifications}
+            selectedClaimId={selectedClaimId}
+            onSelectClaim={claimId => setSelectedClaimId(claimId)}
+          />
+        ) : null}
+
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
             <Stack spacing={2}>
@@ -234,7 +338,15 @@ export default function PublicNeedsPage() {
         ) : null}
 
         <Stack spacing={2} sx={{ mt: 3 }}>
-          {needs.map(need => (
+          {needs.map(need => {
+            const ownClaim = myClaimsByNeedId.get(need.id);
+            const isCreator = session.account?.id === need.creatorAccountId;
+            const incomingClaimCount = incomingClaimCountsByNeedId.get(need.id) ?? 0;
+            const firstIncomingClaim = claims.find(
+              claim => claim.needId === need.id && claim.needByNeedId.creatorAccountId === session.account?.id
+            );
+
+            return (
             <Card key={need.id} variant="outlined">
               <CardContent>
                 <Stack spacing={1.5}>
@@ -255,6 +367,13 @@ export default function PublicNeedsPage() {
                     ))}
                     {need.proposedTopesAmount ? (
                       <Chip label={`${need.proposedTopesAmount} Topes proposed`} size="small" color="primary" />
+                    ) : null}
+                    {isCreator ? <Chip label="your need" size="small" color="secondary" /> : null}
+                    {ownClaim ? (
+                      <Chip label={`your claim: ${formatClaimStatus(ownClaim.status)}`} size="small" color="success" />
+                    ) : null}
+                    {isCreator && incomingClaimCount > 0 ? (
+                      <Chip label={`${incomingClaimCount} incoming claim${incomingClaimCount > 1 ? "s" : ""}`} size="small" color="warning" />
                     ) : null}
                   </Stack>
 
@@ -278,13 +397,43 @@ export default function PublicNeedsPage() {
                     <Typography variant="body2">Expiry: {need.expirationScore}</Typography>
                   </Stack>
 
-                  <Typography color="text.secondary" variant="caption">
-                    Expires: {formatDate(need.expiresAt)} • Query origin: {need.queryLatitude}, {need.queryLongitude}
-                  </Typography>
+                  <Stack
+                    direction={{ xs: "column", md: "row" }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "stretch", md: "center" }}
+                    spacing={2}
+                  >
+                    <Typography color="text.secondary" variant="caption">
+                      Expires: {formatDate(need.expiresAt)} • Query origin: {need.queryLatitude}, {need.queryLongitude}
+                    </Typography>
+
+                    {session.authenticated ? (
+                      isCreator ? (
+                        <Button
+                          disabled={!firstIncomingClaim}
+                          onClick={() => setSelectedClaimId(firstIncomingClaim?.id ?? null)}
+                          variant="outlined"
+                        >
+                          {firstIncomingClaim ? "Manage incoming claims" : "No claims yet"}
+                        </Button>
+                      ) : (
+                        <NeedClaimDialog
+                          existingClaim={ownClaim}
+                          needId={need.id}
+                          needTitle={need.title}
+                          onClaimed={handleClaimed}
+                        />
+                      )
+                    ) : (
+                      <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
+                        Sign in to claim
+                      </Button>
+                    )}
+                  </Stack>
                 </Stack>
               </CardContent>
             </Card>
-          ))}
+          );})}
         </Stack>
       </Box>
     </Container>

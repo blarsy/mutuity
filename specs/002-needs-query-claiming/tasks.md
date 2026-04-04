@@ -65,14 +65,14 @@
 
 ### Tests (US3)
 
-- [ ] T020 [P] [US3] Add backend integration tests for successful and denied claim creation in `backend/tests/integration/need-claim.spec.ts`
-- [ ] T021 [P] [US3] Add contract coverage for the claim mutation and notification payload in `backend/tests/contract/need-claim.contract.spec.ts`
+- [x] T020 [P] [US3] Add backend integration tests for successful and denied claim creation in `backend/tests/integration/need-claim.spec.ts`
+- [x] T021 [P] [US3] Add contract coverage for the claim mutation and notification payload in `backend/tests/contract/need-claim.contract.spec.ts`
 
 ### Implementation (US3)
 
-- [ ] T022 [US3] Add claim mutation/query helpers in `frontend/src/features/needs/needClaims.queries.ts`
-- [ ] T023 [US3] Build the claim CTA and optional-message dialog in `frontend/src/features/needs/NeedClaimDialog.tsx`
-- [ ] T024 [US3] Surface creator notifications or pending-claim state in `frontend/src/features/needs/ClaimNotificationsPanel.tsx`
+- [x] T022 [US3] Add claim mutation/query helpers in `frontend/src/features/needs/needClaims.queries.ts`
+- [x] T023 [US3] Build the claim CTA and optional-message dialog in `frontend/src/features/needs/NeedClaimDialog.tsx`
+- [x] T024 [US3] Surface creator notifications or pending-claim state in `frontend/src/features/needs/ClaimNotificationsPanel.tsx`
 
 ## Phase 6: User Story 4 - Creator And Claimer Exchange Instant Messages (Priority: P2)
 
@@ -82,14 +82,14 @@
 
 ### Tests (US4)
 
-- [ ] T025 [P] [US4] Add backend integration tests for conversation creation, access control, and read timestamps in `backend/tests/integration/claim-messaging.spec.ts`
-- [ ] T026 [P] [US4] Add frontend tests for message thread rendering and send flow in `frontend/tests/needs/claim-thread.spec.tsx`
+- [x] T025 [P] [US4] Add backend integration tests for conversation creation, access control, and read timestamps in `backend/tests/integration/claim-messaging.spec.ts`
+- [x] T026 [P] [US4] Add frontend tests for message thread rendering and send flow in `frontend/tests/needs/claim-thread.spec.tsx`
 
 ### Implementation (US4)
 
-- [ ] T027 [US4] Add conversation queries and mutations in `frontend/src/features/needs/claimConversation.queries.ts`
-- [ ] T028 [US4] Build the conversation UI in `frontend/src/features/needs/ClaimConversationPanel.tsx`
-- [ ] T029 [US4] Add optional image attachment metadata handling in `frontend/src/features/needs/ClaimConversationPanel.tsx` and supporting upload adapter/service
+- [x] T027 [US4] Add conversation queries and mutations in `frontend/src/features/needs/claimConversation.queries.ts`
+- [x] T028 [US4] Build the conversation UI in `frontend/src/features/needs/ClaimConversationPanel.tsx`
+- [x] T029 [US4] Add optional image attachment metadata handling in `frontend/src/features/needs/ClaimConversationPanel.tsx` and supporting upload adapter/service
 
 ## Phase 7: User Story 5 - Need Creator Settles Claim (Priority: P2)
 
