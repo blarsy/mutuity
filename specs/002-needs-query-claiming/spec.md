@@ -2,7 +2,7 @@
 
 **Feature Branch**: `002-needs-query-claiming`  
 **Created**: 2026-03-25  
-**Status**: Draft  
+**Status**: Implemented (MVP verified)  
 **Input**: User description: "Visitor needs discovery, weighted ranking, filtering, claims, messaging, and settlement"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -159,3 +159,10 @@ As the need creator, I can settle a claim, triggering, if applicable, the transf
 - **SC-006**: 100% of successful claims generate a persisted claim record and realtime notification to need creator.
 - **SC-007**: 100% of first creator messages create conversation and include claim optional message as first message when present.
 - **SC-008**: 100% of settled claims trigger zero or one token transfer record, depending on the presence of a Topes amount on the need.
+
+## Validation Notes (2026-04-04)
+
+- MVP verification was completed with backend integration/contract suites plus frontend build/unit coverage for filters and claim-thread rendering.
+- "Realtime" creator and claimer notifications are currently delivered through persisted notification records plus short polling in the frontend, rather than websocket push.
+- Claim-message images are currently represented as externally hosted URL metadata in the UI; a dedicated binary upload adapter remains a follow-up enhancement rather than a blocker for this feature.
+- No other material spec divergence was identified during Phase 8 validation.

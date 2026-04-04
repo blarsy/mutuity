@@ -110,9 +110,9 @@
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T035 [P] Add search-performance indexes and query-plan tuning in `database/migrations/009_need_search_indexes.sql`
-- [ ] T036 [P] Document local QA scenarios and seed guidance in `specs/002-needs-query-claiming/quickstart.md` and `README.md`
-- [ ] T037 Run end-to-end validation and capture any spec divergences back into `specs/002-needs-query-claiming/spec.md`
+- [x] T035 [P] Add search-performance indexes and query-plan tuning in `database/migrations/009_need_search_indexes.sql`
+- [x] T036 [P] Document local QA scenarios and seed guidance in `specs/002-needs-query-claiming/quickstart.md` and `README.md`
+- [x] T037 Run end-to-end validation and capture any spec divergences back into `specs/002-needs-query-claiming/spec.md`
 
 ## Dependencies & Execution Order
 

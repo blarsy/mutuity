@@ -76,6 +76,57 @@ as $$
   end
 $$;
 
+create or replace function app_private.immutable_unaccent(p_text text)
+returns text
+language sql
+immutable
+parallel safe
+as $$
+  select public.unaccent('public.unaccent', coalesce(p_text, ''))
+$$;
+
+create or replace function app_private.account_search_document(
+  p_display_name text,
+  p_external_subject text
+)
+returns text
+language sql
+immutable
+parallel safe
+as $$
+  select lower(
+    app_private.immutable_unaccent(
+      trim(concat_ws(' ', coalesce(p_display_name, ''), coalesce(p_external_subject, '')))
+    )
+  )
+$$;
+
+create or replace function app_private.need_search_document(
+  p_title text,
+  p_description text,
+  p_required_tooling_text text,
+  p_required_competence_text text
+)
+returns text
+language sql
+immutable
+parallel safe
+as $$
+  select lower(
+    app_private.immutable_unaccent(
+      trim(
+        concat_ws(
+          ' ',
+          coalesce(p_title, ''),
+          coalesce(p_description, ''),
+          coalesce(p_required_tooling_text, ''),
+          coalesce(p_required_competence_text, '')
+        )
+      )
+    )
+  )
+$$;
+
 create or replace function app_private.calculate_need_closeness_score(
   p_need_latitude numeric,
   p_need_longitude numeric,
@@ -200,6 +251,10 @@ as $$
       search_needs.browser_longitude
     )
   ),
+  normalized_input as (
+    select nullif(lower(app_private.immutable_unaccent(btrim(coalesce(search_needs.search_text, '')))), '')
+      as normalized_search_text
+  ),
   filtered_needs as (
     select
       n.*, 
@@ -221,6 +276,7 @@ as $$
     from app_public.need n
     join app_public.account a on a.id = n.creator_account_id
     cross join resolved_location r
+    cross join normalized_input i
     where n.is_active
       and coalesce(n.expires_at > now(), true)
       and app_private.matches_tri_state_filter(search_needs.multiple_people_required, n.multiple_people_required)
@@ -228,15 +284,15 @@ as $$
       and app_private.matches_tri_state_filter(search_needs.competence_required, n.competence_required)
       and app_private.matches_tri_state_filter(search_needs.object_required, n.object_required)
       and (
-        nullif(btrim(search_needs.search_text), '') is null
-        or unaccent(
-          coalesce(a.display_name, '') || ' ' ||
-          coalesce(a.external_subject, '') || ' ' ||
-          coalesce(n.title, '') || ' ' ||
-          coalesce(n.description, '') || ' ' ||
-          coalesce(n.required_tooling_text, '') || ' ' ||
-          coalesce(n.required_competence_text, '')
-        ) ilike '%' || unaccent(btrim(search_needs.search_text)) || '%'
+        i.normalized_search_text is null
+        or app_private.account_search_document(a.display_name, a.external_subject)
+          like '%' || i.normalized_search_text || '%'
+        or app_private.need_search_document(
+          n.title,
+          n.description,
+          n.required_tooling_text,
+          n.required_competence_text
+        ) like '%' || i.normalized_search_text || '%'
       )
   )
   select

@@ -177,6 +177,31 @@ docker compose up -d backend worker frontend
 6. Enable TLS certificates.
 7. Automate backups for the PostgreSQL volume.
 
+## Feature 002 local QA (`/needs`)
+
+After starting the stack and seeding the demo accounts, this is the recommended manual flow:
+
+1. Open `http://localhost:3000/needs`
+2. Browse and filter public needs while signed out
+3. Sign in as `claimer@example.com` / `password123` and submit a claim
+4. Sign in as `creator@example.com` and verify the incoming claim notification
+5. Reply in the claim conversation, then settle the chosen claim
+6. Verify the sibling claim is declined and expiry notifications appear for stale claims
+
+Useful verification commands:
+
+```bash
+npm --workspace frontend run build
+npm --workspace frontend test -- --runInBand tests/needs/need-filters.spec.ts tests/needs/claim-thread.spec.tsx
+npm --workspace backend test -- --runInBand \
+  tests/integration/need-search.spec.ts \
+  tests/integration/need-filtering.spec.ts \
+  tests/integration/need-claim.spec.ts \
+  tests/integration/claim-messaging.spec.ts \
+  tests/integration/claim-settlement.spec.ts \
+  tests/integration/worker-bootstrap.spec.ts
+```
+
 ## Quality Checks
 
 ```bash
