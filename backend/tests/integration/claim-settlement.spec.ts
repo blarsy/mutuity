@@ -264,6 +264,43 @@ describe("claim settlement integration", () => {
       }
     });
 
+    const settledMessageResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: creatorCookie
+      },
+      body: JSON.stringify({
+        query: `
+          mutation SendClaimMessage($input: SendClaimMessageInput!) {
+            sendClaimMessage(input: $input) {
+              claimMessage {
+                id
+                body
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            needClaimId: winningClaim.id,
+            body: "Thanks again — let's coordinate the handoff details."
+          }
+        }
+      })
+    });
+
+    expect(settledMessageResponse.status).toBe(200);
+    await expect(settledMessageResponse.json()).resolves.toMatchObject({
+      data: {
+        sendClaimMessage: {
+          claimMessage: {
+            body: "Thanks again — let's coordinate the handoff details."
+          }
+        }
+      }
+    });
+
     const claimerALoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

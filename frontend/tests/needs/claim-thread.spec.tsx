@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import {
   ClaimConversationThreadView,
+  canSendClaimMessages,
   parseImageMetadataInput,
   sortConversationMessages,
   type ClaimConversationViewMessage
@@ -10,6 +11,14 @@ import {
 import { NeedClaimStatusChip } from "../../src/features/needs/NeedClaimStatusChip";
 
 describe("claim thread helpers", () => {
+  it("allows settled conversations to continue while keeping declined claims closed", () => {
+    expect(canSendClaimMessages("OPEN", true, false)).toBe(true);
+    expect(canSendClaimMessages("SETTLED", true, false)).toBe(true);
+    expect(canSendClaimMessages("SETTLED", false, true)).toBe(true);
+    expect(canSendClaimMessages("DECLINED", true, true)).toBe(false);
+    expect(canSendClaimMessages("EXPIRED", true, true)).toBe(false);
+  });
+
   it("parses comma- and newline-separated image metadata into an ordered URL list", () => {
     expect(
       parseImageMetadataInput(` https://example.com/one.png\nhttps://example.com/two.png, https://example.com/three.png `)

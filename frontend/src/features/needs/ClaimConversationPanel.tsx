@@ -95,6 +95,15 @@ export function sortConversationMessages(messages: ClaimConversationViewMessage[
   );
 }
 
+export function canSendClaimMessages(
+  claimStatus: string,
+  hasConversation: boolean,
+  isCreator: boolean
+) {
+  const allowsMessaging = claimStatus === "OPEN" || claimStatus === "SETTLED";
+  return allowsMessaging && (hasConversation || isCreator);
+}
+
 export function ClaimConversationThreadView({
   currentAccountId,
   messages
@@ -195,7 +204,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
       });
   }, [conversation?.id, markClaimMessagesRead, refetch, unreadCount]);
 
-  const canSend = claimStatus === "OPEN" && (Boolean(conversation) || isCreator);
+  const canSend = canSendClaimMessages(claimStatus, Boolean(conversation), isCreator);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(sendError);
 
   const handleSendMessage = async () => {
@@ -261,6 +270,12 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
                 {claim.message}
               </Typography>
             </Box>
+          ) : null}
+
+          {claimStatus === "SETTLED" ? (
+            <Alert severity="success">
+              This claim is settled. The conversation stays open for follow-up coordination between the two participants.
+            </Alert>
           ) : null}
 
           {conversation ? <ClaimConversationThreadView currentAccountId={currentAccountId} messages={messages} /> : null}
