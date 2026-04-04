@@ -137,6 +137,26 @@ alter table app_public.claim_message enable row level security;
 alter table app_public.claim_message_image enable row level security;
 alter table app_public.need_claim_settlement_event enable row level security;
 
+drop policy if exists account_claim_participant_select_policy on app_public.account;
+create policy account_claim_participant_select_policy on app_public.account
+  for select
+  using (
+    app_private.is_manager()
+    or exists (
+      select 1
+      from app_public.need_claim nc
+      join app_public.need n on n.id = nc.need_id
+      where (
+        nc.claimer_account_id = app_public.account.id
+        and n.creator_account_id = app_private.current_account_id()
+      )
+      or (
+        n.creator_account_id = app_public.account.id
+        and nc.claimer_account_id = app_private.current_account_id()
+      )
+    )
+  );
+
 create policy need_claim_select_policy on app_public.need_claim
   for select
   using (
@@ -929,7 +949,7 @@ begin
     v_current_claim.claimer_account_id,
     v_topes_amount
   )
-  on conflict (need_claim_id) do nothing;
+  on conflict on constraint need_claim_settlement_event_need_claim_id_key do nothing;
 
   perform app_private.create_need_claim_notification(
     v_current_claim.claimer_account_id,

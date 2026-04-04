@@ -75,7 +75,7 @@ type ClaimOverviewNode = {
     id: string;
     displayName: string | null;
     externalSubject: string;
-  };
+  } | null;
   claimConversationByNeedClaimId: {
     id: string;
     createdAt: string;
@@ -292,6 +292,9 @@ export default function PublicNeedsPage() {
             currentAccountId={session.account.id}
             notifications={notifications}
             selectedClaimId={selectedClaimId}
+            onClaimsChanged={() => {
+              void refetchClaimOverview();
+            }}
             onSelectClaim={claimId => setSelectedClaimId(claimId)}
           />
         ) : null}

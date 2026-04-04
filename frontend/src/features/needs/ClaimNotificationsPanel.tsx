@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { Alert, Box, Button, Card, CardContent, Chip, Divider, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from "@mui/material";
 
-import { ClaimConversationPanel } from "./ClaimConversationPanel";
+import { NeedClaimManagementPage } from "./NeedClaimManagementPage";
+import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
 
 type NeedClaimOverview = {
   id: string;
@@ -21,7 +22,7 @@ type NeedClaimOverview = {
     id: string;
     displayName: string | null;
     externalSubject: string;
-  };
+  } | null;
   claimConversationByNeedClaimId: {
     id: string;
     createdAt: string;
@@ -47,18 +48,16 @@ type ClaimNotificationsPanelProps = {
   notifications: NeedClaimNotificationOverview[];
   selectedClaimId: string | null;
   onSelectClaim: (claimId: string) => void;
+  onClaimsChanged?: () => void;
 };
-
-function formatStatus(status: string) {
-  return status.replaceAll("_", " ").toLowerCase();
-}
 
 export function ClaimNotificationsPanel({
   currentAccountId,
   claims,
   notifications,
   selectedClaimId,
-  onSelectClaim
+  onSelectClaim,
+  onClaimsChanged
 }: ClaimNotificationsPanelProps) {
   const incomingClaims = useMemo(
     () => claims.filter(claim => claim.needByNeedId.creatorAccountId === currentAccountId),
@@ -97,7 +96,7 @@ export function ClaimNotificationsPanel({
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                       <Box>
                         <Typography variant="body2">
-                          <strong>{claim.needByNeedId.title}</strong> — {claim.accountByClaimerAccountId.displayName ?? claim.accountByClaimerAccountId.externalSubject}
+                          <strong>{claim.needByNeedId.title}</strong> — {claim.accountByClaimerAccountId?.displayName ?? claim.accountByClaimerAccountId?.externalSubject ?? claim.claimerAccountId}
                         </Typography>
                         {claim.message ? (
                           <Typography color="text.secondary" variant="caption">
@@ -106,7 +105,7 @@ export function ClaimNotificationsPanel({
                         ) : null}
                       </Box>
                       <Stack direction="row" spacing={1}>
-                        <Chip label={formatStatus(claim.status)} size="small" />
+                        <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} size="small" status={claim.status} />
                         <Button onClick={() => onSelectClaim(claim.id)} size="small" variant="outlined">
                           {claim.claimConversationByNeedClaimId ? "Open thread" : "Reply now"}
                         </Button>
@@ -133,7 +132,7 @@ export function ClaimNotificationsPanel({
                         </Typography>
                       </Box>
                       <Stack direction="row" spacing={1}>
-                        <Chip label={formatStatus(claim.status)} size="small" />
+                        <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} size="small" status={claim.status} />
                         <Button onClick={() => onSelectClaim(claim.id)} size="small" variant="outlined">
                           {claim.claimConversationByNeedClaimId ? "Open thread" : "View status"}
                         </Button>
@@ -160,7 +159,11 @@ export function ClaimNotificationsPanel({
       </Card>
 
       {selectedClaimId ? (
-        <ClaimConversationPanel claimId={selectedClaimId} currentAccountId={currentAccountId} />
+        <NeedClaimManagementPage
+          claimId={selectedClaimId}
+          currentAccountId={currentAccountId}
+          onClaimsChanged={onClaimsChanged}
+        />
       ) : null}
     </Stack>
   );

@@ -11,6 +11,13 @@ export const CLAIM_CONVERSATION_QUERY = gql`
       createdAt
       updatedAt
       settledAt
+      settledByAccountId
+      needClaimSettlementEventByNeedClaimId {
+        id
+        topesAmount
+        createdAt
+        settledByAccountId
+      }
       needByNeedId {
         id
         title

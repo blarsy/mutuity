@@ -84,7 +84,7 @@ begin
     v_current_claim.claimer_account_id,
     v_topes_amount
   )
-  on conflict (need_claim_id) do nothing;
+  on conflict on constraint need_claim_settlement_event_need_claim_id_key do nothing;
 
   perform app_private.create_need_claim_notification(
     v_current_claim.claimer_account_id,

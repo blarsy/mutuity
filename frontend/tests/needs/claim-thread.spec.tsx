@@ -7,6 +7,7 @@ import {
   sortConversationMessages,
   type ClaimConversationViewMessage
 } from "../../src/features/needs/ClaimConversationPanel";
+import { NeedClaimStatusChip } from "../../src/features/needs/NeedClaimStatusChip";
 
 describe("claim thread helpers", () => {
   it("parses comma- and newline-separated image metadata into an ordered URL list", () => {
@@ -49,5 +50,18 @@ describe("claim thread helpers", () => {
     expect(markup.indexOf("Initial claimer note")).toBeLessThan(markup.indexOf("Second reply"));
     expect(markup).toContain("Attachment 1");
     expect(markup).toContain("read");
+  });
+
+  it("renders the settlement summary with the recorded Topes amount", () => {
+    const markup = renderToStaticMarkup(
+      createElement(NeedClaimStatusChip, {
+        status: "SETTLED",
+        settledAt: "2026-04-04T12:00:00.000Z",
+        topesAmount: 180
+      })
+    );
+
+    expect(markup).toContain("settled");
+    expect(markup).toContain("180 Topes recorded");
   });
 });

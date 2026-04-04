@@ -99,14 +99,14 @@
 
 ### Tests (US5)
 
-- [ ] T030 [P] [US5] Add backend integration tests for creator-only atomic settlement and idempotency in `backend/tests/integration/claim-settlement.spec.ts`
-- [ ] T031 [P] [US5] Add contract tests for the settlement mutation response in `backend/tests/contract/claim-settlement.contract.spec.ts`
+- [x] T030 [P] [US5] Add backend integration tests for creator-only atomic settlement and idempotency in `backend/tests/integration/claim-settlement.spec.ts`
+- [x] T031 [P] [US5] Add contract tests for the settlement mutation response in `backend/tests/contract/claim-settlement.contract.spec.ts`
 
 ### Implementation (US5)
 
-- [ ] T032 [US5] Build creator claim-management and settlement actions in `frontend/src/features/needs/NeedClaimManagementPage.tsx`
-- [ ] T033 [US5] Surface settled/declined state and Topes event summaries in `frontend/src/features/needs/NeedClaimStatusChip.tsx`
-- [ ] T034 [US5] Ensure the expiry sweep also closes stale open claims and emits notifications in the worker/backend job layer
+- [x] T032 [US5] Build creator claim-management and settlement actions in `frontend/src/features/needs/NeedClaimManagementPage.tsx`
+- [x] T033 [US5] Surface settled/declined state and Topes event summaries in `frontend/src/features/needs/NeedClaimStatusChip.tsx`
+- [x] T034 [US5] Ensure the expiry sweep also closes stale open claims and emits notifications in the worker/backend job layer
 
 ## Phase 8: Polish & Cross-Cutting
 

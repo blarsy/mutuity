@@ -6,12 +6,10 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   Link,
   Stack,
   TextField,
-  Typography,
-  type ChipProps
+  Typography
 } from "@mui/material";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -20,6 +18,7 @@ import {
   MARK_CLAIM_MESSAGES_READ_MUTATION,
   SEND_CLAIM_MESSAGE_MUTATION
 } from "./claimConversation.queries";
+import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -54,7 +53,13 @@ type ClaimConversationQueryData = {
       id: string;
       displayName: string | null;
       externalSubject: string;
-    };
+    } | null;
+    needClaimSettlementEventByNeedClaimId: {
+      id: string;
+      topesAmount: number;
+      createdAt: string;
+      settledByAccountId: string;
+    } | null;
     claimConversationByNeedClaimId: {
       id: string;
       claimMessagesByConversationId: {
@@ -76,27 +81,6 @@ type ClaimConversationQueryData = {
     } | null;
   } | null;
 };
-
-function toStatusLabel(status: string) {
-  return status.replaceAll("_", " ").toLowerCase();
-}
-
-function toStatusColor(status: string): ChipProps["color"] {
-  switch (status) {
-    case "OPEN":
-      return "primary";
-    case "SETTLED":
-      return "success";
-    case "DECLINED":
-      return "warning";
-    case "EXPIRED":
-      return "default";
-    case "WITHDRAWN":
-      return "default";
-    default:
-      return "default";
-  }
-}
 
 export function parseImageMetadataInput(value: string) {
   return value
@@ -250,10 +234,14 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             <Box>
               <Typography variant="h6">Conversation for {claim.needByNeedId.title}</Typography>
               <Typography color="text.secondary" variant="body2">
-                Claimer: {claim.accountByClaimerAccountId.displayName ?? claim.accountByClaimerAccountId.externalSubject}
+                Claimer: {claim.accountByClaimerAccountId?.displayName ?? claim.accountByClaimerAccountId?.externalSubject ?? claim.claimerAccountId}
               </Typography>
             </Box>
-            <Chip color={toStatusColor(claim.status)} label={toStatusLabel(claim.status)} size="small" />
+            <NeedClaimStatusChip
+              settledAt={claim.settledAt}
+              status={claim.status}
+              topesAmount={claim.needClaimSettlementEventByNeedClaimId?.topesAmount ?? null}
+            />
           </Stack>
 
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
