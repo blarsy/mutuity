@@ -31,14 +31,14 @@
 
 ### Tests (US1)
 
-- [ ] T010 [P] [US1] Add backend integration tests for active/expired filtering, score ordering, and 50-result cap in `backend/tests/integration/need-search.spec.ts`
-- [ ] T011 [P] [US1] Add backend contract coverage for the public search query payload in `backend/tests/contract/need-search.contract.spec.ts`
+- [x] T010 [P] [US1] Add backend integration tests for active/expired filtering, score ordering, and 50-result cap in `backend/tests/integration/need-search.spec.ts`
+- [x] T011 [P] [US1] Add backend contract coverage for the public search query payload in `backend/tests/contract/need-search.contract.spec.ts`
 
 ### Implementation (US1)
 
-- [ ] T012 [US1] Add GraphQL search query and fragments in `frontend/src/features/needs/needs.queries.ts`
-- [ ] T013 [US1] Build the public discovery screen in `frontend/src/features/needs/PublicNeedsPage.tsx`
-- [ ] T014 [US1] Add the public route and home-page entry point in `frontend/src/pages/needs/index.tsx` and `frontend/src/pages/index.tsx`
+- [x] T012 [US1] Add GraphQL search query and fragments in `frontend/src/features/needs/needs.queries.ts`
+- [x] T013 [US1] Build the public discovery screen in `frontend/src/features/needs/PublicNeedsPage.tsx`
+- [x] T014 [US1] Add the public route and home-page entry point in `frontend/src/pages/needs/index.tsx` and `frontend/src/pages/index.tsx`
 
 ## Phase 4: User Story 2 - User Applies Query Filters (Priority: P1)
 

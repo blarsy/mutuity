@@ -14,10 +14,10 @@ export default function HomePage() {
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Mutuity Frontend Bootstrap
+          Mutuity
         </Typography>
         <Typography sx={{ mb: 3 }}>
-          The login foundation is now active. Protected flows can now build on a real session layer.
+          Public need discovery is now available, and authenticated flows continue to build on the real session layer.
         </Typography>
 
         {status === "loading" ? (
@@ -37,7 +37,10 @@ export default function HomePage() {
         )}
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          <Button component={NextLink} href={createCampaignHref} variant="contained">
+          <Button component={NextLink} href="/needs" variant="contained">
+            Browse Needs
+          </Button>
+          <Button component={NextLink} href={createCampaignHref} variant="outlined">
             Create Campaign
           </Button>
           {session.authenticated ? (
