@@ -3,8 +3,14 @@ import { createHash, randomBytes } from "node:crypto";
 import type { CookieOptions, RequestHandler } from "express";
 import type { Pool } from "pg";
 
+import { loadSql } from "../db/loadSql.js";
+
 export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME ?? "mutuity_session";
 const SESSION_TTL_HOURS = Number(process.env.SESSION_TTL_HOURS ?? 168);
+const FIND_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/find_account_session.sql", import.meta.url));
+const TOUCH_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/touch_account_session.sql", import.meta.url));
+const INSERT_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/insert_account_session.sql", import.meta.url));
+const REVOKE_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/revoke_account_session.sql", import.meta.url));
 
 export type AuthenticatedSession = {
   sessionId: string;
@@ -66,13 +72,7 @@ export function getSessionTokenFromRequest(req: {
 
 export async function getSessionFromToken(pool: Pool, sessionToken: string) {
   const sessionTokenHash = hashSessionToken(sessionToken);
-  const { rows } = await pool.query<SessionRow>(
-    `
-      select *
-      from app_private.find_account_session($1)
-    `,
-    [sessionTokenHash]
-  );
+  const { rows } = await pool.query<SessionRow>(FIND_ACCOUNT_SESSION_SQL, [sessionTokenHash]);
 
   const row = rows[0];
 
@@ -80,12 +80,7 @@ export async function getSessionFromToken(pool: Pool, sessionToken: string) {
     return null;
   }
 
-  await pool.query(
-    `
-      select app_private.touch_account_session($1)
-    `,
-    [sessionTokenHash]
-  );
+  await pool.query(TOUCH_ACCOUNT_SESSION_SQL, [sessionTokenHash]);
 
   return toAuthenticatedSession(row);
 }
@@ -100,19 +95,12 @@ export async function createSessionForAccount(
   const sessionToken = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_TTL_HOURS * 60 * 60 * 1000);
 
-  const { rows } = await pool.query<{ id: string }>(
-    `
-      insert into app_private.account_session (
-        account_id,
-        role_name,
-        session_token_hash,
-        expires_at
-      )
-      values ($1, $2, $3, $4)
-      returning id
-    `,
-    [input.accountId, input.role, hashSessionToken(sessionToken), expiresAt]
-  );
+  const { rows } = await pool.query<{ id: string }>(INSERT_ACCOUNT_SESSION_SQL, [
+    input.accountId,
+    input.role,
+    hashSessionToken(sessionToken),
+    expiresAt
+  ]);
 
   return {
     sessionId: rows[0]?.id ?? sessionToken,
@@ -122,12 +110,7 @@ export async function createSessionForAccount(
 }
 
 export async function revokeSessionByToken(pool: Pool, sessionToken: string) {
-  await pool.query(
-    `
-      select app_private.revoke_account_session($1)
-    `,
-    [hashSessionToken(sessionToken)]
-  );
+  await pool.query(REVOKE_ACCOUNT_SESSION_SQL, [hashSessionToken(sessionToken)]);
 }
 
 export function createAuthSessionMiddleware(pool: Pool): RequestHandler {

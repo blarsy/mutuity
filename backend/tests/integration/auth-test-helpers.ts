@@ -1,5 +1,20 @@
+import path from "node:path";
+
 import { hash } from "bcryptjs";
 import { Client } from "pg";
+
+import { loadSql } from "../../src/db/loadSql";
+
+const UPSERT_ACCOUNT_SQL = loadSql(path.join(__dirname, "sql/auth/upsert_account.sql"));
+const UPSERT_ACCOUNT_CREDENTIAL_SQL = loadSql(
+  path.join(__dirname, "sql/auth/upsert_account_credential.sql")
+);
+const DELETE_ACCOUNT_SESSIONS_SQL = loadSql(
+  path.join(__dirname, "sql/auth/delete_account_sessions.sql")
+);
+const EXPIRE_ACCOUNT_SESSIONS_SQL = loadSql(
+  path.join(__dirname, "sql/auth/expire_account_sessions.sql")
+);
 
 export const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/mutuity";
@@ -35,47 +50,16 @@ export async function seedDemoAccount(overrides?: Partial<Omit<SeededAccount, "a
   const passwordHash = await hash(password, 12);
 
   return withClient(async client => {
-    const accountResult = await client.query<{ id: string }>(
-      `
-        insert into app_public.account (external_subject, display_name)
-        values ($1, $2)
-        on conflict (external_subject) do update
-        set display_name = excluded.display_name,
-            updated_at = now()
-        returning id
-      `,
-      [identifier, displayName]
-    );
+    const accountResult = await client.query<{ id: string }>(UPSERT_ACCOUNT_SQL, [
+      identifier,
+      displayName
+    ]);
 
     const accountId = accountResult.rows[0].id;
 
-    await client.query(
-      `
-        insert into app_private.account_credential (
-          account_id,
-          login_identifier,
-          password_hash,
-          role_name,
-          is_active
-        )
-        values ($1, $2, $3, $4, true)
-        on conflict (account_id) do update
-        set login_identifier = excluded.login_identifier,
-            password_hash = excluded.password_hash,
-            role_name = excluded.role_name,
-            is_active = excluded.is_active,
-            updated_at = now()
-      `,
-      [accountId, identifier, passwordHash, role]
-    );
+    await client.query(UPSERT_ACCOUNT_CREDENTIAL_SQL, [accountId, identifier, passwordHash, role]);
 
-    await client.query(
-      `
-        delete from app_private.account_session
-        where account_id = $1
-      `,
-      [accountId]
-    );
+    await client.query(DELETE_ACCOUNT_SESSIONS_SQL, [accountId]);
 
     return {
       accountId,
@@ -89,15 +73,7 @@ export async function seedDemoAccount(overrides?: Partial<Omit<SeededAccount, "a
 
 export async function expireSessionsForAccount(accountId: string) {
   return withClient(async client => {
-    await client.query(
-      `
-        update app_private.account_session
-        set expires_at = now() - interval '1 minute'
-        where account_id = $1
-          and revoked_at is null
-      `,
-      [accountId]
-    );
+    await client.query(EXPIRE_ACCOUNT_SESSIONS_SQL, [accountId]);
   });
 }
 

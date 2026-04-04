@@ -16,7 +16,7 @@ Implement the first end-user authentication flow for Mutuity: secure sign-in, pr
 **Target Platform**: Web application for desktop/mobile browsers; Node.js backend for PostGraphile and session endpoints  
 **Project Type**: Web application with separate frontend and backend  
 **Performance Goals**: Login and current-session retrieval should complete within 1 second in normal local conditions; protected-route redirects should feel immediate; session checks on page load should not noticeably delay navigation  
-**Constraints**: API-first backend via PostGraphile plus minimal auth/session HTTP endpoints; all user-facing strings through i18n; secure `HttpOnly` cookie sessions; sanitized client errors; existing PostgreSQL role model (`identified_account`, `manager`, `admin`) remains the source of authorization truth  
+**Constraints**: API-first backend via PostGraphile plus minimal auth/session HTTP endpoints; all user-facing strings through i18n; secure `HttpOnly` cookie sessions; sanitized client errors; existing PostgreSQL role model (`identified_account`, `manager`, `admin`) remains the source of authorization truth; and **no inline SQL in TypeScript** — SQL must live in `.sql` files or database functions  
 **Scale/Scope**: MVP browser login flow for local and early hosted environments; no social login or password reset in this phase
 
 ## Constitution Check
@@ -28,6 +28,7 @@ Implement the first end-user authentication flow for Mutuity: secure sign-in, pr
 - Pass: Login, logout, redirect, loading, and error states must all be present as user-visible flows from the start.
 - Pass: Implementation preserves strict TypeScript and testability.
 - Pass: Existing sanitized GraphQL fallback remains in place for unauthenticated requests.
+- Pass: SQL used by TypeScript must be sourced from `.sql` assets or PostgreSQL functions rather than inline string literals.
 
 ## Project Structure
 

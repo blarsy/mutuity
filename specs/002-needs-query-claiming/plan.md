@@ -16,7 +16,7 @@ Implement the next collaboration flow for Mutuity: public need discovery with we
 **Target Platform**: Web app in desktop/mobile browsers  
 **Project Type**: Monorepo with `frontend/`, `backend/`, and `database/`  
 **Performance Goals**: need search returns within 1s locally for <=50 rows; claim/messaging actions feel immediate; default query stays capped at 50 ranked results  
-**Constraints**: GraphQL-first contract, sanitized user-facing errors, authenticated claims only, atomic settlement, deterministic ranking/tie-breaking, location fallback order must match spec  
+**Constraints**: GraphQL-first contract, sanitized user-facing errors, authenticated claims only, atomic settlement, deterministic ranking/tie-breaking, location fallback order must match spec, and **no inline SQL in TypeScript** — SQL must live in `.sql` files or database functions  
 **Scale/Scope**: MVP discovery + claim lifecycle; polling-based near-realtime notifications are acceptable if full websocket infrastructure is not yet present
 
 ## Constitution Check
@@ -28,6 +28,7 @@ Implement the next collaboration flow for Mutuity: public need discovery with we
 - Pass: UX coverage is end-to-end: search, filters, claim, conversation, settlement, and failure states.
 - Pass: New flows must work with the existing Feature 004 session-based authentication.
 - Pass: Work will be test-led for ranking, claim permissions, and settlement idempotency.
+- Pass: Repository rule applies here: no inline SQL in TypeScript; TS may only load SQL from `.sql` assets or call existing Postgres functions.
 
 ## Project Structure
 

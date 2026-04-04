@@ -1,6 +1,15 @@
+import path from "node:path";
+
 import { Client } from "pg";
 
+import { loadSql } from "../../src/db/loadSql";
 import { TEST_DATABASE_URL, seedDemoAccount, type SeededAccount } from "./auth-test-helpers";
+
+const UPDATE_ACCOUNT_COORDINATES_SQL = loadSql(
+  path.join(__dirname, "sql/need/update_account_coordinates.sql")
+);
+const INSERT_NEED_SQL = loadSql(path.join(__dirname, "sql/need/insert_need.sql"));
+const INSERT_NEED_CLAIM_SQL = loadSql(path.join(__dirname, "sql/need/insert_need_claim.sql"));
 
 export type SeededNeed = {
   id: string;
@@ -72,16 +81,11 @@ export async function seedNeed(overrides?: {
   const expiresAt = overrides?.expiresAt ?? null;
 
   return withClient(async client => {
-    await client.query(
-      `
-        update app_public.account
-        set latitude = $2,
-            longitude = $3,
-            updated_at = now()
-        where id = $1
-      `,
-      [creatorAccount.accountId, latitude, longitude]
-    );
+    await client.query(UPDATE_ACCOUNT_COORDINATES_SQL, [
+      creatorAccount.accountId,
+      latitude,
+      longitude
+    ]);
 
     const result = await client.query<{
       id: string;
@@ -90,52 +94,25 @@ export async function seedNeed(overrides?: {
       latitude: number;
       longitude: number;
       expires_at: string | null;
-    }>(
-      `
-        insert into app_public.need (
-          creator_account_id,
-          title,
-          description,
-          location,
-          latitude,
-          longitude,
-          intensity,
-          proposed_topes_amount,
-          object_required,
-          competence_required,
-          tooling_required,
-          multiple_people_required,
-          required_competence_text,
-          required_tooling_text,
-          required_people_count,
-          is_active,
-          expires_at
-        )
-        values (
-          $1, $2, $3, $4, $5, $6, $7::app_public.need_intensity, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
-        )
-        returning id, title, location, latitude, longitude, expires_at
-      `,
-      [
-        creatorAccount.accountId,
-        title,
-        description,
-        location,
-        latitude,
-        longitude,
-        intensity,
-        proposedTopesAmount,
-        objectRequired,
-        competenceRequired,
-        toolingRequired,
-        multiplePeopleRequired,
-        requiredCompetenceText,
-        requiredToolingText,
-        requiredPeopleCount,
-        isActive,
-        expiresAt
-      ]
-    );
+    }>(INSERT_NEED_SQL, [
+      creatorAccount.accountId,
+      title,
+      description,
+      location,
+      latitude,
+      longitude,
+      intensity,
+      proposedTopesAmount,
+      objectRequired,
+      competenceRequired,
+      toolingRequired,
+      multiplePeopleRequired,
+      requiredCompetenceText,
+      requiredToolingText,
+      requiredPeopleCount,
+      isActive,
+      expiresAt
+    ]);
 
     const row = result.rows[0];
 
@@ -168,14 +145,7 @@ export async function seedNeedClaim(overrides: {
       claimer_account_id: string;
       message: string | null;
       status: string;
-    }>(
-      `
-        insert into app_public.need_claim (need_id, claimer_account_id, message, status)
-        values ($1, $2, $3, $4::app_public.need_claim_status)
-        returning id, need_id, claimer_account_id, message, status
-      `,
-      [overrides.needId, claimerAccount.accountId, message, status]
-    );
+    }>(INSERT_NEED_CLAIM_SQL, [overrides.needId, claimerAccount.accountId, message, status]);
 
     return {
       id: result.rows[0].id,

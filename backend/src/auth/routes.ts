@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import type { Pool } from "pg";
 
+import { loadSql } from "../db/loadSql.js";
 import { verifyPassword } from "./credentials.js";
 import {
   createSessionForAccount,
@@ -16,6 +17,9 @@ const TOO_MANY_ATTEMPTS_MESSAGE = "Too many sign-in attempts. Please wait a mome
 const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 5 * 60 * 1000);
 const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = Number(process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS ?? 5);
 const loginAttemptTracker = new Map<string, number[]>();
+const SELECT_LOGIN_CANDIDATE_SQL = loadSql(
+  new URL("../db/sql/auth/select_login_candidate.sql", import.meta.url)
+);
 
 type LoginCandidate = {
   account_id: string;
@@ -102,22 +106,7 @@ export function createAuthRouter(pool: Pool) {
     }
 
     try {
-      const { rows } = await pool.query<LoginCandidate>(
-        `
-          select
-            a.id as account_id,
-            a.display_name,
-            a.external_subject,
-            c.password_hash,
-            c.role_name
-          from app_private.account_credential c
-          join app_public.account a on a.id = c.account_id
-          where lower(c.login_identifier) = lower($1)
-            and c.is_active = true
-          limit 1
-        `,
-        [identifier]
-      );
+      const { rows } = await pool.query<LoginCandidate>(SELECT_LOGIN_CANDIDATE_SQL, [identifier]);
 
       const candidate = rows[0];
       const isValid = candidate ? await verifyPassword(password, candidate.password_hash) : false;
