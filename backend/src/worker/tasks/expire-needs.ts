@@ -1,8 +1,6 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { loadSql } from "../../db/loadSql.js";
-
 type ExpireNeedsPayload = {
   nowIso?: string;
 };
@@ -12,9 +10,8 @@ type ExpireNeedsResult = {
   expired_claim_count: number;
 };
 
-const EXPIRE_OVERDUE_NEEDS_AND_CLAIMS_SQL = loadSql(
-  new URL("../../db/sql/worker/expire_overdue_needs_and_claims.sql", import.meta.url)
-);
+const EXPIRE_OVERDUE_NEEDS_AND_CLAIMS_SQL =
+  "select * from app_private.expire_overdue_needs_and_claims();";
 
 export const expireNeedsTask: Task = async payload => {
   const typedPayload = (payload ?? {}) as ExpireNeedsPayload;

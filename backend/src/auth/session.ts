@@ -3,14 +3,13 @@ import { createHash, randomBytes } from "node:crypto";
 import type { CookieOptions, RequestHandler } from "express";
 import type { Pool } from "pg";
 
-import { loadSql } from "../db/loadSql.js";
-
 export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME ?? "mutuity_session";
 const SESSION_TTL_HOURS = Number(process.env.SESSION_TTL_HOURS ?? 168);
-const FIND_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/find_account_session.sql", import.meta.url));
-const TOUCH_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/touch_account_session.sql", import.meta.url));
-const INSERT_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/insert_account_session.sql", import.meta.url));
-const REVOKE_ACCOUNT_SESSION_SQL = loadSql(new URL("../db/sql/auth/revoke_account_session.sql", import.meta.url));
+const FIND_ACCOUNT_SESSION_SQL = "select * from app_private.find_account_session($1);";
+const TOUCH_ACCOUNT_SESSION_SQL = "select app_private.touch_account_session($1);";
+const INSERT_ACCOUNT_SESSION_SQL =
+  "select app_private.create_account_session($1, $2, $3, $4) as id;";
+const REVOKE_ACCOUNT_SESSION_SQL = "select app_private.revoke_account_session($1);";
 
 export type AuthenticatedSession = {
   sessionId: string;

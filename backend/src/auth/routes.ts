@@ -1,7 +1,6 @@
 import express, { Router } from "express";
 import type { Pool } from "pg";
 
-import { loadSql } from "../db/loadSql.js";
 import { verifyPassword } from "./credentials.js";
 import {
   createSessionForAccount,
@@ -17,9 +16,7 @@ const TOO_MANY_ATTEMPTS_MESSAGE = "Too many sign-in attempts. Please wait a mome
 const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 5 * 60 * 1000);
 const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = Number(process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS ?? 5);
 const loginAttemptTracker = new Map<string, number[]>();
-const SELECT_LOGIN_CANDIDATE_SQL = loadSql(
-  new URL("../db/sql/auth/select_login_candidate.sql", import.meta.url)
-);
+const SELECT_LOGIN_CANDIDATE_SQL = "select * from app_private.find_login_candidate($1);";
 
 type LoginCandidate = {
   account_id: string;

@@ -1,2 +1,0 @@
-select expired_need_count, expired_claim_count
-from app_private.expire_overdue_needs_and_claims();

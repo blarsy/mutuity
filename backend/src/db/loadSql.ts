@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
+// Keep this utility for tests and setup helpers only.
+// Application business logic should call PostgreSQL functions directly.
+
 const sqlCache = new Map<string, string>();
 
 export function loadSql(source: string | URL) {
