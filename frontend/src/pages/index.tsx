@@ -17,7 +17,7 @@ export default function HomePage() {
           Mutuity
         </Typography>
         <Typography sx={{ mb: 3 }}>
-          Public need discovery is now available, and authenticated flows continue to build on the real session layer.
+          Public need and resource discovery are now available, and authenticated flows continue to build on the real session layer.
         </Typography>
 
         {status === "loading" ? (
@@ -39,6 +39,9 @@ export default function HomePage() {
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <Button component={NextLink} href="/needs" variant="contained">
             Browse Needs
+          </Button>
+          <Button component={NextLink} href="/resources" variant="contained">
+            Browse Resources
           </Button>
           <Button component={NextLink} href={createCampaignHref} variant="outlined">
             Create Campaign
