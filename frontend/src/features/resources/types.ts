@@ -25,6 +25,25 @@ export type ResourceCategoryOption = {
   sortOrder: number;
 };
 
+export type ResourceBidStatus = "OPEN" | "ACCEPTED" | "DECLINED" | "WITHDRAWN" | "EXPIRED";
+
+export type ResourceBidSummary = {
+  id: string;
+  resourceId: string;
+  bidderAccountId: string;
+  message: string | null;
+  proposedTokenAmount: number | null;
+  status: ResourceBidStatus;
+  createdAt: string;
+  respondedAt: string | null;
+  respondedByAccountId: string | null;
+  accountByBidderAccountId: {
+    id: string;
+    displayName: string | null;
+    externalSubject: string;
+  } | null;
+};
+
 export const RESOURCE_INTENSITY_OPTIONS: Array<{
   value: ResourceIntensity;
   label: string;

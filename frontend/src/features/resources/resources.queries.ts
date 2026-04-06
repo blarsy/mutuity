@@ -122,3 +122,89 @@ export const PUBLIC_RESOURCES_QUERY = gql`
     }
   }
 `;
+
+export const RESOURCE_DETAIL_QUERY = gql`
+  query ResourceDetail($resourceId: UUID!) {
+    resourceById(id: $resourceId) {
+      id
+      creatorAccountId
+      title
+      description
+      location
+      latitude
+      longitude
+      intensity
+      defaultTokenAmount
+      categoryLabels
+      isProduct
+      isService
+      canBeGiven
+      canBeExchanged
+      canBeTakenAway
+      canBeDelivered
+      expiresAt
+      isActive
+      createdAt
+      updatedAt
+      accountByCreatorAccountId {
+        id
+        displayName
+        externalSubject
+      }
+      resourceBidsByResourceId {
+        nodes {
+          id
+          resourceId
+          bidderAccountId
+          message
+          proposedTokenAmount
+          status
+          createdAt
+          respondedAt
+          respondedByAccountId
+          accountByBidderAccountId {
+            id
+            displayName
+            externalSubject
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_RESOURCE_BID_MUTATION = gql`
+  mutation SubmitResourceBid($input: SubmitResourceBidInput!) {
+    submitResourceBid(input: $input) {
+      resourceBid {
+        id
+        resourceId
+        bidderAccountId
+        message
+        proposedTokenAmount
+        status
+        createdAt
+        respondedAt
+        respondedByAccountId
+      }
+    }
+  }
+`;
+
+export const RESPOND_TO_RESOURCE_BID_MUTATION = gql`
+  mutation RespondToResourceBid($input: RespondToResourceBidInput!) {
+    respondToResourceBid(input: $input) {
+      resourceBid {
+        id
+        resourceId
+        bidderAccountId
+        message
+        proposedTokenAmount
+        status
+        createdAt
+        respondedAt
+        respondedByAccountId
+      }
+    }
+  }
+`;

@@ -28,6 +28,14 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Resource expiration must be in the future", "BAD_USER_INPUT"],
   ["Resource must be marked as a product, a service, or both", "BAD_USER_INPUT"],
   ["One or more resource categories are invalid", "BAD_USER_INPUT"],
+  ["Resource not found", "NOT_FOUND"],
+  ["Resource is no longer active", "BAD_USER_INPUT"],
+  ["Resource has expired", "BAD_USER_INPUT"],
+  ["Resource creators cannot bid on their own resources", "FORBIDDEN"],
+  ["Resource bid not found", "NOT_FOUND"],
+  ["Resource bid is no longer open", "BAD_USER_INPUT"],
+  ["Resource bid response must be accepted or declined", "BAD_USER_INPUT"],
+  ["Only the resource creator can respond to bids", "FORBIDDEN"],
   ["required_people_count must be at least 2 when multiple_people_required is true", "BAD_USER_INPUT"],
   ["required_people_count must be positive", "BAD_USER_INPUT"],
   ["Need not found", "NOT_FOUND"],
@@ -46,6 +54,47 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Moderation notes are allowed only for pending campaigns", "BAD_USER_INPUT"],
   ["Moderation note body is required", "BAD_USER_INPUT"]
 ]);
+const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
+  pattern: RegExp;
+  message: string;
+  code: string;
+}> = [
+  {
+    pattern: /resource has expired/i,
+    message: "Resource has expired",
+    code: "BAD_USER_INPUT"
+  },
+  {
+    pattern: /resource is no longer active/i,
+    message: "Resource is no longer active",
+    code: "BAD_USER_INPUT"
+  },
+  {
+    pattern: /resource creators cannot bid on their own resources/i,
+    message: "Resource creators cannot bid on their own resources",
+    code: "FORBIDDEN"
+  },
+  {
+    pattern: /resource bid not found/i,
+    message: "Resource bid not found",
+    code: "NOT_FOUND"
+  },
+  {
+    pattern: /resource bid is no longer open/i,
+    message: "Resource bid is no longer open",
+    code: "BAD_USER_INPUT"
+  },
+  {
+    pattern: /resource bid response must be accepted or declined/i,
+    message: "Resource bid response must be accepted or declined",
+    code: "BAD_USER_INPUT"
+  },
+  {
+    pattern: /only the resource creator can respond to bids/i,
+    message: "Only the resource creator can respond to bids",
+    code: "FORBIDDEN"
+  }
+];
 const AUTHENTICATION_ERROR_PATTERNS = [
   /authentication required/i,
   /permission denied for schema app_private/i,
@@ -117,6 +166,20 @@ function sanitizeGraphQLError(error: GraphQLError) {
       error.path,
       error.originalError,
       { code: safeCode }
+    );
+  }
+
+  const safePatternMatch = SAFE_GRAPHQL_ERROR_PATTERNS.find(entry => entry.pattern.test(message));
+
+  if (safePatternMatch) {
+    return new GraphQLError(
+      safePatternMatch.message,
+      error.nodes,
+      error.source,
+      error.positions,
+      error.path,
+      error.originalError,
+      { code: safePatternMatch.code }
     );
   }
 

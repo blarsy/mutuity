@@ -291,52 +291,75 @@ export default function PublicResourcesPage() {
           <Alert severity="warning">No resources match the current filters yet.</Alert>
         ) : (
           <Stack spacing={2}>
-            {resources.map(resource => (
-              <Card key={resource.id} variant="outlined">
-                <CardContent>
-                  <Stack spacing={1.5}>
-                    <Stack
-                      alignItems={{ xs: "flex-start", sm: "center" }}
-                      direction={{ xs: "column", sm: "row" }}
-                      justifyContent="space-between"
-                      spacing={1}
-                    >
-                      <Box>
-                        <Typography variant="h6">{resource.title}</Typography>
-                        <Typography color="text.secondary" variant="body2">
-                          Shared by {resource.creatorDisplayName} • {resource.location}
+            {resources.map(resource => {
+              const isCreator = session.account?.id === resource.creatorAccountId;
+
+              return (
+                <Card key={resource.id} variant="outlined">
+                  <CardContent>
+                    <Stack spacing={1.5}>
+                      <Stack
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        spacing={1}
+                      >
+                        <Box>
+                          <Typography variant="h6">{resource.title}</Typography>
+                          <Typography color="text.secondary" variant="body2">
+                            Shared by {resource.creatorDisplayName} • {resource.location}
+                          </Typography>
+                        </Box>
+
+                        <Chip label={`${Number(resource.distanceKm).toFixed(1)} km away`} size="small" />
+                      </Stack>
+
+                      {resource.description ? (
+                        <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body2">
+                          {resource.description}
                         </Typography>
-                      </Box>
+                      ) : null}
 
-                      <Chip label={`${Number(resource.distanceKm).toFixed(1)} km away`} size="small" />
-                    </Stack>
+                      <Stack direction="row" flexWrap="wrap" gap={1}>
+                        {buildResourceTags(resource).map(tag => (
+                          <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
+                        ))}
+                        {resource.categoryLabels.map(label => (
+                          <Chip key={`${resource.id}-category-${label}`} color="secondary" label={label} size="small" variant="outlined" />
+                        ))}
+                        {isCreator ? <Chip color="secondary" label="your resource" size="small" /> : null}
+                      </Stack>
 
-                    {resource.description ? (
-                      <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body2">
-                        {resource.description}
+                      <Typography color="text.secondary" variant="body2">
+                        Suggested token amount: {resource.defaultTokenAmount ?? "not set"}
                       </Typography>
-                    ) : null}
 
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                      {buildResourceTags(resource).map(tag => (
-                        <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
-                      ))}
-                      {resource.categoryLabels.map(label => (
-                        <Chip key={`${resource.id}-category-${label}`} color="secondary" label={label} size="small" variant="outlined" />
-                      ))}
+                      <Stack
+                        alignItems={{ xs: "stretch", md: "center" }}
+                        direction={{ xs: "column", md: "row" }}
+                        justifyContent="space-between"
+                        spacing={2}
+                      >
+                        <Typography color="text.secondary" variant="body2">
+                          Expires: {formatDate(resource.expiresAt)}
+                        </Typography>
+
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                          <Button component={NextLink} href={`/resources/${resource.id}`} variant="outlined">
+                            {isCreator ? "Review responses" : "View details"}
+                          </Button>
+                          {!session.authenticated ? (
+                            <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
+                              Sign in to respond
+                            </Button>
+                          ) : null}
+                        </Stack>
+                      </Stack>
                     </Stack>
-
-                    <Typography color="text.secondary" variant="body2">
-                      Suggested token amount: {resource.defaultTokenAmount ?? "not set"}
-                    </Typography>
-
-                    <Typography color="text.secondary" variant="body2">
-                      Expires: {formatDate(resource.expiresAt)}
-                    </Typography>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </Stack>
         )}
       </Box>
