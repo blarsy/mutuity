@@ -115,7 +115,7 @@ function formatDate(value: string | null) {
 }
 
 function buildNeedTags(need: NeedNode) {
-  const tags = [need.intensity.replaceAll("_", " ")];
+  const tags = [need.intensity.toLowerCase().replaceAll("_", " ")];
 
   if (need.objectRequired) {
     tags.push("object required");

@@ -52,7 +52,7 @@ export async function seedResource(overrides?: {
   canBeDelivered?: boolean;
   isActive?: boolean;
   expiresAt?: string | null;
-  categoryLabels?: string[];
+  categoryCodes?: number[];
 }) {
   const creatorAccount = overrides?.creatorAccount ?? (await seedDemoAccount());
   const title = overrides?.title ?? `Resource ${Date.now()}`;
@@ -70,7 +70,7 @@ export async function seedResource(overrides?: {
   const canBeDelivered = overrides?.canBeDelivered ?? false;
   const isActive = overrides?.isActive ?? true;
   const expiresAt = overrides?.expiresAt ?? null;
-  const categoryLabels = overrides?.categoryLabels ?? [];
+  const categoryCodes = overrides?.categoryCodes ?? [];
 
   return withClient(async client => {
     await client.query(UPDATE_ACCOUNT_COORDINATES_SQL, [
@@ -103,11 +103,22 @@ export async function seedResource(overrides?: {
       canBeTakenAway,
       canBeDelivered,
       isActive,
-      expiresAt,
-      categoryLabels
+      expiresAt
     ]);
 
     const row = result.rows[0];
+
+    if (categoryCodes.length > 0) {
+      await client.query(
+        `
+          insert into app_public.resource_category_assignment (resource_id, category_code)
+          select $1::uuid, requested_code
+          from unnest($2::int[]) as requested_code
+          on conflict do nothing
+        `,
+        [row.id, categoryCodes]
+      );
+    }
 
     return {
       id: row.id,

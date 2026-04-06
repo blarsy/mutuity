@@ -8,7 +8,7 @@ export type ResourceSearchQueryVariables = {
   browserLatitude: number | null;
   browserLongitude: number | null;
   searchText?: string;
-  categoryLabels?: string[];
+  categoryCodes?: number[];
   isProduct: GraphQLTriStateFilter;
   isService: GraphQLTriStateFilter;
   canBeGiven: GraphQLTriStateFilter;
@@ -52,10 +52,6 @@ export function buildResourceSearchVariables(input: {
 }): ResourceSearchQueryVariables {
   const { filters, location, limitCount = 50 } = input;
   const trimmedSearchText = filters.searchText.trim();
-  const categoryLabels = filters.categoryText
-    .split(",")
-    .map(label => label.trim())
-    .filter(Boolean);
 
   const variables: ResourceSearchQueryVariables = {
     latitude: null,
@@ -63,7 +59,7 @@ export function buildResourceSearchVariables(input: {
     browserLatitude: null,
     browserLongitude: null,
     searchText: trimmedSearchText.length > 0 ? trimmedSearchText : undefined,
-    categoryLabels: categoryLabels.length > 0 ? categoryLabels : undefined,
+    categoryCodes: filters.categoryCodes.length > 0 ? filters.categoryCodes : undefined,
     isProduct: GRAPHQL_TRI_STATE[filters.isProduct],
     isService: GRAPHQL_TRI_STATE[filters.isService],
     canBeGiven: GRAPHQL_TRI_STATE[filters.canBeGiven],

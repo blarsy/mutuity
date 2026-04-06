@@ -1,4 +1,4 @@
-create schema if not exists app_private;
+begin;
 
 create or replace function app_private.validate_campaign_dates(
   p_start_at timestamptz,
@@ -77,3 +77,5 @@ grant execute on function app_private.validate_topes_amount(text, integer)
   to identified_account, manager, admin;
 grant execute on function app_private.validate_people_count(boolean, integer)
   to identified_account, manager, admin;
+
+commit;

@@ -14,10 +14,9 @@ insert into app_public.resource (
   can_be_taken_away,
   can_be_delivered,
   is_active,
-  expires_at,
-  category_labels
+  expires_at
 )
 values (
-  $1, $2, $3, $4, $5, $6, $7::app_public.need_intensity, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17::text[]
+  $1, $2, $3, $4, $5, $6, $7::app_public.need_intensity, $8, $9, $10, $11, $12, $13, $14, $15, $16
 )
 returning id, title, location, latitude, longitude, expires_at, is_active;

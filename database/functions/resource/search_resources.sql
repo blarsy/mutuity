@@ -14,6 +14,22 @@ drop function if exists app_public.search_resources(
   integer
 );
 
+drop function if exists app_public.search_resources(
+  numeric,
+  numeric,
+  numeric,
+  numeric,
+  text,
+  integer[],
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  app_public.tri_state_filter,
+  integer
+);
+
 create or replace function app_private.calculate_geo_distance_km(
   p_item_latitude numeric,
   p_item_longitude numeric,
@@ -71,7 +87,7 @@ create or replace function app_public.search_resources(
   browser_latitude numeric default null,
   browser_longitude numeric default null,
   search_text text default null,
-  category_labels text[] default null,
+  category_codes integer[] default null,
   is_product app_public.tri_state_filter default 'neutral',
   is_service app_public.tri_state_filter default 'neutral',
   can_be_given app_public.tri_state_filter default 'neutral',
@@ -125,17 +141,19 @@ as $$
       nullif(lower(app_private.immutable_unaccent(btrim(coalesce(search_resources.search_text, '')))), '')
         as normalized_search_text,
       array(
-        select lower(app_private.immutable_unaccent(btrim(label)))
-        from unnest(coalesce(search_resources.category_labels, '{}'::text[])) as label
-        where btrim(label) <> ''
-      ) as normalized_category_labels
+        select distinct requested_code
+        from unnest(coalesce(search_resources.category_codes, array[]::integer[])) as requested_code
+        where requested_code is not null
+        order by requested_code
+      ) as requested_category_codes
   ),
   filtered_resources as (
     select
-      r.*, 
+      r.*,
       coalesce(a.display_name, a.external_subject, 'Unknown account') as creator_display_name,
       rl.query_latitude,
       rl.query_longitude,
+      coalesce(category_lookup.category_labels, '{}'::text[]) as category_labels,
       app_private.calculate_geo_distance_km(
         coalesce(r.latitude, rl.query_latitude),
         coalesce(r.longitude, rl.query_longitude),
@@ -146,6 +164,14 @@ as $$
     join app_public.account a on a.id = r.creator_account_id
     cross join resolved_location rl
     cross join normalized_input ni
+    left join lateral (
+      select coalesce(array_agg(rc.label order by rc.sort_order, rc.code), '{}'::text[]) as category_labels
+      from app_public.resource_category_assignment rca
+      join app_public.resource_category rc
+        on rc.code = rca.category_code
+       and rc.is_active
+      where rca.resource_id = r.id
+    ) category_lookup on true
     where r.is_active
       and coalesce(r.expires_at > now(), true)
       and app_private.matches_tri_state_filter(search_resources.is_product, r.is_product)
@@ -161,15 +187,16 @@ as $$
         or app_private.resource_search_document(
           r.title,
           r.description,
-          r.category_labels
+          coalesce(category_lookup.category_labels, '{}'::text[])
         ) like '%' || ni.normalized_search_text || '%'
       )
       and (
-        coalesce(array_length(ni.normalized_category_labels, 1), 0) = 0
+        coalesce(array_length(ni.requested_category_codes, 1), 0) = 0
         or exists (
           select 1
-          from unnest(coalesce(r.category_labels, '{}'::text[])) as resource_label
-          where lower(app_private.immutable_unaccent(btrim(resource_label))) = any (ni.normalized_category_labels)
+          from app_public.resource_category_assignment rca
+          where rca.resource_id = r.id
+            and rca.category_code = any (ni.requested_category_codes)
         )
       )
   )
@@ -209,7 +236,7 @@ comment on function app_public.search_resources(
   numeric,
   numeric,
   text,
-  text[],
+  integer[],
   app_public.tri_state_filter,
   app_public.tri_state_filter,
   app_public.tri_state_filter,

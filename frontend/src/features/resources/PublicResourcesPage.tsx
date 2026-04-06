@@ -27,10 +27,11 @@ import {
 import {
   DEFAULT_RESOURCE_SEARCH_FILTERS,
   type PublicResourceCard,
+  type ResourceCategoryOption,
   type ResourceSearchFilters,
   type TriStateFilter
 } from "./types";
-import { PUBLIC_RESOURCES_QUERY } from "./resources.queries";
+import { PUBLIC_RESOURCES_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
 
 type PublicResourcesQueryData = {
   searchResources: {
@@ -38,7 +39,13 @@ type PublicResourcesQueryData = {
   };
 };
 
-type ToggleFilterKey = Exclude<keyof ResourceSearchFilters, "searchText" | "categoryText">;
+type ResourceCategoryOptionsQueryData = {
+  allResourceCategories: {
+    nodes: ResourceCategoryOption[];
+  };
+};
+
+type ToggleFilterKey = Exclude<keyof ResourceSearchFilters, "searchText" | "categoryCodes">;
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -53,7 +60,7 @@ function filterVariant(value: TriStateFilter) {
 }
 
 function buildResourceTags(resource: PublicResourceCard) {
-  const tags = [resource.intensity.replaceAll("_", " ")];
+  const tags = [resource.intensity.toLowerCase().replaceAll("_", " ")];
 
   if (resource.isProduct) {
     tags.push("product");
@@ -84,6 +91,9 @@ function buildResourceTags(resource: PublicResourceCard) {
 
 export default function PublicResourcesPage() {
   const { session, status } = useAuth();
+  const publishResourceHref = session.authenticated
+    ? "/resources/create"
+    : "/login?next=%2Fresources%2Fcreate";
   const [filters, setFilters] = useState(DEFAULT_RESOURCE_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<ReturnType<typeof getBrowserLocation> extends Promise<infer T> ? T : never>();
   const [locationStatus, setLocationStatus] = useState(
@@ -116,9 +126,14 @@ export default function PublicResourcesPage() {
     PUBLIC_RESOURCES_QUERY,
     { variables }
   );
+  const { data: categoryData, error: categoryError } = useQuery<ResourceCategoryOptionsQueryData>(
+    RESOURCE_CATEGORY_OPTIONS_QUERY
+  );
 
   const resources = data?.searchResources.nodes ?? [];
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
+  const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
 
   const toggleFilter = (key: ToggleFilterKey) => {
     setFilters(current => ({
@@ -151,6 +166,9 @@ export default function PublicResourcesPage() {
             </Button>
             <Button component={NextLink} href="/needs" variant="outlined">
               Browse needs
+            </Button>
+            <Button component={NextLink} href={publishResourceHref} variant="contained">
+              Publish resource
             </Button>
             {session.authenticated ? (
               <LogoutButton color="inherit" redirectTo="/resources" variant="outlined">
@@ -192,6 +210,12 @@ export default function PublicResourcesPage() {
           </Alert>
         ) : null}
 
+        {categoryErrorMessage ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {categoryErrorMessage}
+          </Alert>
+        ) : null}
+
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
             <Stack spacing={2}>
@@ -208,18 +232,34 @@ export default function PublicResourcesPage() {
                 }}
               />
 
-              <TextField
-                fullWidth
-                label="Categories"
-                placeholder="Comma-separated labels, for example tools, transport"
-                value={filters.categoryText}
-                onChange={event => {
-                  setFilters(current => ({
-                    ...current,
-                    categoryText: event.target.value
-                  }));
-                }}
-              />
+              <Box>
+                <Typography gutterBottom variant="subtitle2">
+                  Categories
+                </Typography>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {categoryOptions.map(category => {
+                    const selected = filters.categoryCodes.includes(category.code);
+
+                    return (
+                      <Button
+                        key={category.code}
+                        onClick={() => {
+                          setFilters(current => ({
+                            ...current,
+                            categoryCodes: selected
+                              ? current.categoryCodes.filter(code => code !== category.code)
+                              : [...current.categoryCodes, category.code].sort((left, right) => left - right)
+                          }));
+                        }}
+                        size="small"
+                        variant={selected ? "contained" : "outlined"}
+                      >
+                        {category.label}
+                      </Button>
+                    );
+                  })}
+                </Stack>
+              </Box>
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                 <Button onClick={() => toggleFilter("isProduct")} size="small" variant={filterVariant(filters.isProduct)}>

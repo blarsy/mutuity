@@ -213,4 +213,82 @@ describe("resource search integration", () => {
     expect(titles).not.toContain(`${prefix} - Gift Delivery`);
     expect(titles).not.toContain(`${prefix} - Exchange Only`);
   });
+
+  it("filters resources by the fixed system category codes", async () => {
+    const prefix = `US1 Resource Categories ${Date.now()}`;
+    const creator = await seedDemoAccount({
+      identifier: `resource-categories-${Date.now()}@example.com`,
+      displayName: "Resource Category Creator"
+    });
+
+    await seedResource({
+      creatorAccount: creator,
+      title: `${prefix} - Food`,
+      categoryCodes: [3]
+    });
+
+    await seedResource({
+      creatorAccount: creator,
+      title: `${prefix} - Transport`,
+      categoryCodes: [2]
+    });
+
+    const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: `
+          query SearchResourcesByCategory(
+            $searchText: String!
+            $latitude: BigFloat!
+            $longitude: BigFloat!
+            $categoryCodes: [Int!]
+          ) {
+            searchResources(
+              searchText: $searchText
+              latitude: $latitude
+              longitude: $longitude
+              categoryCodes: $categoryCodes
+            ) {
+              nodes {
+                title
+                categoryLabels
+              }
+            }
+          }
+        `,
+        variables: {
+          searchText: prefix,
+          latitude: 50.6072,
+          longitude: 3.3889,
+          categoryCodes: [3]
+        }
+      })
+    });
+
+    expect(response.status).toBe(200);
+
+    const payload = (await response.json()) as {
+      data?: {
+        searchResources: {
+          nodes: Array<{
+            title: string;
+            categoryLabels: string[];
+          }>;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(payload.errors).toBeUndefined();
+
+    const nodes = payload.data?.searchResources.nodes ?? [];
+    const titles = nodes.map(node => node.title);
+
+    expect(titles).toContain(`${prefix} - Food`);
+    expect(titles).not.toContain(`${prefix} - Transport`);
+    expect(nodes[0]?.categoryLabels).toContain("Food & beverage");
+  });
 });

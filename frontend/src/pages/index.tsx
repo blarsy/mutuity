@@ -9,6 +9,9 @@ export default function HomePage() {
   const createCampaignHref = session.authenticated
     ? "/campaigns/create"
     : "/login?next=%2Fcampaigns%2Fcreate";
+  const createResourceHref = session.authenticated
+    ? "/resources/create"
+    : "/login?next=%2Fresources%2Fcreate";
 
   return (
     <Container maxWidth="md">
@@ -42,6 +45,9 @@ export default function HomePage() {
           </Button>
           <Button component={NextLink} href="/resources" variant="contained">
             Browse Resources
+          </Button>
+          <Button component={NextLink} href={createResourceHref} variant="outlined">
+            Publish Resource
           </Button>
           <Button component={NextLink} href={createCampaignHref} variant="outlined">
             Create Campaign
