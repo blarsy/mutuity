@@ -173,6 +173,48 @@ export const RESOURCE_DETAIL_QUERY = gql`
   }
 `;
 
+export const RESOURCE_BIDS_OVERVIEW_QUERY = gql`
+  query ResourceBidsOverview($first: Int = 100) {
+    allResourceBids(first: $first) {
+      nodes {
+        id
+        resourceId
+        bidderAccountId
+        message
+        proposedTokenAmount
+        status
+        createdAt
+        respondedAt
+        respondedByAccountId
+        accountByBidderAccountId {
+          id
+          displayName
+          externalSubject
+        }
+        resourceByResourceId {
+          id
+          creatorAccountId
+          title
+          description
+          location
+          defaultTokenAmount
+          categoryLabels
+          isProduct
+          isService
+          canBeExchanged
+          expiresAt
+          createdAt
+          accountByCreatorAccountId {
+            id
+            displayName
+            externalSubject
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const CREATE_RESOURCE_BID_MUTATION = gql`
   mutation SubmitResourceBid($input: SubmitResourceBidInput!) {
     submitResourceBid(input: $input) {
