@@ -1,19 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
-import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
-import { Form, Formik } from "formik";
+import { Alert, Box, Container, Typography } from "@mui/material";
 
 import { useAuth } from "../features/auth/AuthProvider";
-import {
-  loginInitialValues,
-  loginValidationSchema,
-  type LoginValues
-} from "../features/auth/login.validation";
+import { LoginForm } from "../features/auth/LoginForm";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { status, signIn, session } = useAuth();
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { status, session } = useAuth();
 
   const nextDestination = useMemo(() => {
     const candidate = router.query.next;
@@ -26,15 +20,6 @@ export default function LoginPage() {
       void router.replace(nextDestination);
     }
   }, [nextDestination, router, status]);
-
-  const handleSubmit = async (values: LoginValues) => {
-    setSubmitError(null);
-    await signIn({
-      identifier: values.identifier.trim(),
-      password: values.password
-    });
-    await router.replace(nextDestination);
-  };
 
   return (
     <Container maxWidth="sm">
@@ -64,61 +49,7 @@ export default function LoginPage() {
           </Alert>
         ) : null}
 
-        {submitError ? (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {submitError}
-          </Alert>
-        ) : null}
-
-        <Formik
-          initialValues={loginInitialValues}
-          validationSchema={loginValidationSchema}
-          onSubmit={async (values, helpers) => {
-            try {
-              await handleSubmit(values);
-            } catch (error) {
-              setSubmitError(
-                error instanceof Error ? error.message : "Something went wrong. Please try again."
-              );
-            } finally {
-              helpers.setSubmitting(false);
-            }
-          }}
-        >
-          {({ values, errors, touched, handleBlur, handleChange, isSubmitting }) => (
-            <Form>
-              <Stack spacing={2}>
-                <TextField
-                  autoComplete="username"
-                  autoFocus
-                  error={Boolean(touched.identifier && errors.identifier)}
-                  helperText={touched.identifier ? errors.identifier : ""}
-                  label="Email or account identifier"
-                  name="identifier"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  required
-                  value={values.identifier}
-                />
-                <TextField
-                  autoComplete="current-password"
-                  error={Boolean(touched.password && errors.password)}
-                  helperText={touched.password ? errors.password : ""}
-                  label="Password"
-                  name="password"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  required
-                  type="password"
-                  value={values.password}
-                />
-                <Button disabled={isSubmitting || status === "loading"} type="submit" variant="contained">
-                  Sign in
-                </Button>
-              </Stack>
-            </Form>
-          )}
-        </Formik>
+        <LoginForm nextDestination={nextDestination} showSecondaryActions />
       </Box>
     </Container>
   );

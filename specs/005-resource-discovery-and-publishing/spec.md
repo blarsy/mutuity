@@ -102,6 +102,25 @@ As an interested user, I can send a bid or response to a resource so I can start
 - **FR-022**: The response flow for resources MUST keep `bid` distinct from `claim` where lifecycle or business terms differ.
 - **FR-023**: Resource visibility and response permissions MUST be enforced in PostgreSQL and not trusted to the client.
 - **FR-024**: The initial slice SHOULD reuse the successful discovery/search patterns already established for needs where appropriate.
+- **FR-025**: The web UI MUST expose an authentication-aware top bar whose menu items and account actions differ between signed-in and signed-out states.
+- **FR-026**: When an account is signed in, the top bar MUST provide navigation entries for `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, and `Notifications`, plus a visible token counter shortcut to `Contribution` and an avatar menu with `Profile`, `Preferences`, `Contribution`, and `Log out`.
+- **FR-027**: When no account is signed in, the top bar MUST provide at least `Search` plus a compact login trigger that opens the sign-in UI in a dialog.
+- **FR-028**: Resource browse results MUST be renderable through a reusable card surface that summarizes title, creator, preview image when available, expiration, and a shortened description, while keeping creator-click and card-click behaviors independently configurable.
+- **FR-029**: Need browse results MUST be renderable through a reusable card surface that summarizes title, creator, expiration, and a shortened description, while keeping creator-click and card-click behaviors independently configurable.
+- **FR-030**: The resource detail page MUST expose creator navigation, image zoom when media exists, authenticated chat initiation, and bid entry for exchangeable resources; if no account is signed in, those gated actions MUST open a contextual sign-in dialog.
+- **FR-031**: The need detail page MUST expose creator navigation, authenticated chat initiation, and claim entry; if no account is signed in, those gated actions MUST open a contextual sign-in dialog.
+- **FR-032**: The initial web information architecture MUST reserve dedicated top-level page surfaces for `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`, even when some remain unimplemented in the current MVP.
+- **FR-033**: Account detail pages MUST show the public account profile plus the account’s active resources and needs, and campaign detail pages MUST show linked approved resources and needs together with create-resource and create-need entry points.
+- **FR-034**: The authentication surface MUST support sign-in, account registration with local credentials and future external providers, password reset request, and reset-token-based access restoration as first-class reusable flows.
+
+### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
+
+The following UI surfaces are important enough to be documented now at the behavior and routing level, even when some remain for later implementation:
+
+- **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, and `ResetPassword`
+- **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, `RestoreAccess`
+- **Supporting pages**: create-resource, create-need, resource detail, need detail, account detail, and campaign detail pages
+- **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 
 ### Key Entities *(include if feature involves data)*
 

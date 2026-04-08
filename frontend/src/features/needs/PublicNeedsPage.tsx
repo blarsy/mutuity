@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -24,6 +25,7 @@ import { NeedClaimDialog } from "./NeedClaimDialog";
 import { getBrowserLocation } from "./locationFallback";
 import { VIEWER_CLAIM_OVERVIEW_QUERY } from "./needClaims.queries";
 import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
+import { NeedCard } from "../ui/NeedCard";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
 
 type NeedNode = {
@@ -145,6 +147,7 @@ function formatClaimStatus(status: string) {
 }
 
 export default function PublicNeedsPage() {
+  const router = useRouter();
   const { session, status } = useAuth();
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
@@ -340,7 +343,14 @@ export default function PublicNeedsPage() {
           <Alert severity="warning">No active needs match the current filters right now.</Alert>
         ) : null}
 
-        <Stack spacing={2} sx={{ mt: 3 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            mt: 3
+          }}
+        >
           {needs.map(need => {
             const ownClaim = myClaimsByNeedId.get(need.id);
             const isCreator = session.account?.id === need.creatorAccountId;
@@ -350,21 +360,33 @@ export default function PublicNeedsPage() {
             );
 
             return (
-            <Card key={need.id} variant="outlined">
-              <CardContent>
-                <Stack spacing={1.5}>
-                  <Box>
-                    <Typography gutterBottom variant="h6">
-                      {need.title}
-                    </Typography>
-                    <Typography color="text.secondary" variant="body2">
-                      Posted by {need.creatorDisplayName} • {need.location}
-                    </Typography>
-                  </Box>
-
-                  {need.description ? <Typography>{need.description}</Typography> : null}
-
-                  <Stack direction="row" flexWrap="wrap" gap={1}>
+              <NeedCard
+                actions={
+                  session.authenticated ? (
+                    isCreator ? (
+                      <Button
+                        disabled={!firstIncomingClaim}
+                        onClick={() => setSelectedClaimId(firstIncomingClaim?.id ?? null)}
+                        variant="outlined"
+                      >
+                        {firstIncomingClaim ? "Manage incoming claims" : "No claims yet"}
+                      </Button>
+                    ) : (
+                      <NeedClaimDialog
+                        existingClaim={ownClaim}
+                        needId={need.id}
+                        needTitle={need.title}
+                        onClaimed={handleClaimed}
+                      />
+                    )
+                  ) : (
+                    <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
+                      Sign in to claim
+                    </Button>
+                  )
+                }
+                chips={
+                  <>
                     {buildNeedTags(need).map(tag => (
                       <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                     ))}
@@ -378,66 +400,49 @@ export default function PublicNeedsPage() {
                     {isCreator && incomingClaimCount > 0 ? (
                       <Chip label={`${incomingClaimCount} incoming claim${incomingClaimCount > 1 ? "s" : ""}`} size="small" color="warning" />
                     ) : null}
-                  </Stack>
+                  </>
+                }
+                creatorName={need.creatorDisplayName}
+                description={need.description}
+                expiresAt={need.expiresAt}
+                footer={
+                  <Stack spacing={1}>
+                    {(need.requiredToolingText || need.requiredCompetenceText) ? (
+                      <Box>
+                        {need.requiredToolingText ? (
+                          <Typography variant="body2">Tooling: {need.requiredToolingText}</Typography>
+                        ) : null}
+                        {need.requiredCompetenceText ? (
+                          <Typography variant="body2">Competence: {need.requiredCompetenceText}</Typography>
+                        ) : null}
+                      </Box>
+                    ) : null}
 
-                  {(need.requiredToolingText || need.requiredCompetenceText) ? (
-                    <Box>
-                      {need.requiredToolingText ? (
-                        <Typography variant="body2">Tooling: {need.requiredToolingText}</Typography>
-                      ) : null}
-                      {need.requiredCompetenceText ? (
-                        <Typography variant="body2">Competence: {need.requiredCompetenceText}</Typography>
-                      ) : null}
-                    </Box>
-                  ) : null}
+                    <Divider />
 
-                  <Divider />
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                      <Typography variant="body2">Weighted score: {need.weightedScore}</Typography>
+                      <Typography variant="body2">Closeness: {need.closenessScore}</Typography>
+                      <Typography variant="body2">Ease: {need.easeOfSetupScore}</Typography>
+                      <Typography variant="body2">Expiry: {need.expirationScore}</Typography>
+                    </Stack>
 
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                    <Typography variant="body2">Weighted score: {need.weightedScore}</Typography>
-                    <Typography variant="body2">Closeness: {need.closenessScore}</Typography>
-                    <Typography variant="body2">Ease: {need.easeOfSetupScore}</Typography>
-                    <Typography variant="body2">Expiry: {need.expirationScore}</Typography>
-                  </Stack>
-
-                  <Stack
-                    direction={{ xs: "column", md: "row" }}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "stretch", md: "center" }}
-                    spacing={2}
-                  >
                     <Typography color="text.secondary" variant="caption">
-                      Expires: {formatDate(need.expiresAt)} • Query origin: {need.queryLatitude}, {need.queryLongitude}
+                      {need.location} • Expires: {formatDate(need.expiresAt)} • Query origin: {need.queryLatitude}, {need.queryLongitude}
                     </Typography>
-
-                    {session.authenticated ? (
-                      isCreator ? (
-                        <Button
-                          disabled={!firstIncomingClaim}
-                          onClick={() => setSelectedClaimId(firstIncomingClaim?.id ?? null)}
-                          variant="outlined"
-                        >
-                          {firstIncomingClaim ? "Manage incoming claims" : "No claims yet"}
-                        </Button>
-                      ) : (
-                        <NeedClaimDialog
-                          existingClaim={ownClaim}
-                          needId={need.id}
-                          needTitle={need.title}
-                          onClaimed={handleClaimed}
-                        />
-                      )
-                    ) : (
-                      <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
-                        Sign in to claim
-                      </Button>
-                    )}
                   </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
-          );})}
-        </Stack>
+                }
+                key={need.id}
+                onClick={() => {
+                  void router.push(`/needs/${need.id}`);
+                }}
+                onCreatorClick={() => {
+                  void router.push(`/accounts/${need.creatorAccountId}`);
+                }}
+                title={need.title}
+              />
+            );})}
+        </Box>
       </Box>
     </Container>
   );

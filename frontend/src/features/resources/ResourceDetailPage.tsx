@@ -1,4 +1,5 @@
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -16,6 +17,7 @@ import {
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { ResourceBidDialog } from "./ResourceBidDialog";
 import { RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
@@ -128,6 +130,7 @@ function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warni
 }
 
 export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
+  const router = useRouter();
   const { session, status } = useAuth();
   const { data, loading, error, refetch } = useQuery<ResourceDetailData>(RESOURCE_DETAIL_QUERY, {
     variables: { resourceId }
@@ -178,9 +181,24 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
             <Typography component="h1" gutterBottom variant="h4">
               {resource.title}
             </Typography>
-            <Typography color="text.secondary">
-              Shared by {creatorLabel} • {resource.location}
-            </Typography>
+            <Stack alignItems="center" direction="row" spacing={1}>
+              <AvatarIconButton
+                displayName={creatorLabel}
+                onClick={() => {
+                  void router.push(`/accounts/${resource.creatorAccountId}`);
+                }}
+              />
+              <Button
+                color="inherit"
+                onClick={() => {
+                  void router.push(`/accounts/${resource.creatorAccountId}`);
+                }}
+                sx={{ minWidth: 0, px: 0.5 }}
+              >
+                {creatorLabel}
+              </Button>
+              <Typography color="text.secondary">• {resource.location}</Typography>
+            </Stack>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>

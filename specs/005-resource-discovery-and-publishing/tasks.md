@@ -8,6 +8,13 @@
 - [ ] T002 Draft the implementation plan in `specs/005-resource-discovery-and-publishing/plan.md`
 - [ ] T003 Audit the relevant Tope-là resource screens and flows before coding begins
 
+## Phase 1b: UI Architecture Foundations
+
+- [ ] T015 Document the shared navigation shell, route inventory, and reusable UI building blocks in `specs/005-resource-discovery-and-publishing/spec.md` and `plan.md`
+- [ ] T016 Create shared `AvatarIconButton`, `ResourceCard`, and `NeedCard` components for reuse across discovery, detail, account, and campaign pages
+- [ ] T017 Add reusable auth entry surfaces for `Login`, `Register`, `ResetPassword`, and `RestoreAccess`, including dialog-based entry points for gated actions
+- [ ] T018 Add dedicated workspace pages for `Bids`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, and `Contribution` as the route map fills out
+
 ## Phase 2: Resource Discovery (P1)
 
 - [ ] T004 Add backend tests for active-resource filtering, closeness-only sorting with recent-created tie-breaking, expiration-versus-permanent behavior, ranking, and the six tri-state flag filters

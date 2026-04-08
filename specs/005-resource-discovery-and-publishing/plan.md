@@ -50,6 +50,57 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - publisher review state
 - conversation handoff and notification wiring
 
+## Web IA And Componentization Plan
+
+### Shared navigation shell
+- The initial web shell should use a single top bar with route shortcuts on the left and account access on the right.
+- **Signed-in state**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, a visible token counter linking to `Contribution`, and an avatar menu exposing `Profile`, `Preferences`, `Contribution`, and `Log out`.
+- **Signed-out state**: `Search` plus a compact sign-in trigger that opens the authentication UI as a dialog.
+- The page map should stay stable even while some destinations remain behind placeholder or MVP-only implementations.
+
+### Immediate reusable components
+
+| Component | Responsibility | Near-term reuse |
+|-----------|----------------|-----------------|
+| `AvatarIconButton` | Show a round account avatar or account-name abbreviation and act as the account entry trigger | top bar, resource creator links, need creator links, account pages, chat |
+| `ResourceCard` | Show resource summary content in wrapping browse lists with separate click affordances for creator, image, and main body | search results, account pages, campaign pages, resource management lists |
+| `NeedCard` | Show need summary content in wrapping browse lists with separate click affordances for creator and main body | contribute page, account pages, campaign pages, need management lists |
+| `Login` | Capture email/password sign-in with secondary actions for password reset and registration | dialog entry from top bar and contextual action gates |
+| `Register` | Capture local sign-up plus future external provider options such as Apple and Google | standalone auth page or dialog follow-up |
+| `ResetPassword` | Confirm that a password-reset link has been sent for the entered email address | password-reset flow |
+
+Implementation detail such as exact dimensions, MUI primitives, spacing, or prop signatures can be refined later; what is fixed now is the role each surface plays in the route and interaction model.
+
+### Page and route inventory
+
+#### Top-level pages
+- **`Search`**: default landing page backed by resource discovery; clicking a `ResourceCard` opens the corresponding resource detail page.
+- **`Contribute`**: needs discovery page; clicking a `NeedCard` opens the corresponding need detail page.
+- **`Resources`**: authenticated list of resources created by the current account.
+- **`Bids`**: authenticated workspace combining bids sent by the current account and bids received on the current account’s resources.
+- **`Needs`**: authenticated list of needs created by the current account.
+- **`Claims`**: authenticated workspace combining claims sent by the current account and claims received on the current account’s needs.
+- **`Chat`**: authenticated list of ongoing conversations about resources and needs.
+- **`Notifications`**: authenticated inbox for system events.
+- **`Profile`**: authenticated account profile and edit surface.
+- **`Preferences`**: authenticated notification and preference settings.
+- **`Contribution`**: token-oriented guidance, balance, and transaction history.
+- **`RestoreAccess`**: reset-token completion page for choosing a new password.
+
+#### Supporting pages
+- **Create resource page**: create a new resource and optionally prefill a linked campaign.
+- **Create need page**: create a new need and optionally prefill a linked campaign.
+- **Resource detail page**: show the full public resource, fullscreen image preview when relevant, chat entry, bid entry, and creator navigation.
+- **Need detail page**: show the full public need, chat entry, claim entry, and creator navigation.
+- **Account detail page**: show public account information plus active resources and needs.
+- **Campaign detail page**: show campaign details, approved linked resources and needs, and create-resource/create-need shortcuts.
+
+### Interaction boundaries to preserve
+- Clicking a creator should navigate to the creator’s account details.
+- Clicking a resource or need card body should navigate to its corresponding detail page.
+- Anonymous users may browse public content, but chat, bid, claim, and create actions should open a contextual sign-in experience.
+- Accepted bids and accepted claims should converge into a conversation-oriented follow-up flow rather than staying trapped inside list-only management screens.
+
 ## Risks & Mitigations
 
 | Risk | Impact | Mitigation |

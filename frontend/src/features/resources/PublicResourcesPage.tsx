@@ -1,18 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Container,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, Chip, Container, Stack, TextField, Typography } from "@mui/material";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
@@ -31,6 +21,7 @@ import {
   type ResourceSearchFilters,
   type TriStateFilter
 } from "./types";
+import { ResourceCard } from "../ui/ResourceCard";
 import { PUBLIC_RESOURCES_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
 
 type PublicResourcesQueryData = {
@@ -90,6 +81,7 @@ function buildResourceTags(resource: PublicResourceCard) {
 }
 
 export default function PublicResourcesPage() {
+  const router = useRouter();
   const { session, status } = useAuth();
   const publishResourceHref = session.authenticated
     ? "/resources/create"
@@ -290,77 +282,63 @@ export default function PublicResourcesPage() {
         ) : resources.length === 0 ? (
           <Alert severity="warning">No resources match the current filters yet.</Alert>
         ) : (
-          <Stack spacing={2}>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
+            }}
+          >
             {resources.map(resource => {
               const isCreator = session.account?.id === resource.creatorAccountId;
 
               return (
-                <Card key={resource.id} variant="outlined">
-                  <CardContent>
-                    <Stack spacing={1.5}>
-                      <Stack
-                        alignItems={{ xs: "flex-start", sm: "center" }}
-                        direction={{ xs: "column", sm: "row" }}
-                        justifyContent="space-between"
-                        spacing={1}
-                      >
-                        <Box>
-                          <Typography variant="h6">{resource.title}</Typography>
-                          <Typography color="text.secondary" variant="body2">
-                            Shared by {resource.creatorDisplayName} • {resource.location}
-                          </Typography>
-                        </Box>
-
-                        <Chip label={`${Number(resource.distanceKm).toFixed(1)} km away`} size="small" />
-                      </Stack>
-
-                      {resource.description ? (
-                        <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body2">
-                          {resource.description}
-                        </Typography>
+                <ResourceCard
+                  actions={
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                      <Button component={NextLink} href={`/resources/${resource.id}`} variant="outlined">
+                        {isCreator ? "Review responses" : "View details"}
+                      </Button>
+                      {!session.authenticated ? (
+                        <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
+                          Sign in to respond
+                        </Button>
                       ) : null}
-
-                      <Stack direction="row" flexWrap="wrap" gap={1}>
-                        {buildResourceTags(resource).map(tag => (
-                          <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
-                        ))}
-                        {resource.categoryLabels.map(label => (
-                          <Chip key={`${resource.id}-category-${label}`} color="secondary" label={label} size="small" variant="outlined" />
-                        ))}
-                        {isCreator ? <Chip color="secondary" label="your resource" size="small" /> : null}
-                      </Stack>
-
-                      <Typography color="text.secondary" variant="body2">
-                        Suggested token amount: {resource.defaultTokenAmount ?? "not set"}
-                      </Typography>
-
-                      <Stack
-                        alignItems={{ xs: "stretch", md: "center" }}
-                        direction={{ xs: "column", md: "row" }}
-                        justifyContent="space-between"
-                        spacing={2}
-                      >
-                        <Typography color="text.secondary" variant="body2">
-                          Expires: {formatDate(resource.expiresAt)}
-                        </Typography>
-
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                          <Button component={NextLink} href={`/resources/${resource.id}`} variant="outlined">
-                            {isCreator ? "Review responses" : "View details"}
-                          </Button>
-                          {!session.authenticated ? (
-                            <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                              Sign in to respond
-                            </Button>
-                          ) : null}
-                        </Stack>
-                      </Stack>
                     </Stack>
-                  </CardContent>
-                </Card>
+                  }
+                  chips={
+                    <>
+                      <Chip label={`${Number(resource.distanceKm).toFixed(1)} km away`} size="small" />
+                      {buildResourceTags(resource).map(tag => (
+                        <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
+                      ))}
+                      {resource.categoryLabels.map(label => (
+                        <Chip key={`${resource.id}-category-${label}`} color="secondary" label={label} size="small" variant="outlined" />
+                      ))}
+                      {isCreator ? <Chip color="secondary" label="your resource" size="small" /> : null}
+                    </>
+                  }
+                  creatorName={resource.creatorDisplayName}
+                  description={resource.description}
+                  expiresAt={resource.expiresAt}
+                  footer={
+                    <Typography color="text.secondary" variant="body2">
+                      Suggested token amount: {resource.defaultTokenAmount ?? "not set"} • Expires: {formatDate(resource.expiresAt)}
+                    </Typography>
+                  }
+                  key={resource.id}
+                  location={resource.location}
+                  onClick={() => {
+                    void router.push(`/resources/${resource.id}`);
+                  }}
+                  onCreatorClick={() => {
+                    void router.push(`/accounts/${resource.creatorAccountId}`);
+                  }}
+                  title={resource.title}
+                />
               );
             })}
-          </Stack>
+          </Box>
         )}
       </Box>
     </Container>
