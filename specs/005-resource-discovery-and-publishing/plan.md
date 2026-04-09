@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement the first concrete Tope-là-native slice in the unified platform: browsing active resources, publishing new offers, and capturing the separate resource-response (`bid`) flow. The implementation should reuse the proven search/auth/conversation patterns from Mutuity where they fit, while respecting the fact that `resource` and `bid` are not identical to `need` and `claim`.
+Implement the first concrete Tope-là-native slice in the unified platform: browsing active resources, publishing new offers, capturing the separate resource-response (`bid`) flow, and establishing the first unified notifications inbox foundation. The implementation should reuse the proven search/auth/conversation patterns from Mutuity where they fit, while respecting the fact that `resource` and `bid` are not identical to `need` and `claim`.
 
 ## Technical Context
 
@@ -49,6 +49,13 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - reject bids on expired resources
 - publisher review state
 - conversation handoff and notification wiring
+
+### Slice 4 — Notifications inbox foundation (P2)
+- aggregate persisted claim and bid notifications into a unified authenticated inbox
+- map supported event types to stable user-facing copy and destination routes
+- support per-item read, open-to-read navigation, and `Set all as read` with confirmation
+- enforce notification-retention cleanup rules in SQL-owned backend functions
+- leave timed/system-generated emitters (`resource_bid_expiring_soon`, campaign airdrop milestones, welcome/profile reward, gifted Topes, and future grant notifications) as explicit follow-up work driven by background processing
 
 ## Web IA And Componentization Plan
 
@@ -100,6 +107,13 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Clicking a resource or need card body should navigate to its corresponding detail page.
 - Anonymous users may browse public content, but chat, bid, claim, and create actions should open a contextual sign-in experience.
 - Accepted bids and accepted claims should converge into a conversation-oriented follow-up flow rather than staying trapped inside list-only management screens.
+
+### Notifications model and operational rules
+- The first inbox implementation may aggregate multiple persisted notification sources (currently claim notifications and resource-bid notifications) into a single UI feed while keeping the underlying domain tables distinct.
+- Each notification carries an event type, structured payload, `createdAt`, and `readAt`, and the inbox is responsible for mapping these into the approved user-facing message copy and destination route.
+- Opening a notification should mark it as read before navigation; the inbox should also allow single-item checkbox reading and bulk `Set all as read` with a confirmation dialog.
+- Retention behavior stays SQL-owned: notifications are eligible for deletion only once they are at least 7 days old and have been marked read for at least 24 hours.
+- Timed/system-generated notifications such as bid-expiry warnings and campaign-airdrop countdowns should run from Graphile Worker or another scheduled backend process rather than being inferred in the browser.
 
 ## Risks & Mitigations
 

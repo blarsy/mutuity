@@ -112,6 +112,14 @@ As an interested user, I can send a bid or response to a resource so I can start
 - **FR-032**: The initial web information architecture MUST reserve dedicated top-level page surfaces for `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`, even when some remain unimplemented in the current MVP.
 - **FR-033**: Account detail pages MUST show the public account profile plus the account’s active resources and needs, and campaign detail pages MUST show linked approved resources and needs together with create-resource and create-need entry points.
 - **FR-034**: The authentication surface MUST support sign-in, account registration with local credentials and future external providers, password reset request, and reset-token-based access restoration as first-class reusable flows.
+- **FR-035**: The platform MUST persist notifications as distinct account-scoped entities with their own creation timestamp, read timestamp, event type, and structured payload.
+- **FR-036**: The notifications inbox MUST surface at least the following attention-worthy events when relevant: claim received on one of the account’s needs; bid received on one of the account’s resources; bid-expiring-soon warning; campaign airdrop-soon warning; campaign airdrop completion; welcome/profile-completion encouragement; tokens received as a gift; claim settled; and bid accepted, rejected, cancelled, or expired without response.
+- **FR-037**: Each supported notification type MUST map to a clear user-facing message and destination route, including `/claims`, `/bids`, `/contribution`, `/profile`, or the relevant campaign public page as appropriate.
+- **FR-038**: Opening a notification from the notifications page MUST mark that notification as read and then navigate to its mapped destination.
+- **FR-039**: The notifications page MUST allow an account owner to mark any individual unread notification as read directly from the inbox without navigating away.
+- **FR-040**: The notifications page MUST provide a `Set all as read` action guarded by an explicit yes/no confirmation dialog, and that action MUST affect all currently unread notifications for the account.
+- **FR-041**: The system MUST delete notifications only when they are at least 7 days old and have already been marked as read for at least 24 hours.
+- **FR-042**: Timed notification events such as bid-expiring-soon and campaign-airdrop-soon MUST be emitted by scheduled or background processing rather than relying on the client UI to generate them.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
@@ -122,11 +130,31 @@ The following UI surfaces are important enough to be documented now at the behav
 - **Supporting pages**: create-resource, create-need, resource detail, need detail, account detail, and campaign detail pages
 - **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 
+### Notification Event Catalog *(current documented messages and destinations)*
+
+| Description | Default user-facing message | Destination |
+| ----------- | --------------------------- | ----------- |
+| A claim has been sent about one of the account owner’s needs | `You got a claim for your need <need name>` | `Claims` page |
+| A bid has been received on one of the account owner’s resources | `You got a bid for your resource <resource name>` | `Bids` page |
+| A bid you received is about to expire (2 hours before resource expiration) | `A bid you received is about to expire` | `Bids` page |
+| A campaign with at least one of the account owner’s needs or resources is 48 hours from airdrop time | `The airdrop of campaign <campaign name> is coming soon !` | public campaign page |
+| The airdrop of such a campaign has occurred | `Airdrop done on campaign <campaign name> ! Check your contribution page to see if you got it` | `Contribution` page |
+| Welcome/profile-completion encouragement | `Welcome to tope-là, make a polished profile, and earn some Topes !` | `Profile` page |
+| Tokens received from another account as a gift | `<sender name> gave you <amount received> Topes !` | `Contribution` page |
+| A claim you have sent has been settled | `Congratulations, your claim on <need name> has been settled` | `Claims` page |
+| A bid you sent has been accepted | `Congratulations, your bid on <resource name> has been accepted` | `Bids` page |
+| A bid you sent has been rejected | `Your bid on <resource name> has been rejected` | `Bids` page |
+| A bid you sent has been cancelled because the resource expired or was deleted | `Your bid on <resource name> has been cancelled` | `Bids` page |
+| A bid you sent has expired without a response | `Your bid on <resource name> has expired without a response` | `Bids` page |
+
+> Future grant-related notifications remain explicitly out of the current slice until their payload and destination rules are specified.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Resource**: An offer of an object, service, skill, or exchange opportunity, characterized by independent modality flags describing what it is (`isProduct`, `isService`) and how it can be fulfilled (`canBeGiven`, `canBeExchanged`, `canBeTakenAway`, `canBeDelivered`), plus a mandatory `intensity`, an optional negotiated Topes reference amount, and an optional rich-text `description` displayed on the resource detail UI.
 - **ResourceCategory**: A category or taxonomy entry used for browsing and filtering.
 - **ResourceBid**: A response or negotiation object linked to a resource and governed by resource-specific rules, optionally seeded with the resource’s default Topes amount when one is provided.
+- **Notification**: A persisted, account-scoped attention event aggregated into the notifications inbox, carrying a typed payload, read state, destination mapping, and retention-cleanup eligibility.
 - **ResourceMediaAsset**: Uploaded or referenced media metadata for the resource listing.
 
 ## Success Criteria *(mandatory)*

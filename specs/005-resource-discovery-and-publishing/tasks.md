@@ -15,6 +15,14 @@
 - [ ] T017 Add reusable auth entry surfaces for `Login`, `Register`, `ResetPassword`, and `RestoreAccess`, including dialog-based entry points for gated actions
 - [ ] T018 Add dedicated workspace pages for `Bids`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, and `Contribution` as the route map fills out
 
+## Phase 1c: Notifications Foundation
+
+- [ ] T019 Document the notification event catalog, default message copy, route mapping, and retention rules in `specs/005-resource-discovery-and-publishing/spec.md` and `plan.md`
+- [ ] T020 Build the initial `/notifications` inbox by aggregating claim and resource-bid notifications with per-item read and open-to-read behavior
+- [ ] T021 Add SQL-owned notification actions for single-item read, bulk `Set all as read`, and retention cleanup
+- [ ] T022 Implement scheduled/background emitters for bid-expiring-soon, campaign-airdrop-soon, campaign-airdrop-done, welcome/profile reward, gifted-Topes, and future grant notifications
+- [ ] T023 Run end-to-end verification for notifications rendering, routing, checkbox/bulk-read behavior, and cleanup eligibility
+
 ## Phase 2: Resource Discovery (P1)
 
 - [ ] T004 Add backend tests for active-resource filtering, closeness-only sorting with recent-created tie-breaking, expiration-versus-permanent behavior, ranking, and the six tri-state flag filters
