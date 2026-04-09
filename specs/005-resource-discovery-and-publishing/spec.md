@@ -120,6 +120,14 @@ As an interested user, I can send a bid or response to a resource so I can start
 - **FR-040**: The notifications page MUST provide a `Set all as read` action guarded by an explicit yes/no confirmation dialog, and that action MUST affect all currently unread notifications for the account.
 - **FR-041**: The system MUST delete notifications only when they are at least 7 days old and have already been marked as read for at least 24 hours.
 - **FR-042**: Timed notification events such as bid-expiring-soon and campaign-airdrop-soon MUST be emitted by scheduled or background processing rather than relying on the client UI to generate them.
+- **FR-043**: The contribution/token ledger MUST support explicitly documented positive and negative token movements tied to profile completion, resource lifecycle milestones, campaign airdrops, gifting, bid lifecycle, and claim settlement events.
+- **FR-044**: Profile-completion token rewards for first avatar upload, first bio, first address/location, and first external link MUST each be granted at most once over the lifetime of an account.
+- **FR-045**: Resource-related token rewards for a resource reaching 24 hours of age, first image addition, and first default Topes amount (`price` legacy field) assignment MUST each be granted at most once over the lifetime of the corresponding resource.
+- **FR-046**: Campaign-airdrop token credits MUST grant the configured campaign amount at airdrop time at most once per account and per campaign.
+- **FR-047**: Gifting tokens to another account MUST create equal and opposite ledger effects: a negative movement for the sender and a matching positive movement for the receiver for the exact gifted amount.
+- **FR-048**: Creating a bid MUST reserve or deduct the bid amount from the bidder, and cancelling, expiring, or automatically cancelling that bid because the target resource expired or was deleted MUST restore that same amount to the bidder.
+- **FR-049**: Settling a claim MUST create opposite token movements based on the settled claim amount: a positive movement for the claimer whose claim was selected and a negative movement for the account that settles the claim on its need.
+- **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
@@ -149,12 +157,34 @@ The following UI surfaces are important enough to be documented now at the behav
 
 > Future grant-related notifications remain explicitly out of the current slice until their payload and destination rules are specified.
 
+### Token Movement Catalog *(documented contribution ledger rules)*
+
+| When | Amount of tokens | Frequency |
+| ---- | ---------------- | --------- |
+| First time an image is uploaded as avatar icon on the profile | `+20` | once over an account’s lifetime |
+| First time a bio is set on the profile | `+20` | once over an account’s lifetime |
+| First time a location is set as address of the profile | `+20` | once over an account’s lifetime |
+| First time a link is added on the profile | `+20` | once over an account’s lifetime |
+| Resource created 24 hours ago | `+20` | once over a resource’s lifetime |
+| First image added to a resource | `+20` | once over a resource’s lifetime |
+| First time a default Topes amount / legacy `price` is set on a resource | `+20` | once over a resource’s lifetime |
+| Airdrop of a campaign received | `+<campaign’s configured airdrop amount>` | once per account and per campaign at airdrop time |
+| Token gifted to another account | `-<given amount>` | each time the account owner gives tokens |
+| Token received from another account | `+<given amount>` | each time another account gives tokens to this account |
+| Bid created | `-<bid amount>` | each time the account owner creates a bid |
+| Bid cancelled / expired / auto-cancelled | `+<bid amount>` | each time the bid is cancelled, expires, or is cancelled due to resource expiry/deletion |
+| Bid accepted | `-<bid amount>` | corresponds to the accepted bid remaining committed |
+| My claim settled | `+<claim amount>` | whenever a claim created by the account is settled |
+| Settled a claim on my need | `-<claim amount>` | whenever the account settles a received claim |
+| Claim created 24 hours ago | `+10` | once over a claim’s lifetime |
+
 ### Key Entities *(include if feature involves data)*
 
 - **Resource**: An offer of an object, service, skill, or exchange opportunity, characterized by independent modality flags describing what it is (`isProduct`, `isService`) and how it can be fulfilled (`canBeGiven`, `canBeExchanged`, `canBeTakenAway`, `canBeDelivered`), plus a mandatory `intensity`, an optional negotiated Topes reference amount, and an optional rich-text `description` displayed on the resource detail UI.
 - **ResourceCategory**: A category or taxonomy entry used for browsing and filtering.
 - **ResourceBid**: A response or negotiation object linked to a resource and governed by resource-specific rules, optionally seeded with the resource’s default Topes amount when one is provided.
 - **Notification**: A persisted, account-scoped attention event aggregated into the notifications inbox, carrying a typed payload, read state, destination mapping, and retention-cleanup eligibility.
+- **TokenMovement**: An auditable ledger entry representing a positive or negative Topes change caused by profile completion, gifting, campaign airdrop, bid lifecycle, claim settlement, or other contribution rules.
 - **ResourceMediaAsset**: Uploaded or referenced media metadata for the resource listing.
 
 ## Success Criteria *(mandatory)*

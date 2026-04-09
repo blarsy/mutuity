@@ -57,6 +57,13 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - enforce notification-retention cleanup rules in SQL-owned backend functions
 - leave timed/system-generated emitters (`resource_bid_expiring_soon`, campaign airdrop milestones, welcome/profile reward, gifted Topes, and future grant notifications) as explicit follow-up work driven by background processing
 
+### Slice 5 — Contribution and token movement rules (P2)
+- represent token movements as auditable ledger events rather than inferred UI counters
+- grant one-time rewards for profile-completion and resource-completion milestones only once per eligible entity lifetime
+- apply paired debit/credit behavior for gifting, bid reservation/refund, and claim settlement flows
+- support delayed milestone rewards such as `resource created 24 hours ago` and `claim created 24 hours ago` through scheduled/background processing
+- connect campaign airdrop payout logic with per-account, per-campaign idempotency guarantees
+
 ## Web IA And Componentization Plan
 
 ### Shared navigation shell
@@ -114,6 +121,13 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Opening a notification should mark it as read before navigation; the inbox should also allow single-item checkbox reading and bulk `Set all as read` with a confirmation dialog.
 - Retention behavior stays SQL-owned: notifications are eligible for deletion only once they are at least 7 days old and have been marked read for at least 24 hours.
 - Timed/system-generated notifications such as bid-expiry warnings and campaign-airdrop countdowns should run from Graphile Worker or another scheduled backend process rather than being inferred in the browser.
+
+### Token movement model and operational rules
+- Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
+- One-time rewards for avatar upload, first bio, first address, first link, first resource image, first default Topes amount, `resource age >= 24h`, and `claim age >= 24h` must be idempotent and guarded against duplicate issuance.
+- Gifting, accepted bids, bid cancellation/refund, and settled claims should produce paired debit/credit effects that are traceable to the originating business event.
+- Campaign airdrops must remain per-campaign configurable and pay each eligible account at most once per campaign.
+- Because several of these rules are time-based, Graphile Worker or equivalent scheduled processing is part of the intended implementation shape.
 
 ## Risks & Mitigations
 

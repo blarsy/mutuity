@@ -23,6 +23,15 @@
 - [ ] T022 Implement scheduled/background emitters for bid-expiring-soon, campaign-airdrop-soon, campaign-airdrop-done, welcome/profile reward, gifted-Topes, and future grant notifications
 - [ ] T023 Run end-to-end verification for notifications rendering, routing, checkbox/bulk-read behavior, and cleanup eligibility
 
+## Phase 1d: Contribution And Token Movements
+
+- [ ] T024 Document the token-movement catalog, one-time reward constraints, gifting rules, bid debit/refund rules, and claim-settlement token flows in `specs/005-resource-discovery-and-publishing/spec.md` and `plan.md`
+- [ ] T025 Design or extend the SQL-owned token ledger so every positive/negative Topes movement is auditable and linked to its originating business event
+- [ ] T026 Implement one-time profile and resource milestone rewards with duplicate-protection over account/resource lifetime
+- [ ] T027 Implement scheduled/background issuance for `resource age >= 24h` and `claim age >= 24h` rewards
+- [ ] T028 Implement campaign-airdrop payouts with per-account/per-campaign idempotency and contribution-page visibility
+- [ ] T029 Implement gifting, bid reserve/refund, and claim-settlement ledger movements with end-to-end verification
+
 ## Phase 2: Resource Discovery (P1)
 
 - [ ] T004 Add backend tests for active-resource filtering, closeness-only sorting with recent-created tie-breaking, expiration-versus-permanent behavior, ranking, and the six tri-state flag filters
