@@ -29,36 +29,20 @@ import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessa
 
 type NeedClaimNotificationNode = {
   id: string;
+  needClaimId: string;
   eventType: string;
   payload: Record<string, unknown> | null;
   createdAt: string;
   readAt: string | null;
-  needClaimByNeedClaimId: {
-    id: string;
-    needId: string;
-    status: string;
-    needByNeedId: {
-      id: string;
-      title: string;
-    } | null;
-  } | null;
 };
 
 type ResourceBidNotificationNode = {
   id: string;
+  resourceBidId: string;
   eventType: string;
   payload: Record<string, unknown> | null;
   createdAt: string;
   readAt: string | null;
-  resourceBidByResourceBidId: {
-    id: string;
-    resourceId: string;
-    status: string;
-    resourceByResourceId: {
-      id: string;
-      title: string;
-    } | null;
-  } | null;
 };
 
 type NotificationsOverviewData = {
@@ -67,6 +51,26 @@ type NotificationsOverviewData = {
   };
   allResourceBidNotifications: {
     nodes: ResourceBidNotificationNode[];
+  };
+  allNeedClaims: {
+    nodes: Array<{
+      id: string;
+      needId: string;
+      needByNeedId: {
+        id: string;
+        title: string;
+      } | null;
+    }>;
+  };
+  allResourceBids: {
+    nodes: Array<{
+      id: string;
+      resourceId: string;
+      resourceByResourceId: {
+        id: string;
+        title: string;
+      } | null;
+    }>;
   };
 };
 
@@ -181,9 +185,16 @@ export default function NotificationsPage() {
   const [markAllRead, { loading: markAllLoading }] = useMutation(MARK_ALL_NOTIFICATIONS_READ_MUTATION);
 
   const items = useMemo<UnifiedNotification[]>(() => {
+    const needTitleByClaimId = new Map(
+      (data?.allNeedClaims.nodes ?? []).map(claim => [claim.id, claim.needByNeedId?.title ?? null] as const)
+    );
+    const resourceTitleByBidId = new Map(
+      (data?.allResourceBids.nodes ?? []).map(bid => [bid.id, bid.resourceByResourceId?.title ?? null] as const)
+    );
+
     const needItems: UnifiedNotification[] = (data?.allNeedClaimNotifications.nodes ?? []).map(notification => {
       const payload = notification.payload ?? {};
-      const needTitle = notification.needClaimByNeedClaimId?.needByNeedId?.title;
+      const needTitle = needTitleByClaimId.get(notification.needClaimId) ?? null;
       const normalizedPayload = {
         ...payload,
         needName: asText(payload.needName) ?? needTitle
@@ -208,7 +219,7 @@ export default function NotificationsPage() {
 
     const resourceItems: UnifiedNotification[] = (data?.allResourceBidNotifications.nodes ?? []).map(notification => {
       const payload = notification.payload ?? {};
-      const resourceTitle = notification.resourceBidByResourceBidId?.resourceByResourceId?.title;
+      const resourceTitle = resourceTitleByBidId.get(notification.resourceBidId) ?? null;
       const normalizedPayload = {
         ...payload,
         resourceName: asText(payload.resourceName) ?? resourceTitle
@@ -234,7 +245,12 @@ export default function NotificationsPage() {
     return [...needItems, ...resourceItems].sort(
       (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
     );
-  }, [data?.allNeedClaimNotifications.nodes, data?.allResourceBidNotifications.nodes]);
+  }, [
+    data?.allNeedClaimNotifications.nodes,
+    data?.allResourceBidNotifications.nodes,
+    data?.allNeedClaims.nodes,
+    data?.allResourceBids.nodes
+  ]);
 
   const unreadCount = items.filter(item => !item.readAt).length;
   const busy = markNeedClaimLoading || markResourceBidLoading || markAllLoading;
@@ -246,9 +262,9 @@ export default function NotificationsPage() {
     }
 
     if (item.source === "need-claim") {
-      await markNeedClaimRead({ variables: { notificationId: item.id } });
+      await markNeedClaimRead({ variables: { input: { notificationId: item.id } } });
     } else {
-      await markResourceBidRead({ variables: { notificationId: item.id } });
+      await markResourceBidRead({ variables: { input: { notificationId: item.id } } });
     }
 
     await refetch();
@@ -260,7 +276,7 @@ export default function NotificationsPage() {
   };
 
   const markAllUnreadAsRead = async () => {
-    await markAllRead();
+    await markAllRead({ variables: { input: {} } });
     await refetch();
     setConfirmOpen(false);
   };
