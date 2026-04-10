@@ -31,6 +31,10 @@ function formatMovementTitle(eventType: string) {
       return "Claim settled in your favor";
     case "claim_settlement_debit":
       return "You settled a claim on your need";
+    case "resource_age_24h_reward":
+      return "Resource reached the 24-hour milestone";
+    case "claim_age_24h_reward":
+      return "Claim stayed valid for 24 hours";
     default:
       return eventType.replaceAll("_", " ").toLowerCase();
   }
@@ -115,7 +119,7 @@ export default function ContributionPage() {
           </Stack>
 
           <Alert severity="info">
-            This first ledger slice already records bid reserves/refunds, claim settlement transfers, and direct gifts between accounts.
+            This ledger slice records bid reserves/refunds, claim settlement transfers, direct gifts between accounts, and delayed 24-hour rewards for eligible resources and claims.
           </Alert>
 
           <Card variant="outlined">

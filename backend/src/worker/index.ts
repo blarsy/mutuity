@@ -10,11 +10,14 @@ if (!DATABASE_URL) {
 }
 
 async function main() {
+  const crontabFile = process.env.WORKER_CRONTAB_FILE ?? "backend/crontab";
+
   const runner = await run({
     connectionString: DATABASE_URL,
     taskList,
     concurrency: Number(process.env.WORKER_CONCURRENCY ?? 5),
-    pollInterval: Number(process.env.WORKER_POLL_INTERVAL ?? 2000)
+    pollInterval: Number(process.env.WORKER_POLL_INTERVAL ?? 2000),
+    crontabFile
   });
 
   console.log("Graphile Worker started.");
