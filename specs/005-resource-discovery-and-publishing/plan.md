@@ -121,6 +121,7 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Opening a notification should mark it as read before navigation; the inbox should also allow single-item checkbox reading and bulk `Set all as read` with a confirmation dialog.
 - Retention behavior stays SQL-owned: notifications are eligible for deletion only once they are at least 7 days old and have been marked read for at least 24 hours.
 - Timed/system-generated notifications such as bid-expiry warnings and campaign-airdrop countdowns should run from Graphile Worker or another scheduled backend process rather than being inferred in the browser.
+- Campaign-airdrop countdown notifications should use a broader reminder rule than payouts: the account should be notified when it has at least one linked campaign need or one linked campaign resource for that campaign, whether that link is approved or not.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.

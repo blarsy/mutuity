@@ -145,7 +145,7 @@ The following UI surfaces are important enough to be documented now at the behav
 | A claim has been sent about one of the account owner’s needs | `You got a claim for your need <need name>` | `Claims` page |
 | A bid has been received on one of the account owner’s resources | `You got a bid for your resource <resource name>` | `Bids` page |
 | A bid you received is about to expire (2 hours before resource expiration) | `A bid you received is about to expire` | `Bids` page |
-| A campaign with at least one of the account owner’s needs or resources is 48 hours from airdrop time | `The airdrop of campaign <campaign name> is coming soon !` | public campaign page |
+| A campaign for which the account has at least one need linked (approved or not) or one resource linked (approved or not) is within 48 hours of airdrop time | `The airdrop of campaign <campaign name> is coming soon !` | public campaign page |
 | The airdrop of such a campaign has occurred | `Airdrop done on campaign <campaign name> ! Check your contribution page to see if you got it` | `Contribution` page |
 | Welcome/profile-completion encouragement | `Welcome to tope-là, make a polished profile, and earn some Topes !` | `Profile` page |
 | Tokens received from another account as a gift | `<sender name> gave you <amount received> Topes !` | `Contribution` page |
