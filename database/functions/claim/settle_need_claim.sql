@@ -86,6 +86,38 @@ begin
   )
   on conflict on constraint need_claim_settlement_event_need_claim_id_key do nothing;
 
+  if v_topes_amount > 0 then
+    perform app_private.create_token_movement(
+      v_current_claim.claimer_account_id,
+      v_topes_amount,
+      'claim_settlement_credit',
+      'need_claim',
+      v_current_claim.id,
+      v_account_id,
+      jsonb_build_object(
+        'needId', v_current_claim.need_id,
+        'needClaimId', v_current_claim.id,
+        'topesAmount', v_topes_amount
+      ),
+      format('need_claim:%s:settlement_credit', v_current_claim.id)
+    );
+
+    perform app_private.create_token_movement(
+      v_account_id,
+      -v_topes_amount,
+      'claim_settlement_debit',
+      'need_claim',
+      v_current_claim.id,
+      v_current_claim.claimer_account_id,
+      jsonb_build_object(
+        'needId', v_current_claim.need_id,
+        'needClaimId', v_current_claim.id,
+        'topesAmount', v_topes_amount
+      ),
+      format('need_claim:%s:settlement_debit', v_current_claim.id)
+    );
+  end if;
+
   perform app_private.create_need_claim_notification(
     v_current_claim.claimer_account_id,
     v_current_claim.id,

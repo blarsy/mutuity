@@ -1,10 +1,12 @@
 import NextLink from "next/link";
+import { useQuery } from "@apollo/client/react";
 import { AppBar, Box, Button, Menu, MenuItem, Stack, Toolbar, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LoginDialog } from "../auth/LoginDialog";
+import { TOKEN_BALANCE_QUERY } from "../contribution/contribution.queries";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 
 const signedOutLinks = [{ label: "Search", href: "/resources" }];
@@ -25,6 +27,10 @@ export function AppTopBar() {
   const { session, signOut } = useAuth();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const { data: balanceData } = useQuery<{ currentTokenBalance: number }>(TOKEN_BALANCE_QUERY, {
+    pollInterval: session.authenticated ? 15000 : 0,
+    skip: !session.authenticated
+  });
 
   const currentLabel = useMemo(() => {
     return session.account?.displayName ?? session.account?.externalSubject ?? "Profile";
@@ -67,7 +73,7 @@ export function AppTopBar() {
             {session.authenticated ? (
               <>
                 <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
-                  0 tokens
+                  {balanceData?.currentTokenBalance ?? 0} tokens
                 </Button>
                 <AvatarIconButton
                   aria-label="Open profile menu"

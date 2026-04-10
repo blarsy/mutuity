@@ -48,6 +48,10 @@ declare
   v_existing_bid app_public.resource_bid;
   v_bid app_public.resource_bid;
   v_effective_token_amount integer;
+  v_has_existing_bid boolean := false;
+  v_existing_reserved_amount integer := 0;
+  v_new_reserved_amount integer := 0;
+  v_reserve_delta integer := 0;
 begin
   v_account_id := app_private.current_account_id();
 
@@ -84,7 +88,9 @@ begin
     and rb.bidder_account_id = v_account_id
   for update;
 
-  if found and v_existing_bid.status = 'accepted' then
+  v_has_existing_bid := found;
+
+  if v_has_existing_bid and v_existing_bid.status = 'accepted' then
     return v_existing_bid;
   end if;
 
@@ -95,6 +101,10 @@ begin
 
   if v_effective_token_amount is not null then
     perform app_private.validate_topes_amount(v_resource.intensity::text, v_effective_token_amount);
+  end if;
+
+  if v_has_existing_bid and v_existing_bid.status = 'open' then
+    v_existing_reserved_amount := coalesce(v_existing_bid.proposed_token_amount, 0);
   end if;
 
   insert into app_public.resource_bid (
@@ -141,6 +151,45 @@ begin
       'proposedTokenAmount', v_bid.proposed_token_amount
     )
   );
+
+  v_new_reserved_amount := coalesce(v_bid.proposed_token_amount, 0);
+  v_reserve_delta := v_new_reserved_amount - v_existing_reserved_amount;
+
+  if v_reserve_delta > 0 then
+    perform app_private.create_token_movement(
+      v_account_id,
+      -v_reserve_delta,
+      'resource_bid_reserved',
+      'resource_bid',
+      v_bid.id,
+      v_resource.creator_account_id,
+      jsonb_build_object(
+        'resourceId', v_resource.id,
+        'resourceBidId', v_bid.id,
+        'reservedAmount', v_reserve_delta,
+        'proposedTokenAmount', v_bid.proposed_token_amount,
+        'status', v_bid.status
+      ),
+      null
+    );
+  elsif v_reserve_delta < 0 then
+    perform app_private.create_token_movement(
+      v_account_id,
+      abs(v_reserve_delta),
+      'resource_bid_refunded',
+      'resource_bid',
+      v_bid.id,
+      v_resource.creator_account_id,
+      jsonb_build_object(
+        'resourceId', v_resource.id,
+        'resourceBidId', v_bid.id,
+        'refundAmount', abs(v_reserve_delta),
+        'reason', 'bid_amount_reduced',
+        'status', v_bid.status
+      ),
+      null
+    );
+  end if;
 
   return v_bid;
 end;

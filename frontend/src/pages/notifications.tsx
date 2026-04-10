@@ -20,6 +20,7 @@ import {
 
 import { useRequireAuth } from "../features/auth/requireAuth";
 import {
+  MARK_ACCOUNT_NOTIFICATION_READ_MUTATION,
   MARK_ALL_NOTIFICATIONS_READ_MUTATION,
   MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION,
   MARK_RESOURCE_BID_NOTIFICATION_READ_MUTATION,
@@ -45,12 +46,23 @@ type ResourceBidNotificationNode = {
   readAt: string | null;
 };
 
+type AccountNotificationNode = {
+  id: string;
+  eventType: string;
+  payload: Record<string, unknown> | null;
+  createdAt: string;
+  readAt: string | null;
+};
+
 type NotificationsOverviewData = {
   allNeedClaimNotifications: {
     nodes: NeedClaimNotificationNode[];
   };
   allResourceBidNotifications: {
     nodes: ResourceBidNotificationNode[];
+  };
+  allAccountNotifications: {
+    nodes: AccountNotificationNode[];
   };
   allNeedClaims: {
     nodes: Array<{
@@ -76,7 +88,7 @@ type NotificationsOverviewData = {
 
 type UnifiedNotification = {
   id: string;
-  source: "need-claim" | "resource-bid";
+  source: "need-claim" | "resource-bid" | "account";
   eventType: string;
   payload: Record<string, unknown>;
   createdAt: string;
@@ -182,6 +194,9 @@ export default function NotificationsPage() {
   const [markResourceBidRead, { loading: markResourceBidLoading }] = useMutation(
     MARK_RESOURCE_BID_NOTIFICATION_READ_MUTATION
   );
+  const [markAccountRead, { loading: markAccountLoading }] = useMutation(
+    MARK_ACCOUNT_NOTIFICATION_READ_MUTATION
+  );
   const [markAllRead, { loading: markAllLoading }] = useMutation(MARK_ALL_NOTIFICATIONS_READ_MUTATION);
 
   const items = useMemo<UnifiedNotification[]>(() => {
@@ -242,18 +257,39 @@ export default function NotificationsPage() {
       };
     });
 
-    return [...needItems, ...resourceItems].sort(
+    const accountItems: UnifiedNotification[] = (data?.allAccountNotifications.nodes ?? []).map(notification => {
+      const payload = notification.payload ?? {};
+      const baseNotification: UnifiedNotification = {
+        id: notification.id,
+        source: "account",
+        eventType: notification.eventType,
+        payload,
+        createdAt: notification.createdAt,
+        readAt: notification.readAt,
+        message: "",
+        url: ""
+      };
+
+      return {
+        ...baseNotification,
+        message: notificationMessage(baseNotification),
+        url: notificationUrl(baseNotification)
+      };
+    });
+
+    return [...needItems, ...resourceItems, ...accountItems].sort(
       (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
     );
   }, [
     data?.allNeedClaimNotifications.nodes,
     data?.allResourceBidNotifications.nodes,
+    data?.allAccountNotifications.nodes,
     data?.allNeedClaims.nodes,
     data?.allResourceBids.nodes
   ]);
 
   const unreadCount = items.filter(item => !item.readAt).length;
-  const busy = markNeedClaimLoading || markResourceBidLoading || markAllLoading;
+  const busy = markNeedClaimLoading || markResourceBidLoading || markAccountLoading || markAllLoading;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   const markSingleRead = async (item: UnifiedNotification) => {
@@ -263,8 +299,10 @@ export default function NotificationsPage() {
 
     if (item.source === "need-claim") {
       await markNeedClaimRead({ variables: { input: { notificationId: item.id } } });
-    } else {
+    } else if (item.source === "resource-bid") {
       await markResourceBidRead({ variables: { input: { notificationId: item.id } } });
+    } else {
+      await markAccountRead({ variables: { input: { notificationId: item.id } } });
     }
 
     await refetch();

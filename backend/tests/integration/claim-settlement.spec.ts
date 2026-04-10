@@ -347,6 +347,80 @@ describe("claim settlement integration", () => {
       }
     });
 
+    const claimerALedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: claimerACookie
+      },
+      body: JSON.stringify({
+        query: `
+          query ClaimerLedger {
+            allTokenMovements(first: 20) {
+              nodes {
+                eventType
+                amountDelta
+                referenceType
+                referenceId
+              }
+            }
+          }
+        `
+      })
+    });
+
+    expect(claimerALedgerResponse.status).toBe(200);
+    await expect(claimerALedgerResponse.json()).resolves.toMatchObject({
+      data: {
+        allTokenMovements: {
+          nodes: expect.arrayContaining([
+            expect.objectContaining({
+              eventType: "claim_settlement_credit",
+              amountDelta: 275,
+              referenceType: "need_claim"
+            })
+          ])
+        }
+      }
+    });
+
+    const creatorLedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: creatorCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query CreatorLedger {
+            allTokenMovements(first: 20) {
+              nodes {
+                eventType
+                amountDelta
+                referenceType
+                referenceId
+              }
+            }
+          }
+        `
+      })
+    });
+
+    expect(creatorLedgerResponse.status).toBe(200);
+    await expect(creatorLedgerResponse.json()).resolves.toMatchObject({
+      data: {
+        allTokenMovements: {
+          nodes: expect.arrayContaining([
+            expect.objectContaining({
+              eventType: "claim_settlement_debit",
+              amountDelta: -275,
+              referenceType: "need_claim"
+            })
+          ])
+        }
+      }
+    });
+
     const claimerBLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

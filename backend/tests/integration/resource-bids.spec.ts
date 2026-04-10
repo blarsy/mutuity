@@ -129,6 +129,43 @@ describe("resource bid integration", () => {
         }
       }
     });
+
+    const bidderLedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: sessionCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query BidderLedger {
+            allTokenMovements(first: 20) {
+              nodes {
+                eventType
+                amountDelta
+                referenceType
+                referenceId
+              }
+            }
+          }
+        `
+      })
+    });
+
+    expect(bidderLedgerResponse.status).toBe(200);
+    await expect(bidderLedgerResponse.json()).resolves.toMatchObject({
+      data: {
+        allTokenMovements: {
+          nodes: expect.arrayContaining([
+            expect.objectContaining({
+              eventType: "resource_bid_reserved",
+              amountDelta: -320,
+              referenceType: "resource_bid"
+            })
+          ])
+        }
+      }
+    });
   });
 
   it("rejects new bids on expired resources", async () => {
@@ -401,6 +438,48 @@ describe("resource bid integration", () => {
               payload: expect.objectContaining({
                 resourceId: resource.id
               })
+            })
+          ])
+        }
+      }
+    });
+
+    const bidderBLedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: bidderBCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query DeclinedBidderLedger {
+            allTokenMovements(first: 20) {
+              nodes {
+                eventType
+                amountDelta
+                referenceType
+                referenceId
+              }
+            }
+          }
+        `
+      })
+    });
+
+    expect(bidderBLedgerResponse.status).toBe(200);
+    await expect(bidderBLedgerResponse.json()).resolves.toMatchObject({
+      data: {
+        allTokenMovements: {
+          nodes: expect.arrayContaining([
+            expect.objectContaining({
+              eventType: "resource_bid_reserved",
+              amountDelta: -450,
+              referenceType: "resource_bid"
+            }),
+            expect.objectContaining({
+              eventType: "resource_bid_refunded",
+              amountDelta: 450,
+              referenceType: "resource_bid"
             })
           ])
         }

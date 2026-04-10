@@ -14,6 +14,7 @@ declare
   v_context record;
   v_bid app_public.resource_bid;
   v_event_type text;
+  v_reserved_amount integer := 0;
 begin
   v_account_id := app_private.current_account_id();
 
@@ -54,6 +55,25 @@ begin
         updated_at = now()
     where id = v_context.id;
 
+    v_reserved_amount := coalesce(v_context.proposed_token_amount, 0);
+    if v_context.status = 'open' and v_reserved_amount > 0 then
+      perform app_private.create_token_movement(
+        v_context.bidder_account_id,
+        v_reserved_amount,
+        'resource_bid_refunded',
+        'resource_bid',
+        v_context.id,
+        v_context.resource_creator_account_id,
+        jsonb_build_object(
+          'resourceId', v_context.resource_id,
+          'resourceBidId', v_context.id,
+          'refundAmount', v_reserved_amount,
+          'reason', 'resource_expired'
+        ),
+        format('resource_bid:%s:expired_refund', v_context.id)
+      );
+    end if;
+
     raise exception using message = 'Resource has expired';
   end if;
 
@@ -88,6 +108,28 @@ begin
       'respondedByAccountId', v_account_id
     )
   );
+
+  if v_bid.status = 'declined' then
+    v_reserved_amount := coalesce(v_bid.proposed_token_amount, 0);
+
+    if v_reserved_amount > 0 then
+      perform app_private.create_token_movement(
+        v_bid.bidder_account_id,
+        v_reserved_amount,
+        'resource_bid_refunded',
+        'resource_bid',
+        v_bid.id,
+        v_account_id,
+        jsonb_build_object(
+          'resourceId', v_bid.resource_id,
+          'resourceBidId', v_bid.id,
+          'refundAmount', v_reserved_amount,
+          'reason', 'bid_declined'
+        ),
+        format('resource_bid:%s:declined_refund', v_bid.id)
+      );
+    end if;
+  end if;
 
   return v_bid;
 end;

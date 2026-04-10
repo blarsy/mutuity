@@ -7,6 +7,7 @@ as $$
 declare
   v_deleted_need integer := 0;
   v_deleted_resource integer := 0;
+  v_deleted_account integer := 0;
 begin
   if not app_private.is_manager() then
     raise exception using message = 'Only managers can trigger notification cleanup';
@@ -24,7 +25,13 @@ begin
     and read_at <= now() - interval '24 hours';
   get diagnostics v_deleted_resource = row_count;
 
-  return v_deleted_need + v_deleted_resource;
+  delete from app_public.account_notification
+  where created_at <= now() - interval '7 days'
+    and read_at is not null
+    and read_at <= now() - interval '24 hours';
+  get diagnostics v_deleted_account = row_count;
+
+  return v_deleted_need + v_deleted_resource + v_deleted_account;
 end;
 $$;
 

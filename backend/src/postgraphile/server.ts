@@ -52,7 +52,10 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Conversation can only be started by the need creator", "FORBIDDEN"],
   ["Campaign not found", "NOT_FOUND"],
   ["Moderation notes are allowed only for pending campaigns", "BAD_USER_INPUT"],
-  ["Moderation note body is required", "BAD_USER_INPUT"]
+  ["Moderation note body is required", "BAD_USER_INPUT"],
+  ["Recipient account not found", "NOT_FOUND"],
+  ["Gift amount must be greater than zero", "BAD_USER_INPUT"],
+  ["You cannot gift tokens to your own account", "BAD_USER_INPUT"]
 ]);
 const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
   pattern: RegExp;

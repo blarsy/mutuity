@@ -8,6 +8,7 @@ declare
   v_account_id uuid;
   v_need_count integer := 0;
   v_resource_count integer := 0;
+  v_account_count integer := 0;
 begin
   v_account_id := app_private.current_account_id();
 
@@ -27,7 +28,13 @@ begin
     and read_at is null;
   get diagnostics v_resource_count = row_count;
 
-  return v_need_count + v_resource_count;
+  update app_public.account_notification
+  set read_at = now()
+  where recipient_account_id = v_account_id
+    and read_at is null;
+  get diagnostics v_account_count = row_count;
+
+  return v_need_count + v_resource_count + v_account_count;
 end;
 $$;
 

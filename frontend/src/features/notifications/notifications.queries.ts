@@ -22,6 +22,15 @@ export const NOTIFICATIONS_OVERVIEW_QUERY = gql`
         readAt
       }
     }
+    allAccountNotifications(first: $first) {
+      nodes {
+        id
+        eventType
+        payload
+        createdAt
+        readAt
+      }
+    }
     allNeedClaims(first: $first) {
       nodes {
         id
@@ -60,6 +69,17 @@ export const MARK_RESOURCE_BID_NOTIFICATION_READ_MUTATION = gql`
   mutation MarkResourceBidNotificationRead($input: MarkResourceBidNotificationReadInput!) {
     markResourceBidNotificationRead(input: $input) {
       resourceBidNotification {
+        id
+        readAt
+      }
+    }
+  }
+`;
+
+export const MARK_ACCOUNT_NOTIFICATION_READ_MUTATION = gql`
+  mutation MarkAccountNotificationRead($input: MarkAccountNotificationReadInput!) {
+    markAccountNotificationRead(input: $input) {
+      accountNotification {
         id
         readAt
       }
