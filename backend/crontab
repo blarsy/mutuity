@@ -10,6 +10,10 @@
 # Runs once per hour at minute 15.
 15 * * * * issue_delayed_token_rewards
 
+# process_resource_bid_notifications: warn about bids nearing resource expiry and automatically expire/cancel stale open bids.
+# Runs once per hour at minute 17.
+17 * * * * process_resource_bid_notifications
+
 # issue_campaign_airdrop_coming_soon: notify eligible accounts when an approved campaign is within 48 hours of airdrop time.
 # Runs once per hour at minute 18.
 18 * * * * issue_campaign_airdrop_coming_soon

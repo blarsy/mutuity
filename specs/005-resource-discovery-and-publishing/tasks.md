@@ -20,8 +20,8 @@
 - [x] T019 Document the notification event catalog, default message copy, route mapping, and retention rules in `specs/005-resource-discovery-and-publishing/spec.md` and `plan.md`
 - [x] T020 Build the initial `/notifications` inbox by aggregating claim and resource-bid notifications with per-item read and open-to-read behavior
 - [x] T021 Add SQL-owned notification actions for single-item read, bulk `Set all as read`, and retention cleanup
-- [ ] T022 Implement scheduled/background emitters for bid-expiring-soon, campaign-airdrop-soon, campaign-airdrop-done, welcome/profile reward, gifted-Topes, and future grant notifications *(partially complete: gifted-Topes, welcome/profile reward, and campaign-airdrop-soon/done are implemented and verified)*
-- [ ] T023 Run end-to-end verification for notifications rendering, routing, checkbox/bulk-read behavior, and cleanup eligibility
+- [x] T022 Implement scheduled/background emitters for bid-expiring-soon, campaign-airdrop-soon, campaign-airdrop-done, welcome/profile reward, gifted-Topes, and future grant notifications *(all currently specified emitters are implemented and verified; future grant notifications remain intentionally deferred until their payload/destination rules are specified)*
+- [x] T023 Run end-to-end verification for notifications rendering, routing, checkbox/bulk-read behavior, and cleanup eligibility
 
 ## Phase 1d: Contribution And Token Movements
 

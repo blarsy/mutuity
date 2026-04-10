@@ -28,6 +28,7 @@ begin
 
   select
     rb.*,
+    r.title as resource_title,
     r.creator_account_id as resource_creator_account_id,
     r.is_active as resource_is_active,
     r.expires_at as resource_expires_at
@@ -71,6 +72,22 @@ begin
           'reason', 'resource_expired'
         ),
         format('resource_bid:%s:expired_refund', v_context.id)
+      );
+    end if;
+
+    if v_context.status = 'open' then
+      perform app_private.create_resource_bid_notification(
+        v_context.bidder_account_id,
+        v_context.id,
+        'resource_bid_expired',
+        jsonb_build_object(
+          'resourceId', v_context.resource_id,
+          'resourceBidId', v_context.id,
+          'resourceName', v_context.resource_title,
+          'status', 'expired',
+          'expiresAt', v_context.resource_expires_at,
+          'url', '/bids'
+        )
       );
     end if;
 
