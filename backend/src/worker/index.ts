@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import fs from "node:fs";
 import { run } from "graphile-worker";
 import { taskList } from "./taskList.js";
 
@@ -10,7 +11,8 @@ if (!DATABASE_URL) {
 }
 
 async function main() {
-  const crontabFile = process.env.WORKER_CRONTAB_FILE ?? "backend/crontab";
+  const crontabFile = process.env.WORKER_CRONTAB_FILE
+    ?? (fs.existsSync("backend/crontab") ? "backend/crontab" : fs.existsSync("crontab") ? "crontab" : undefined);
 
   const runner = await run({
     connectionString: DATABASE_URL,

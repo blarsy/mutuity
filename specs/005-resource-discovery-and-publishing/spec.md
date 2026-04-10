@@ -123,7 +123,7 @@ As an interested user, I can send a bid or response to a resource so I can start
 - **FR-043**: The contribution/token ledger MUST support explicitly documented positive and negative token movements tied to profile completion, resource lifecycle milestones, campaign airdrops, gifting, bid lifecycle, and claim settlement events.
 - **FR-044**: Profile-completion token rewards for first avatar upload, first bio, first address/location, and first external link MUST each be granted at most once over the lifetime of an account.
 - **FR-045**: Resource-related token rewards for a resource reaching 24 hours of age, first image addition, and first default Topes amount (`price` legacy field) assignment MUST each be granted at most once over the lifetime of the corresponding resource.
-- **FR-046**: Campaign-airdrop token credits MUST grant the configured campaign amount at airdrop time at most once per account and per campaign.
+- **FR-046**: Campaign-airdrop token credits MUST grant the configured campaign amount at airdrop time at most once per account and per campaign, and an account is eligible only when, at airdrop time, the same account owns at least two approved campaign-linked items across these categories for that campaign: linked need(s) approved by the campaign creator and linked resource(s) approved by the campaign creator.
 - **FR-047**: Gifting tokens to another account MUST create equal and opposite ledger effects: a negative movement for the sender and a matching positive movement for the receiver for the exact gifted amount.
 - **FR-048**: Creating a bid MUST reserve or deduct the bid amount from the bidder, and cancelling, expiring, or automatically cancelling that bid because the target resource expired or was deleted MUST restore that same amount to the bidder.
 - **FR-049**: Settling a claim MUST create opposite token movements based on the settled claim amount: a positive movement for the claimer whose claim was selected and a negative movement for the account that settles the claim on its need.
@@ -168,7 +168,7 @@ The following UI surfaces are important enough to be documented now at the behav
 | Resource created 24 hours ago | `+20` | once over a resource’s lifetime |
 | First image added to a resource | `+20` | once over a resource’s lifetime |
 | First time a default Topes amount / legacy `price` is set on a resource | `+20` | once over a resource’s lifetime |
-| Airdrop of a campaign received | `+<campaign’s configured airdrop amount>` | once per account and per campaign at airdrop time |
+| Airdrop of a campaign received | `+<campaign’s configured airdrop amount>` | once per account and per campaign at airdrop time, only when the account has at least two approved linked items across needs/resources in that campaign |
 | Token gifted to another account | `-<given amount>` | each time the account owner gives tokens |
 | Token received from another account | `+<given amount>` | each time another account gives tokens to this account |
 | Bid created | `-<bid amount>` | each time the account owner creates a bid |

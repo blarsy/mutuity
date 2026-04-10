@@ -29,7 +29,7 @@
 - [ ] T025 Design or extend the SQL-owned token ledger so every positive/negative Topes movement is auditable and linked to its originating business event
 - [ ] T026 Implement one-time profile and resource milestone rewards with duplicate-protection over account/resource lifetime
 - [ ] T027 Implement scheduled/background issuance for `resource age >= 24h` and `claim age >= 24h` rewards
-- [ ] T028 Implement campaign-airdrop payouts with per-account/per-campaign idempotency and contribution-page visibility
+- [ ] T028 Implement campaign-airdrop payouts with per-account/per-campaign idempotency, the "at least two approved linked items across needs/resources" eligibility rule, and contribution-page visibility
 - [ ] T029 Implement gifting, bid reserve/refund, and claim-settlement ledger movements with end-to-end verification
 
 ## Phase 2: Resource Discovery (P1)

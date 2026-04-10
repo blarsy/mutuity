@@ -35,6 +35,8 @@ function formatMovementTitle(eventType: string) {
       return "Resource reached the 24-hour milestone";
     case "claim_age_24h_reward":
       return "Claim stayed valid for 24 hours";
+    case "campaign_airdrop_received":
+      return "Campaign airdrop received";
     default:
       return eventType.replaceAll("_", " ").toLowerCase();
   }
@@ -119,7 +121,7 @@ export default function ContributionPage() {
           </Stack>
 
           <Alert severity="info">
-            This ledger slice records bid reserves/refunds, claim settlement transfers, direct gifts between accounts, and delayed 24-hour rewards for eligible resources and claims.
+            This ledger slice records bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.
           </Alert>
 
           <Card variant="outlined">
