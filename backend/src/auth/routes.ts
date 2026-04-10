@@ -22,6 +22,7 @@ type LoginCandidate = {
   account_id: string;
   display_name: string | null;
   external_subject: string;
+  avatar_url: string | null;
   password_hash: string;
   role_name: string;
 };
@@ -70,7 +71,8 @@ function toSessionPayload(req: express.Request) {
     account: {
       id: session.accountId,
       displayName: session.displayName,
-      externalSubject: session.externalSubject
+      externalSubject: session.externalSubject,
+      avatarUrl: session.avatarUrl
     },
     role: session.role,
     expiresAt: session.expiresAt
@@ -127,6 +129,7 @@ export function createAuthRouter(pool: Pool) {
         role: candidate.role_name,
         displayName: candidate.display_name,
         externalSubject: candidate.external_subject,
+        avatarUrl: candidate.avatar_url,
         expiresAt
       };
 

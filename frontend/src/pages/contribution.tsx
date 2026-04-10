@@ -31,6 +31,18 @@ function formatMovementTitle(eventType: string) {
       return "Claim settled in your favor";
     case "claim_settlement_debit":
       return "You settled a claim on your need";
+    case "profile_first_avatar_reward":
+      return "First profile avatar added";
+    case "profile_first_bio_reward":
+      return "First profile bio added";
+    case "profile_first_location_reward":
+      return "First profile location added";
+    case "profile_first_link_reward":
+      return "First profile link added";
+    case "resource_first_image_reward":
+      return "First resource image added";
+    case "resource_first_default_token_amount_reward":
+      return "First default Topes amount set on a resource";
     case "resource_age_24h_reward":
       return "Resource reached the 24-hour milestone";
     case "claim_age_24h_reward":
@@ -111,7 +123,7 @@ export default function ContributionPage() {
               Contribution
             </Typography>
             <Typography color="text.secondary">
-              Review your current Topes balance and the ledger events currently recorded from bids and settled claims.
+              Review your current Topes balance and the ledger events recorded from profile completion, resource milestones, bids, claims, gifts, and campaigns.
             </Typography>
           </Box>
 
@@ -121,7 +133,7 @@ export default function ContributionPage() {
           </Stack>
 
           <Alert severity="info">
-            This ledger slice records bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.
+            This ledger slice records profile-completion rewards, first resource milestone rewards, bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.
           </Alert>
 
           <Card variant="outlined">

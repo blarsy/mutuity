@@ -61,7 +61,7 @@ export async function seedResource(overrides?: {
   const latitude = overrides?.latitude ?? 50.6056;
   const longitude = overrides?.longitude ?? 3.3878;
   const intensity = overrides?.intensity ?? "sharing";
-  const defaultTokenAmount = overrides?.defaultTokenAmount ?? 150;
+  const defaultTokenAmount = overrides?.defaultTokenAmount ?? null;
   const isProduct = overrides?.isProduct ?? true;
   const isService = overrides?.isService ?? false;
   const canBeGiven = overrides?.canBeGiven ?? false;

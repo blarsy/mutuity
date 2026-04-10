@@ -37,6 +37,7 @@ type ResourceDetailData = {
     longitude: number;
     intensity: ResourceIntensity;
     defaultTokenAmount: number | null;
+    imageUrls: string[];
     categoryLabels: string[];
     isProduct: boolean;
     isService: boolean;
@@ -150,6 +151,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     ?? resource?.accountByCreatorAccountId?.externalSubject
     ?? resource?.creatorAccountId
     ?? "Unknown account";
+  const firstImageUrl = resource?.imageUrls?.[0] ?? null;
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(respondError);
 
   const handleDecision = async (resourceBidId: string, nextStatus: "ACCEPTED" | "DECLINED") => {
@@ -254,6 +256,24 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
             <Stack spacing={2}>
+              <Box
+                sx={{
+                  alignItems: "center",
+                  bgcolor: firstImageUrl ? "grey.100" : "grey.50",
+                  backgroundImage: firstImageUrl ? `url(${firstImageUrl})` : "none",
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                  borderRadius: 1,
+                  color: "text.secondary",
+                  display: "flex",
+                  height: 220,
+                  justifyContent: "center",
+                  overflow: "hidden"
+                }}
+              >
+                {!firstImageUrl ? <Typography variant="body2">No image provided for this resource yet.</Typography> : null}
+              </Box>
+
               {resource.description ? (
                 <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body1">
                   {resource.description}

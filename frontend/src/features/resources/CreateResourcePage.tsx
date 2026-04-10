@@ -47,6 +47,7 @@ type PublishResourceMutationVariables = {
   intensity: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
   defaultTokenAmount?: number;
   categoryCodes?: number[];
+  imageUrls?: string[];
   isProduct: boolean;
   isService: boolean;
   canBeGiven: boolean;
@@ -68,6 +69,13 @@ function normalizeOptionalInteger(value: number | "") {
   }
 
   return Number.isFinite(Number(value)) ? Number(value) : undefined;
+}
+
+function parseImageUrls(value: string) {
+  return value
+    .split(/\n|,/)
+    .map(item => item.trim())
+    .filter(Boolean);
 }
 
 export default function CreateResourcePage() {
@@ -93,6 +101,7 @@ export default function CreateResourcePage() {
         intensity: toGraphQLResourceIntensity(values.intensity),
         defaultTokenAmount: normalizeOptionalInteger(values.defaultTokenAmount),
         categoryCodes: values.categoryCodes.length > 0 ? values.categoryCodes : undefined,
+        imageUrls: parseImageUrls(values.imageUrlsText),
         isProduct: values.isProduct,
         isService: values.isService,
         canBeGiven: values.canBeGiven,
@@ -230,6 +239,18 @@ export default function CreateResourcePage() {
                   helperText={touched.description ? errors.description : "Optional, up to 8000 characters."}
                   multiline
                   minRows={5}
+                />
+
+                <TextField
+                  name="imageUrlsText"
+                  label="Image URLs"
+                  value={values.imageUrlsText}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={Boolean(touched.imageUrlsText && errors.imageUrlsText)}
+                  helperText={touched.imageUrlsText ? errors.imageUrlsText : "Optional. Paste one or more image URLs separated by commas or new lines."}
+                  multiline
+                  minRows={2}
                 />
 
                 <TextField

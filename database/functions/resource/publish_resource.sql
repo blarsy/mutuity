@@ -34,6 +34,25 @@ drop function if exists app_public.publish_resource(
   timestamptz
 );
 
+drop function if exists app_public.publish_resource(
+  text,
+  text,
+  text,
+  numeric,
+  numeric,
+  app_public.need_intensity,
+  integer,
+  integer[],
+  text[],
+  boolean,
+  boolean,
+  boolean,
+  boolean,
+  boolean,
+  boolean,
+  timestamptz
+);
+
 create or replace function app_public.publish_resource(
   title text,
   description text default null,
@@ -43,6 +62,7 @@ create or replace function app_public.publish_resource(
   intensity app_public.need_intensity default 'sharing',
   default_token_amount integer default null,
   category_codes integer[] default array[]::integer[],
+  image_urls text[] default array[]::text[],
   is_product boolean default false,
   is_service boolean default false,
   can_be_given boolean default false,
@@ -62,6 +82,7 @@ declare
   v_description text;
   v_location text;
   v_category_codes integer[];
+  v_image_urls text[];
   v_resource app_public.resource;
 begin
   v_account_id := app_private.current_account_id();
@@ -73,6 +94,7 @@ begin
   v_title := nullif(btrim(coalesce(publish_resource.title, '')), '');
   v_description := nullif(btrim(coalesce(publish_resource.description, '')), '');
   v_location := nullif(btrim(coalesce(publish_resource.location, '')), '');
+  v_image_urls := app_private.normalize_text_array(publish_resource.image_urls);
 
   if v_title is null then
     raise exception using message = 'Resource title is required';
@@ -124,6 +146,7 @@ begin
     longitude,
     intensity,
     default_token_amount,
+    image_urls,
     is_product,
     is_service,
     can_be_given,
@@ -141,6 +164,7 @@ begin
     coalesce(publish_resource.longitude, 3.3889),
     publish_resource.intensity,
     publish_resource.default_token_amount,
+    v_image_urls,
     coalesce(publish_resource.is_product, false),
     coalesce(publish_resource.is_service, false),
     coalesce(publish_resource.can_be_given, false),
@@ -169,6 +193,7 @@ comment on function app_public.publish_resource(
   app_public.need_intensity,
   integer,
   integer[],
+  text[],
   boolean,
   boolean,
   boolean,
@@ -187,6 +212,7 @@ grant execute on function app_public.publish_resource(
   app_public.need_intensity,
   integer,
   integer[],
+  text[],
   boolean,
   boolean,
   boolean,

@@ -4,6 +4,7 @@ export type CurrentAccount = {
   id: string;
   displayName: string | null;
   externalSubject: string;
+  avatarUrl?: string | null;
 };
 
 export type AuthSession = {

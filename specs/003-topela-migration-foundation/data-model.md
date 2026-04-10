@@ -12,6 +12,7 @@ A human user identity that can authenticate, own listings, send messages, and re
 **Notes**:
 - May represent an individual, but can also act on behalf of an organization where allowed.
 - Should map legacy auth providers and session models into one consistent target model.
+- May also store zero or more typed profile links, each with a URL, a caption, and a type such as `facebook`, `instagram`, `x`, or `website`.
 
 ### `organization`
 An association, collective, or other group profile that can publish listings, participate in campaigns, and present public identity information.

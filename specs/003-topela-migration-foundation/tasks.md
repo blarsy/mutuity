@@ -10,11 +10,11 @@
 
 ## Phase 1: Setup (Shared Foundation)
 
-- [ ] T001 Confirm the new Feature 003 direction and archive the old external-API concept in `specs/003-topela-migration-foundation/spec.md`
-- [ ] T002 [P] Draft the migration implementation plan in `specs/003-topela-migration-foundation/plan.md`
-- [ ] T003 [P] Draft the initial research decisions in `specs/003-topela-migration-foundation/research.md`
-- [ ] T004 [P] Draft the initial unified domain glossary in `specs/003-topela-migration-foundation/data-model.md`
-- [ ] T005 [P] Draft the audit quickstart/checklist in `specs/003-topela-migration-foundation/quickstart.md`
+- [x] T001 Confirm the new Feature 003 direction and archive the old external-API concept in `specs/003-topela-migration-foundation/spec.md`
+- [x] T002 [P] Draft the migration implementation plan in `specs/003-topela-migration-foundation/plan.md`
+- [x] T003 [P] Draft the initial research decisions in `specs/003-topela-migration-foundation/research.md`
+- [x] T004 [P] Draft the initial unified domain glossary in `specs/003-topela-migration-foundation/data-model.md`
+- [x] T005 [P] Draft the audit quickstart/checklist in `specs/003-topela-migration-foundation/quickstart.md`
 
 ## Phase 2: User Story 1 - Define Unified Product Scope (Priority: P1)
 
@@ -24,10 +24,10 @@
 
 ### Tasks (US1)
 
-- [ ] T006 [US1] Audit the Tope-là web, mobile, backend, and SQL surfaces and record evidence in `specs/003-topela-migration-foundation/research.md`
-- [ ] T007 [P] [US1] Audit the Mutuity web, backend, and SQL surfaces and record evidence in `specs/003-topela-migration-foundation/research.md`
-- [ ] T008 [US1] Create a capability inventory and non-goals list in `specs/003-topela-migration-foundation/spec.md`
-- [ ] T009 [US1] Record visual parity references and owned asset assumptions in `specs/003-topela-migration-foundation/quickstart.md`
+- [x] T006 [US1] Audit the Tope-là web, mobile, backend, and SQL surfaces and record evidence in `specs/003-topela-migration-foundation/research.md`
+- [x] T007 [P] [US1] Audit the Mutuity web, backend, and SQL surfaces and record evidence in `specs/003-topela-migration-foundation/research.md`
+- [x] T008 [US1] Create a capability inventory and non-goals list in `specs/003-topela-migration-foundation/spec.md`
+- [x] T009 [US1] Record visual parity references and owned asset assumptions in `specs/003-topela-migration-foundation/quickstart.md`
 
 ## Phase 3: User Story 2 - Reverse-Engineer Into SpecKit Features (Priority: P1)
 
@@ -37,10 +37,10 @@
 
 ### Tasks (US2)
 
-- [ ] T010 [US2] Define the unified glossary for accounts, organizations, resources, needs, bids/claims, and conversations in `specs/003-topela-migration-foundation/data-model.md`
-- [ ] T011 [P] [US2] Decide what stays distinct in MVP v1 versus what is later unified in `specs/003-topela-migration-foundation/data-model.md`
-- [ ] T012 [US2] Propose the first implementation waves in `specs/003-topela-migration-foundation/plan.md`
-- [ ] T013 [US2] Create a future-spec backlog outline in `specs/003-topela-migration-foundation/spec.md`
+- [x] T010 [US2] Define the unified glossary for accounts, organizations, resources, needs, bids/claims, and conversations in `specs/003-topela-migration-foundation/data-model.md`
+- [x] T011 [P] [US2] Decide what stays distinct in MVP v1 versus what is later unified in `specs/003-topela-migration-foundation/data-model.md`
+- [x] T012 [US2] Propose the first implementation waves in `specs/003-topela-migration-foundation/plan.md`
+- [x] T013 [US2] Create a future-spec backlog outline in `specs/003-topela-migration-foundation/spec.md`
 
 ## Phase 4: User Story 3 - Preserve Look & Feel During Rebuild (Priority: P2)
 
@@ -50,14 +50,14 @@
 
 ### Tasks (US3)
 
-- [ ] T014 [US3] Document the visual-parity strategy and screen-capture workflow in `specs/003-topela-migration-foundation/quickstart.md`
-- [ ] T015 [P] [US3] Document reuse candidates versus rewrite candidates in `specs/003-topela-migration-foundation/research.md`
-- [ ] T016 [US3] Document technical risks and mitigation controls in `specs/003-topela-migration-foundation/plan.md`
+- [x] T014 [US3] Document the visual-parity strategy and screen-capture workflow in `specs/003-topela-migration-foundation/quickstart.md`
+- [x] T015 [P] [US3] Document reuse candidates versus rewrite candidates in `specs/003-topela-migration-foundation/research.md`
+- [x] T016 [US3] Document technical risks and mitigation controls in `specs/003-topela-migration-foundation/plan.md`
 
 ## Phase 5: Readiness & Handoff
 
 - [ ] T017 Review the migration foundation documents with the product owner and confirm the target MVP boundary
-- [ ] T018 Convert the approved roadmap into the next concrete feature specs under `specs/`
+- [x] T018 Convert the approved roadmap into the next concrete feature specs under `specs/`
 - [ ] T019 Capture any scope or architecture updates back into `specs/003-topela-migration-foundation/`
 
 ## Dependencies & Execution Order

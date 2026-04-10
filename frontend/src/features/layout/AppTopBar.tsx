@@ -78,6 +78,7 @@ export function AppTopBar() {
                 <AvatarIconButton
                   aria-label="Open profile menu"
                   displayName={currentLabel}
+                  imageUrl={session.account?.avatarUrl ?? null}
                   onClick={event => setMenuAnchor(event.currentTarget)}
                 />
               </>

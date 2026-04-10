@@ -1,8 +1,12 @@
+drop function if exists app_private.find_login_candidate(text);
+drop function if exists app_private.find_account_session(text);
+
 create or replace function app_private.find_login_candidate(p_identifier text)
 returns table (
   account_id uuid,
   display_name text,
   external_subject text,
+  avatar_url text,
   password_hash text,
   role_name text
 )
@@ -13,6 +17,7 @@ as $$
     a.id,
     a.display_name,
     a.external_subject,
+    a.avatar_url,
     c.password_hash,
     c.role_name
   from app_private.account_credential c
@@ -29,7 +34,8 @@ returns table (
   role_name text,
   expires_at timestamptz,
   display_name text,
-  external_subject text
+  external_subject text,
+  avatar_url text
 )
 language sql
 stable
@@ -40,7 +46,8 @@ as $$
     s.role_name,
     s.expires_at,
     a.display_name,
-    a.external_subject
+    a.external_subject,
+    a.avatar_url
   from app_private.account_session s
   join app_public.account a on a.id = s.account_id
   where s.session_token_hash = p_session_token_hash

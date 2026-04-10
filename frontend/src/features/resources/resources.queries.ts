@@ -10,6 +10,7 @@ export const PUBLISH_RESOURCE_MUTATION = gql`
     $intensity: NeedIntensity!
     $defaultTokenAmount: Int
     $categoryCodes: [Int!]
+    $imageUrls: [String!]
     $isProduct: Boolean!
     $isService: Boolean!
     $canBeGiven: Boolean!
@@ -28,6 +29,7 @@ export const PUBLISH_RESOURCE_MUTATION = gql`
         intensity: $intensity
         defaultTokenAmount: $defaultTokenAmount
         categoryCodes: $categoryCodes
+        imageUrls: $imageUrls
         isProduct: $isProduct
         isService: $isService
         canBeGiven: $canBeGiven
@@ -135,6 +137,7 @@ export const RESOURCE_DETAIL_QUERY = gql`
       longitude
       intensity
       defaultTokenAmount
+      imageUrls
       categoryLabels
       isProduct
       isService

@@ -5,6 +5,7 @@ import type { ResourceIntensity } from "./types";
 export type CreateResourceValues = {
   title: string;
   description: string;
+  imageUrlsText: string;
   location: string;
   latitude: number | "";
   longitude: number | "";
@@ -23,6 +24,7 @@ export type CreateResourceValues = {
 export const createResourceInitialValues: CreateResourceValues = {
   title: "",
   description: "",
+  imageUrlsText: "",
   location: "Tournai centre",
   latitude: 50.6072,
   longitude: 3.3889,
@@ -100,6 +102,7 @@ const optionalIntegerField = Yup.number()
 export const createResourceValidationSchema = Yup.object({
   title: Yup.string().trim().required("Title is required"),
   description: Yup.string().max(8000, "Description must be 8000 characters or fewer"),
+  imageUrlsText: Yup.string().optional(),
   location: Yup.string().trim().required("Location is required"),
   latitude: Yup.number()
     .transform((value, originalValue) => (originalValue === "" || originalValue == null ? Number.NaN : value))
