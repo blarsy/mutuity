@@ -62,7 +62,26 @@ As an interested user, I can send a bid or response to a resource so I can start
 
 ---
 
-### User Story 4 - Authenticated User Manages Their Own Resources (Priority: P1)
+### User Story 4 - Authenticated User Manages Their Own Needs (Priority: P1)
+
+As an authenticated user, I can view, edit, and delete my own needs from a dedicated workspace page so I can keep my requests up to date.
+
+**Why this priority**: Without a personal management surface, users have no way to correct, update, or remove the needs they have posted.
+
+**Independent Test**: Sign in, navigate to the `Needs` page, verify that only the signed-in account's needs are listed, sorted by last modification time descending, with a working Edit action, a working Delete action with confirmation dialog, and a fixed "Add need" button leading to the creation flow.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user who has created several needs, **When** they open the `Needs` page, **Then** only their own needs are shown, newest-modified first.
+2. **Given** the user modifies any property of a need (title, description, images, or categories), **When** the change is saved, **Then** the need's last modification time is updated and the need rises to the top of the list.
+3. **Given** more than 10 needs exist for the account, **When** the user scrolls to the bottom of the list, **Then** the next 10 needs are loaded automatically; this repeats each time the user reaches the bottom until all needs have been loaded.
+4. **Given** a need in the list, **When** the user clicks Edit, **Then** they are taken to the edit-need page with that need's data pre-populated in modification mode.
+5. **Given** a need in the list, **When** the user clicks Delete, **Then** a confirmation dialog is shown, and on confirmation the need is soft-deleted and removed from the list.
+6. **Given** the needs page, **When** it is open at any scroll position, **Then** the "Add need" button is always visible and navigates to the edit-need page in creation mode when clicked.
+
+---
+
+### User Story 5 - Authenticated User Manages Their Own Resources (Priority: P1)
 
 As an authenticated user, I can view, edit, and delete my own resources from a dedicated workspace page so I can keep my offers up to date.
 
@@ -154,13 +173,21 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 - **FR-055**: Each resource entry on the `Resources` workspace page MUST display an Edit action that navigates to the edit-resource page in modification mode with that resource's data pre-populated.
 - **FR-056**: Each resource entry on the `Resources` workspace page MUST display a Delete action that opens a confirmation dialog and, on confirmation, performs a soft delete of the resource.
 - **FR-057**: The `Resources` workspace page MUST display a fixed "Add resource" button that is always visible regardless of scroll position and navigates to the edit-resource page in creation mode.
+- **FR-058**: Authenticated users MUST have access to a `Needs` workspace page that lists only the needs they created.
+- **FR-059**: The `Needs` workspace page MUST sort needs by last modification time descending, with the most recently modified need shown first.
+- **FR-060**: Any property change on a need — including title, description, images, categories, or any other linked data — MUST update the need's last modification time.
+- **FR-061**: The `Needs` workspace page MUST display the first 10 needs by default; each time the user scrolls to the bottom of the list, 10 more needs MUST be appended until all needs for the account have been loaded (infinite scroll, page size 10).
+- **FR-062**: Each need entry on the `Needs` workspace page MUST display an Edit action that navigates to the edit-need page in modification mode with that need's data pre-populated.
+- **FR-063**: Each need entry on the `Needs` workspace page MUST display a Delete action that opens a confirmation dialog and, on confirmation, performs a soft delete of the need.
+- **FR-064**: The `Needs` workspace page MUST display a fixed "Add need" button that is always visible regardless of scroll position and navigates to the edit-need page in creation mode.
+
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
 The following UI surfaces are important enough to be documented now at the behavior and routing level, even when some remain for later implementation:
 
 - **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, and `ResetPassword`
 - **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, `RestoreAccess`
-- **Supporting pages**: edit-resource (handles both creation and modification of resources), create-need, resource detail, need detail, account detail, and campaign detail pages
+- **Supporting pages**: edit-resource (handles both creation and modification of resources), edit-need (handles both creation and modification of needs), resource detail, need detail, account detail, and campaign detail pages
 - **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 
 ### Notification Event Catalog *(current documented messages and destinations)*
