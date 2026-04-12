@@ -74,7 +74,7 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 
 1. **Given** an authenticated user who has created several resources, **When** they open the `Resources` page, **Then** only their own resources are shown, newest-modified first.
 2. **Given** the user modifies any property of a resource (title, description, modality flags, images, or categories), **When** the change is saved, **Then** the resource's last modification time is updated and the resource rises to the top of the list.
-3. **Given** more than 10 resources exist for the account, **When** the user scrolls to the bottom of the list, **Then** the next 10 resources are loaded automatically.
+3. **Given** more than 10 resources exist for the account, **When** the user scrolls to the bottom of the list, **Then** the next 10 resources are loaded automatically; this repeats each time the user reaches the bottom until all resources have been loaded.
 4. **Given** a resource in the list, **When** the user clicks Edit, **Then** they are taken to the edit-resource page with that resource's data pre-populated in modification mode.
 5. **Given** a resource in the list, **When** the user clicks Delete, **Then** a confirmation dialog is shown, and on confirmation the resource is soft-deleted and removed from the list.
 6. **Given** the resources page, **When** it is open at any scroll position, **Then** the "Add resource" button is always visible and navigates to the edit-resource page in creation mode when clicked.
@@ -150,7 +150,7 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 - **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.- **FR-051**: Authenticated users MUST have access to a `Resources` workspace page that lists only the resources they created.
 - **FR-052**: The `Resources` workspace page MUST sort resources by last modification time descending, with the most recently modified resource shown first.
 - **FR-053**: Any property change on a resource — including title, description, modality flags, images, categories, or any other linked data — MUST update the resource's last modification time.
-- **FR-054**: The `Resources` workspace page MUST display the first 10 resources by default and load 10 additional entries on scroll (infinite scroll pagination).
+- **FR-054**: The `Resources` workspace page MUST display the first 10 resources by default; each time the user scrolls to the bottom of the list, 10 more resources MUST be appended until all resources for the account have been loaded (infinite scroll, page size 10).
 - **FR-055**: Each resource entry on the `Resources` workspace page MUST display an Edit action that navigates to the edit-resource page in modification mode with that resource's data pre-populated.
 - **FR-056**: Each resource entry on the `Resources` workspace page MUST display a Delete action that opens a confirmation dialog and, on confirmation, performs a soft delete of the resource.
 - **FR-057**: The `Resources` workspace page MUST display a fixed "Add resource" button that is always visible regardless of scroll position and navigates to the edit-resource page in creation mode.
