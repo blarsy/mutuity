@@ -60,6 +60,25 @@ As an interested user, I can send a bid or response to a resource so I can start
 4. **Given** a resource response with terms specific to the offer type, **When** the response is created, **Then** those terms are preserved separately from Mutuity’s need-claim semantics.
 5. **Given** the publisher accepts, declines, or closes a response, **When** the lifecycle changes, **Then** the correct state and conversation access rules apply.
 
+---
+
+### User Story 4 - Authenticated User Manages Their Own Resources (Priority: P1)
+
+As an authenticated user, I can view, edit, and delete my own resources from a dedicated workspace page so I can keep my offers up to date.
+
+**Why this priority**: Without a personal management surface, users have no way to correct, update, or remove the resource offers they have published.
+
+**Independent Test**: Sign in, navigate to the `Resources` page, verify that only the signed-in account's resources are listed, sorted by last modification time descending, with a working Edit action, a working Delete action with confirmation dialog, and a fixed "Add resource" button leading to the creation flow.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user who has created several resources, **When** they open the `Resources` page, **Then** only their own resources are shown, newest-modified first.
+2. **Given** the user modifies any property of a resource (title, description, modality flags, images, or categories), **When** the change is saved, **Then** the resource's last modification time is updated and the resource rises to the top of the list.
+3. **Given** more than 10 resources exist for the account, **When** the user scrolls to the bottom of the list, **Then** the next 10 resources are loaded automatically.
+4. **Given** a resource in the list, **When** the user clicks Edit, **Then** they are taken to the edit-resource page with that resource's data pre-populated in modification mode.
+5. **Given** a resource in the list, **When** the user clicks Delete, **Then** a confirmation dialog is shown, and on confirmation the resource is soft-deleted and removed from the list.
+6. **Given** the resources page, **When** it is open at any scroll position, **Then** the "Add resource" button is always visible and navigates to the edit-resource page in creation mode when clicked.
+
 ### Edge Cases
 
 - A resource can represent a gift, loan, exchange, or competence offer, and not all form fields apply equally to each subtype.
@@ -89,7 +108,7 @@ As an interested user, I can send a bid or response to a resource so I can start
 - **FR-009**: Each of the six resource modality flags MUST expose a tri-state browse filter with values `neutral`, `yes`, and `no`.
 - **FR-010**: A modality filter value of `neutral` MUST include resources regardless of whether the underlying flag is `true` or `false`.
 - **FR-011**: A modality filter value of `yes` MUST restrict results to resources whose corresponding flag is `true`, and a value of `no` MUST restrict results to resources whose corresponding flag is `false`.
-- **FR-012**: Authenticated users MUST be able to publish resource offers with the modality flags `isProduct`, `isService`, `canBeGiven`, `canBeExchanged`, `canBeTakenAway`, and `canBeDelivered`.
+- **FR-012**: Authenticated users MUST be able to create and edit resource offers with the modality flags `isProduct`, `isService`, `canBeGiven`, `canBeExchanged`, `canBeTakenAway`, and `canBeDelivered`.
 - **FR-013**: Resource creation MUST require an `intensity` value using the same four discrete levels already defined for needs: `leg up`, `sharing`, `commitment`, and `rare contribution`.
 - **FR-014**: Resource publishing MAY include an optional negotiated Topes reference amount (legacy/internal `price` field), but user-facing copy MUST avoid the label `price` and instead describe it as a suggested, reference, or default Topes amount for negotiation.
 - **FR-015**: When the optional Topes reference amount is provided, it MUST follow the same intensity range mapping used for needs: `leg up` (10 to 99), `sharing` (100 to 999), `commitment` (1000 to 4999), and `rare contribution` (5000 or more).
@@ -128,15 +147,20 @@ As an interested user, I can send a bid or response to a resource so I can start
 - **FR-047**: Gifting tokens to another account MUST create equal and opposite ledger effects: a negative movement for the sender and a matching positive movement for the receiver for the exact gifted amount.
 - **FR-048**: Creating a bid MUST reserve or deduct the bid amount from the bidder, and cancelling, expiring, or automatically cancelling that bid because the target resource expired or was deleted MUST restore that same amount to the bidder.
 - **FR-049**: Settling a claim MUST create opposite token movements based on the settled claim amount: a positive movement for the claimer whose claim was selected and a negative movement for the account that settles the claim on its need.
-- **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.
-
+- **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.- **FR-051**: Authenticated users MUST have access to a `Resources` workspace page that lists only the resources they created.
+- **FR-052**: The `Resources` workspace page MUST sort resources by last modification time descending, with the most recently modified resource shown first.
+- **FR-053**: Any property change on a resource — including title, description, modality flags, images, categories, or any other linked data — MUST update the resource's last modification time.
+- **FR-054**: The `Resources` workspace page MUST display the first 10 resources by default and load 10 additional entries on scroll (infinite scroll pagination).
+- **FR-055**: Each resource entry on the `Resources` workspace page MUST display an Edit action that navigates to the edit-resource page in modification mode with that resource's data pre-populated.
+- **FR-056**: Each resource entry on the `Resources` workspace page MUST display a Delete action that opens a confirmation dialog and, on confirmation, performs a soft delete of the resource.
+- **FR-057**: The `Resources` workspace page MUST display a fixed "Add resource" button that is always visible regardless of scroll position and navigates to the edit-resource page in creation mode.
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
 The following UI surfaces are important enough to be documented now at the behavior and routing level, even when some remain for later implementation:
 
 - **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, and `ResetPassword`
 - **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, `RestoreAccess`
-- **Supporting pages**: create-resource, create-need, resource detail, need detail, account detail, and campaign detail pages
+- **Supporting pages**: edit-resource (handles both creation and modification of resources), create-need, resource detail, need detail, account detail, and campaign detail pages
 - **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 
 ### Notification Event Catalog *(current documented messages and destinations)*

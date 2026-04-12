@@ -102,7 +102,7 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - **`RestoreAccess`**: reset-token completion page for choosing a new password.
 
 #### Supporting pages
-- **Create resource page**: create a new resource and optionally prefill a linked campaign.
+- **Edit resource page**: create a new resource or edit an existing one, with optional campaign prefill for creation mode.
 - **Create need page**: create a new need and optionally prefill a linked campaign.
 - **Resource detail page**: show the full public resource, fullscreen image preview when relevant, chat entry, bid entry, and creator navigation.
 - **Need detail page**: show the full public need, chat entry, claim entry, and creator navigation.

@@ -54,3 +54,11 @@
 
 - [x] T013 Run end-to-end verification for discovery, publishing, and bid handling
 - [x] T014 Capture any differences between legacy Tope-là behavior and the rebuilt MVP back into the spec
+
+## Phase 6: Resources Workspace Page
+
+- [ ] T030 Rename "Publish resource" / "Publish Resource" label to "Edit resource" / "Add resource" in all frontend files (`pages/index.tsx`, `features/resources/PublicResourcesPage.tsx`, `features/resources/CreateResourcePage.tsx`)
+- [ ] T031 Extend the resource data model and mutation to update `updatedAt` (last modification time) whenever any linked property changes, including images and categories
+- [ ] T032 Implement the `Resources` workspace page: query with `updatedAt`-descending sort, page size 10, infinite scroll loading 10 more, and authentication guard
+- [ ] T033 Add Edit and Delete card actions to the resources workspace page: Edit navigates to the edit-resource page in modification mode; Delete shows a confirmation dialog and performs a soft delete on confirmation
+- [ ] T034 Add a fixed "Add resource" button to the resources workspace page that remains visible at all scroll positions and navigates to the edit-resource page in creation mode
