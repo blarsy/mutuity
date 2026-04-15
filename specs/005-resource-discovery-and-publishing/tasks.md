@@ -70,3 +70,20 @@
 - [ ] T037 Implement the `Needs` workspace page: query with `updatedAt`-descending sort, page size 10, infinite scroll loading 10 more, and authentication guard
 - [ ] T038 Add Edit and Delete card actions to the needs workspace page: Edit navigates to the edit-need page in modification mode; Delete shows a confirmation dialog and performs a soft delete on confirmation
 - [ ] T039 Add a fixed "Add need" button to the needs workspace page that remains visible at all scroll positions and navigates to the edit-need page in creation mode
+
+## Phase 8: Contribution Page Informative UX
+
+- [ ] T040 Add a Topes explanation carousel entry button on the `Contribution` page and implement carousel open/close/slide navigation behavior
+- [ ] T041 Implement token-transaction history on the `Contribution` page with newest-first ordering, initial page size 10, and `Load more` appending 10 older transactions until exhausted
+- [ ] T042 Hide or disable the `Load more` action once the first transaction has been reached and all available history is displayed
+- [ ] T043 Add a Topes-earning opportunities list on the `Contribution` page where each row includes earning-action label, token amount, and destination link to the corresponding page
+
+## Phase 9: Preferences Page And Out-Of-App Delivery Controls
+
+- [ ] T044 Document the preferences information architecture: channels (`in-app`, `email summary`, `push`), four managed event categories, strategy matrix, and activity-gating rules in `spec.md` and `plan.md`
+- [ ] T045 Implement SQL-owned preference persistence and retrieval for per-account/per-category strategy and summary frequency (`1`/`3`/`7`/`30` days, default `1`)
+- [ ] T046 Implement SQL-owned ranked targeting helper(s) for `new need added` equivalent to Tope-la `get_accounts_to_notify_of_new_resource`, and align `new resource added` targeting behavior with the reverse-engineered rules
+- [ ] T047 Implement out-of-app dispatch gating so push/email for preference-managed categories is emitted only when the target account has no active web/mobile session
+- [ ] T048 Implement event-pending persistence and a daily `08:00` digest worker that sends at most one email per account with one section per pending category and idempotent mark-as-broadcasted updates
+- [ ] T049 Implement backend API + frontend `Preferences` page UI for editing per-category delivery strategy and email summary frequency, including safe defaults and validation
+- [ ] T050 Add end-to-end verification for realtime push vs digest behavior across all four categories, including digest frequency cadence and no-duplicate-send guarantees

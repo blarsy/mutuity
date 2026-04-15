@@ -98,6 +98,44 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 5. **Given** a resource in the list, **When** the user clicks Delete, **Then** a confirmation dialog is shown, and on confirmation the resource is soft-deleted and removed from the list.
 6. **Given** the resources page, **When** it is open at any scroll position, **Then** the "Add resource" button is always visible and navigates to the edit-resource page in creation mode when clicked.
 
+---
+
+### User Story 6 - Authenticated User Reads Contribution Guidance And History (Priority: P2)
+
+As an authenticated user, I can open the Contribution page to understand what Topes are, see my recent token transactions, and discover where to perform token-earning actions.
+
+**Why this priority**: Contribution rules are central to user trust and motivation, and users need a clear, actionable explanation of how Topes are earned.
+
+**Independent Test**: Sign in, open the `Contribution` page, verify that the Topes explanation carousel opens from its button, the first 10 token transactions are shown with a `Load more` action that appends 10 more repeatedly until the first transaction is reached, and a list of earning opportunities is displayed with amount and destination links.
+
+**Acceptance Scenarios**:
+
+1. **Given** the signed-in user is on the `Contribution` page, **When** they click the Topes explanation button, **Then** an explanation carousel opens and can be navigated slide by slide.
+2. **Given** the signed-in user has token history, **When** they open the `Contribution` page, **Then** exactly the 10 most recent token transactions are shown first, ordered from newest to oldest.
+3. **Given** more than 10 token transactions exist, **When** the user clicks `Load more`, **Then** the next 10 older transactions are appended; repeating this action keeps appending 10 more until the first transaction is displayed.
+4. **Given** all token transactions for the account are already displayed, **When** the user reaches the end of the history, **Then** no additional transactions are loaded and the `Load more` action is hidden or disabled.
+5. **Given** the signed-in user is on the `Contribution` page, **When** earning opportunities are rendered, **Then** each row shows the earning action label, the amount of Topes that can be earned, and a link to the page where that action can be performed.
+
+---
+
+### User Story 7 - Authenticated User Tunes Delivery Preferences (Priority: P1)
+
+As an authenticated user, I can configure how and how often I receive out-of-app information so I stay informed without feeling spammed.
+
+**Why this priority**: The product already emits attention-worthy events, but user trust and long-term engagement depend on giving people control over immediacy and frequency.
+
+**Independent Test**: Sign in, open the `Preferences` page, configure per-category delivery strategy (`realtime push` or `email summary`), configure summary frequency (`1`, `3`, `7`, `30` days), trigger eligible events while the account has no active session, and verify that immediate push versus deferred 08:00 digest behavior matches the selected preference.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user on the `Preferences` page, **When** they view communication settings, **Then** they can configure delivery preferences for these categories: new resources added, new needs added, unread notifications, and new chat message received.
+2. **Given** a delivery category in preferences, **When** the user selects `realtime push`, **Then** eligible events in that category are sent immediately as push notifications (mobile app only) while in-app alerts continue unchanged.
+3. **Given** a delivery category in preferences, **When** the user selects `email summary`, **Then** eligible events are queued for email digest delivery instead of immediate push.
+4. **Given** email summary is selected for a category, **When** the user sets summary frequency to `1`, `3`, `7`, or `30` days, **Then** digest eligibility follows that cadence and defaults to `1 day` for categories with no explicit saved value.
+5. **Given** the account has at least one active web or mobile session, **When** an eligible event occurs, **Then** out-of-app push/email delivery for these preference-managed categories is not emitted for that event.
+6. **Given** eligible non-broadcasted events exist for one account at the daily digest time, **When** the 08:00 digest job runs, **Then** exactly one email is produced for that account, containing one section per event category with pending items, and those items are marked as broadcasted.
+7. **Given** no pending digest items exist for an account, **When** the 08:00 digest job runs, **Then** no digest email is sent.
+
 ### Edge Cases
 
 - A resource can represent a gift, loan, exchange, or competence offer, and not all form fields apply equally to each subtype.
@@ -111,6 +149,10 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 - `bid` behavior is related to `claim` behavior but must remain distinct where outcome rules or extra terms differ.
 - A resource may be visible publicly, organization-only, or under campaign constraints.
 - Older Tope-là records may contain media or location data in formats that need normalization during migration.
+- In-app alerts remain enabled and visible in the product regardless of the delivery preferences configured on the `Preferences` page.
+- Push delivery is mobile-app-only; accounts without a valid push token should still receive digest delivery when configured for email summary.
+- The `new resources added` and `new needs added` categories require ranked account targeting, not global fanout.
+- Digest generation must avoid duplicate sends of the same event item and must keep idempotent behavior across retries.
 
 ## Requirements *(mandatory)*
 
@@ -166,7 +208,8 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 - **FR-047**: Gifting tokens to another account MUST create equal and opposite ledger effects: a negative movement for the sender and a matching positive movement for the receiver for the exact gifted amount.
 - **FR-048**: Creating a bid MUST reserve or deduct the bid amount from the bidder, and cancelling, expiring, or automatically cancelling that bid because the target resource expired or was deleted MUST restore that same amount to the bidder.
 - **FR-049**: Settling a claim MUST create opposite token movements based on the settled claim amount: a positive movement for the claimer whose claim was selected and a negative movement for the account that settles the claim on its need.
-- **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.- **FR-051**: Authenticated users MUST have access to a `Resources` workspace page that lists only the resources they created.
+- **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.
+- **FR-051**: Authenticated users MUST have access to a `Resources` workspace page that lists only the resources they created.
 - **FR-052**: The `Resources` workspace page MUST sort resources by last modification time descending, with the most recently modified resource shown first.
 - **FR-053**: Any property change on a resource — including title, description, modality flags, images, categories, or any other linked data — MUST update the resource's last modification time.
 - **FR-054**: The `Resources` workspace page MUST display the first 10 resources by default; each time the user scrolls to the bottom of the list, 10 more resources MUST be appended until all resources for the account have been loaded (infinite scroll, page size 10).
@@ -180,6 +223,29 @@ As an authenticated user, I can view, edit, and delete my own resources from a d
 - **FR-062**: Each need entry on the `Needs` workspace page MUST display an Edit action that navigates to the edit-need page in modification mode with that need's data pre-populated.
 - **FR-063**: Each need entry on the `Needs` workspace page MUST display a Delete action that opens a confirmation dialog and, on confirmation, performs a soft delete of the need.
 - **FR-064**: The `Needs` workspace page MUST display a fixed "Add need" button that is always visible regardless of scroll position and navigates to the edit-need page in creation mode.
+- **FR-065**: The `Contribution` page MUST provide a dedicated button that opens a carousel explaining Topes and contribution principles.
+- **FR-066**: The `Contribution` page MUST show exactly the 10 most recent token transactions for the signed-in account on first render, ordered from newest to oldest.
+- **FR-067**: The `Contribution` page MUST provide a `Load more` action that appends the next 10 older token transactions each time it is triggered, until the first transaction is reached.
+- **FR-068**: Once all token transactions are loaded, the `Load more` action on the `Contribution` page MUST be hidden or disabled.
+- **FR-069**: The `Contribution` page MUST display a list of Topes-earning opportunities, and each opportunity MUST include the action label, the amount of Topes that can be earned, and a link to the page where that action is performed.
+- **FR-070**: The platform MUST expose an authenticated `Preferences` page where users configure out-of-app delivery behavior for information events.
+- **FR-071**: The `Preferences` page MUST manage only out-of-app channels (`email summaries` and `push notifications`) and MUST NOT disable or alter in-app alerts.
+- **FR-072**: The system MUST support these preference-managed event categories: `new resources added`, `new needs added`, `unread notifications`, and `new chat message received`.
+- **FR-073**: For each managed category, the user MUST be able to choose one delivery strategy: `realtime push` or `email summary`.
+- **FR-074**: `Realtime push` delivery MUST be limited to mobile push notifications.
+- **FR-075**: `Email summary` delivery MUST support frequencies of `1`, `3`, `7`, or `30` days and MUST default to `1 day` when unset.
+- **FR-076**: Preference-managed out-of-app deliveries MUST be emitted only when the account has no active web or mobile app session at event time.
+- **FR-077**: For `new resources added`, account targeting MUST follow the same ranking behavior reverse engineered from Tope-la `sb.get_accounts_to_notify_of_new_resource`: combine proximity, active-campaign participation, and search-intent signals; exclude the publisher; require cumulative score over threshold; and cap recipients to the top-ranked set.
+- **FR-078**: For `new needs added`, account targeting MUST use the same ranking strategy as `new resources added`, adapted to the new-need entity and fields.
+- **FR-079**: For `unread notifications`, the system MUST emit realtime push immediately when that category is configured as realtime and the activity gate allows out-of-app delivery.
+- **FR-080**: For `new chat message received`, the system MUST emit realtime push immediately when that category is configured as realtime and the activity gate allows out-of-app delivery.
+- **FR-081**: For categories configured as `email summary`, eligible events MUST be persisted as pending digest items until broadcasted.
+- **FR-082**: A scheduled digest process MUST run daily at `08:00` server time and evaluate pending digest items against each account's configured frequency.
+- **FR-083**: Each digest run MUST generate at most one email per account, and that email MUST include one section per category that has pending items selected for broadcast.
+- **FR-084**: After successful digest send, included pending items MUST be marked as broadcasted so they are not re-sent.
+- **FR-085**: If an account has no eligible pending items at digest time, no digest email MUST be sent.
+- **FR-086**: The backend MUST expose SQL-owned preference read/write operations and SQL-owned selection helpers for digest candidate extraction and mark-as-broadcasted updates.
+- **FR-087**: The preference model MUST remain extensible to future channels and event categories without schema-breaking migration patterns.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 

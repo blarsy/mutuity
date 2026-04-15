@@ -64,6 +64,16 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - support delayed milestone rewards such as `resource created 24 hours ago` and `claim created 24 hours ago` through scheduled/background processing
 - connect campaign airdrop payout logic with per-account, per-campaign idempotency guarantees
 
+### Slice 6 — Preferences and out-of-app delivery control (P1)
+- implement an authenticated `Preferences` page to configure out-of-app event delivery by category
+- support strategy choice per category: `realtime push` (mobile only) or `email summary`
+- support email-summary frequencies `1`, `3`, `7`, `30` days with `1 day` default
+- keep in-app alerts unaffected by preference edits
+- gate out-of-app sends on account activity (no active web/mobile session)
+- for `new resources added` and `new needs added`, reuse ranked account-targeting behavior based on proximity, campaign participation, and search-intent
+- persist non-broadcasted summary-eligible events and process them via a daily 08:00 digest job
+- emit at most one digest email per account per run with per-category sections and idempotent mark-as-broadcasted updates
+
 ## Web IA And Componentization Plan
 
 ### Shared navigation shell
@@ -122,6 +132,9 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Retention behavior stays SQL-owned: notifications are eligible for deletion only once they are at least 7 days old and have been marked read for at least 24 hours.
 - Timed/system-generated notifications such as bid-expiry warnings, automatic stale-bid expiry/cancellation notifications, and campaign-airdrop countdowns should run from Graphile Worker or another scheduled backend process rather than being inferred in the browser.
 - Campaign-airdrop countdown notifications should use a broader reminder rule than payouts: the account should be notified when it has at least one linked campaign need or one linked campaign resource for that campaign, whether that link is approved or not.
+- Preference-managed out-of-app delivery should remain distinct from in-app notifications: in-app remains immediate and visible in the inbox, while push/email depends on per-category strategy and activity gating.
+- Digest execution should run once daily at 08:00 server time, choose eligible accounts/items by configured frequency, and build one email per account containing sections only for categories with pending items.
+- Digest state transitions should be SQL-owned and idempotent so retries do not duplicate outbound mail content.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
