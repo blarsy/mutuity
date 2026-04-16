@@ -136,6 +136,26 @@ As an authenticated user, I can configure how and how often I receive out-of-app
 6. **Given** eligible non-broadcasted events exist for one account at the daily digest time, **When** the 08:00 digest job runs, **Then** exactly one email is produced for that account, containing one section per event category with pending items, and those items are marked as broadcasted.
 7. **Given** no pending digest items exist for an account, **When** the 08:00 digest job runs, **Then** no digest email is sent.
 
+---
+
+### User Story 8 - Account Creation And Access Recovery (Priority: P1)
+
+As a visitor or account holder, I can create and access my account with either email/password or Apple/Google sign-in, and I can verify or recover my credentials safely.
+
+**Why this priority**: Account entry and recovery are core trust flows; without complete signup/login/recovery options, users drop off before they can participate in needs, resources, chat, or contribution loops.
+
+**Independent Test**: Register with email/password and verify email before first authenticated usage, register/sign in with Google and Apple, request forgot-password reset and complete it via tokenized link, and perform authenticated change-password while signed in.
+
+**Acceptance Scenarios**:
+
+1. **Given** a new visitor, **When** they choose email/password registration, **Then** an account is created in unverified state and an email verification message is sent.
+2. **Given** an unverified local account, **When** the user opens the verification link and token validation succeeds, **Then** the account email is marked verified and the user can continue into authenticated flows.
+3. **Given** a new or existing visitor, **When** they choose Google sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
+4. **Given** a new or existing visitor, **When** they choose Apple sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
+5. **Given** an account holder who forgot their password, **When** they request password reset by email and submit the reset form with a valid token, **Then** the password is updated and the token cannot be reused.
+6. **Given** an authenticated account holder, **When** they change password from account settings with correct current credentials and valid new credentials, **Then** the password is updated and session-security rules are applied.
+7. **Given** invalid or expired verification/reset tokens, **When** those links are opened, **Then** the system rejects the request with safe generic copy and offers a resend/retry path.
+
 ### Edge Cases
 
 - A resource can represent a gift, loan, exchange, or competence offer, and not all form fields apply equally to each subtype.
@@ -153,6 +173,9 @@ As an authenticated user, I can configure how and how often I receive out-of-app
 - Push delivery is mobile-app-only; accounts without a valid push token should still receive digest delivery when configured for email summary.
 - The `new resources added` and `new needs added` categories require ranked account targeting, not global fanout.
 - Digest generation must avoid duplicate sends of the same event item and must keep idempotent behavior across retries.
+- Local email/password accounts may exist without social identities and vice versa; account linking should avoid duplicate accounts on same verified email.
+- Social-provider callbacks may omit optional profile fields; account creation should still succeed with safe defaults.
+- Password-reset and email-verification tokens must be one-time-use and expire after a bounded duration.
 
 ## Requirements *(mandatory)*
 
@@ -191,7 +214,7 @@ As an authenticated user, I can configure how and how often I receive out-of-app
 - **FR-031**: The need detail page MUST expose creator navigation, authenticated chat initiation, and claim entry; if no account is signed in, those gated actions MUST open a contextual sign-in dialog.
 - **FR-032**: The initial web information architecture MUST reserve dedicated top-level page surfaces for `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`, even when some remain unimplemented in the current MVP.
 - **FR-033**: Account detail pages MUST show the public account profile plus the account’s active resources and needs, and campaign detail pages MUST show linked approved resources and needs together with create-resource and create-need entry points.
-- **FR-034**: The authentication surface MUST support sign-in, account registration with local credentials and future external providers, password reset request, and reset-token-based access restoration as first-class reusable flows.
+- **FR-034**: The authentication surface MUST support sign-in and account registration with local email/password credentials, password reset request, reset-token-based access restoration, and authenticated change-password as first-class reusable flows.
 - **FR-034a**: The profile surface MUST allow an account to store its profile links as a zero-or-more collection, and each saved link MUST include a URL, a user-facing caption, and a type chosen from `facebook`, `instagram`, `x`, or `website`.
 - **FR-035**: The platform MUST persist notifications as distinct account-scoped entities with their own creation timestamp, read timestamp, event type, and structured payload.
 - **FR-036**: The notifications inbox MUST surface at least the following attention-worthy events when relevant: claim received on one of the account’s needs; bid received on one of the account’s resources; bid-expiring-soon warning; campaign airdrop-soon warning; campaign airdrop completion; welcome/profile-completion encouragement; tokens received as a gift; claim settled; and bid accepted, rejected, cancelled, or expired without response.
@@ -246,13 +269,22 @@ As an authenticated user, I can configure how and how often I receive out-of-app
 - **FR-085**: If an account has no eligible pending items at digest time, no digest email MUST be sent.
 - **FR-086**: The backend MUST expose SQL-owned preference read/write operations and SQL-owned selection helpers for digest candidate extraction and mark-as-broadcasted updates.
 - **FR-087**: The preference model MUST remain extensible to future channels and event categories without schema-breaking migration patterns.
+- **FR-088**: Email/password account registration MUST require email verification before the account is treated as fully verified for protected account-owner operations.
+- **FR-089**: The system MUST support resend of email-verification messages for unverified local accounts with abuse-safe throttling.
+- **FR-090**: The platform MUST support sign-in and account creation through Google OAuth.
+- **FR-091**: The platform MUST support sign-in and account creation through Apple OAuth.
+- **FR-092**: External-identity login MUST map to existing accounts safely when identity/email matches, and MUST avoid duplicate-account creation.
+- **FR-093**: Forgot-password flow MUST issue one-time reset tokens with expiration, deliver reset links by email, and reject expired/invalid/reused tokens.
+- **FR-094**: Authenticated users MUST be able to change their password by providing current password plus valid new password.
+- **FR-095**: Password and token handling MUST follow secure storage and transport patterns: salted password hashing, server-side token hashing, and sanitized error responses.
+- **FR-096**: The web information architecture MUST include explicit entry points for `Register`, `Login`, `ResetPassword`, and email verification completion.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
 The following UI surfaces are important enough to be documented now at the behavior and routing level, even when some remain for later implementation:
 
-- **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, and `ResetPassword`
-- **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, `RestoreAccess`
+- **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, `ResetPassword`, and `ChangePassword`
+- **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`
 - **Supporting pages**: edit-resource (handles both creation and modification of resources), edit-need (handles both creation and modification of needs), resource detail, need detail, account detail, and campaign detail pages
 - **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 

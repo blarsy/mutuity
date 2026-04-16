@@ -74,6 +74,14 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - persist non-broadcasted summary-eligible events and process them via a daily 08:00 digest job
 - emit at most one digest email per account per run with per-category sections and idempotent mark-as-broadcasted updates
 
+### Slice 7 — Authentication parity with Tope-la (P1)
+- support local email/password account creation with verification-before-trust flow
+- support login/account creation through Google and Apple providers
+- implement forgot-password request and reset-token completion flow
+- implement authenticated change-password flow
+- add safe identity-linking and duplicate-account prevention rules between local/social identities
+- keep auth/security-sensitive rules SQL-owned where applicable and backend-owned for provider callbacks and token validation
+
 ## Web IA And Componentization Plan
 
 ### Shared navigation shell
@@ -90,8 +98,9 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 | `ResourceCard` | Show resource summary content in wrapping browse lists with separate click affordances for creator, image, and main body | search results, account pages, campaign pages, resource management lists |
 | `NeedCard` | Show need summary content in wrapping browse lists with separate click affordances for creator and main body | contribute page, account pages, campaign pages, need management lists |
 | `Login` | Capture email/password sign-in with secondary actions for password reset and registration | dialog entry from top bar and contextual action gates |
-| `Register` | Capture local sign-up plus future external provider options such as Apple and Google | standalone auth page or dialog follow-up |
+| `Register` | Capture local sign-up plus Google and Apple providers | standalone auth page or dialog follow-up |
 | `ResetPassword` | Confirm that a password-reset link has been sent for the entered email address | password-reset flow |
+| `ChangePassword` | Let authenticated users update password with current-password confirmation | profile/preferences security section |
 
 Implementation detail such as exact dimensions, MUI primitives, spacing, or prop signatures can be refined later; what is fixed now is the role each surface plays in the route and interaction model.
 
@@ -135,6 +144,13 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Preference-managed out-of-app delivery should remain distinct from in-app notifications: in-app remains immediate and visible in the inbox, while push/email depends on per-category strategy and activity gating.
 - Digest execution should run once daily at 08:00 server time, choose eligible accounts/items by configured frequency, and build one email per account containing sections only for categories with pending items.
 - Digest state transitions should be SQL-owned and idempotent so retries do not duplicate outbound mail content.
+
+### Authentication model and operational rules
+- Local signup should create an unverified account identity and trigger an email verification token delivery.
+- Verification and reset tokens should be one-time-use, time-bounded, and validated server-side.
+- Social-provider callback handling should support both first-time account creation and login to an existing linked identity.
+- When social identity claims an email that matches an existing verified account, mapping should be explicit and safe to prevent account takeover and duplicate rows.
+- Change-password should require the current password and should trigger appropriate session hardening behavior after update.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
