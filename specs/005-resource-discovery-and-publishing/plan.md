@@ -99,6 +99,13 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - enforce per-account per-grant single-award behavior with atomic idempotent issuance
 - record successful claims in token movement ledger with grant linkage
 
+### Slice 10 — Admin support and troubleshooting pages (P1)
+- provide admin-only pages for accounts, bids, resources, notifications, mails, campaigns, grants, and logs
+- show each page as most-recent-first tabular data with item-specific search fields
+- wire page-specific actions: mail content viewer, mail resend, campaign description viewer, campaign moderation handoff, grant creation dialog, and full log-message viewer
+- enforce role-gated access and auditable side-effect actions
+- ensure high-cardinality query responsiveness with pagination/index-aware filtering
+
 ## Web IA And Componentization Plan
 
 ### Shared navigation shell
@@ -187,6 +194,12 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Campaign criterion should pass when account owns at least one approved linked need or one approved linked resource in the specified campaign.
 - Max-claims and per-account claim rules must be concurrency-safe so retries or races cannot over-award tokens.
 - Claim responses should expose user-safe denial reasons while keeping internal implementation details private.
+
+### Admin support model and operational rules
+- Admin support pages should be read-optimized views over operational entities, each with strict field projection and search scope.
+- Search behavior should follow per-page configured fields only, rather than global full-text over unrelated columns.
+- The `Campaigns` admin page should reuse the existing moderation-note workflow from feature `001-campaign-needs` for consistency.
+- Side-effect actions (`send again`, `moderate`, `create grant`) should emit auditable logs and remain protected by administrator authorization checks.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
