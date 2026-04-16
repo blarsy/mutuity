@@ -75,6 +75,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - emit at most one digest email per account per run with per-category sections and idempotent mark-as-broadcasted updates
 
 ### Slice 7 — Authentication parity with Tope-la (P1)
+- keep account creation profile-minimal: only account name is mandatory
 - support local email/password account creation with verification-before-trust flow
 - support login/account creation through Google and Apple providers
 - implement forgot-password request and reset-token completion flow
@@ -146,9 +147,11 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Digest state transitions should be SQL-owned and idempotent so retries do not duplicate outbound mail content.
 
 ### Authentication model and operational rules
+- Account creation should require only account name at profile level; email/password belongs to local-auth credential setup, not to the base account profile contract.
 - Local signup should create an unverified account identity and trigger an email verification token delivery.
 - Verification and reset tokens should be one-time-use, time-bounded, and validated server-side.
 - Social-provider callback handling should support both first-time account creation and login to an existing linked identity.
+- On first-time social account creation, provider account name should prefill a suggested account name in the registration form and remain editable before final submit.
 - When social identity claims an email that matches an existing verified account, mapping should be explicit and safe to prevent account takeover and duplicate rows.
 - Change-password should require the current password and should trigger appropriate session hardening behavior after update.
 

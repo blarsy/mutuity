@@ -148,13 +148,15 @@ As a visitor or account holder, I can create and access my account with either e
 
 **Acceptance Scenarios**:
 
-1. **Given** a new visitor, **When** they choose email/password registration, **Then** an account is created in unverified state and an email verification message is sent.
-2. **Given** an unverified local account, **When** the user opens the verification link and token validation succeeds, **Then** the account email is marked verified and the user can continue into authenticated flows.
-3. **Given** a new or existing visitor, **When** they choose Google sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
-4. **Given** a new or existing visitor, **When** they choose Apple sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
-5. **Given** an account holder who forgot their password, **When** they request password reset by email and submit the reset form with a valid token, **Then** the password is updated and the token cannot be reused.
-6. **Given** an authenticated account holder, **When** they change password from account settings with correct current credentials and valid new credentials, **Then** the password is updated and session-security rules are applied.
-7. **Given** invalid or expired verification/reset tokens, **When** those links are opened, **Then** the system rejects the request with safe generic copy and offers a resend/retry path.
+1. **Given** a new visitor creating an account, **When** account information is submitted, **Then** `account name` is the only mandatory account-profile field required to create the account.
+2. **Given** a new visitor, **When** they choose email/password registration, **Then** an account is created in unverified state and an email verification message is sent.
+3. **Given** first-time account creation through Google or Apple, **When** provider profile information is received, **Then** the provider account name is prefilled as a suggested account name that remains editable before final account creation.
+4. **Given** an unverified local account, **When** the user opens the verification link and token validation succeeds, **Then** the account email is marked verified and the user can continue into authenticated flows.
+5. **Given** a new or existing visitor, **When** they choose Google sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
+6. **Given** a new or existing visitor, **When** they choose Apple sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
+7. **Given** an account holder who forgot their password, **When** they request password reset by email and submit the reset form with a valid token, **Then** the password is updated and the token cannot be reused.
+8. **Given** an authenticated account holder, **When** they change password from account settings with correct current credentials and valid new credentials, **Then** the password is updated and session-security rules are applied.
+9. **Given** invalid or expired verification/reset tokens, **When** those links are opened, **Then** the system rejects the request with safe generic copy and offers a resend/retry path.
 
 ### Edge Cases
 
@@ -175,6 +177,7 @@ As a visitor or account holder, I can create and access my account with either e
 - Digest generation must avoid duplicate sends of the same event item and must keep idempotent behavior across retries.
 - Local email/password accounts may exist without social identities and vice versa; account linking should avoid duplicate accounts on same verified email.
 - Social-provider callbacks may omit optional profile fields; account creation should still succeed with safe defaults.
+- Social-provider callbacks should prefill provider account name as a suggestion, and the user should be able to edit that value before account creation is finalized.
 - Password-reset and email-verification tokens must be one-time-use and expire after a bounded duration.
 
 ## Requirements *(mandatory)*
@@ -278,6 +281,9 @@ As a visitor or account holder, I can create and access my account with either e
 - **FR-094**: Authenticated users MUST be able to change their password by providing current password plus valid new password.
 - **FR-095**: Password and token handling MUST follow secure storage and transport patterns: salted password hashing, server-side token hashing, and sanitized error responses.
 - **FR-096**: The web information architecture MUST include explicit entry points for `Register`, `Login`, `ResetPassword`, and email verification completion.
+- **FR-097**: Account creation MUST require only `account name` as mandatory account-profile information; all other profile fields are optional at creation time.
+- **FR-098**: Local email/password authentication setup MUST require an email and password for that auth method, while remaining separate from the minimal account-profile requirement.
+- **FR-099**: During first-time account creation via Google or Apple, the provider account name MUST be used to prefill a suggested account name, and the user MUST be able to edit it before final submission.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
