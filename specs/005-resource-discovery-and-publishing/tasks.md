@@ -97,3 +97,14 @@
 - [ ] T055 Implement authenticated change-password flow with current-password validation and post-change session hardening behavior
 - [ ] T056 Implement frontend auth surfaces and routing updates for social sign-in buttons (`Google`, `Apple`) including editable suggested-name prefill from provider profile data, verification completion, forgot/reset password, and change-password UI
 - [ ] T057 Add end-to-end verification for all auth entry/recovery paths, including signup/login parity across local+social identities and token expiry/reuse protections
+
+## Phase 11: Unified Cross-Component Logging
+
+- [ ] T058 Document the unified logging contract in `spec.md` and `plan.md`: one table, mandatory `component`, optional `context`, and message rules for `info`/`warn`/`error`
+- [ ] T059 Implement database schema and SQL-owned write/search helpers for unified operational logs, replacing split-write usage patterns equivalent to client/server table separation
+- [ ] T060 Implement backend logging adapter updates in `web_api` and worker paths to write unified log entries with required `component` and error stack formatting
+- [ ] T061 Implement frontend/mobile logging adapter updates so backoffice and mobile emit to the unified log write API with optional account id and activity context
+- [ ] T062 Add mandatory exception instrumentation for PostgreSQL interaction failures (GraphQL and direct client usage) and external-provider failures (Google auth, Apple auth, Cloudinary, Expo push, other third-party APIs)
+- [ ] T063 Add fallback logging behavior so unified-log persistence failures degrade to console/file diagnostics without interrupting primary user flows
+- [ ] T064 Add end-to-end verification and operational checks for unified logging coverage, including cross-component filtering by `component`, correlation by `context`, and duplicate-free migration from old write paths
+- [ ] T065 Add SQL-owned system setting for log retention days (default `7`) and scheduled cleanup that deletes unified logs older than the configured retention window

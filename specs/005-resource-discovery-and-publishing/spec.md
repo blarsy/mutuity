@@ -158,6 +158,27 @@ As a visitor or account holder, I can create and access my account with either e
 8. **Given** an authenticated account holder, **When** they change password from account settings with correct current credentials and valid new credentials, **Then** the password is updated and session-security rules are applied.
 9. **Given** invalid or expired verification/reset tokens, **When** those links are opened, **Then** the system rejects the request with safe generic copy and offers a resend/retry path.
 
+---
+
+### User Story 9 - Operators Can Trace Runtime Behavior With Unified Logs (Priority: P1)
+
+As an operator or developer, I can inspect unified logs from all platform components so I can diagnose incidents and understand recent runtime behavior quickly.
+
+**Why this priority**: Logging is a cross-cutting operational requirement; without coherent logs across clients, web API, and background jobs, production diagnosis is too slow.
+
+**Independent Test**: Trigger representative warning/info/error events from mobile, backoffice web, web API, and non-interactive jobs; verify all entries are persisted in one log table with component labels, optional activity context, severity, and message content suitable for troubleshooting.
+
+**Acceptance Scenarios**:
+
+1. **Given** events emitted from mobile app, backoffice web, web API, and worker/background jobs, **When** they are logged, **Then** all entries are stored in one unified log table rather than split client/server tables.
+2. **Given** any emitted log entry, **When** persisted, **Then** it includes a `component` field identifying the source component (`mobile_app`, `backoffice_web`, `web_api`, `worker_job`, or another registered component value).
+3. **Given** client-side events tied to an authenticated session activity, **When** logs are emitted from mobile/backoffice during that activity, **Then** an activity/session identifier may be stored in optional `context` to correlate those entries.
+4. **Given** an error event, **When** persisted, **Then** `message` contains contextual error description concatenated with stack trace when available.
+5. **Given** a warning or info event, **When** persisted, **Then** `message` contains actionable contextual information rather than opaque text.
+6. **Given** an exception while interacting with PostgreSQL (GraphQL path or other DB client path), **When** the exception is caught in mobile/backoffice/web API/worker code, **Then** it is logged as error and includes context when available.
+7. **Given** an exception while interacting with external systems (Google auth, Apple auth, Cloudinary, Expo push, or other external APIs), **When** the exception is caught, **Then** it is logged as error with component and contextual message.
+8. **Given** no explicit retention override is configured, **When** log cleanup runs, **Then** logs older than 7 days are deleted according to the default retention setting.
+
 ### Edge Cases
 
 - A resource can represent a gift, loan, exchange, or competence offer, and not all form fields apply equally to each subtype.
@@ -179,6 +200,7 @@ As a visitor or account holder, I can create and access my account with either e
 - Social-provider callbacks may omit optional profile fields; account creation should still succeed with safe defaults.
 - Social-provider callbacks should prefill provider account name as a suggestion, and the user should be able to edit that value before account creation is finalized.
 - Password-reset and email-verification tokens must be one-time-use and expire after a bounded duration.
+- Log-ingestion failures must not crash user-facing flows; a fallback sink should preserve minimal diagnostics.
 
 ## Requirements *(mandatory)*
 
@@ -284,6 +306,19 @@ As a visitor or account holder, I can create and access my account with either e
 - **FR-097**: Account creation MUST require only `account name` as mandatory account-profile information; all other profile fields are optional at creation time.
 - **FR-098**: Local email/password authentication setup MUST require an email and password for that auth method, while remaining separate from the minimal account-profile requirement.
 - **FR-099**: During first-time account creation via Google or Apple, the provider account name MUST be used to prefill a suggested account name, and the user MUST be able to edit it before final submission.
+- **FR-100**: The platform MUST persist operational logs in a single unified database table across mobile app, backoffice web, web API, and non-interactive jobs.
+- **FR-101**: Each log entry MUST include at least: `created_at`, `level`, `component`, and `message`.
+- **FR-102**: Each log entry MUST support optional `context` for activity/session correlation, especially for mobile/backoffice user activity traces.
+- **FR-103**: Log entry `component` MUST identify log origin and be enumerable (including at least `mobile_app`, `backoffice_web`, `web_api`, and `worker_job`).
+- **FR-104**: For error-level entries, `message` MUST include the error message plus stack trace when stack is available.
+- **FR-105**: The system MUST log any exception raised during PostgreSQL interactions, including GraphQL execution paths and non-GraphQL DB client usage.
+- **FR-106**: The system MUST log any exception raised during external-system interactions, including Google auth, Apple auth, Cloudinary, Expo push notifications, and other third-party APIs.
+- **FR-107**: Logging APIs used by mobile/backoffice SHOULD accept optional account identifier and optional context/activity identifier, and SHOULD include them when available.
+- **FR-108**: Existing split storage patterns equivalent to separate `client_logs` and `server_logs` MUST be replaced by the unified table for new writes.
+- **FR-109**: Non-error logging (`info`, `warn`) SHOULD mirror the practical Tope-la operational events where possible, including startup lifecycle, background job execution, notification dispatch preparation, and notable ignored/unexpected runtime conditions.
+- **FR-110**: If primary log persistence fails, the runtime MUST use a fallback logger path (console and/or file) and MUST NOT terminate the main user flow solely because logging failed.
+- **FR-111**: The platform MUST expose a system-wide setting for log retention in days, stored in a database-backed system settings table or equivalent SQL-owned configuration source.
+- **FR-112**: Default log retention MUST be 7 days when no override is configured, and scheduled cleanup MUST delete log entries older than the configured retention window.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
@@ -341,6 +376,7 @@ The following UI surfaces are important enough to be documented now at the behav
 - **ResourceBid**: A response or negotiation object linked to a resource and governed by resource-specific rules, optionally seeded with the resource’s default Topes amount when one is provided.
 - **Notification**: A persisted, account-scoped attention event aggregated into the notifications inbox, carrying a typed payload, read state, destination mapping, and retention-cleanup eligibility.
 - **TokenMovement**: An auditable ledger entry representing a positive or negative Topes change caused by profile completion, gifting, campaign airdrop, bid lifecycle, claim settlement, or other contribution rules.
+- **OperationalLogEntry**: Unified cross-component log record storing severity, component, contextual correlation identifiers, optional account linkage, and message payload for diagnostics.
 - **AccountProfileLink**: A typed profile link owned by an account, storing a URL, a caption, and a type among `facebook`, `instagram`, `x`, or `website`.
 - **ResourceMediaAsset**: Uploaded or referenced media metadata for the resource listing.
 

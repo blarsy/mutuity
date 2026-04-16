@@ -83,6 +83,14 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - add safe identity-linking and duplicate-account prevention rules between local/social identities
 - keep auth/security-sensitive rules SQL-owned where applicable and backend-owned for provider callbacks and token validation
 
+### Slice 8 — Unified cross-component logging (P1)
+- replace split client/server logging writes with a single operational log table
+- include explicit `component` on each log entry to distinguish source runtime
+- support optional `context` for activity/session correlation, especially for user-facing client activity traces
+- enforce error-message shape: contextual message plus stack trace when available
+- log DB exceptions and external-provider exceptions consistently across mobile app, backoffice web, web API, and workers
+- retain a fallback sink (console/file) so logging persistence failures do not break main runtime flows
+
 ## Web IA And Componentization Plan
 
 ### Shared navigation shell
@@ -154,6 +162,16 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - On first-time social account creation, provider account name should prefill a suggested account name in the registration form and remain editable before final submit.
 - When social identity claims an email that matches an existing verified account, mapping should be explicit and safe to prevent account takeover and duplicate rows.
 - Change-password should require the current password and should trigger appropriate session hardening behavior after update.
+
+### Logging model and operational rules
+- Use a single DB table for operational logs emitted by mobile app, backoffice web, web API, and non-interactive jobs.
+- Preserve severity levels (`debug`, `info`, `warn`, `error`) and require `component` on each entry.
+- Keep optional `context` for correlation of logs belonging to the same user activity/session.
+- For errors, format message as contextual error statement plus stack trace where available.
+- Mandatory error capture should include PostgreSQL interaction failures and external-system failures (Google auth, Apple auth, Cloudinary, Expo push, other third-party APIs).
+- Non-error events should follow Tope-la practical signal where possible: startup lifecycle, listener/job execution, outgoing push/email preparation, and unexpected-but-handled conditions.
+- Log retention should be controlled by a system-wide DB setting expressed in days, defaulting to 7.
+- Cleanup scheduling should read that setting and delete entries older than the configured window.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
