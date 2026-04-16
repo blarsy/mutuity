@@ -179,6 +179,28 @@ As an operator or developer, I can inspect unified logs from all platform compon
 7. **Given** an exception while interacting with external systems (Google auth, Apple auth, Cloudinary, Expo push, or other external APIs), **When** the exception is caught, **Then** it is logged as error with component and contextual message.
 8. **Given** no explicit retention override is configured, **When** log cleanup runs, **Then** logs older than 7 days are deleted according to the default retention setting.
 
+---
+
+### User Story 10 - Account Claims A Targeted Grant (Priority: P1)
+
+As an account holder, I can open a specific grant route and claim a grant when I satisfy its criteria so token seeding can be distributed without creating a full campaign.
+
+**Why this priority**: Grants are a flexible growth/seeding mechanism for administrators and a direct token on-ramp for targeted users and campaign participants.
+
+**Independent Test**: Create grant definitions as administrator with combinations of criteria (target accounts/emails, max grants, expiry datetime, campaign participation), then sign in as matching/non-matching users and verify claim route behavior, award outcomes, and denial reasons.
+
+**Acceptance Scenarios**:
+
+1. **Given** a non-admin account, **When** it attempts to create or modify a grant, **Then** the action is denied.
+2. **Given** a system administrator, **When** a grant is created, **Then** it may define one or more criteria among: allowed accounts, allowed emails (including future users), max total grants, expiration datetime, and linked campaign participation requirement.
+3. **Given** a grant with multiple criteria, **When** an account attempts to claim it, **Then** the account must satisfy all configured criteria to receive the grant.
+4. **Given** a grant targeted by email, **When** an account with matching email claims it, **Then** the claim succeeds even if the account did not exist when the grant was created.
+5. **Given** a grant with `max amount of grants`, **When** successful claims reach that cap, **Then** further claims are denied indefinitely.
+6. **Given** a grant with an expiration datetime, **When** claim is attempted after expiration, **Then** the claim is denied.
+7. **Given** a grant linked to a campaign participation criterion, **When** account ownership includes at least one approved linked need or one approved linked resource in that campaign, **Then** that criterion is satisfied.
+8. **Given** an authenticated user opening the claim route with a grant id, **When** the grant page loads, **Then** it displays grant title and description and then shows a success message or an error message after claim evaluation.
+9. **Given** an account that already claimed a grant, **When** it attempts to claim the same grant again, **Then** no second token award is issued.
+
 ### Edge Cases
 
 - A resource can represent a gift, loan, exchange, or competence offer, and not all form fields apply equally to each subtype.
@@ -201,6 +223,9 @@ As an operator or developer, I can inspect unified logs from all platform compon
 - Social-provider callbacks should prefill provider account name as a suggestion, and the user should be able to edit that value before account creation is finalized.
 - Password-reset and email-verification tokens must be one-time-use and expire after a bounded duration.
 - Log-ingestion failures must not crash user-facing flows; a fallback sink should preserve minimal diagnostics.
+- Grants capped by `max amount of grants` must remain race-safe under concurrent claim attempts so the cap cannot be exceeded.
+- Email-targeted grant matching should be deterministic (for example, normalized/case-insensitive email comparison).
+- A grant may have no campaign criterion; in that case campaign participation should not be required.
 
 ## Requirements *(mandatory)*
 
@@ -319,6 +344,19 @@ As an operator or developer, I can inspect unified logs from all platform compon
 - **FR-110**: If primary log persistence fails, the runtime MUST use a fallback logger path (console and/or file) and MUST NOT terminate the main user flow solely because logging failed.
 - **FR-111**: The platform MUST expose a system-wide setting for log retention in days, stored in a database-backed system settings table or equivalent SQL-owned configuration source.
 - **FR-112**: Default log retention MUST be 7 days when no override is configured, and scheduled cleanup MUST delete log entries older than the configured retention window.
+- **FR-113**: A grant MUST be creatable or modifiable only by system administrators.
+- **FR-114**: A grant definition MUST support the following optional criteria: target account ids, target emails, max successful-claim count, expiration datetime, and linked campaign participation requirement.
+- **FR-115**: Grant eligibility MUST require that an account satisfies all configured criteria on that grant.
+- **FR-116**: Grants targeted by email MUST allow future accounts to claim when their authenticated email matches a targeted email value.
+- **FR-117**: A grant with a max successful-claim count MUST stop awarding tokens once that count is reached, and subsequent claims MUST be denied indefinitely.
+- **FR-118**: A grant with expiration datetime MUST deny claims after expiration.
+- **FR-119**: Campaign-participation criterion MUST be satisfied when the claiming account owns at least one approved linked need or at least one approved linked resource in the linked campaign.
+- **FR-120**: The grant claim flow MUST be available only to authenticated users through a dedicated route carrying grant id, and that page MUST display grant title and description.
+- **FR-121**: After claim evaluation, the grant claim page MUST show either a success message (award granted) or an error message (award denied).
+- **FR-122**: Each account MUST be awardable at most once per grant.
+- **FR-123**: Successful grant claims MUST produce a token movement entry tied to the grant identifier and awarded amount.
+- **FR-124**: Grant claim evaluation and award issuance MUST be atomic and idempotent to prevent duplicate awards under retries or concurrent requests.
+- **FR-125**: Grant claim denial responses SHOULD expose user-safe reason categories (for example: not targeted, expired, cap reached, already claimed, campaign criterion not satisfied) without leaking sensitive internal data.
 
 ### Planned Web UI Surfaces *(documentation scope for the current feature wave)*
 
@@ -327,6 +365,7 @@ The following UI surfaces are important enough to be documented now at the behav
 - **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, `ResetPassword`, and `ChangePassword`
 - **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`
 - **Supporting pages**: edit-resource (handles both creation and modification of resources), edit-need (handles both creation and modification of needs), resource detail, need detail, account detail, and campaign detail pages
+- **Supporting pages**: edit-resource (handles both creation and modification of resources), edit-need (handles both creation and modification of needs), resource detail, need detail, account detail, campaign detail pages, and grant-claim page (`/grants/[id]`)
 - **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 
 ### Notification Event Catalog *(current documented messages and destinations)*
@@ -376,6 +415,8 @@ The following UI surfaces are important enough to be documented now at the behav
 - **ResourceBid**: A response or negotiation object linked to a resource and governed by resource-specific rules, optionally seeded with the resource’s default Topes amount when one is provided.
 - **Notification**: A persisted, account-scoped attention event aggregated into the notifications inbox, carrying a typed payload, read state, destination mapping, and retention-cleanup eligibility.
 - **TokenMovement**: An auditable ledger entry representing a positive or negative Topes change caused by profile completion, gifting, campaign airdrop, bid lifecycle, claim settlement, or other contribution rules.
+- **Grant**: Administrator-created token seeding rule with optional targeting and gating criteria, including target accounts/emails, max claim count, expiration datetime, and optional linked campaign condition.
+- **GrantClaim**: Immutable claim record connecting grant id, account id, claim timestamp, and resulting status used for idempotency and audit.
 - **OperationalLogEntry**: Unified cross-component log record storing severity, component, contextual correlation identifiers, optional account linkage, and message payload for diagnostics.
 - **AccountProfileLink**: A typed profile link owned by an account, storing a URL, a caption, and a type among `facebook`, `instagram`, `x`, or `website`.
 - **ResourceMediaAsset**: Uploaded or referenced media metadata for the resource listing.

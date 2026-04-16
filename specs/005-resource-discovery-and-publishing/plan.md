@@ -91,6 +91,14 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - log DB exceptions and external-provider exceptions consistently across mobile app, backoffice web, web API, and workers
 - retain a fallback sink (console/file) so logging persistence failures do not break main runtime flows
 
+### Slice 9 — Grants seeding and claim flow (P1)
+- support administrator-created grants without requiring full campaign creation
+- allow optional criteria per grant: account targets, email targets (including future users), max claim count, expiration datetime, and optional linked-campaign participation
+- enforce conjunction semantics: all configured criteria must pass for a claim to succeed
+- provide authenticated grant claim route by grant id showing title/description and claim outcome message
+- enforce per-account per-grant single-award behavior with atomic idempotent issuance
+- record successful claims in token movement ledger with grant linkage
+
 ## Web IA And Componentization Plan
 
 ### Shared navigation shell
@@ -172,6 +180,13 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Non-error events should follow Tope-la practical signal where possible: startup lifecycle, listener/job execution, outgoing push/email preparation, and unexpected-but-handled conditions.
 - Log retention should be controlled by a system-wide DB setting expressed in days, defaulting to 7.
 - Cleanup scheduling should read that setting and delete entries older than the configured window.
+
+### Grants model and operational rules
+- Grant definitions should be mutable only by system administrators.
+- Eligibility evaluation should combine all configured criteria using logical AND semantics.
+- Campaign criterion should pass when account owns at least one approved linked need or one approved linked resource in the specified campaign.
+- Max-claims and per-account claim rules must be concurrency-safe so retries or races cannot over-award tokens.
+- Claim responses should expose user-safe denial reasons while keeping internal implementation details private.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.

@@ -108,3 +108,14 @@
 - [ ] T063 Add fallback logging behavior so unified-log persistence failures degrade to console/file diagnostics without interrupting primary user flows
 - [ ] T064 Add end-to-end verification and operational checks for unified logging coverage, including cross-component filtering by `component`, correlation by `context`, and duplicate-free migration from old write paths
 - [ ] T065 Add SQL-owned system setting for log retention days (default `7`) and scheduled cleanup that deletes unified logs older than the configured retention window
+
+## Phase 12: Grants Seeding And Claim Flow
+
+- [ ] T066 Document grants behavior in `spec.md` and `plan.md`: admin-only creation, criteria conjunction, claim route UX, and denial reason categories
+- [ ] T067 Implement SQL-owned grant schema and helpers for grant definitions, targeted accounts/emails, campaign-link criterion, max-claim count, expiration datetime, and per-account claim records
+- [ ] T068 Implement admin-only API/mutations for creating and managing grants and their criteria
+- [ ] T069 Implement SQL-owned atomic claim function that evaluates all criteria, enforces max-claims/per-account idempotency, issues token award on success, and returns a safe claim outcome code
+- [ ] T070 Implement authenticated grant claim page (`/grants/[id]`) that loads grant title/description and executes claim with success/error messaging
+- [ ] T071 Integrate successful grant claims into token movement ledger with grant linkage for auditability
+- [ ] T072 Add backend tests for eligibility combinations (accounts, emails, future users, campaign criterion, max-claim cap, expiration, already-claimed) and concurrency safety
+- [ ] T073 Add end-to-end verification for grant route behavior and claim outcomes, including user-safe denial messages
