@@ -56,9 +56,9 @@
 
 ## Phase 5: Readiness & Handoff
 
-- [ ] T017 Review the migration foundation documents with the product owner and confirm the target MVP boundary
+- [x] T017 Review the migration foundation documents with the product owner and confirm the target MVP boundary
 - [x] T018 Convert the approved roadmap into the next concrete feature specs under `specs/`
-- [ ] T019 Capture any scope or architecture updates back into `specs/003-topela-migration-foundation/`
+- [x] T019 Capture any scope or architecture updates back into `specs/003-topela-migration-foundation/`
 
 ## Dependencies & Execution Order
 

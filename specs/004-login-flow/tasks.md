@@ -51,7 +51,7 @@
 
 ### Tests (US2)
 
-- [ ] T018 [P] [US2] Add frontend/integration tests for protected route redirects and return-to behavior in `frontend/tests/auth/protected-routes.spec.tsx`
+- [x] T018 [P] [US2] Add frontend/integration tests for protected route redirects and return-to behavior in `frontend/tests/auth/protected-routes.spec.tsx`
 - [x] T019 [P] [US2] Add backend integration test verifying unauthenticated GraphQL mutations still return sanitized `UNAUTHENTICATED` errors in `backend/tests/integration/auth-graphql-fallback.spec.ts`
 
 ### Implementation (US2)
@@ -69,7 +69,7 @@
 ### Tests (US3)
 
 - [x] T023 [P] [US3] Add backend integration tests for session lookup, expiry, and revocation in `backend/tests/integration/auth-session.spec.ts`
-- [ ] T024 [P] [US3] Add frontend tests for restoring current account state on app load in `frontend/tests/auth/session-bootstrap.spec.tsx`
+- [x] T024 [P] [US3] Add frontend tests for restoring current account state on app load in `frontend/tests/auth/session-bootstrap.spec.tsx`
 
 ### Implementation (US3)
 
@@ -85,7 +85,7 @@
 ### Tests (US4)
 
 - [x] T027 [P] [US4] Add backend integration tests for logout/session revocation in `backend/tests/integration/auth-logout.spec.ts`
-- [ ] T028 [P] [US4] Add frontend tests for sign-out UI state reset in `frontend/tests/auth/logout.spec.tsx`
+- [x] T028 [P] [US4] Add frontend tests for sign-out UI state reset in `frontend/tests/auth/logout.spec.tsx`
 
 ### Implementation (US4)
 

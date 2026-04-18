@@ -100,3 +100,10 @@ specs/003-topela-migration-foundation/
 | Clean-room redevelopment instead of direct merge | Reduces legacy debt propagation | Direct merging would entangle two imperfect codebases and schemas |
 | Preserve `need` and `resource` as separate first-class concepts at first | Lowers domain confusion during migration | Over-unifying too early would hide important behavioral differences |
 | Use Tope-là as UX reference and Mutuity as architecture reference | Keeps both products’ strengths | Choosing only one as the full template would lose either product continuity or engineering discipline |
+
+## Review Checkpoint: MVP Boundary Confirmation (2026-04-18)
+
+- Product supervision review confirms the dependency-first rollout order used by implementation tracking: foundations/auth first, then needs loop, then resource loop.
+- No scope rollback is required for feature 003 foundations; current migration and glossary direction remains valid.
+- Role naming in downstream features should use `admin` terminology consistently for privileged surfaces.
+- The next immediate execution focus remains feature 004 frontend auth test completion and foundation verification evidence.

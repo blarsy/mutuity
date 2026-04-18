@@ -22,31 +22,56 @@ type AuthContextValue = {
   signOut: () => Promise<void>;
 };
 
-const anonymousSession: AuthSession = {
+export const ANONYMOUS_SESSION: AuthSession = {
   authenticated: false,
   account: null,
   role: "anonymous",
   expiresAt: null
 };
 
+export function getAuthStatus(nextSession: AuthSession): AuthStatus {
+  return nextSession.authenticated ? "authenticated" : "anonymous";
+}
+
+export async function restoreSessionForBootstrap(
+  loadSession: () => Promise<AuthSession>
+): Promise<AuthSession> {
+  try {
+    return await loadSession();
+  } catch {
+    return ANONYMOUS_SESSION;
+  }
+}
+
+export async function resolveSessionAfterSignOut(
+  performLogout: () => Promise<AuthSession>
+): Promise<AuthSession> {
+  try {
+    return await performLogout();
+  } catch {
+    return ANONYMOUS_SESSION;
+  }
+}
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AuthSession>(anonymousSession);
+  const [session, setSession] = useState<AuthSession>(ANONYMOUS_SESSION);
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   const applySession = useCallback((nextSession: AuthSession) => {
     setSession(nextSession);
-    setStatus(nextSession.authenticated ? "authenticated" : "anonymous");
+    setStatus(getAuthStatus(nextSession));
   }, []);
 
   const refreshSession = useCallback(async () => {
     try {
       const nextSession = await getCurrentSession();
       applySession(nextSession);
+      return;
     } catch (error) {
       console.error("[auth] Failed to restore session", error);
-      applySession(anonymousSession);
+      applySession(ANONYMOUS_SESSION);
     }
   }, [applySession]);
 
@@ -66,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     } catch (error) {
       console.error("[auth] Failed to sign out", error);
-      applySession(anonymousSession);
+      applySession(ANONYMOUS_SESSION);
     }
   }, [applySession]);
 
@@ -80,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const handleAuthRequired = () => {
-      applySession(anonymousSession);
+      applySession(ANONYMOUS_SESSION);
 
       if (window.location.pathname === "/login") {
         return;

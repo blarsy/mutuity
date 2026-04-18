@@ -5,14 +5,15 @@ import { Alert, Box, Container, Typography } from "@mui/material";
 import { useAuth } from "../features/auth/AuthProvider";
 import { LoginForm } from "../features/auth/LoginForm";
 
+export function resolveNextDestination(candidate: unknown): string {
+  return typeof candidate === "string" && candidate.startsWith("/") ? candidate : "/";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { status, session } = useAuth();
 
-  const nextDestination = useMemo(() => {
-    const candidate = router.query.next;
-    return typeof candidate === "string" && candidate.startsWith("/") ? candidate : "/";
-  }, [router.query.next]);
+  const nextDestination = useMemo(() => resolveNextDestination(router.query.next), [router.query.next]);
   const isProtectedRedirect = nextDestination !== "/";
 
   useEffect(() => {

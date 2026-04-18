@@ -3,14 +3,16 @@ import { useEffect, useMemo } from "react";
 
 import { useAuth } from "./AuthProvider";
 
+export function buildLoginHref(asPath: string | null | undefined): string {
+  const nextPath = asPath && asPath !== "/login" ? asPath : "/";
+  return `/login?next=${encodeURIComponent(nextPath)}`;
+}
+
 export function useRequireAuth() {
   const router = useRouter();
   const { session, status } = useAuth();
 
-  const loginHref = useMemo(() => {
-    const nextPath = router.asPath && router.asPath !== "/login" ? router.asPath : "/";
-    return `/login?next=${encodeURIComponent(nextPath)}`;
-  }, [router.asPath]);
+  const loginHref = useMemo(() => buildLoginHref(router.asPath), [router.asPath]);
 
   useEffect(() => {
     if (!router.isReady) {
