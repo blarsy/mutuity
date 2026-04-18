@@ -198,7 +198,7 @@ As an account holder, I can open a specific grant route and claim a grant when I
 5. **Given** a grant with `max amount of grants`, **When** successful claims reach that cap, **Then** further claims are denied indefinitely.
 6. **Given** a grant with an expiration datetime, **When** claim is attempted after expiration, **Then** the claim is denied.
 7. **Given** a grant linked to a campaign participation criterion, **When** account ownership includes at least one approved linked need or one approved linked resource in that campaign, **Then** that criterion is satisfied.
-8. **Given** an authenticated user opening the claim route with a grant id, **When** the grant page loads, **Then** it displays grant title and description and then shows a success message or an error message after claim evaluation.
+8. **Given** an unauthenticated user opening the claim route with a grant id, **When** the grant page loads, **Then** it shows the login form, and after successful authentication the route continues in the current session context and displays grant title and description before showing a success or error message after claim evaluation.
 9. **Given** an account that already claimed a grant, **When** it attempts to claim the same grant again, **Then** no second token award is issued.
 
 ---
@@ -215,7 +215,7 @@ As a system administrator, I can access focused admin-only data pages with fast 
 
 1. **Given** an authenticated non-admin account, **When** it accesses any admin support page, **Then** access is denied.
 2. **Given** an authenticated admin account, **When** it opens an admin support page, **Then** the page shows a table of the corresponding data item ordered by most recent records first.
-3. **Given** an admin support page with search input, **When** a query is entered, **Then** the system filters results using only the configured searchable fields for that data item.
+3. **Given** an admin support page with search input, **When** a query is entered, **Then** the system filters results using only the configured searchable fields for that data item with case-insensitive contains matching.
 4. **Given** the `Accounts` page, **When** records are shown, **Then** each row includes: id, name, email, language, amount of tokens, creation datetime, and address; filtering matches email and name.
 5. **Given** the `Bids` page, **When** records are shown, **Then** each row includes: id, bidder name, receiver name, resource title, intensity, amount of tokens, status, creation datetime, and expiration datetime; filtering matches bidder name, receiver name, and resource title.
 6. **Given** the `Resources` page, **When** records are shown, **Then** each row includes: id, title, creator name, intensity, amount of tokens, number of images, location, creation datetime, and expiration datetime; filtering matches title, description, and creator name.
@@ -225,9 +225,9 @@ As a system administrator, I can access focused admin-only data pages with fast 
 10. **Given** the `Grants` page, **When** records are shown, **Then** each row includes: id, title, description, expiration datetime, amount granted, and creation datetime; filtering matches title and description.
 11. **Given** the `Logs` page, **When** records are shown, **Then** each row includes: component, timestamp, severity, message, and context; filtering matches component, message, and context.
 12. **Given** a row in `Mails`, **When** `view content` is clicked, **Then** a fullscreen dialog opens showing the mail HTML content.
-13. **Given** a row in `Mails`, **When** `send again` is clicked, **Then** the system re-sends that email immediately using the same routine used by mailing jobs.
+13. **Given** a row in `Mails`, **When** `send again` is clicked, **Then** the system re-sends that email immediately by recomputing recipients and template context from current account data using the same routine used by mailing jobs.
 14. **Given** a row in `Campaigns`, **When** `View description` is clicked, **Then** a fullscreen dialog opens showing campaign description.
-15. **Given** a row in `Campaigns`, **When** `moderate` is clicked, **Then** the moderation-note flow from feature `001-campaign-needs` user story `Manager Moderates With Note` is exposed from this admin surface.
+15. **Given** a row in `Campaigns`, **When** `moderate` is clicked, **Then** the admin moderation-note flow from feature `001-campaign-needs` is exposed from this admin surface.
 16. **Given** the `Grants` page, **When** `Create` is clicked, **Then** a dialog opens with the grant creation form.
 17. **Given** a row in `Logs`, **When** `View message` is clicked, **Then** a fullscreen dialog opens showing the full log message in a wrapping text block.
 
@@ -254,10 +254,12 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - Password-reset and email-verification tokens must be one-time-use and expire after a bounded duration.
 - Log-ingestion failures must not crash user-facing flows; a fallback sink should preserve minimal diagnostics.
 - Grants capped by `max amount of grants` must remain race-safe under concurrent claim attempts so the cap cannot be exceeded.
-- Email-targeted grant matching should be deterministic (for example, normalized/case-insensitive email comparison).
+- Email-targeted grant matching should rely on the system invariant that emails are stored lower-cased and trimmed; comparisons should use that stored canonical value.
+- Plus-addressed emails are supported as unique identifiers and should not be collapsed to a base address for duplicate prevention.
 - A grant may have no campaign criterion; in that case campaign participation should not be required.
 - Admin searches over JSON/text-heavy fields (for example notifications data and logs message) should remain responsive and paginated even on large datasets.
-- Mail replay should preserve existing send guards (rate limits/retry protections) to avoid accidental spam bursts.
+- Mail replay should preserve existing send guards (rate limits/retry protections) to avoid accidental spam bursts, while recomputing recipients and template context from current account data.
+- Datetime values are stored with time zone and displayed to users in their current session locale/time-zone representation.
 
 ## Requirements *(mandatory)*
 
@@ -378,12 +380,14 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-112**: Default log retention MUST be 7 days when no override is configured, and scheduled cleanup MUST delete log entries older than the configured retention window.
 - **FR-113**: A grant MUST be creatable or modifiable only by system administrators.
 - **FR-114**: A grant definition MUST support the following optional criteria: target account ids, target emails, max successful-claim count, expiration datetime, and linked campaign participation requirement.
+- **FR-114a**: A grant definition MUST include a fixed awarded token amount that does not vary per claim for that grant.
 - **FR-115**: Grant eligibility MUST require that an account satisfies all configured criteria on that grant.
-- **FR-116**: Grants targeted by email MUST allow future accounts to claim when their authenticated email matches a targeted email value.
+- **FR-116**: Grants targeted by email MUST allow future accounts to claim when their authenticated email matches a targeted email value using lower-cased and trimmed stored emails.
+- **FR-116a**: Plus-addressed emails MUST be treated as distinct email identifiers; the system MUST NOT collapse them to a base address for duplicate-account prevention.
 - **FR-117**: A grant with a max successful-claim count MUST stop awarding tokens once that count is reached, and subsequent claims MUST be denied indefinitely.
 - **FR-118**: A grant with expiration datetime MUST deny claims after expiration.
 - **FR-119**: Campaign-participation criterion MUST be satisfied when the claiming account owns at least one approved linked need or at least one approved linked resource in the linked campaign.
-- **FR-120**: The grant claim flow MUST be available only to authenticated users through a dedicated route carrying grant id, and that page MUST display grant title and description.
+- **FR-120**: The grant claim flow MUST use a dedicated route carrying grant id; when no session is active the route MUST render a login form, and after successful login it MUST continue in the current session context and display grant title and description.
 - **FR-121**: After claim evaluation, the grant claim page MUST show either a success message (award granted) or an error message (award denied).
 - **FR-122**: Each account MUST be awardable at most once per grant.
 - **FR-123**: Successful grant claims MUST produce a token movement entry tied to the grant identifier and awarded amount.
@@ -392,7 +396,7 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-126**: The platform MUST expose admin-only support/troubleshooting pages for these data items: accounts, bids, resources, notifications, mails, campaigns, grants, and logs.
 - **FR-127**: Access to these pages and their actions MUST be restricted to administrator role.
 - **FR-128**: Each admin data page MUST display records sorted by most recent first using the data item's creation/event timestamp semantics.
-- **FR-129**: Each admin data page MUST provide a search box that filters results using only configured fields for that data item.
+- **FR-129**: Each admin data page MUST provide a search box that filters results using only configured fields for that data item, with case-insensitive contains matching.
 - **FR-130**: Accounts page MUST display: id, name, email, language, amount of tokens, creation datetime, address; search fields: email, name.
 - **FR-131**: Bids page MUST display: id, bidder name, receiver name, resource title, intensity, amount of tokens, status, creation datetime, expiration datetime; search fields: bidder name, receiver name, resource title.
 - **FR-132**: Resources page MUST display: id, title, creator name, intensity, amount of tokens, number of images, location, creation datetime, expiration datetime; search fields: title, description, creator name.
@@ -402,11 +406,12 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-136**: Grants page MUST display: id, title, description, expiration datetime, amount granted, creation datetime; search fields: title, description.
 - **FR-137**: Logs page MUST display: component, timestamp, severity, message, context; search fields: component, message, context.
 - **FR-138**: Mails page MUST provide `view content` action that opens a fullscreen dialog showing stored HTML content.
-- **FR-139**: Mails page MUST provide `send again` action that triggers immediate resend through the same routine used by scheduled mailing jobs.
+- **FR-139**: Mails page MUST provide `send again` action that triggers immediate resend through the same routine used by scheduled mailing jobs, recomputing recipients and template context from current account data.
 - **FR-140**: Campaigns page MUST provide `View description` action that opens a fullscreen dialog showing campaign description.
-- **FR-141**: Campaigns page MUST provide `moderate` action exposing the moderation-note flow from feature `001-campaign-needs` user story `Manager Moderates With Note`.
+- **FR-141**: Campaigns page MUST provide `moderate` action exposing the admin moderation-note flow from feature `001-campaign-needs`.
 - **FR-142**: Grants page MUST provide `Create` action opening the grant-creation form in a dialog.
-- **FR-143**: Logs page MUST provide `View message` action opening a fullscreen dialog showing full message text with wrapping enabled.
+- **FR-143**: Logs page MUST provide `View message` action opening a fullscreen dialog showing the raw full message text with wrapping enabled.
+- **FR-146**: Datetime values used across admin support and grant claim surfaces MUST be stored with time zone and rendered in the current user's session locale/time-zone representation.
 - **FR-144**: Admin table queries SHOULD support pagination and indexed filtering suitable for high-cardinality datasets.
 - **FR-145**: Admin actions that trigger side effects (`send again`, moderation note submission, grant creation) MUST be audited in logs.
 
@@ -416,7 +421,7 @@ The following UI surfaces are important enough to be documented now at the behav
 
 - **Reusable components**: `AvatarIconButton`, `ResourceCard`, `NeedCard`, `Login`, `Register`, `ResetPassword`, and `ChangePassword`
 - **Top-level pages**: `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`
-- **Supporting pages**: edit-resource (handles both creation and modification of resources), edit-need (handles both creation and modification of needs), resource detail, need detail, account detail, campaign detail pages, and grant-claim page (`/grants/[id]`)
+- **Supporting pages**: edit-resource (handles both creation and modification of resources), edit-need (handles both creation and modification of needs), resource detail, need detail, account detail, campaign detail pages, and grant-claim page (`/grants/[id]`) that renders login when no active session exists
 - **Admin pages**: `AdminAccounts`, `AdminBids`, `AdminResources`, `AdminNotifications`, `AdminMails`, `AdminCampaigns`, `AdminGrants`, and `AdminLogs`
 - **Login-gated interactions**: bidding, claiming, chatting, and create flows should redirect to or open a contextual sign-in experience when the visitor is anonymous
 

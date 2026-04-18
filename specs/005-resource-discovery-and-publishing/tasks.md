@@ -127,6 +127,6 @@
 - [ ] T076 Implement admin access guard and role enforcement for all admin support routes and side-effect actions
 - [ ] T077 Build admin pages for accounts, bids, resources, notifications, mails, campaigns, grants, and logs with shared table/search scaffolding
 - [ ] T078 Implement mail actions: fullscreen HTML content viewer and `send again` action using the same routine as mailing jobs
-- [ ] T079 Implement campaign actions: fullscreen description viewer and moderation handoff that exposes feature `001-campaign-needs` `Manager Moderates With Note` flow
+- [ ] T079 Implement campaign actions: fullscreen description viewer and moderation handoff that exposes feature `001-campaign-needs` admin moderation-note flow
 - [ ] T080 Implement grant/log actions: create-grant dialog from admin grants page and fullscreen wrapping message viewer from admin logs page
 - [ ] T081 Add end-to-end verification for admin search/filter behavior, action outcomes, authorization restrictions, and audit-log emission for side-effect actions

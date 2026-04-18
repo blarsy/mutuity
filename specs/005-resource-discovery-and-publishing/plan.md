@@ -95,13 +95,14 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - support administrator-created grants without requiring full campaign creation
 - allow optional criteria per grant: account targets, email targets (including future users), max claim count, expiration datetime, and optional linked-campaign participation
 - enforce conjunction semantics: all configured criteria must pass for a claim to succeed
-- provide authenticated grant claim route by grant id showing title/description and claim outcome message
+- provide grant claim route by grant id that renders login when no session is active, then continues in current session context to show title/description and claim outcome message
+- use a fixed awarded token amount per grant definition (not varying per claim)
 - enforce per-account per-grant single-award behavior with atomic idempotent issuance
 - record successful claims in token movement ledger with grant linkage
 
 ### Slice 10 — Admin support and troubleshooting pages (P1)
 - provide admin-only pages for accounts, bids, resources, notifications, mails, campaigns, grants, and logs
-- show each page as most-recent-first tabular data with item-specific search fields
+- show each page as most-recent-first tabular data with item-specific case-insensitive contains search fields
 - wire page-specific actions: mail content viewer, mail resend, campaign description viewer, campaign moderation handoff, grant creation dialog, and full log-message viewer
 - enforce role-gated access and auditable side-effect actions
 - ensure high-cardinality query responsiveness with pagination/index-aware filtering
@@ -146,7 +147,7 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 
 #### Supporting pages
 - **Edit resource page**: create a new resource or edit an existing one, with optional campaign prefill for creation mode.
-- **Create need page**: create a new need and optionally prefill a linked campaign.
+- **Edit need page**: create a new need in creation mode or update an existing one in modification mode, with optional campaign prefill for creation mode.
 - **Resource detail page**: show the full public resource, fullscreen image preview when relevant, chat entry, bid entry, and creator navigation.
 - **Need detail page**: show the full public need, chat entry, claim entry, and creator navigation.
 - **Account detail page**: show public account information plus active resources and needs.
@@ -190,16 +191,20 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 
 ### Grants model and operational rules
 - Grant definitions should be mutable only by system administrators.
+- Grant definitions should carry one fixed awarded token amount that applies to all successful claims for that grant.
 - Eligibility evaluation should combine all configured criteria using logical AND semantics.
 - Campaign criterion should pass when account owns at least one approved linked need or one approved linked resource in the specified campaign.
 - Max-claims and per-account claim rules must be concurrency-safe so retries or races cannot over-award tokens.
 - Claim responses should expose user-safe denial reasons while keeping internal implementation details private.
+- Email-target criteria should use stored lower-cased and trimmed emails; plus-addressed emails should remain distinct identifiers.
 
 ### Admin support model and operational rules
 - Admin support pages should be read-optimized views over operational entities, each with strict field projection and search scope.
-- Search behavior should follow per-page configured fields only, rather than global full-text over unrelated columns.
+- Search behavior should follow per-page configured fields only, rather than global full-text over unrelated columns, with case-insensitive contains matching.
 - The `Campaigns` admin page should reuse the existing moderation-note workflow from feature `001-campaign-needs` for consistency.
 - Side-effect actions (`send again`, `moderate`, `create grant`) should emit auditable logs and remain protected by administrator authorization checks.
+- `send again` should recompute recipients and template context from current account data at resend time.
+- Datetime values should be stored with time zone and rendered in the current user's session locale/time-zone representation.
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
