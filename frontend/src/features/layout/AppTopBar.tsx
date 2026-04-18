@@ -9,10 +9,14 @@ import { LoginDialog } from "../auth/LoginDialog";
 import { TOKEN_BALANCE_QUERY } from "../contribution/contribution.queries";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 
-const signedOutLinks = [{ label: "Search", href: "/resources" }];
+const signedOutLinks = [
+  { label: "Search", href: "/resources" },
+  { label: "Campaigns", href: "/campaigns" }
+];
 
 const signedInLinks = [
   { label: "Search", href: "/resources" },
+  { label: "Campaigns", href: "/campaigns" },
   { label: "Contribute", href: "/needs" },
   { label: "Resources", href: "/resources/manage" },
   { label: "Bids", href: "/bids" },
@@ -36,7 +40,17 @@ export function AppTopBar() {
     return session.account?.displayName ?? session.account?.externalSubject ?? "Profile";
   }, [session.account?.displayName, session.account?.externalSubject]);
 
-  const links = session.authenticated ? signedInLinks : signedOutLinks;
+  const links = useMemo(() => {
+    if (!session.authenticated) {
+      return signedOutLinks;
+    }
+
+    if (session.role === "manager" || session.role === "admin") {
+      return [...signedInLinks, { label: "Campaign Review", href: "/campaigns/pending" }];
+    }
+
+    return signedInLinks;
+  }, [session.authenticated, session.role]);
 
   const handleLogOut = async () => {
     setMenuAnchor(null);

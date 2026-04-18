@@ -26,7 +26,7 @@ Cadence: update at least once per workday
 | Phase | Scope | Primary Features | Status | Completion | Target Window |
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
-| P2 | Core needs loop | 001, 002 | IN PROGRESS | 20% | 2026-04-18 to 2026-05-02 (proposed) |
+| P2 | Core needs loop | 001, 002 | IN PROGRESS | 30% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
 | P4 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P5 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
@@ -68,7 +68,7 @@ Goal: complete first value loop for campaigns, needs, and claims basics.
 Current execution backlog focus:
 
 - [x] 001-T060 Unauthenticated `createCampaign` integration test.
-- [ ] 001-US3 campaign approval path: T034, T035, T036.
+- [x] 001-US3 campaign approval path: T034, T035, T036.
 - [ ] 001-US4 need creation path: T037, T038, T039, T040, T041, T042, T043, T044, T045, T061.
 - [ ] 001-US5 campaign need triage path: T046, T047, T048, T049, T050, T051, T052.
 
@@ -185,6 +185,7 @@ This week priorities:
 | 2026-04-18 | P1 closeout | Marked P1 complete after passing auth-scope frontend and backend test sweeps and closing remaining 003/004 checklist items. | specs/implementation-progress-tracker.md; specs/003-topela-migration-foundation/tasks.md; specs/004-login-flow/tasks.md | None | Kick off P2 planning/execution. |
 | 2026-04-18 | P2 kickoff | Started P2 by closing 001-T060 with a passing backend integration test for anonymous `createCampaign` mutation sanitization. | backend/tests/integration/campaign-create-auth.spec.ts; npm -C backend test -- tests/integration/campaign-create-auth.spec.ts | None | Start US3 campaign approval implementation path (T030+). |
 | 2026-04-18 | P2 execution | Completed US3 backend approval slice: added `approve_campaign` migration/function wiring and passing integration + contract tests with session-cookie authentication. | database/migrations/024_campaign_approval.sql; database/functions/campaign/approve_campaign.sql; backend/tests/integration/campaign-approval.spec.ts; backend/tests/contract/campaign-approval.contract.spec.ts; npm -C backend test -- tests/integration/campaign-approval.spec.ts tests/contract/campaign-approval.contract.spec.ts | None | Continue US3 frontend tasks T034-T036. |
+| 2026-04-19 | P2 execution | Completed US3 frontend slice: added public campaigns page, manager pending-approval page/action, approval/public queries, and campaign navigation links. | frontend/src/features/campaigns/PublicCampaignsPage.tsx; frontend/src/features/campaigns/PendingCampaignsPage.tsx; frontend/src/features/campaigns/campaigns.queries.ts; frontend/src/pages/campaigns/index.tsx; frontend/src/pages/campaigns/pending.tsx; npm -C frontend run typecheck | None | Move to US4 backend tests and migrations (T037-T043, T061). |
 
 ## Decisions Log
 
@@ -203,7 +204,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 in progress (20%)
+- Overall progress: P1 complete, P2 in progress (30%)
 - Current health: GREEN
 - Main risk: P2 scope growth if campaign/need edge cases are not sliced tightly
-- Requested supervisor input: none, proceed with US3 frontend tasks (T034-T036)
+- Requested supervisor input: none, proceed with US4 need-creation backend slice

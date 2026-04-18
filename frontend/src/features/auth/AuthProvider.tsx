@@ -12,7 +12,7 @@ import { getCurrentSession, login as loginRequest, logout as logoutRequest } fro
 import { AUTH_REQUIRED_EVENT } from "./events";
 import type { AuthSession, LoginInput } from "./types";
 
-type AuthStatus = "loading" | "authenticated" | "anonymous";
+export type AuthStatus = "loading" | "authenticated" | "anonymous";
 
 type AuthContextValue = {
   session: AuthSession;

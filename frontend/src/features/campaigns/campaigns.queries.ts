@@ -48,3 +48,47 @@ export const MY_CAMPAIGNS_QUERY = gql`
     }
   }
 `;
+
+export const PUBLIC_CAMPAIGNS_QUERY = gql`
+  query PublicCampaigns {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: START_AT_ASC) {
+      nodes {
+        id
+        title
+        theme
+        moderationStatus
+        startAt
+        airdropAt
+        endAt
+      }
+    }
+  }
+`;
+
+export const PENDING_CAMPAIGNS_QUERY = gql`
+  query PendingCampaigns {
+    allCampaigns(condition: { moderationStatus: PENDING }, orderBy: CREATED_AT_DESC) {
+      nodes {
+        id
+        title
+        theme
+        moderationStatus
+        startAt
+        airdropAt
+        endAt
+        createdAt
+      }
+    }
+  }
+`;
+
+export const APPROVE_CAMPAIGN_MUTATION = gql`
+  mutation ApproveCampaign($campaignId: UUID!) {
+    approveCampaign(input: { campaignId: $campaignId }) {
+      campaign {
+        id
+        moderationStatus
+      }
+    }
+  }
+`;

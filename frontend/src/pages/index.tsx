@@ -6,6 +6,7 @@ import { LogoutButton } from "../features/auth/LogoutButton";
 
 export default function HomePage() {
   const { session, status } = useAuth();
+  const canManageCampaigns = session.role === "manager" || session.role === "admin";
   const createCampaignHref = session.authenticated
     ? "/campaigns/create"
     : "/login?next=%2Fcampaigns%2Fcreate";
@@ -46,12 +47,20 @@ export default function HomePage() {
           <Button component={NextLink} href="/resources" variant="contained">
             Browse Resources
           </Button>
+          <Button component={NextLink} href="/campaigns" variant="contained">
+            Browse Campaigns
+          </Button>
           <Button component={NextLink} href={createResourceHref} variant="outlined">
             Publish Resource
           </Button>
           <Button component={NextLink} href={createCampaignHref} variant="outlined">
             Create Campaign
           </Button>
+          {canManageCampaigns ? (
+            <Button component={NextLink} href="/campaigns/pending" variant="outlined">
+              Review Campaigns
+            </Button>
+          ) : null}
           {session.authenticated ? (
             <LogoutButton color="inherit" redirectTo="/login" variant="outlined">
               Sign out

@@ -83,9 +83,9 @@
 
 - [x] T032 [US3] Implement SQL function `approve_campaign` in `database/functions/campaign/approve_campaign.sql`
 - [x] T033 [US3] Expose approval mutation through PostGraphile in `backend/src/postgraphile/server.ts`
-- [ ] T034 [US3] Update public campaign query for approved + active windows in `frontend/src/features/campaigns/campaigns.queries.ts`
-- [ ] T035 [US3] Build manager approval action in `frontend/src/features/campaigns/PendingCampaignsPage.tsx`
-- [ ] T036 [US3] Add public campaigns page in `frontend/src/features/campaigns/PublicCampaignsPage.tsx`
+- [x] T034 [US3] Update public campaign query for approved + active windows in `frontend/src/features/campaigns/campaigns.queries.ts`
+- [x] T035 [US3] Build manager approval action in `frontend/src/features/campaigns/PendingCampaignsPage.tsx`
+- [x] T036 [US3] Add public campaigns page in `frontend/src/features/campaigns/PublicCampaignsPage.tsx`
 
 ## Phase 6: User Story 4 - Account Creates Need (Priority: P1)
 
