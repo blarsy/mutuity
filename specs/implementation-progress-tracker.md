@@ -26,7 +26,7 @@ Cadence: update at least once per workday
 | Phase | Scope | Primary Features | Status | Completion | Target Window |
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
-| P2 | Core needs loop | 001, 002 | NOT STARTED | 0% | TBD |
+| P2 | Core needs loop | 001, 002 | IN PROGRESS | 20% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
 | P4 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P5 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
@@ -42,18 +42,18 @@ Goal: stable database baseline, auth/session core usable everywhere.
 
 Remaining execution tasks (from feature task files):
 
-- [ ] 003-T017 Review migration foundation docs with product owner and confirm MVP boundary.
-- [ ] 003-T019 Capture any scope or architecture updates back into feature 003 docs.
+- [x] 003-T017 Review migration foundation docs with product owner and confirm MVP boundary.
+- [x] 003-T019 Capture any scope or architecture updates back into feature 003 docs.
 - [x] 004-T018 Add frontend/integration tests for protected-route redirect and return-to behavior.
 - [x] 004-T024 Add frontend tests for restoring current account state on app load.
 - [x] 004-T028 Add frontend tests for sign-out UI state reset.
 
 Checkpoints:
 
-- [ ] Migrations from feature 003 applied and reproducible in local/dev.
-- [ ] Core auth/session flows from feature 004 are working end-to-end.
-- [ ] Password reset + verification baseline paths covered by tests.
-- [ ] Backend/frontend contract for authenticated requests stabilized.
+- [x] Migrations from feature 003 applied and reproducible in local/dev.
+- [x] Core auth/session flows from feature 004 are working end-to-end.
+- [x] Password reset + verification baseline paths covered by tests.
+- [x] Backend/frontend contract for authenticated requests stabilized.
 
 Definition of Done:
 
@@ -62,8 +62,15 @@ Definition of Done:
 
 ### P2 - Core Needs Loop (001, 002)
 
-Status: NOT STARTED
+Status: IN PROGRESS
 Goal: complete first value loop for campaigns, needs, and claims basics.
+
+Current execution backlog focus:
+
+- [x] 001-T060 Unauthenticated `createCampaign` integration test.
+- [ ] 001-US3 campaign approval path: T034, T035, T036.
+- [ ] 001-US4 need creation path: T037, T038, T039, T040, T041, T042, T043, T044, T045, T061.
+- [ ] 001-US5 campaign need triage path: T046, T047, T048, T049, T050, T051, T052.
 
 Checkpoints:
 
@@ -162,9 +169,9 @@ Current milestone: P2-M1 - Core needs loop implementation kickoff
 
 This week priorities:
 
-1. Start P2 execution plan with concrete task order from feature 001 and 002.
-2. Keep P1 regression checks in quick smoke suite while P2 work begins.
-3. Commit P1 closure checkpoint and related docs/tests.
+1. Complete feature 001 US3 campaign approval backend path (tests + SQL + PostGraphile exposure).
+2. Complete feature 001 US4 need creation backend path (tests + migrations/functions + exposure).
+3. Keep P1 auth tests as smoke checks while P2 progresses.
 
 ## Session Log
 
@@ -176,6 +183,8 @@ This week priorities:
 | 2026-04-18 | P1 execution | Implemented session-bootstrap and logout state-reset tests for auth provider behavior; full auth frontend test set passed. | frontend/tests/auth/session-bootstrap.spec.tsx; frontend/tests/auth/logout.spec.tsx; npm -C frontend test -- tests/auth/session-bootstrap.spec.tsx tests/auth/logout.spec.tsx tests/auth/protected-routes.spec.tsx | None | Run 003-T017 review and capture any resulting doc updates (003-T019). |
 | 2026-04-18 | P1 execution | Provisioned postgres/migrations via compose and validated backend auth integration + contract tests against running backend. | docker compose up postgres/backend + migrate; npm -C backend test -- tests/integration/auth-login.spec.ts tests/integration/auth-session.spec.ts tests/integration/auth-logout.spec.ts tests/contract/auth.contract.spec.ts | None | Consolidate P1 closeout decision and commit checkpoint changes. |
 | 2026-04-18 | P1 closeout | Marked P1 complete after passing auth-scope frontend and backend test sweeps and closing remaining 003/004 checklist items. | specs/implementation-progress-tracker.md; specs/003-topela-migration-foundation/tasks.md; specs/004-login-flow/tasks.md | None | Kick off P2 planning/execution. |
+| 2026-04-18 | P2 kickoff | Started P2 by closing 001-T060 with a passing backend integration test for anonymous `createCampaign` mutation sanitization. | backend/tests/integration/campaign-create-auth.spec.ts; npm -C backend test -- tests/integration/campaign-create-auth.spec.ts | None | Start US3 campaign approval implementation path (T030+). |
+| 2026-04-18 | P2 execution | Completed US3 backend approval slice: added `approve_campaign` migration/function wiring and passing integration + contract tests with session-cookie authentication. | database/migrations/024_campaign_approval.sql; database/functions/campaign/approve_campaign.sql; backend/tests/integration/campaign-approval.spec.ts; backend/tests/contract/campaign-approval.contract.spec.ts; npm -C backend test -- tests/integration/campaign-approval.spec.ts tests/contract/campaign-approval.contract.spec.ts | None | Continue US3 frontend tasks T034-T036. |
 
 ## Decisions Log
 
@@ -194,8 +203,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: 0%
-- Overall progress: 100% (P1)
+- Overall progress: P1 complete, P2 in progress (20%)
 - Current health: GREEN
-- Main risk: none on P1; next risk shifts to P2 scope growth if campaign/need edge cases are not sliced tightly
-- Requested supervisor input: approve transition to P2 kickoff
+- Main risk: P2 scope growth if campaign/need edge cases are not sliced tightly
+- Requested supervisor input: none, proceed with US3 frontend tasks (T034-T036)

@@ -37,7 +37,7 @@
 
 - [x] T014 [P] [US1] Add integration tests for campaign creation validation in `backend/tests/integration/campaign-create.spec.ts`
 - [x] T015 [P] [US1] Add GraphQL contract tests for PostGraphile-exposed `createCampaign` mutation in `backend/tests/contract/campaign.contract.spec.ts`
-- [ ] T060 [P] [US1] Add integration tests for unauthenticated `createCampaign` mutation returning sanitized `UNAUTHENTICATED` error in `backend/tests/integration/campaign-create-auth.spec.ts`
+- [x] T060 [P] [US1] Add integration tests for unauthenticated `createCampaign` mutation returning sanitized `UNAUTHENTICATED` error in `backend/tests/integration/campaign-create-auth.spec.ts`
 
 ### Implementation (US1)
 
@@ -76,13 +76,13 @@
 
 ### Tests (US3)
 
-- [ ] T030 [P] [US3] Add integration tests for campaign approval authorization and visibility in `backend/tests/integration/campaign-approval.spec.ts`
-- [ ] T031 [P] [US3] Add contract tests for PostGraphile-exposed `approveCampaign` mutation in `backend/tests/contract/campaign-approval.contract.spec.ts`
+- [x] T030 [P] [US3] Add integration tests for campaign approval authorization and visibility in `backend/tests/integration/campaign-approval.spec.ts`
+- [x] T031 [P] [US3] Add contract tests for PostGraphile-exposed `approveCampaign` mutation in `backend/tests/contract/campaign-approval.contract.spec.ts`
 
 ### Implementation (US3)
 
-- [ ] T032 [US3] Implement SQL function `approve_campaign` in `database/functions/campaign/approve_campaign.sql`
-- [ ] T033 [US3] Expose approval mutation through PostGraphile in `backend/src/postgraphile/server.ts`
+- [x] T032 [US3] Implement SQL function `approve_campaign` in `database/functions/campaign/approve_campaign.sql`
+- [x] T033 [US3] Expose approval mutation through PostGraphile in `backend/src/postgraphile/server.ts`
 - [ ] T034 [US3] Update public campaign query for approved + active windows in `frontend/src/features/campaigns/campaigns.queries.ts`
 - [ ] T035 [US3] Build manager approval action in `frontend/src/features/campaigns/PendingCampaignsPage.tsx`
 - [ ] T036 [US3] Add public campaigns page in `frontend/src/features/campaigns/PublicCampaignsPage.tsx`
