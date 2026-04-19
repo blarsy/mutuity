@@ -1,5 +1,63 @@
 import { gql } from "@apollo/client";
 
+export const CREATE_NEED_MUTATION = gql`
+  mutation CreateNeed(
+    $title: String!
+    $description: String
+    $location: String!
+    $intensity: NeedIntensity!
+    $proposedTopesAmount: Int
+    $objectRequired: Boolean
+    $competenceRequired: Boolean
+    $toolingRequired: Boolean
+    $multiplePeopleRequired: Boolean
+    $requiredCompetenceText: String
+    $requiredToolingText: String
+    $requiredPeopleCount: Int
+    $campaignId: UUID
+    $expiresAt: Datetime
+  ) {
+    createNeed(
+      input: {
+        title: $title
+        description: $description
+        location: $location
+        intensity: $intensity
+        proposedTopesAmount: $proposedTopesAmount
+        objectRequired: $objectRequired
+        competenceRequired: $competenceRequired
+        toolingRequired: $toolingRequired
+        multiplePeopleRequired: $multiplePeopleRequired
+        requiredCompetenceText: $requiredCompetenceText
+        requiredToolingText: $requiredToolingText
+        requiredPeopleCount: $requiredPeopleCount
+        campaignId: $campaignId
+        expiresAt: $expiresAt
+      }
+    ) {
+      need {
+        id
+        title
+        intensity
+        proposedTopesAmount
+      }
+    }
+  }
+`;
+
+export const LINKABLE_CAMPAIGN_OPTIONS_QUERY = gql`
+  query LinkableCampaignOptions {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: START_AT_ASC) {
+      nodes {
+        id
+        title
+        startAt
+        endAt
+      }
+    }
+  }
+`;
+
 export const PUBLIC_NEEDS_QUERY = gql`
   query PublicNeeds(
     $latitude: BigFloat

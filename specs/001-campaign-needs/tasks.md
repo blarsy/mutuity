@@ -106,8 +106,8 @@
 - [x] T041 [US4] Implement SQL function `create_need` in `database/functions/need/create_need.sql`
 - [x] T042 [US4] Implement SQL helper `validate_campaign_linkability` in `database/functions/campaign/validate_campaign_linkability.sql`
 - [x] T043 [US4] Expose need creation mutation through PostGraphile in `backend/src/postgraphile/server.ts`
-- [ ] T044 [US4] Build need creation page and form in `frontend/src/features/needs/CreateNeedPage.tsx`
-- [ ] T045 [US4] Add frontend Topes range validation by intensity in `frontend/src/features/needs/createNeed.validation.ts`
+- [x] T044 [US4] Build need creation page and form in `frontend/src/features/needs/CreateNeedPage.tsx`
+- [x] T045 [US4] Add frontend Topes range validation by intensity in `frontend/src/features/needs/createNeed.validation.ts`
 
 ## Phase 7: User Story 5 - Campaign Creator Accepts Or Rejects Joined Needs (Priority: P2)
 
