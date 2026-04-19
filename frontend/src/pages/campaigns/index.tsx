@@ -1,3 +1,3 @@
-import PublicCampaignsPage from "../../features/campaigns/PublicCampaignsPage";
+import CampaignsPage from "../../features/campaigns/CampaignsPage";
 
-export default PublicCampaignsPage;
+export default CampaignsPage;

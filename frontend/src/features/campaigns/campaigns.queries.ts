@@ -92,3 +92,46 @@ export const APPROVE_CAMPAIGN_MUTATION = gql`
     }
   }
 `;
+
+export const MY_CAMPAIGNS_CONNECTION_QUERY = gql`
+  query MyCampaignsConnection($creatorAccountId: UUID!, $first: Int!, $after: Cursor) {
+    allCampaigns(
+      condition: { creatorAccountId: $creatorAccountId }
+      orderBy: CREATED_AT_DESC
+      first: $first
+      after: $after
+    ) {
+      nodes {
+        id
+        title
+        theme
+        moderationStatus
+        startAt
+        airdropAt
+        endAt
+        createdAt
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const INSPIRATION_CAMPAIGNS_QUERY = gql`
+  query InspirationCampaigns {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: CREATED_AT_DESC, first: 10) {
+      nodes {
+        id
+        title
+        theme
+        moderationStatus
+        startAt
+        airdropAt
+        endAt
+        createdAt
+      }
+    }
+  }
+`;

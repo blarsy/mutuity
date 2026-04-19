@@ -149,6 +149,9 @@ function formatClaimStatus(status: string) {
 export default function PublicNeedsPage() {
   const router = useRouter();
   const { session, status } = useAuth();
+  const createNeedHref = session.authenticated
+    ? "/needs/create"
+    : "/login?next=%2Fneeds%2Fcreate";
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
@@ -248,6 +251,9 @@ export default function PublicNeedsPage() {
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button component={NextLink} href="/" variant="outlined">
               Back home
+            </Button>
+            <Button component={NextLink} href={createNeedHref} variant="contained">
+              Add
             </Button>
             {session.authenticated ? (
               <LogoutButton color="inherit" redirectTo="/needs" variant="outlined">
