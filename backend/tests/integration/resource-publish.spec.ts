@@ -1,6 +1,6 @@
 import {
   TEST_BACKEND_URL,
-  getSessionCookie,
+  loginWithGraphqlSessionCookie,
   seedDemoAccount,
   type SeededAccount
 } from "./auth-test-helpers";
@@ -8,20 +8,7 @@ import {
 jest.setTimeout(30000);
 
 async function loginAs(account: SeededAccount) {
-  const loginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      identifier: account.identifier,
-      password: account.password
-    })
-  });
-
-  expect(loginResponse.status).toBe(200);
-
-  return getSessionCookie(loginResponse);
+  return loginWithGraphqlSessionCookie(account.identifier, account.password);
 }
 
 describe("resource publishing integration", () => {

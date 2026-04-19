@@ -1,4 +1,4 @@
-import { TEST_BACKEND_URL, getSessionCookie, seedDemoAccount } from "./auth-test-helpers";
+import { TEST_BACKEND_URL, loginWithGraphqlSessionCookie, seedDemoAccount } from "./auth-test-helpers";
 
 jest.setTimeout(30000);
 
@@ -32,44 +32,11 @@ describe("campaign approval integration", () => {
       displayName: "Campaign Viewer"
     });
 
-    const creatorLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: creator.identifier,
-        password: creator.password
-      })
-    });
-    expect(creatorLoginResponse.status).toBe(200);
-    const creatorCookie = getSessionCookie(creatorLoginResponse);
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
 
-    const managerLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: manager.identifier,
-        password: manager.password
-      })
-    });
-    expect(managerLoginResponse.status).toBe(200);
-    const managerCookie = getSessionCookie(managerLoginResponse);
+    const managerCookie = await loginWithGraphqlSessionCookie(manager.identifier, manager.password);
 
-    const viewerLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: viewer.identifier,
-        password: viewer.password
-      })
-    });
-    expect(viewerLoginResponse.status).toBe(200);
-    const viewerCookie = getSessionCookie(viewerLoginResponse);
+    const viewerCookie = await loginWithGraphqlSessionCookie(viewer.identifier, viewer.password);
 
     const createResponse = await postGraphql(
       {

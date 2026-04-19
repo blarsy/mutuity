@@ -1,4 +1,4 @@
-import { TEST_BACKEND_URL, getSessionCookie, seedDemoAccount } from "./auth-test-helpers";
+import { TEST_BACKEND_URL, loginWithGraphqlSessionCookie, seedDemoAccount } from "./auth-test-helpers";
 import { seedNeed, seedNeedClaim } from "./need-test-helpers";
 
 jest.setTimeout(30000);
@@ -29,17 +29,7 @@ describe("claim messaging integration", () => {
       message: "Initial claimer note"
     });
 
-    const creatorLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: creator.identifier,
-        password: creator.password
-      })
-    });
-    const creatorCookie = getSessionCookie(creatorLoginResponse);
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
 
     const sendResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -105,17 +95,7 @@ describe("claim messaging integration", () => {
       expect.objectContaining({ imageUrl: "https://example.com/plan.png", sortOrder: 0 })
     ]);
 
-    const claimerLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: claimer.identifier,
-        password: claimer.password
-      })
-    });
-    const claimerCookie = getSessionCookie(claimerLoginResponse);
+    const claimerCookie = await loginWithGraphqlSessionCookie(claimer.identifier, claimer.password);
 
     const conversationResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -235,17 +215,7 @@ describe("claim messaging integration", () => {
       }
     });
 
-    const outsiderLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: outsider.identifier,
-        password: outsider.password
-      })
-    });
-    const outsiderCookie = getSessionCookie(outsiderLoginResponse);
+    const outsiderCookie = await loginWithGraphqlSessionCookie(outsider.identifier, outsider.password);
 
     const outsiderSendResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",

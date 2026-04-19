@@ -1,6 +1,11 @@
 import { Client } from "pg";
 
-import { TEST_BACKEND_URL, TEST_DATABASE_URL, getSessionCookie, seedDemoAccount } from "./auth-test-helpers";
+import {
+  TEST_BACKEND_URL,
+  TEST_DATABASE_URL,
+  loginWithGraphqlSessionCookie,
+  seedDemoAccount
+} from "./auth-test-helpers";
 import { seedNeed } from "./need-test-helpers";
 import { seedResource } from "./resource-test-helpers";
 import { issueCampaignAirdropPayoutsTask } from "../../src/worker/tasks/issue-campaign-airdrop-payouts";
@@ -131,12 +136,7 @@ describe("campaign airdrop payouts", () => {
     await issueCampaignAirdropPayoutsTask({ nowIso: now.toISOString() }, {} as never);
     await issueCampaignAirdropPayoutsTask({ nowIso: now.toISOString() }, {} as never);
 
-    const recipientALoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: recipientA.identifier, password: recipientA.password })
-    });
-    const recipientACookie = getSessionCookie(recipientALoginResponse);
+    const recipientACookie = await loginWithGraphqlSessionCookie(recipientA.identifier, recipientA.password);
 
     const recipientAOverviewResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",

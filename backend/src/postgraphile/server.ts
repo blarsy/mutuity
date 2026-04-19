@@ -7,8 +7,8 @@ import { GraphQLError } from "graphql";
 import { Pool } from "pg";
 import { postgraphile } from "postgraphile";
 
-import { createAuthRouter } from "../auth/routes.js";
 import { createAuthSessionMiddleware } from "../auth/session.js";
+import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
 
 const app = express();
 const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "manager", "admin"]);
@@ -239,7 +239,6 @@ app.use(
     }
   })
 );
-app.use("/auth", createAuthRouter(pool));
 
 // SQL functions in app_public (for example createCampaign and addCampaignModerationNote)
 // are exposed as GraphQL mutations by PostGraphile.
@@ -252,6 +251,7 @@ app.use(
     setofFunctionsContainNulls: false,
     ignoreRBAC: false,
     ignoreIndexes: false,
+    appendPlugins: [createAuthGraphqlPlugin(pool)],
     handleErrors: errors => {
       for (const error of errors) {
         console.error("[postgraphile] GraphQL request failed", toLoggedError(error));
@@ -289,7 +289,11 @@ app.use(
         "jwt.claims.role": role,
         "jwt.claims.account_id": accountIdHeader
       };
-    }
+    },
+    additionalGraphQLContextFromRequest: async (req, res) => ({
+      expressReq: req as express.Request,
+      expressRes: res as express.Response
+    })
   })
 );
 

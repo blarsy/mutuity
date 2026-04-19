@@ -3,7 +3,7 @@ import { Client } from "pg";
 import {
   TEST_BACKEND_URL,
   TEST_DATABASE_URL,
-  getSessionCookie,
+  loginWithGraphqlSessionCookie,
   seedDemoAccount
 } from "./auth-test-helpers";
 
@@ -39,12 +39,7 @@ describe("token gifting integration", () => {
     );
     await client.end();
 
-    const senderLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: sender.identifier, password: sender.password })
-    });
-    const senderCookie = getSessionCookie(senderLoginResponse);
+    const senderCookie = await loginWithGraphqlSessionCookie(sender.identifier, sender.password);
 
     const giftResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -129,12 +124,7 @@ describe("token gifting integration", () => {
       }
     });
 
-    const recipientLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: recipient.identifier, password: recipient.password })
-    });
-    const recipientCookie = getSessionCookie(recipientLoginResponse);
+    const recipientCookie = await loginWithGraphqlSessionCookie(recipient.identifier, recipient.password);
 
     const recipientOverviewResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",

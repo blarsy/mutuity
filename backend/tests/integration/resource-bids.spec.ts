@@ -3,7 +3,7 @@ import { Client } from "pg";
 import {
   TEST_BACKEND_URL,
   TEST_DATABASE_URL,
-  getSessionCookie,
+  loginWithGraphqlSessionCookie,
   seedDemoAccount,
   type SeededAccount
 } from "./auth-test-helpers";
@@ -13,20 +13,7 @@ import { processResourceBidNotificationsTask } from "../../src/worker/tasks/proc
 jest.setTimeout(30000);
 
 async function loginAs(account: SeededAccount) {
-  const response = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      identifier: account.identifier,
-      password: account.password
-    })
-  });
-
-  expect(response.status).toBe(200);
-
-  return getSessionCookie(response);
+  return loginWithGraphqlSessionCookie(account.identifier, account.password);
 }
 
 describe("resource bid integration", () => {

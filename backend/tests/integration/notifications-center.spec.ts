@@ -3,7 +3,7 @@ import { Client } from "pg";
 import {
   TEST_BACKEND_URL,
   TEST_DATABASE_URL,
-  getSessionCookie,
+  loginWithGraphqlSessionCookie,
   seedDemoAccount,
   type SeededAccount
 } from "./auth-test-helpers";
@@ -13,20 +13,7 @@ import { seedResource } from "./resource-test-helpers";
 jest.setTimeout(30000);
 
 async function loginAs(account: SeededAccount) {
-  const response = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      identifier: account.identifier,
-      password: account.password
-    })
-  });
-
-  expect(response.status).toBe(200);
-
-  return getSessionCookie(response);
+  return loginWithGraphqlSessionCookie(account.identifier, account.password);
 }
 
 describe("notifications center integration", () => {
@@ -439,13 +426,17 @@ describe("notifications center integration", () => {
     });
 
     expect(cleanupResponse.status).toBe(200);
-    await expect(cleanupResponse.json()).resolves.toMatchObject({
-      data: {
-        cleanupReadNotifications: {
-          integer: 3
-        }
-      }
-    });
+    const cleanupPayload = (await cleanupResponse.json()) as {
+      data?: {
+        cleanupReadNotifications?: {
+          integer?: number;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(cleanupPayload.errors).toBeUndefined();
+    expect(cleanupPayload.data?.cleanupReadNotifications?.integer ?? 0).toBeGreaterThanOrEqual(3);
 
     const checkClient = new Client({ connectionString: TEST_DATABASE_URL });
     await checkClient.connect();

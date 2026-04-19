@@ -659,8 +659,60 @@ type ApproveCampaignPayload {
   query: Query
 }
 
+input AuthChangePasswordInput {
+  clientMutationId: String
+  currentPassword: String!
+  newPassword: String!
+}
+
+type AuthChangePasswordPayload {
+  authSession: AuthSessionPayload!
+  clientMutationId: String
+}
+
+input AuthLoginInput {
+  clientMutationId: String
+  identifier: String!
+  password: String!
+}
+
+type AuthLoginPayload {
+  authSession: AuthSessionPayload!
+  clientMutationId: String
+}
+
+input AuthLogoutInput {
+  clientMutationId: String
+}
+
+type AuthLogoutPayload {
+  authSession: AuthSessionPayload!
+  clientMutationId: String
+}
+
+type AuthSessionAccount {
+  avatarUrl: String
+  displayName: String
+  externalSubject: String!
+  id: String!
+}
+
+type AuthSessionPayload {
+  account: AuthSessionAccount
+  authenticated: Boolean!
+  expiresAt: String
+  role: String!
+}
+
 """A floating point number that requires more precision than IEEE 754 binary 64"""
 scalar BigFloat
+
+"""
+A signed eight-byte integer. The upper big integer values are greater than the
+max value for a JavaScript number. Therefore all big integers will be output as
+strings and not numbers.
+"""
+scalar BigInt
 
 """Campaign submitted by an account and moderated before going live."""
 type Campaign implements Node {
@@ -1417,6 +1469,74 @@ type CleanupReadNotificationsPayload {
   """
   clientMutationId: String
   integer: Int
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `confirmEmailVerification` mutation."""
+input ConfirmEmailVerificationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  token: String
+}
+
+"""The output of our `confirmEmailVerification` mutation."""
+type ConfirmEmailVerificationPayload {
+  boolean: Boolean
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `confirmPasswordReset` mutation."""
+input ConfirmPasswordResetInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  nextPasswordHash: String
+  token: String
+}
+
+"""The output of our `confirmPasswordReset` mutation."""
+type ConfirmPasswordResetPayload {
+  boolean: Boolean
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `confirmPasswordResetWithPassword` mutation."""
+input ConfirmPasswordResetWithPasswordInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  nextPassword: String
+  token: String
+}
+
+"""The output of our `confirmPasswordResetWithPassword` mutation."""
+type ConfirmPasswordResetWithPasswordPayload {
+  boolean: Boolean
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
 }
@@ -3193,6 +3313,18 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: ApproveCampaignInput!
   ): ApproveCampaignPayload
+  authChangePassword(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AuthChangePasswordInput!
+  ): AuthChangePasswordPayload
+  authLogin(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AuthLoginInput!
+  ): AuthLoginPayload
+  authLogout(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AuthLogoutInput!
+  ): AuthLogoutPayload
   claimNeed(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: ClaimNeedInput!
@@ -3201,6 +3333,18 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CleanupReadNotificationsInput!
   ): CleanupReadNotificationsPayload
+  confirmEmailVerification(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: ConfirmEmailVerificationInput!
+  ): ConfirmEmailVerificationPayload
+  confirmPasswordReset(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: ConfirmPasswordResetInput!
+  ): ConfirmPasswordResetPayload
+  confirmPasswordResetWithPassword(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: ConfirmPasswordResetWithPasswordInput!
+  ): ConfirmPasswordResetWithPasswordPayload
   """Creates a single `Account`."""
   createAccount(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -3547,10 +3691,26 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: PublishResourceInput!
   ): PublishResourcePayload
+  registerLocalAccount(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: RegisterLocalAccountInput!
+  ): RegisterLocalAccountPayload
+  registerLocalAccountWithPassword(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: RegisterLocalAccountWithPasswordInput!
+  ): RegisterLocalAccountWithPasswordPayload
   rejectCampaignNeed(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: RejectCampaignNeedInput!
   ): RejectCampaignNeedPayload
+  requestEmailVerification(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: RequestEmailVerificationInput!
+  ): RequestEmailVerificationPayload
+  requestPasswordReset(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: RequestPasswordResetInput!
+  ): RequestPasswordResetPayload
   respondToResourceBid(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: RespondToResourceBidInput!
@@ -4784,6 +4944,7 @@ type Query implements Node {
     """The method to use when ordering `TokenMovement`."""
     orderBy: [TokenMovementsOrderBy!] = [PRIMARY_KEY_ASC]
   ): TokenMovementsConnection
+  authSession: AuthSessionPayload!
   """Reads a single `Campaign` using its globally unique `ID`."""
   campaign(
     """The globally unique `ID` to be used in selecting a single `Campaign`."""
@@ -4975,6 +5136,56 @@ type Query implements Node {
   tokenMovementByIdempotencyKey(idempotencyKey: String!): TokenMovement
 }
 
+"""All input for the `registerLocalAccount` mutation."""
+input RegisterLocalAccountInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  displayName: String
+  identifier: String
+  passwordHash: String
+  verificationTtlMs: BigInt
+}
+
+"""The output of our `registerLocalAccount` mutation."""
+type RegisterLocalAccountPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  string: String
+}
+
+"""All input for the `registerLocalAccountWithPassword` mutation."""
+input RegisterLocalAccountWithPasswordInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  displayName: String
+  identifier: String
+  password: String
+  verificationTtlMs: BigInt
+}
+
+"""The output of our `registerLocalAccountWithPassword` mutation."""
+type RegisterLocalAccountWithPasswordPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  string: String
+}
+
 """All input for the `rejectCampaignNeed` mutation."""
 input RejectCampaignNeedInput {
   campaignId: UUID
@@ -5007,6 +5218,54 @@ type RejectCampaignNeedPayload {
   needByNeedId: Need
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
+}
+
+"""All input for the `requestEmailVerification` mutation."""
+input RequestEmailVerificationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  identifier: String
+  throttleMs: BigInt
+  verificationTtlMs: BigInt
+}
+
+"""The output of our `requestEmailVerification` mutation."""
+type RequestEmailVerificationPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  string: String
+}
+
+"""All input for the `requestPasswordReset` mutation."""
+input RequestPasswordResetInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  identifier: String
+  resetTtlMs: BigInt
+  throttleMs: BigInt
+}
+
+"""The output of our `requestPasswordReset` mutation."""
+type RequestPasswordResetPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  string: String
 }
 
 type Resource implements Node {

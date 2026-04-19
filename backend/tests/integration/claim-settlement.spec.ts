@@ -1,4 +1,4 @@
-import { TEST_BACKEND_URL, getSessionCookie, seedDemoAccount } from "./auth-test-helpers";
+import { TEST_BACKEND_URL, loginWithGraphqlSessionCookie, seedDemoAccount } from "./auth-test-helpers";
 import { seedNeed, seedNeedClaim } from "./need-test-helpers";
 
 jest.setTimeout(30000);
@@ -41,12 +41,7 @@ describe("claim settlement integration", () => {
       message: "I am also available."
     });
 
-    const outsiderLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: outsider.identifier, password: outsider.password })
-    });
-    const outsiderCookie = getSessionCookie(outsiderLoginResponse);
+    const outsiderCookie = await loginWithGraphqlSessionCookie(outsider.identifier, outsider.password);
 
     const forbiddenResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -84,12 +79,7 @@ describe("claim settlement integration", () => {
       ]
     });
 
-    const creatorLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: creator.identifier, password: creator.password })
-    });
-    const creatorCookie = getSessionCookie(creatorLoginResponse);
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
 
     const settleResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -301,12 +291,7 @@ describe("claim settlement integration", () => {
       }
     });
 
-    const claimerALoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: claimerA.identifier, password: claimerA.password })
-    });
-    const claimerACookie = getSessionCookie(claimerALoginResponse);
+    const claimerACookie = await loginWithGraphqlSessionCookie(claimerA.identifier, claimerA.password);
 
     const claimerAResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -421,12 +406,7 @@ describe("claim settlement integration", () => {
       }
     });
 
-    const claimerBLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: claimerB.identifier, password: claimerB.password })
-    });
-    const claimerBCookie = getSessionCookie(claimerBLoginResponse);
+    const claimerBCookie = await loginWithGraphqlSessionCookie(claimerB.identifier, claimerB.password);
 
     const claimerBResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",

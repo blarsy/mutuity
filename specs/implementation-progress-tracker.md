@@ -27,11 +27,12 @@ Cadence: update at least once per workday
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
-| P3 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
-| P4 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
-| P5 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
-| P6 | Engagement and delivery controls | 005 (Preferences/digest finalization) | NOT STARTED | 0% | TBD |
-| P7 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | NOT STARTED | 0% | TBD |
+| P3 | Local auth completion (no social) | 005 (Auth subset) | IN PROGRESS | 60% | TBD |
+| P4 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
+| P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
+| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | NOT STARTED | 0% | TBD |
+| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | NOT STARTED | 0% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -89,7 +90,49 @@ Definition of Done:
 
 - [x] User can post a need, discover needs, and claim with expected behavior.
 
-### P3 - Resource Loop MVP (005 Slices 1-4)
+### P3 - Local Auth Completion (005 auth subset, no social)
+
+Status: IN PROGRESS
+Goal: finish a production-grade local auth vertical slice end-to-end before resuming non-auth feature expansion.
+
+Scope included now (complete before exit):
+
+- [ ] T051 auth-parity documentation update, scoped to local credential flow first.
+- [ ] T052 local identity model updates only (email/password credentials, duplicate-account prevention for local path).
+- [ ] T053 email verification lifecycle (issue, resend with throttling, verify, invalid/expired handling).
+- [ ] T054 forgot/reset password lifecycle (request, token validation, password update, single-use invalidation).
+- [ ] T055 authenticated change-password with current-password validation and session hardening.
+- [ ] T057 end-to-end verification for local signup/login/verify/reset/change-password and token expiry/reuse protections.
+
+Explicitly deferred to later phase:
+
+- [ ] Social login/sign-up (`Google`, `Apple`) and provider account linking surfaces (currently tracked in T056 and social-related portions of T052/T057).
+
+Execution order (to limit security regressions):
+
+1. Local identity schema and invariants (T052 local subset).
+2. Verification token lifecycle (T053).
+3. Reset token lifecycle (T054).
+4. Authenticated change-password hardening (T055).
+5. Frontend flow integration for local-only paths.
+6. End-to-end auth test sweep and abuse-path checks (T057 local subset).
+
+Checkpoints:
+
+- [ ] Visitor can sign up with account name + email/password and receives verification email.
+- [ ] Unverified account cannot access trust-sensitive authenticated flows until verification completes.
+- [ ] Verification token flow is one-time, time-bounded, resend-throttled, and safely fails on invalid/expired tokens.
+- [ ] Forgot-password token flow is one-time, time-bounded, and cannot be replayed.
+- [ ] Authenticated user can change password with current-password validation and hardened post-change session behavior.
+- [ ] Local auth E2E scenarios pass (happy path + key abuse/edge cases).
+
+Definition of Done:
+
+- [ ] Local email/password account creation and recovery are production-ready and fully test-covered.
+- [ ] No placeholder or partial auth routes remain for local flow.
+- [ ] Social auth remains disabled/deferred, not half-exposed in UX.
+
+### P4 - Resource Loop MVP (005 Slices 1-4)
 
 Status: NOT STARTED
 Goal: deliver resource discovery/publish/bid baseline and core notifications.
@@ -105,7 +148,7 @@ Definition of Done:
 
 - [ ] Resource loop is independently usable end-to-end.
 
-### P4 - Settlement And Ledger Consistency (007, 008)
+### P5 - Settlement And Ledger Consistency (007, 008)
 
 Status: NOT STARTED
 Goal: ensure token movement correctness for claims and bids lifecycle.
@@ -121,7 +164,7 @@ Definition of Done:
 
 - [ ] Token-impacting operations are correct under retries/concurrency.
 
-### P5 - Conversation Layer (006)
+### P6 - Conversation Layer (006)
 
 Status: NOT STARTED
 Goal: connect accepted claim/bid outcomes to reliable conversation workflows.
@@ -136,7 +179,7 @@ Definition of Done:
 
 - [ ] Users can reliably transition from transaction flow to conversation.
 
-### P6 - Engagement And Delivery Controls (005 extended)
+### P7 - Engagement And Delivery Controls (005 extended)
 
 Status: NOT STARTED
 Goal: deploy preference-managed out-of-app delivery and digest behavior.
@@ -152,7 +195,7 @@ Definition of Done:
 
 - [ ] Delivery behavior matches configured strategy per category.
 
-### P7 - Admin And Ops Hardening (005 extended)
+### P8 - Admin And Ops Hardening (005 extended)
 
 Status: NOT STARTED
 Goal: operational support surfaces, grants, and logging hardening ready for production.
@@ -171,13 +214,13 @@ Definition of Done:
 ## Active Work Queue
 
 Current phase: P3
-Current milestone: P3-M1 - Resource loop MVP kickoff
+Current milestone: P3-M1 - Local auth completion kickoff
 
 This week priorities:
 
-1. Start P3 resource loop hardening against feature 005 slices already partially implemented.
-2. Add tests for resource management/listing UX changes and pagination where needed.
-3. Keep P2 suites as smoke checks while expanding resource loop coverage.
+1. Execute complete local auth slice (signup, verification, forgot/reset, change-password) with no social login exposure.
+2. Land security-critical tests first for token lifecycle, replay prevention, and invalid/expired paths.
+3. Keep P1/P2 auth-protected-route behavior as smoke checks while refactoring auth flows.
 
 ## Session Log
 
@@ -202,6 +245,8 @@ This week priorities:
 | 2026-04-19 | P2 execution | Completed quickstart validation and docs alignment: ran end-to-end scenario test sweep, logged evidence in quickstart, and aligned research architecture notes with implemented triage/audit/worker details. | specs/001-campaign-needs/quickstart.md; specs/001-campaign-needs/research.md; npm -C backend test -- tests/integration/campaign-create.spec.ts tests/integration/campaign-create-auth.spec.ts tests/integration/campaign-moderation-note.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/need-create.spec.ts tests/integration/need-create-auth.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/audit-trail.spec.ts; npm -C frontend run typecheck | None | Complete final polish task T053 (storybook stories). |
 | 2026-04-19 | P2 execution | Completed story coverage baseline by extracting reusable campaign/need presentation components and adding Storybook story files for triage status and need summary facts. | frontend/src/components/campaign/CampaignNeedStatusChip.tsx; frontend/src/components/campaign/CampaignNeedStatusChip.stories.tsx; frontend/src/components/need/NeedSummaryFacts.tsx; frontend/src/components/need/NeedSummaryFacts.stories.tsx; frontend/src/features/campaigns/CampaignNeedTriagePage.tsx; npm -C frontend run typecheck | None | Move focus to Feature 002 implementation backlog. |
 | 2026-04-19 | P2 closeout | Validated full core needs loop and campaign/triage baseline with passing backend integration sweep and frontend needs tests + typecheck, then marked P2 complete in tracker. | npm -C backend test -- tests/integration/need-search.spec.ts tests/integration/need-filtering.spec.ts tests/integration/need-claim.spec.ts tests/integration/claim-messaging.spec.ts tests/integration/claim-settlement.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/need-create.spec.ts tests/integration/audit-trail.spec.ts; npm -C frontend run typecheck; npm -C frontend test -- --runInBand tests/needs | None | Kick off P3 resource-loop completion and associated tests. |
+| 2026-04-19 | Replanning | Re-sequenced post-P2 roadmap to prioritize complete local email/password auth (signup + verification + forgot/reset + change-password) before resuming resource-loop expansion; social login deferred by explicit gate. | specs/implementation-progress-tracker.md; specs/005-resource-discovery-and-publishing/tasks.md | None | Start P3 with T052 local identity model subset and token-lifecycle test scaffolding. |
+| 2026-04-19 | P3 execution | Implemented local-auth foundation and flows: migration for verification/reset tokens and credential verification state, backend register/verify/reset/change-password endpoints, frontend register/verify-email/restore-access/change-password pages, and passing backend auth integration + contract tests. | database/migrations/032_local_auth_account_creation_and_recovery.sql; backend/src/auth/routes.ts; backend/tests/integration/auth-register.spec.ts; backend/tests/integration/auth-password-recovery.spec.ts; frontend/src/pages/register.tsx; frontend/src/pages/restore-access.tsx; frontend/src/pages/verify-email.tsx; frontend/src/pages/change-password.tsx; npm -C backend test -- --runInBand tests/integration/auth-login.spec.ts tests/integration/auth-session.spec.ts tests/integration/auth-logout.spec.ts tests/integration/auth-register.spec.ts tests/integration/auth-password-recovery.spec.ts tests/contract/auth.contract.spec.ts; npm -C frontend run typecheck | Outbound email delivery is still mocked by dev token echo in HTTP responses. | Replace dev-token echo with real mail delivery and add frontend tests for register/verify/reset/change-password pages. |
 
 ## Decisions Log
 
@@ -209,6 +254,7 @@ This week priorities:
 |---|---|---|---|
 | 2026-04-18 | Execute dependency-first across 7 phases (P1..P7). | Reduce rework and unblock downstream slices. | 001-008 |
 | 2026-04-18 | Start P1 execution with feature 004 frontend auth test gaps before additional scope. | Fastest path to complete P1 readiness with measurable CI evidence. | 004 |
+| 2026-04-19 | Re-sequence roadmap to complete local auth vertically before P3 resource expansion; defer social login until a dedicated follow-up auth increment. | Avoid half-delivered auth UX and reduce rework/security drift during manual E2E preparation. | 005 auth subset, then 005 slices 1-4 |
 
 ## Blockers Log
 
@@ -220,7 +266,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 complete (100%)
+- Overall progress: P1 complete, P2 complete; P3 local-auth completion in progress
 - Current health: GREEN
-- Main risk: P3 scope spread across UX and backend consistency if not executed slice-by-slice.
-- Requested supervisor input: confirm P3 first target slice priority (resource discovery hardening vs publish/manage depth).
+- Main risk: shipping local auth without real outbound verification/reset emails (current dev-token echo fallback).
+- Requested supervisor input: confirm mail delivery approach for verification/reset so P3 can close without temporary dev-only behavior.

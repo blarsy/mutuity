@@ -15,6 +15,12 @@ export type Scalars = {
   Float: { input: number; output: number; }
   /** A floating point number that requires more precision than IEEE 754 binary 64 */
   BigFloat: { input: any; output: any; }
+  /**
+   * A signed eight-byte integer. The upper big integer values are greater than the
+   * max value for a JavaScript number. Therefore all big integers will be output as
+   * strings and not numbers.
+   */
+  BigInt: { input: any; output: any; }
   /** A location in a connection that can be used for resuming pagination. */
   Cursor: { input: any; output: any; }
   /**
@@ -560,6 +566,56 @@ export type ApproveCampaignPayload = {
 /** The output of our `approveCampaign` mutation. */
 export type ApproveCampaignPayloadCampaignEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignsOrderBy>>;
+};
+
+export type AuthChangePasswordInput = {
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  currentPassword: Scalars['String']['input'];
+  newPassword: Scalars['String']['input'];
+};
+
+export type AuthChangePasswordPayload = {
+  __typename: 'AuthChangePasswordPayload';
+  authSession: AuthSessionPayload;
+  clientMutationId: Maybe<Scalars['String']['output']>;
+};
+
+export type AuthLoginInput = {
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  identifier: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+};
+
+export type AuthLoginPayload = {
+  __typename: 'AuthLoginPayload';
+  authSession: AuthSessionPayload;
+  clientMutationId: Maybe<Scalars['String']['output']>;
+};
+
+export type AuthLogoutInput = {
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type AuthLogoutPayload = {
+  __typename: 'AuthLogoutPayload';
+  authSession: AuthSessionPayload;
+  clientMutationId: Maybe<Scalars['String']['output']>;
+};
+
+export type AuthSessionAccount = {
+  __typename: 'AuthSessionAccount';
+  avatarUrl: Maybe<Scalars['String']['output']>;
+  displayName: Maybe<Scalars['String']['output']>;
+  externalSubject: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+};
+
+export type AuthSessionPayload = {
+  __typename: 'AuthSessionPayload';
+  account: Maybe<AuthSessionAccount>;
+  authenticated: Scalars['Boolean']['output'];
+  expiresAt: Maybe<Scalars['String']['output']>;
+  role: Scalars['String']['output'];
 };
 
 /** Campaign submitted by an account and moderated before going live. */
@@ -1313,6 +1369,77 @@ export type CleanupReadNotificationsPayload = {
    */
   clientMutationId: Maybe<Scalars['String']['output']>;
   integer: Maybe<Scalars['Int']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+/** All input for the `confirmEmailVerification` mutation. */
+export type ConfirmEmailVerificationInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  token?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `confirmEmailVerification` mutation. */
+export type ConfirmEmailVerificationPayload = {
+  __typename: 'ConfirmEmailVerificationPayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+/** All input for the `confirmPasswordReset` mutation. */
+export type ConfirmPasswordResetInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  nextPasswordHash?: InputMaybe<Scalars['String']['input']>;
+  token?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `confirmPasswordReset` mutation. */
+export type ConfirmPasswordResetPayload = {
+  __typename: 'ConfirmPasswordResetPayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+/** All input for the `confirmPasswordResetWithPassword` mutation. */
+export type ConfirmPasswordResetWithPasswordInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  nextPassword?: InputMaybe<Scalars['String']['input']>;
+  token?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `confirmPasswordResetWithPassword` mutation. */
+export type ConfirmPasswordResetWithPasswordPayload = {
+  __typename: 'ConfirmPasswordResetWithPasswordPayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
 };
@@ -3242,8 +3369,14 @@ export type Mutation = {
   acceptCampaignNeed: Maybe<AcceptCampaignNeedPayload>;
   addCampaignModerationNote: Maybe<AddCampaignModerationNotePayload>;
   approveCampaign: Maybe<ApproveCampaignPayload>;
+  authChangePassword: Maybe<AuthChangePasswordPayload>;
+  authLogin: Maybe<AuthLoginPayload>;
+  authLogout: Maybe<AuthLogoutPayload>;
   claimNeed: Maybe<ClaimNeedPayload>;
   cleanupReadNotifications: Maybe<CleanupReadNotificationsPayload>;
+  confirmEmailVerification: Maybe<ConfirmEmailVerificationPayload>;
+  confirmPasswordReset: Maybe<ConfirmPasswordResetPayload>;
+  confirmPasswordResetWithPassword: Maybe<ConfirmPasswordResetWithPasswordPayload>;
   /** Creates a single `Account`. */
   createAccount: Maybe<CreateAccountPayload>;
   /** Creates a single `AccountNotification`. */
@@ -3377,7 +3510,11 @@ export type Mutation = {
   markNeedClaimNotificationRead: Maybe<MarkNeedClaimNotificationReadPayload>;
   markResourceBidNotificationRead: Maybe<MarkResourceBidNotificationReadPayload>;
   publishResource: Maybe<PublishResourcePayload>;
+  registerLocalAccount: Maybe<RegisterLocalAccountPayload>;
+  registerLocalAccountWithPassword: Maybe<RegisterLocalAccountWithPasswordPayload>;
   rejectCampaignNeed: Maybe<RejectCampaignNeedPayload>;
+  requestEmailVerification: Maybe<RequestEmailVerificationPayload>;
+  requestPasswordReset: Maybe<RequestPasswordResetPayload>;
   respondToResourceBid: Maybe<RespondToResourceBidPayload>;
   sendClaimMessage: Maybe<SendClaimMessagePayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
@@ -3494,6 +3631,24 @@ export type MutationApproveCampaignArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationAuthChangePasswordArgs = {
+  input: AuthChangePasswordInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAuthLoginArgs = {
+  input: AuthLoginInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAuthLogoutArgs = {
+  input: AuthLogoutInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationClaimNeedArgs = {
   input: ClaimNeedInput;
 };
@@ -3502,6 +3657,24 @@ export type MutationClaimNeedArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCleanupReadNotificationsArgs = {
   input: CleanupReadNotificationsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationConfirmEmailVerificationArgs = {
+  input: ConfirmEmailVerificationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationConfirmPasswordResetArgs = {
+  input: ConfirmPasswordResetInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationConfirmPasswordResetWithPasswordArgs = {
+  input: ConfirmPasswordResetWithPasswordInput;
 };
 
 
@@ -3932,8 +4105,32 @@ export type MutationPublishResourceArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationRegisterLocalAccountArgs = {
+  input: RegisterLocalAccountInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationRegisterLocalAccountWithPasswordArgs = {
+  input: RegisterLocalAccountWithPasswordInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationRejectCampaignNeedArgs = {
   input: RejectCampaignNeedInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationRequestEmailVerificationArgs = {
+  input: RequestEmailVerificationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationRequestPasswordResetArgs = {
+  input: RequestPasswordResetInput;
 };
 
 
@@ -4854,6 +5051,7 @@ export type Query = Node & {
   allResources: Maybe<ResourcesConnection>;
   /** Reads and enables pagination through a set of `TokenMovement`. */
   allTokenMovements: Maybe<TokenMovementsConnection>;
+  authSession: AuthSessionPayload;
   /** Reads a single `Campaign` using its globally unique `ID`. */
   campaign: Maybe<Campaign>;
   campaignById: Maybe<Campaign>;
@@ -5488,6 +5686,58 @@ export type QueryTokenMovementByIdempotencyKeyArgs = {
   idempotencyKey: Scalars['String']['input'];
 };
 
+/** All input for the `registerLocalAccount` mutation. */
+export type RegisterLocalAccountInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  identifier?: InputMaybe<Scalars['String']['input']>;
+  passwordHash?: InputMaybe<Scalars['String']['input']>;
+  verificationTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+};
+
+/** The output of our `registerLocalAccount` mutation. */
+export type RegisterLocalAccountPayload = {
+  __typename: 'RegisterLocalAccountPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  string: Maybe<Scalars['String']['output']>;
+};
+
+/** All input for the `registerLocalAccountWithPassword` mutation. */
+export type RegisterLocalAccountWithPasswordInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  identifier?: InputMaybe<Scalars['String']['input']>;
+  password?: InputMaybe<Scalars['String']['input']>;
+  verificationTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+};
+
+/** The output of our `registerLocalAccountWithPassword` mutation. */
+export type RegisterLocalAccountWithPasswordPayload = {
+  __typename: 'RegisterLocalAccountWithPasswordPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  string: Maybe<Scalars['String']['output']>;
+};
+
 /** All input for the `rejectCampaignNeed` mutation. */
 export type RejectCampaignNeedInput = {
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
@@ -5524,6 +5774,56 @@ export type RejectCampaignNeedPayload = {
 /** The output of our `rejectCampaignNeed` mutation. */
 export type RejectCampaignNeedPayloadCampaignNeedEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignNeedsOrderBy>>;
+};
+
+/** All input for the `requestEmailVerification` mutation. */
+export type RequestEmailVerificationInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  identifier?: InputMaybe<Scalars['String']['input']>;
+  throttleMs?: InputMaybe<Scalars['BigInt']['input']>;
+  verificationTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+};
+
+/** The output of our `requestEmailVerification` mutation. */
+export type RequestEmailVerificationPayload = {
+  __typename: 'RequestEmailVerificationPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  string: Maybe<Scalars['String']['output']>;
+};
+
+/** All input for the `requestPasswordReset` mutation. */
+export type RequestPasswordResetInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  identifier?: InputMaybe<Scalars['String']['input']>;
+  resetTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+  throttleMs?: InputMaybe<Scalars['BigInt']['input']>;
+};
+
+/** The output of our `requestPasswordReset` mutation. */
+export type RequestPasswordResetPayload = {
+  __typename: 'RequestPasswordResetPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  string: Maybe<Scalars['String']['output']>;
 };
 
 export type Resource = Node & {
@@ -7496,6 +7796,75 @@ export type UpdateTokenMovementPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
 };
 
+export type AuthSessionQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AuthSessionQuery = { __typename: 'Query', authSession: { __typename: 'AuthSessionPayload', authenticated: boolean, role: string, expiresAt: string | null, account: { __typename: 'AuthSessionAccount', id: string, displayName: string | null, externalSubject: string, avatarUrl: string | null } | null } };
+
+export type AuthLoginMutationVariables = Exact<{
+  identifier: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+}>;
+
+
+export type AuthLoginMutation = { __typename: 'Mutation', authLogin: { __typename: 'AuthLoginPayload', authSession: { __typename: 'AuthSessionPayload', authenticated: boolean, role: string, expiresAt: string | null, account: { __typename: 'AuthSessionAccount', id: string, displayName: string | null, externalSubject: string, avatarUrl: string | null } | null } } | null };
+
+export type AuthLogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AuthLogoutMutation = { __typename: 'Mutation', authLogout: { __typename: 'AuthLogoutPayload', authSession: { __typename: 'AuthSessionPayload', authenticated: boolean, role: string, expiresAt: string | null, account: { __typename: 'AuthSessionAccount', id: string, displayName: string | null, externalSubject: string, avatarUrl: string | null } | null } } | null };
+
+export type AuthChangePasswordMutationVariables = Exact<{
+  currentPassword: Scalars['String']['input'];
+  newPassword: Scalars['String']['input'];
+}>;
+
+
+export type AuthChangePasswordMutation = { __typename: 'Mutation', authChangePassword: { __typename: 'AuthChangePasswordPayload', authSession: { __typename: 'AuthSessionPayload', authenticated: boolean, role: string, expiresAt: string | null, account: { __typename: 'AuthSessionAccount', id: string, displayName: string | null, externalSubject: string, avatarUrl: string | null } | null } } | null };
+
+export type RegisterLocalAccountWithPasswordMutationVariables = Exact<{
+  identifier: Scalars['String']['input'];
+  displayName: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+  verificationTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+}>;
+
+
+export type RegisterLocalAccountWithPasswordMutation = { __typename: 'Mutation', registerLocalAccountWithPassword: { __typename: 'RegisterLocalAccountWithPasswordPayload', string: string | null } | null };
+
+export type RequestEmailVerificationMutationVariables = Exact<{
+  identifier: Scalars['String']['input'];
+  verificationTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+  throttleMs?: InputMaybe<Scalars['BigInt']['input']>;
+}>;
+
+
+export type RequestEmailVerificationMutation = { __typename: 'Mutation', requestEmailVerification: { __typename: 'RequestEmailVerificationPayload', string: string | null } | null };
+
+export type ConfirmEmailVerificationMutationVariables = Exact<{
+  token: Scalars['String']['input'];
+}>;
+
+
+export type ConfirmEmailVerificationMutation = { __typename: 'Mutation', confirmEmailVerification: { __typename: 'ConfirmEmailVerificationPayload', boolean: boolean | null } | null };
+
+export type RequestPasswordResetMutationVariables = Exact<{
+  identifier: Scalars['String']['input'];
+  resetTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+  throttleMs?: InputMaybe<Scalars['BigInt']['input']>;
+}>;
+
+
+export type RequestPasswordResetMutation = { __typename: 'Mutation', requestPasswordReset: { __typename: 'RequestPasswordResetPayload', string: string | null } | null };
+
+export type ConfirmPasswordResetWithPasswordMutationVariables = Exact<{
+  token: Scalars['String']['input'];
+  nextPassword: Scalars['String']['input'];
+}>;
+
+
+export type ConfirmPasswordResetWithPasswordMutation = { __typename: 'Mutation', confirmPasswordResetWithPassword: { __typename: 'ConfirmPasswordResetWithPasswordPayload', boolean: boolean | null } | null };
+
 export type AddCampaignModerationNoteMutationVariables = Exact<{
   campaignId: Scalars['UUID']['input'];
   body: Scalars['String']['input'];
@@ -7816,6 +8185,15 @@ export type RespondToResourceBidMutationVariables = Exact<{
 export type RespondToResourceBidMutation = { __typename: 'Mutation', respondToResourceBid: { __typename: 'RespondToResourceBidPayload', resourceBid: { __typename: 'ResourceBid', id: any, resourceId: any, bidderAccountId: any, message: string | null, proposedTokenAmount: number | null, status: ResourceBidStatus, createdAt: any, respondedAt: any | null, respondedByAccountId: any | null } | null } | null };
 
 
+export const AuthSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AuthSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}}]}}]}}]}}]} as unknown as DocumentNode<AuthSessionQuery, AuthSessionQueryVariables>;
+export const AuthLoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AuthLogin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authLogin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"identifier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AuthLoginMutation, AuthLoginMutationVariables>;
+export const AuthLogoutDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AuthLogout"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authLogout"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AuthLogoutMutation, AuthLogoutMutationVariables>;
+export const AuthChangePasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AuthChangePassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"currentPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authChangePassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"currentPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"currentPassword"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"newPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AuthChangePasswordMutation, AuthChangePasswordMutationVariables>;
+export const RegisterLocalAccountWithPasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RegisterLocalAccountWithPassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"displayName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"verificationTtlMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"registerLocalAccountWithPassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"identifier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"displayName"},"value":{"kind":"Variable","name":{"kind":"Name","value":"displayName"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"verificationTtlMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"verificationTtlMs"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"string"}}]}}]}}]} as unknown as DocumentNode<RegisterLocalAccountWithPasswordMutation, RegisterLocalAccountWithPasswordMutationVariables>;
+export const RequestEmailVerificationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestEmailVerification"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"verificationTtlMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"throttleMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestEmailVerification"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"identifier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"verificationTtlMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"verificationTtlMs"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"throttleMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"throttleMs"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"string"}}]}}]}}]} as unknown as DocumentNode<RequestEmailVerificationMutation, RequestEmailVerificationMutationVariables>;
+export const ConfirmEmailVerificationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ConfirmEmailVerification"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"token"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"confirmEmailVerification"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"token"},"value":{"kind":"Variable","name":{"kind":"Name","value":"token"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"boolean"}}]}}]}}]} as unknown as DocumentNode<ConfirmEmailVerificationMutation, ConfirmEmailVerificationMutationVariables>;
+export const RequestPasswordResetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestPasswordReset"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resetTtlMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"throttleMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestPasswordReset"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"identifier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"resetTtlMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resetTtlMs"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"throttleMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"throttleMs"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"string"}}]}}]}}]} as unknown as DocumentNode<RequestPasswordResetMutation, RequestPasswordResetMutationVariables>;
+export const ConfirmPasswordResetWithPasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ConfirmPasswordResetWithPassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"token"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"nextPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"confirmPasswordResetWithPassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"token"},"value":{"kind":"Variable","name":{"kind":"Name","value":"token"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"nextPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"nextPassword"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"boolean"}}]}}]}}]} as unknown as DocumentNode<ConfirmPasswordResetWithPasswordMutation, ConfirmPasswordResetWithPasswordMutationVariables>;
 export const AddCampaignModerationNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddCampaignModerationNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"body"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addCampaignModerationNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"body"},"value":{"kind":"Variable","name":{"kind":"Name","value":"body"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignModerationNote"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"managerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AddCampaignModerationNoteMutation, AddCampaignModerationNoteMutationVariables>;
 export const CampaignModerationHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CampaignModerationHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaignModerationNotes"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CREATED_AT_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"managerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables>;
 export const CampaignNeedTriageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CampaignNeedTriage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaignNeeds"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"CREATED_AT_DESC"}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"actedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actedByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"campaignByCampaignId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTopesAmount"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CampaignNeedTriageQuery, CampaignNeedTriageQueryVariables>;

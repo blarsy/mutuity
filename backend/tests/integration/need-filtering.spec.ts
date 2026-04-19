@@ -1,4 +1,4 @@
-import { TEST_BACKEND_URL, getSessionCookie, seedDemoAccount } from "./auth-test-helpers";
+import { TEST_BACKEND_URL, loginWithGraphqlSessionCookie, seedDemoAccount } from "./auth-test-helpers";
 import { seedNeed } from "./need-test-helpers";
 
 jest.setTimeout(30000);
@@ -104,19 +104,7 @@ describe("need filtering integration", () => {
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     });
 
-    const loginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: creator.identifier,
-        password: creator.password
-      })
-    });
-
-    expect(loginResponse.status).toBe(200);
-    const sessionCookie = getSessionCookie(loginResponse);
+    const sessionCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
 
     const accountResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",

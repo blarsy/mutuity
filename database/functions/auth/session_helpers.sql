@@ -8,7 +8,8 @@ returns table (
   external_subject text,
   avatar_url text,
   password_hash text,
-  role_name text
+  role_name text,
+  email_verified_at timestamptz
 )
 language sql
 stable
@@ -19,7 +20,8 @@ as $$
     a.external_subject,
     a.avatar_url,
     c.password_hash,
-    c.role_name
+    c.role_name,
+    c.email_verified_at
   from app_private.account_credential c
   join app_public.account a on a.id = c.account_id
   where lower(c.login_identifier) = lower(p_identifier)

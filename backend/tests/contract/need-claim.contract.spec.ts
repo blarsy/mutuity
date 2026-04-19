@@ -1,4 +1,8 @@
-import { TEST_BACKEND_URL, getSessionCookie, seedDemoAccount } from "../integration/auth-test-helpers";
+import {
+  TEST_BACKEND_URL,
+  loginWithGraphqlSessionCookie,
+  seedDemoAccount
+} from "../integration/auth-test-helpers";
 import { seedNeed } from "../integration/need-test-helpers";
 
 jest.setTimeout(30000);
@@ -20,17 +24,7 @@ describe("need claim contract", () => {
       expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
     });
 
-    const loginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: claimer.identifier,
-        password: claimer.password
-      })
-    });
-    const claimerCookie = getSessionCookie(loginResponse);
+    const claimerCookie = await loginWithGraphqlSessionCookie(claimer.identifier, claimer.password);
 
     const mutationResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
@@ -96,17 +90,7 @@ describe("need claim contract", () => {
       }
     });
 
-    const creatorLoginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: creator.identifier,
-        password: creator.password
-      })
-    });
-    const creatorCookie = getSessionCookie(creatorLoginResponse);
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
 
     const notificationResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",

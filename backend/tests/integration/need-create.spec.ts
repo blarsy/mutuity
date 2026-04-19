@@ -3,7 +3,7 @@ import { Client } from "pg";
 import {
   TEST_BACKEND_URL,
   TEST_DATABASE_URL,
-  getSessionCookie,
+  loginWithGraphqlSessionCookie,
   seedDemoAccount
 } from "./auth-test-helpers";
 
@@ -80,19 +80,7 @@ describe("need create integration", () => {
       displayName: "Need Creator"
     });
 
-    const loginResponse = await fetch(`${TEST_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: creator.identifier,
-        password: creator.password
-      })
-    });
-
-    expect(loginResponse.status).toBe(200);
-    const creatorCookie = getSessionCookie(loginResponse);
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
 
     const standaloneResponse = await postGraphql(
       {

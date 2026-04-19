@@ -86,3 +86,37 @@ export function getSessionCookie(response: Response) {
 
   return setCookieHeader.split(";")[0];
 }
+
+export async function loginWithGraphql(identifier: string, password: string) {
+  return fetch(`${TEST_BACKEND_URL}/graphql`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      query: `
+        mutation AuthLogin($identifier: String!, $password: String!) {
+          authLogin(input: { identifier: $identifier, password: $password }) {
+            authSession {
+              authenticated
+            }
+          }
+        }
+      `,
+      variables: {
+        identifier,
+        password
+      }
+    })
+  });
+}
+
+export async function loginWithGraphqlSessionCookie(identifier: string, password: string) {
+  const response = await loginWithGraphql(identifier, password);
+
+  if (response.status !== 200) {
+    throw new Error(`GraphQL login failed with status ${response.status}`);
+  }
+
+  return getSessionCookie(response);
+}
