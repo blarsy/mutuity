@@ -124,9 +124,9 @@
 
 - [x] T048 [US5] Implement SQL functions `accept_campaign_need` and `reject_campaign_need` in `database/functions/campaign_need/`
 - [x] T049 [US5] Expose triage functions through PostGraphile in `backend/src/postgraphile/server.ts`
-- [ ] T050 [US5] Add campaign creator joined-needs GraphQL query in `frontend/src/features/campaigns/campaignNeedTriage.queries.ts`
-- [ ] T051 [US5] Build campaign creator triage UI in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
-- [ ] T052 [US5] Add optimistic UI updates and rollback handling for triage actions in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
+- [x] T050 [US5] Add campaign creator joined-needs GraphQL query in `frontend/src/features/campaigns/campaignNeedTriage.queries.ts`
+- [x] T051 [US5] Build campaign creator triage UI in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
+- [x] T052 [US5] Add optimistic UI updates and rollback handling for triage actions in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
 
 ## Phase 8: Polish & Cross-Cutting
 

@@ -13,6 +13,9 @@ export default function HomePage() {
   const createCampaignHref = session.authenticated
     ? "/campaigns/create"
     : "/login?next=%2Fcampaigns%2Fcreate";
+  const triageCampaignNeedsHref = session.authenticated
+    ? "/campaigns/triage"
+    : "/login?next=%2Fcampaigns%2Ftriage";
   const createResourceHref = session.authenticated
     ? "/resources/create"
     : "/login?next=%2Fresources%2Fcreate";
@@ -61,6 +64,9 @@ export default function HomePage() {
           </Button>
           <Button component={NextLink} href={createCampaignHref} variant="outlined">
             Create Campaign
+          </Button>
+          <Button component={NextLink} href={triageCampaignNeedsHref} variant="outlined">
+            Triage Joined Needs
           </Button>
           {canManageCampaigns ? (
             <Button component={NextLink} href="/campaigns/pending" variant="outlined">
