@@ -15,6 +15,8 @@ import {
   Typography
 } from "@mui/material";
 
+import { CampaignNeedStatusChip, type CampaignNeedStatus } from "../../components/campaign/CampaignNeedStatusChip";
+import { NeedSummaryFacts } from "../../components/need/NeedSummaryFacts";
 import { useRequireAuth } from "../auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
@@ -22,8 +24,6 @@ import {
   CAMPAIGN_NEED_TRIAGE_QUERY,
   REJECT_CAMPAIGN_NEED_MUTATION
 } from "./campaignNeedTriage.queries";
-
-type CampaignNeedStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
 type CampaignNeedNode = {
   campaignId: string;
@@ -83,18 +83,6 @@ type TriageMutationVariables = {
 
 function nodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId">) {
   return `${node.campaignId}:${node.needId}`;
-}
-
-function statusChipColor(status: CampaignNeedStatus): "warning" | "success" | "default" {
-  if (status === "PENDING") {
-    return "warning";
-  }
-
-  if (status === "ACCEPTED") {
-    return "success";
-  }
-
-  return "default";
 }
 
 export default function CampaignNeedTriagePage() {
@@ -260,23 +248,16 @@ export default function CampaignNeedTriagePage() {
                           Campaign: {node.campaignByCampaignId?.title ?? node.campaignId}
                         </Typography>
                       </Box>
-                      <Chip color={statusChipColor(status)} label={status} size="small" />
+                      <CampaignNeedStatusChip status={status} />
                     </Stack>
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
-                      <Typography variant="body2">Location: {node.needByNeedId?.location ?? "N/A"}</Typography>
-                      <Typography variant="body2">Intensity: {node.needByNeedId?.intensity ?? "N/A"}</Typography>
-                      <Typography variant="body2">
-                        Proposed Topes: {node.needByNeedId?.proposedTopesAmount ?? "N/A"}
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 1 }}>
-                      <Typography variant="caption">Joined: {new Date(node.createdAt).toLocaleString()}</Typography>
-                      {node.actedAt ? (
-                        <Typography variant="caption">Triaged: {new Date(node.actedAt).toLocaleString()}</Typography>
-                      ) : null}
-                    </Stack>
+                    <NeedSummaryFacts
+                      intensity={node.needByNeedId?.intensity}
+                      joinedAt={node.createdAt}
+                      location={node.needByNeedId?.location}
+                      proposedTopesAmount={node.needByNeedId?.proposedTopesAmount}
+                      triagedAt={node.actedAt}
+                    />
 
                     {rowErrors[key] ? (
                       <Alert severity="error" sx={{ mt: 2 }}>

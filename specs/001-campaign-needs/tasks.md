@@ -130,7 +130,7 @@
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T053 [P] Add Storybook stories for new reusable campaign and need components in `frontend/src/components/**/*.stories.tsx`
+- [x] T053 [P] Add Storybook stories for new reusable campaign and need components in `frontend/src/components/**/*.stories.tsx`
 - [x] T054 [P] Finalize i18n coverage for all new user-facing strings in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
 - [x] T055 Add audit trail verification tests for campaign status and need triage changes in `backend/tests/integration/audit-trail.spec.ts`
 - [x] T056 Add Graphile Worker bootstrap smoke test in `backend/tests/integration/worker-bootstrap.spec.ts`
