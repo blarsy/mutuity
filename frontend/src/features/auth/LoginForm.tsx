@@ -100,6 +100,7 @@ export function LoginForm({
                   href="/restore-access"
                   onClick={onSecondaryActionClick}
                   size="small"
+                  type="button"
                 >
                   Password reset
                 </Button>
@@ -108,6 +109,7 @@ export function LoginForm({
                   href="/register"
                   onClick={onSecondaryActionClick}
                   size="small"
+                  type="button"
                 >
                   Create account
                 </Button>
