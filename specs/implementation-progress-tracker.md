@@ -26,7 +26,7 @@ Cadence: update at least once per workday
 | Phase | Scope | Primary Features | Status | Completion | Target Window |
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
-| P2 | Core needs loop | 001, 002 | IN PROGRESS | 72% | 2026-04-18 to 2026-05-02 (proposed) |
+| P2 | Core needs loop | 001, 002 | IN PROGRESS | 76% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
 | P4 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P5 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
@@ -72,6 +72,7 @@ Current execution backlog focus:
 - [x] 001-US4 need creation path: T044, T045.
 - [x] 001-US5 campaign need triage backend path: T046, T047, T048, T049.
 - [x] 001-US5 campaign need triage frontend path: T050, T051, T052.
+- [x] 001-Polish audit trail verification: T055.
 
 Checkpoints:
 
@@ -191,6 +192,7 @@ This week priorities:
 | 2026-04-19 | P2 execution | Completed US4 frontend slice: added authenticated create-need page, Topes-by-intensity validation schema, createNeed GraphQL mutation wiring, and create route/link discoverability. | frontend/src/features/needs/CreateNeedPage.tsx; frontend/src/features/needs/createNeed.validation.ts; frontend/src/features/needs/needs.queries.ts; frontend/src/pages/needs/create.tsx; frontend/src/pages/index.tsx; npm -C frontend run typecheck | None | Start US5 campaign-need triage backend tests/functions (T046-T049). |
 | 2026-04-19 | P2 execution | Completed US5 backend slice: added campaign need triage SQL functions (`acceptCampaignNeed`, `rejectCampaignNeed`), wired safe GraphQL sanitization, applied migrations `027`, `028`, `029`, and passed triage contract/integration tests. | database/functions/campaign_need/accept_campaign_need.sql; database/functions/campaign_need/reject_campaign_need.sql; database/migrations/027_campaign_need_triage.sql; database/migrations/028_campaign_need_triage_security_definer.sql; database/migrations/029_campaign_need_triage_qualify_columns.sql; backend/src/postgraphile/server.ts; backend/tests/contract/campaign-need-triage.contract.spec.ts; backend/tests/integration/campaign-need-triage.spec.ts; npm -C backend test -- tests/contract/campaign-need-triage.contract.spec.ts tests/integration/campaign-need-triage.spec.ts | None | Move to US5 frontend triage query/page/actions (T050-T052). |
 | 2026-04-19 | P2 execution | Completed US5 frontend slice: added campaign need triage query/mutations, built campaign creator triage page with optimistic accept/reject + rollback handling, and exposed navigation route. | frontend/src/features/campaigns/campaignNeedTriage.queries.ts; frontend/src/features/campaigns/CampaignNeedTriagePage.tsx; frontend/src/pages/campaigns/triage.tsx; frontend/src/pages/index.tsx; npm -C frontend run typecheck; npm -C frontend test -- --runInBand tests/needs | None | Continue with P2 remaining hardening tasks (e.g., T053+). |
+| 2026-04-19 | P2 execution | Completed audit-trail hardening slice: added dedicated integration test verifying campaign approval and campaign-need triage transitions are persisted in `audit.event` with expected old/new values and actors. | backend/tests/integration/audit-trail.spec.ts; npm -C backend test -- tests/integration/audit-trail.spec.ts | None | Continue polish tasks with T056 worker bootstrap smoke test. |
 
 ## Decisions Log
 
@@ -209,7 +211,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 in progress (72%)
+- Overall progress: P1 complete, P2 in progress (76%)
 - Current health: GREEN
 - Main risk: P2 scope growth if campaign/need edge cases are not sliced tightly
-- Requested supervisor input: none, proceed with remaining P2 tasks (T053+)
+- Requested supervisor input: none, proceed with T056 worker bootstrap smoke coverage.
