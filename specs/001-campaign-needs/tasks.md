@@ -135,8 +135,8 @@
 - [x] T055 Add audit trail verification tests for campaign status and need triage changes in `backend/tests/integration/audit-trail.spec.ts`
 - [x] T056 Add Graphile Worker bootstrap smoke test in `backend/tests/integration/worker-bootstrap.spec.ts`
 - [x] T057 Add recurring worker task skeleton for expiration routines in `backend/src/worker/tasks/expire-needs.ts`
-- [ ] T058 Run and document quickstart validation in `specs/001-campaign-needs/quickstart.md`
-- [ ] T059 Update feature documentation links and architecture notes in `specs/001-campaign-needs/research.md` if implementation diverges
+- [x] T058 Run and document quickstart validation in `specs/001-campaign-needs/quickstart.md`
+- [x] T059 Update feature documentation links and architecture notes in `specs/001-campaign-needs/research.md` if implementation diverges
 
 ## Dependencies & Execution Order
 

@@ -55,7 +55,21 @@
 - Graphile Worker is responsible for recurring routines such as expiration-driven state updates and for resilient retryable background operations.
 - Job handlers must be idempotent and auditable.
 
+### 8. Implemented architecture notes (2026-04-19)
+- Campaign need triage is implemented via SQL functions exposed as GraphQL mutations:
+  - `acceptCampaignNeed`
+  - `rejectCampaignNeed`
+- Triage hardening required follow-up migrations for runtime parity in deployed functions:
+  - `027_campaign_need_triage.sql`
+  - `028_campaign_need_triage_security_definer.sql`
+  - `029_campaign_need_triage_qualify_columns.sql`
+- Audit coverage now includes dedicated integration verification for campaign approval and campaign-need triage transitions in `backend/tests/integration/audit-trail.spec.ts`.
+- Worker bootstrap and expiration routine are active in current implementation:
+  - task file: `backend/src/worker/tasks/expire-needs.ts`
+  - task registration: `backend/src/worker/taskList.ts`
+  - schedule: `backend/crontab`
+
 ## Open Technical Choices
 - Backend runtime: Node.js service hosting PostGraphile and Graphile Worker.
 - API style: GraphQL-only for product operations, generated/exposed through PostGraphile.
-- Final PostgreSQL implementation details such as enum types vs constrained text columns remain open, but constraints must be enforced at DB level.
+- PostgreSQL domain states are implemented with enums (`campaign_moderation_status`, `need_intensity`, `campaign_need_status`) and DB-level constraints.

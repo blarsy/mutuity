@@ -71,3 +71,22 @@ Validate the Feature 1 workflow end-to-end in a local development environment.
 - Unauthenticated user attempting need creation sees generic error message without technical details.
 - Server logs capture full technical error details for backend debugging.
 - Validation errors (invalid range, datetime) display specific user-friendly messages (e.g., "Rewards multiplier must be between 5 and 10").
+
+## Validation Run Log (2026-04-19)
+
+Status: PASS
+
+Executed commands:
+- `npm -C backend test -- tests/integration/campaign-create.spec.ts tests/integration/campaign-create-auth.spec.ts tests/integration/campaign-moderation-note.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/need-create.spec.ts tests/integration/need-create-auth.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/audit-trail.spec.ts`
+- `npm -C frontend run typecheck`
+
+Observed results:
+- Backend scenario sweep: 8/8 suites passed.
+- Frontend compile check: passed.
+
+Scenario coverage mapping:
+- Scenario 1 (Create Campaign): `campaign-create.spec.ts`, `campaign-create-auth.spec.ts`
+- Scenario 2 (Moderate + Approve): `campaign-moderation-note.spec.ts`, `campaign-approval.spec.ts`
+- Scenario 3/4 (Need Create standalone + linked): `need-create.spec.ts`, `need-create-auth.spec.ts`
+- Scenario 5 (Campaign Need Triage): `campaign-need-triage.spec.ts`
+- Audit verification for approval + triage: `audit-trail.spec.ts`

@@ -26,7 +26,7 @@ Cadence: update at least once per workday
 | Phase | Scope | Primary Features | Status | Completion | Target Window |
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
-| P2 | Core needs loop | 001, 002 | IN PROGRESS | 86% | 2026-04-18 to 2026-05-02 (proposed) |
+| P2 | Core needs loop | 001, 002 | IN PROGRESS | 92% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
 | P4 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P5 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
@@ -75,6 +75,7 @@ Current execution backlog focus:
 - [x] 001-Polish audit trail verification: T055.
 - [x] 001-Polish worker bootstrap + expiration skeleton: T056, T057.
 - [x] 001-Polish i18n coverage baseline: T054.
+- [x] 001-Polish quickstart/doc alignment: T058, T059.
 
 Checkpoints:
 
@@ -197,6 +198,7 @@ This week priorities:
 | 2026-04-19 | P2 execution | Completed audit-trail hardening slice: added dedicated integration test verifying campaign approval and campaign-need triage transitions are persisted in `audit.event` with expected old/new values and actors. | backend/tests/integration/audit-trail.spec.ts; npm -C backend test -- tests/integration/audit-trail.spec.ts | None | Continue polish tasks with T056 worker bootstrap smoke test. |
 | 2026-04-19 | P2 execution | Verified worker hardening slice already implemented and green: worker bootstrap smoke test passes and recurring `expire_needs` task skeleton is present in task list + crontab wiring. | backend/tests/integration/worker-bootstrap.spec.ts; backend/src/worker/tasks/expire-needs.ts; backend/src/worker/taskList.ts; backend/crontab; npm -C backend test -- tests/integration/worker-bootstrap.spec.ts | None | Continue remaining polish tasks T053, T054, T058, T059. |
 | 2026-04-19 | P2 execution | Completed i18n coverage update for newly added campaign/need user-facing copy by extending English/French message catalogs for triage, pending/public campaign, need-create, and home action labels. | frontend/src/i18n/messages/en.json; frontend/src/i18n/messages/fr.json; npm -C frontend run typecheck | None | Continue polish tasks T053, T058, T059. |
+| 2026-04-19 | P2 execution | Completed quickstart validation and docs alignment: ran end-to-end scenario test sweep, logged evidence in quickstart, and aligned research architecture notes with implemented triage/audit/worker details. | specs/001-campaign-needs/quickstart.md; specs/001-campaign-needs/research.md; npm -C backend test -- tests/integration/campaign-create.spec.ts tests/integration/campaign-create-auth.spec.ts tests/integration/campaign-moderation-note.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/need-create.spec.ts tests/integration/need-create-auth.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/audit-trail.spec.ts; npm -C frontend run typecheck | None | Complete final polish task T053 (storybook stories). |
 
 ## Decisions Log
 
@@ -215,7 +217,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 in progress (86%)
+- Overall progress: P1 complete, P2 in progress (92%)
 - Current health: GREEN
 - Main risk: P2 scope growth if campaign/need edge cases are not sliced tightly
-- Requested supervisor input: none, proceed with T058 quickstart validation and T059 docs alignment.
+- Requested supervisor input: none, proceed with T053 storybook coverage to close feature 001.
