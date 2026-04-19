@@ -117,13 +117,13 @@
 
 ### Tests (US5)
 
-- [ ] T046 [P] [US5] Add integration tests for triage transitions and permissions in `backend/tests/integration/campaign-need-triage.spec.ts`
-- [ ] T047 [P] [US5] Add contract tests for PostGraphile-exposed `acceptCampaignNeed` and `rejectCampaignNeed` in `backend/tests/contract/campaign-need-triage.contract.spec.ts`
+- [x] T046 [P] [US5] Add integration tests for triage transitions and permissions in `backend/tests/integration/campaign-need-triage.spec.ts`
+- [x] T047 [P] [US5] Add contract tests for PostGraphile-exposed `acceptCampaignNeed` and `rejectCampaignNeed` in `backend/tests/contract/campaign-need-triage.contract.spec.ts`
 
 ### Implementation (US5)
 
-- [ ] T048 [US5] Implement SQL functions `accept_campaign_need` and `reject_campaign_need` in `database/functions/campaign_need/`
-- [ ] T049 [US5] Expose triage functions through PostGraphile in `backend/src/postgraphile/server.ts`
+- [x] T048 [US5] Implement SQL functions `accept_campaign_need` and `reject_campaign_need` in `database/functions/campaign_need/`
+- [x] T049 [US5] Expose triage functions through PostGraphile in `backend/src/postgraphile/server.ts`
 - [ ] T050 [US5] Add campaign creator joined-needs GraphQL query in `frontend/src/features/campaigns/campaignNeedTriage.queries.ts`
 - [ ] T051 [US5] Build campaign creator triage UI in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
 - [ ] T052 [US5] Add optimistic UI updates and rollback handling for triage actions in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`

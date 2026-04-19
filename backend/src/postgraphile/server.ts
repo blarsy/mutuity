@@ -56,6 +56,9 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Only managers can approve campaigns", "FORBIDDEN"],
   ["Campaign can only be approved from pending status", "BAD_USER_INPUT"],
   ["Campaign is not eligible for need linking", "BAD_USER_INPUT"],
+  ["Campaign need relation not found", "NOT_FOUND"],
+  ["Only the campaign creator can triage joined needs", "FORBIDDEN"],
+  ["Campaign need can only be triaged from pending status", "BAD_USER_INPUT"],
   ["Recipient account not found", "NOT_FOUND"],
   ["Gift amount must be greater than zero", "BAD_USER_INPUT"],
   ["You cannot gift tokens to your own account", "BAD_USER_INPUT"]
@@ -99,6 +102,21 @@ const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
     pattern: /only the resource creator can respond to bids/i,
     message: "Only the resource creator can respond to bids",
     code: "FORBIDDEN"
+  },
+  {
+    pattern: /campaign need relation not found/i,
+    message: "Campaign need relation not found",
+    code: "NOT_FOUND"
+  },
+  {
+    pattern: /only the campaign creator can triage joined needs/i,
+    message: "Only the campaign creator can triage joined needs",
+    code: "FORBIDDEN"
+  },
+  {
+    pattern: /campaign need can only be triaged from pending status/i,
+    message: "Campaign need can only be triaged from pending status",
+    code: "BAD_USER_INPUT"
   }
 ];
 const AUTHENTICATION_ERROR_PATTERNS = [
