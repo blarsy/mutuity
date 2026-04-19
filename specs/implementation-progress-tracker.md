@@ -26,7 +26,7 @@ Cadence: update at least once per workday
 | Phase | Scope | Primary Features | Status | Completion | Target Window |
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
-| P2 | Core needs loop | 001, 002 | IN PROGRESS | 94% | 2026-04-18 to 2026-05-02 (proposed) |
+| P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
 | P4 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P5 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
@@ -62,7 +62,7 @@ Definition of Done:
 
 ### P2 - Core Needs Loop (001, 002)
 
-Status: IN PROGRESS
+Status: DONE
 Goal: complete first value loop for campaigns, needs, and claims basics.
 
 Current execution backlog focus:
@@ -80,14 +80,14 @@ Current execution backlog focus:
 
 Checkpoints:
 
-- [ ] Campaign + need creation and listing flows work.
-- [ ] Needs discovery/filtering aligns with spec.
-- [ ] Claim initiation and lifecycle baseline works.
-- [ ] Permissions and SQL-owned business constraints enforced.
+- [x] Campaign + need creation and listing flows work.
+- [x] Needs discovery/filtering aligns with spec.
+- [x] Claim initiation and lifecycle baseline works.
+- [x] Permissions and SQL-owned business constraints enforced.
 
 Definition of Done:
 
-- [ ] User can post a need, discover needs, and claim with expected behavior.
+- [x] User can post a need, discover needs, and claim with expected behavior.
 
 ### P3 - Resource Loop MVP (005 Slices 1-4)
 
@@ -170,14 +170,14 @@ Definition of Done:
 
 ## Active Work Queue
 
-Current phase: P2
-Current milestone: P2-M1 - Core needs loop implementation kickoff
+Current phase: P3
+Current milestone: P3-M1 - Resource loop MVP kickoff
 
 This week priorities:
 
-1. Complete feature 001 US3 campaign approval backend path (tests + SQL + PostGraphile exposure).
-2. Complete feature 001 US4 need creation backend path (tests + migrations/functions + exposure).
-3. Keep P1 auth tests as smoke checks while P2 progresses.
+1. Start P3 resource loop hardening against feature 005 slices already partially implemented.
+2. Add tests for resource management/listing UX changes and pagination where needed.
+3. Keep P2 suites as smoke checks while expanding resource loop coverage.
 
 ## Session Log
 
@@ -201,6 +201,7 @@ This week priorities:
 | 2026-04-19 | P2 execution | Completed i18n coverage update for newly added campaign/need user-facing copy by extending English/French message catalogs for triage, pending/public campaign, need-create, and home action labels. | frontend/src/i18n/messages/en.json; frontend/src/i18n/messages/fr.json; npm -C frontend run typecheck | None | Continue polish tasks T053, T058, T059. |
 | 2026-04-19 | P2 execution | Completed quickstart validation and docs alignment: ran end-to-end scenario test sweep, logged evidence in quickstart, and aligned research architecture notes with implemented triage/audit/worker details. | specs/001-campaign-needs/quickstart.md; specs/001-campaign-needs/research.md; npm -C backend test -- tests/integration/campaign-create.spec.ts tests/integration/campaign-create-auth.spec.ts tests/integration/campaign-moderation-note.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/need-create.spec.ts tests/integration/need-create-auth.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/audit-trail.spec.ts; npm -C frontend run typecheck | None | Complete final polish task T053 (storybook stories). |
 | 2026-04-19 | P2 execution | Completed story coverage baseline by extracting reusable campaign/need presentation components and adding Storybook story files for triage status and need summary facts. | frontend/src/components/campaign/CampaignNeedStatusChip.tsx; frontend/src/components/campaign/CampaignNeedStatusChip.stories.tsx; frontend/src/components/need/NeedSummaryFacts.tsx; frontend/src/components/need/NeedSummaryFacts.stories.tsx; frontend/src/features/campaigns/CampaignNeedTriagePage.tsx; npm -C frontend run typecheck | None | Move focus to Feature 002 implementation backlog. |
+| 2026-04-19 | P2 closeout | Validated full core needs loop and campaign/triage baseline with passing backend integration sweep and frontend needs tests + typecheck, then marked P2 complete in tracker. | npm -C backend test -- tests/integration/need-search.spec.ts tests/integration/need-filtering.spec.ts tests/integration/need-claim.spec.ts tests/integration/claim-messaging.spec.ts tests/integration/claim-settlement.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/need-create.spec.ts tests/integration/audit-trail.spec.ts; npm -C frontend run typecheck; npm -C frontend test -- --runInBand tests/needs | None | Kick off P3 resource-loop completion and associated tests. |
 
 ## Decisions Log
 
@@ -219,7 +220,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 in progress (94%)
+- Overall progress: P1 complete, P2 complete (100%)
 - Current health: GREEN
-- Main risk: P2 scope growth if campaign/need edge cases are not sliced tightly
-- Requested supervisor input: none, feature 001 is fully task-complete; proceed into feature 002 backlog.
+- Main risk: P3 scope spread across UX and backend consistency if not executed slice-by-slice.
+- Requested supervisor input: confirm P3 first target slice priority (resource discovery hardening vs publish/manage depth).
