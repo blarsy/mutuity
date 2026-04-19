@@ -16,10 +16,7 @@ export const ADD_CAMPAIGN_MODERATION_NOTE_MUTATION = gql`
 
 export const CAMPAIGN_MODERATION_HISTORY_QUERY = gql`
   query CampaignModerationHistory($campaignId: UUID!) {
-    allCampaignModerationNotes(
-      condition: { campaignId: $campaignId }
-      orderBy: CREATED_AT_ASC
-    ) {
+    allCampaignModerationNotes(condition: { campaignId: $campaignId }, orderBy: CREATED_AT_ASC) {
       nodes {
         id
         campaignId

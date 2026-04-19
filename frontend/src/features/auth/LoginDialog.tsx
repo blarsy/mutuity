@@ -28,6 +28,7 @@ export function LoginDialog({
 
           <LoginForm
             nextDestination={nextDestination}
+            onSecondaryActionClick={onClose}
             onSuccess={async () => {
               onClose();
             }}

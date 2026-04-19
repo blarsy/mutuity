@@ -14,12 +14,14 @@ import {
 type LoginFormProps = {
   nextDestination?: string;
   onSuccess?: () => void | Promise<void>;
+  onSecondaryActionClick?: () => void;
   showSecondaryActions?: boolean;
 };
 
 export function LoginForm({
   nextDestination = "/",
   onSuccess,
+  onSecondaryActionClick,
   showSecondaryActions = true
 }: LoginFormProps) {
   const router = useRouter();
@@ -93,10 +95,20 @@ export function LoginForm({
                 <Typography color="text.secondary" variant="body2">
                   Other actions
                 </Typography>
-                <Button component={NextLink} href="/restore-access" size="small">
+                <Button
+                  component={NextLink}
+                  href="/restore-access"
+                  onClick={onSecondaryActionClick}
+                  size="small"
+                >
                   Password reset
                 </Button>
-                <Button component={NextLink} href="/register" size="small">
+                <Button
+                  component={NextLink}
+                  href="/register"
+                  onClick={onSecondaryActionClick}
+                  size="small"
+                >
                   Create account
                 </Button>
               </Stack>

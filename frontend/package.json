@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "graphql:schema": "graphql-codegen --config codegen.schema.cjs",
+    "graphql:codegen": "graphql-codegen --config codegen.cjs",
+    "graphql:check": "npm run graphql:codegen",
+    "typecheck": "npm run graphql:check && tsc --noEmit -p tsconfig.json",
     "lint": "next lint",
     "test": "jest --passWithNoTests"
   },
@@ -23,6 +26,11 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^6.3.1",
+    "@graphql-codegen/schema-ast": "^5.0.2",
+    "@graphql-codegen/typed-document-node": "^6.1.8",
+    "@graphql-codegen/typescript": "^5.0.10",
+    "@graphql-codegen/typescript-operations": "^5.1.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.79",

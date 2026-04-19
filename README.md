@@ -74,6 +74,22 @@ npm run dev:frontend
 - GraphQL endpoint: `http://localhost:5050/graphql`
 - GraphiQL: `http://localhost:5050/graphiql`
 
+### 5b. Refresh frontend GraphQL schema snapshot
+
+The frontend validates all GraphQL operations during typecheck against a checked-in schema snapshot.
+
+Run this when backend GraphQL schema changes:
+
+```bash
+npm --workspace frontend run graphql:schema
+```
+
+Then regenerate typed GraphQL artifacts:
+
+```bash
+npm --workspace frontend run graphql:codegen
+```
+
 ### 6. Local auth test flow
 
 The browser login flow now uses server-managed sessions. For local testing, you can seed a demo account into PostgreSQL and then sign in through the UI or curl:
@@ -209,6 +225,8 @@ npm run typecheck
 npm run lint
 npm test
 ```
+
+`npm run typecheck` now includes frontend GraphQL document validation via codegen.
 
 ## Notes
 
