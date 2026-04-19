@@ -55,6 +55,7 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Moderation note body is required", "BAD_USER_INPUT"],
   ["Only managers can approve campaigns", "FORBIDDEN"],
   ["Campaign can only be approved from pending status", "BAD_USER_INPUT"],
+  ["Campaign is not eligible for need linking", "BAD_USER_INPUT"],
   ["Recipient account not found", "NOT_FOUND"],
   ["Gift amount must be greater than zero", "BAD_USER_INPUT"],
   ["You cannot gift tokens to your own account", "BAD_USER_INPUT"]

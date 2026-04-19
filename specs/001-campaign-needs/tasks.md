@@ -95,17 +95,17 @@
 
 ### Tests (US4)
 
-- [ ] T037 [P] [US4] Add integration tests for need creation and Topes-by-intensity validation in `backend/tests/integration/need-create.spec.ts`
-- [ ] T038 [P] [US4] Add contract tests for PostGraphile-exposed `createNeed` mutation in `backend/tests/contract/need.contract.spec.ts`
-- [ ] T061 [P] [US4] Add integration tests for unauthenticated `createNeed` mutation returning sanitized `UNAUTHENTICATED` error in `backend/tests/integration/need-create-auth.spec.ts`
+- [x] T037 [P] [US4] Add integration tests for need creation and Topes-by-intensity validation in `backend/tests/integration/need-create.spec.ts`
+- [x] T038 [P] [US4] Add contract tests for PostGraphile-exposed `createNeed` mutation in `backend/tests/contract/need.contract.spec.ts`
+- [x] T061 [P] [US4] Add integration tests for unauthenticated `createNeed` mutation returning sanitized `UNAUTHENTICATED` error in `backend/tests/integration/need-create-auth.spec.ts`
 
 ### Implementation (US4)
 
-- [ ] T039 [US4] Create needs migration with optional Topes and nature flags in `database/migrations/007_needs.sql`
-- [ ] T040 [US4] Create campaign-need relation migration with pending status in `database/migrations/008_campaign_need.sql`
-- [ ] T041 [US4] Implement SQL function `create_need` in `database/functions/need/create_need.sql`
-- [ ] T042 [US4] Implement SQL helper `validate_campaign_linkability` in `database/functions/campaign/validate_campaign_linkability.sql`
-- [ ] T043 [US4] Expose need creation mutation through PostGraphile in `backend/src/postgraphile/server.ts`
+- [x] T039 [US4] Create needs migration with optional Topes and nature flags in `database/migrations/007_needs.sql`
+- [x] T040 [US4] Create campaign-need relation migration with pending status in `database/migrations/008_campaign_need.sql`
+- [x] T041 [US4] Implement SQL function `create_need` in `database/functions/need/create_need.sql`
+- [x] T042 [US4] Implement SQL helper `validate_campaign_linkability` in `database/functions/campaign/validate_campaign_linkability.sql`
+- [x] T043 [US4] Expose need creation mutation through PostGraphile in `backend/src/postgraphile/server.ts`
 - [ ] T044 [US4] Build need creation page and form in `frontend/src/features/needs/CreateNeedPage.tsx`
 - [ ] T045 [US4] Add frontend Topes range validation by intensity in `frontend/src/features/needs/createNeed.validation.ts`
 
