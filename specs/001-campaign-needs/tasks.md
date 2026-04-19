@@ -133,8 +133,8 @@
 - [ ] T053 [P] Add Storybook stories for new reusable campaign and need components in `frontend/src/components/**/*.stories.tsx`
 - [ ] T054 [P] Finalize i18n coverage for all new user-facing strings in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
 - [x] T055 Add audit trail verification tests for campaign status and need triage changes in `backend/tests/integration/audit-trail.spec.ts`
-- [ ] T056 Add Graphile Worker bootstrap smoke test in `backend/tests/integration/worker-bootstrap.spec.ts`
-- [ ] T057 Add recurring worker task skeleton for expiration routines in `backend/src/worker/tasks/expire-needs.ts`
+- [x] T056 Add Graphile Worker bootstrap smoke test in `backend/tests/integration/worker-bootstrap.spec.ts`
+- [x] T057 Add recurring worker task skeleton for expiration routines in `backend/src/worker/tasks/expire-needs.ts`
 - [ ] T058 Run and document quickstart validation in `specs/001-campaign-needs/quickstart.md`
 - [ ] T059 Update feature documentation links and architecture notes in `specs/001-campaign-needs/research.md` if implementation diverges
 
