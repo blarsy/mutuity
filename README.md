@@ -40,6 +40,15 @@ cp frontend/.env.example frontend/.env.local
 If your PostgreSQL credentials differ, update `DATABASE_URL` in `backend/.env`.
 For browser access from local frontend, set `BACKEND_CORS_ORIGINS` (comma-separated if needed).
 
+Auth email delivery configuration (`backend/.env`):
+
+- `MAIL_DELIVERY_ENABLED=false` keeps delivery disabled (default for local/non-production)
+- `MAIL_WEB_APP_URL=http://localhost:3000` controls verification/reset links
+- `MAIL_FROM_ADDRESS=Mutuity <noreply@mutuity.local>` controls sender identity
+- `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_API_URL` are required only when `MAIL_DELIVERY_ENABLED=true`
+
+Auth mails are always persisted to `app_private.mail_outbox` for audit/resend workflows, even when delivery is disabled.
+
 ### 3. Create database and run migrations
 
 ```bash

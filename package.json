@@ -14,6 +14,7 @@
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down",
     "docker:migrate": "docker compose run --rm migrate",
+    "guard:sql-boundary": "node ./scripts/check-sql-boundary.mjs",
     "typecheck": "npm --workspace backend run typecheck && npm --workspace frontend run typecheck",
     "lint": "npm --workspace backend run lint && npm --workspace frontend run lint",
     "test": "npm --workspace backend run test && npm --workspace frontend run test"

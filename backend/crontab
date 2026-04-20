@@ -21,3 +21,7 @@
 # issue_campaign_airdrop_payouts: pay approved campaign airdrops once per eligible account.
 # Runs once per hour at minute 20.
 20 * * * * issue_campaign_airdrop_payouts
+
+# deliver_mail_outbox: process queued emails from the unified mail outbox.
+# Runs every minute to avoid noticeable delays in auth flows.
+* * * * * deliver_mail_outbox

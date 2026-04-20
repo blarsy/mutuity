@@ -3,7 +3,7 @@
 **Created**: 2026-03-23  
 **Scope**: All development on the Mutuity platform
 **Purpose**: Governing principles that guide every specification, plan, and implementation decision.
-**Document version**: 1.0.0
+**Document version**: 1.1.0
 
 ## 1. Mission & Product Principles
 
@@ -55,11 +55,14 @@ Tope-là already helps users offer underused resources. Mutuity provides the mis
 - Strict TypeScript (`strict: true`) everywhere. No `any` without a comment explaining why.
 - Async/await over raw Promises. No unhandled promise rejections.
 - Use established patterns already in the codebase (Apollo Client, Formik+Yup, MUI) before introducing new libraries.
+- Business SQL logic must not be embedded in TypeScript source files. TypeScript may call stable SQL functions, but filtering/locking/update business rules must live in PostgreSQL functions/views and migrations.
 
 ### PostgreSQL / PL/pgSQL
 - All schema changes via versioned migration files. Never modify the DB schema by hand in production.
 - Functions and views must be commented with their purpose and expected caller.
 - Row-level security policies must be reviewed for every new table.
+- Dynamic SQL (`EXECUTE` in PL/pgSQL) is forbidden by default in migrations and SQL functions.
+- Exceptions to the dynamic SQL rule require explicit owner approval in the same PR and must include: reason, risk analysis, and a follow-up task to remove or isolate the dynamic behavior.
 
 ### React
 - Components must be either pure presentational or connected-to-data — avoid mixing concerns in the same component.
@@ -104,6 +107,7 @@ A feature is done when the repository owner has verified the following:
 	- minor for new principles or materially expanded requirements,
 	- patch for wording clarifications that do not change meaning.
 - The document version must be updated whenever this constitution is amended.
+- Last amended: 2026-04-19 (added explicit prohibition of dynamic SQL by default).
 - Each amendment must also update the `Created` or amendment metadata as appropriate so the current governing version is visible at a glance.
 - If an implementation cannot comply with this constitution, the pull request must explicitly document the exception, the reason, and the follow-up plan.
 - Temporary exceptions are allowed only when they are time-boxed and tracked as follow-up work.

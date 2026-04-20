@@ -19,8 +19,10 @@
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "form-data": "^4.0.5",
     "graphile-utils": "^4.14.1",
     "graphile-worker": "^0.16.6",
+    "mailgun.js": "^13.0.0",
     "pg": "^8.11.5",
     "postgraphile": "^4.13.0"
   },
