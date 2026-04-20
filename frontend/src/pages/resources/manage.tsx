@@ -265,10 +265,6 @@ export default function ManageResourcesPage() {
           ) : null}
 
           <Typography color="text.secondary" variant="body2">
-            Need a new offer? Use the Add resource action from the search page.
-          </Typography>
-
-          <Typography color="text.secondary" variant="body2">
             <NextLink href="/resources">Back to resource search</NextLink>
           </Typography>
         </Stack>
@@ -290,6 +286,20 @@ export default function ManageResourcesPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Button
+        component={NextLink}
+        href="/resources/create"
+        sx={{
+          bottom: 24,
+          position: "fixed",
+          right: 24,
+          zIndex: theme => theme.zIndex.speedDial
+        }}
+        variant="contained"
+      >
+        Add resource
+      </Button>
     </Container>
   );
 }

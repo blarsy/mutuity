@@ -61,7 +61,7 @@
 - [x] T031 Extend the resource data model and mutation to update `updatedAt` (last modification time) whenever any linked property changes, including images and categories
 - [x] T032 Implement the `Resources` workspace page: query with `updatedAt`-descending sort, page size 10, infinite scroll loading 10 more, and authentication guard
 - [x] T033 Add Edit and Delete card actions to the resources workspace page: Edit navigates to the edit-resource page in modification mode; Delete shows a confirmation dialog and performs a soft delete on confirmation
-- [ ] T034 Add a fixed "Add resource" button to the resources workspace page that remains visible at all scroll positions and navigates to the edit-resource page in creation mode
+- [x] T034 Add a fixed "Add resource" button to the resources workspace page that remains visible at all scroll positions and navigates to the edit-resource page in creation mode
 
 ## Phase 7: Needs Workspace Page
 
