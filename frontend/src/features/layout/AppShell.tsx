@@ -1,12 +1,66 @@
-import { Box } from "@mui/material";
+import { useState } from "react";
+import { Alert, Box, Button } from "@mui/material";
 import type { ReactNode } from "react";
 
+import { requestEmailVerification } from "../auth/auth.api";
+import { useAuth } from "../auth/AuthProvider";
 import { AppTopBar } from "./AppTopBar";
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  const shouldShowActivationBanner =
+    session.authenticated && Boolean(session.account) && !session.account?.emailVerified;
+
+  const handleResendActivationMail = async () => {
+    if (!session.account?.externalSubject || resendLoading) {
+      return;
+    }
+
+    setResendLoading(true);
+    setResendMessage(null);
+    setResendError(null);
+
+    try {
+      const response = await requestEmailVerification({
+        identifier: session.account.externalSubject
+      });
+      setResendMessage(response.message);
+    } catch (error) {
+      setResendError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
       <AppTopBar />
+      {shouldShowActivationBanner ? (
+        <Alert
+          action={(
+            <Button
+              color="inherit"
+              disabled={resendLoading}
+              onClick={() => void handleResendActivationMail()}
+              size="small"
+              variant="text"
+            >
+              Resend activation mail
+            </Button>
+          )}
+          severity="warning"
+          sx={{ borderRadius: 0, py: 0.5 }}
+        >
+          Your account is not activated yet. Until activation, no resource or need created by your account will be
+          visible to other accounts.
+          {resendMessage ? ` ${resendMessage}` : ""}
+          {resendError ? ` ${resendError}` : ""}
+        </Alert>
+      ) : null}
       <Box component="main">{children}</Box>
     </Box>
   );

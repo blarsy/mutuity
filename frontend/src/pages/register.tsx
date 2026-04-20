@@ -2,7 +2,7 @@ import { useState } from "react";
 import NextLink from "next/link";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 
-import { registerLocalAccount, requestEmailVerification } from "../features/auth/auth.api";
+import { registerLocalAccount } from "../features/auth/auth.api";
 
 export default function RegisterPage() {
   const [displayName, setDisplayName] = useState("");
@@ -33,24 +33,6 @@ export default function RegisterPage() {
       setDevVerificationToken(response?.verificationToken ?? null);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await requestEmailVerification({
-        identifier: identifier.trim().toLowerCase()
-      });
-
-      setSuccess(response?.message ?? "Verification email requested.");
-      setDevVerificationToken(response?.verificationToken ?? null);
-    } catch (resendError) {
-      setError(resendError instanceof Error ? resendError.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -107,9 +89,6 @@ export default function RegisterPage() {
 
           <Button disabled={!canSubmit} onClick={handleSubmit} variant="contained">
             Create account
-          </Button>
-          <Button disabled={loading || identifier.trim().length === 0} onClick={handleResendVerification}>
-            Resend verification email
           </Button>
           <Button component={NextLink} href="/login">
             Back to sign in

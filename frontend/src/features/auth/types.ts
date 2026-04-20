@@ -5,6 +5,7 @@ export type CurrentAccount = {
   displayName: string | null;
   externalSubject: string;
   avatarUrl?: string | null;
+  emailVerified: boolean;
 };
 
 export type AuthSession = {

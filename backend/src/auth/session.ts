@@ -18,6 +18,7 @@ export type AuthenticatedSession = {
   displayName: string | null;
   externalSubject: string;
   avatarUrl: string | null;
+  emailVerified: boolean;
   expiresAt: string;
 };
 
@@ -29,6 +30,7 @@ type SessionRow = {
   display_name: string | null;
   external_subject: string;
   avatar_url: string | null;
+  email_verified_at: Date | null;
 };
 
 declare global {
@@ -51,6 +53,7 @@ function toAuthenticatedSession(row: SessionRow): AuthenticatedSession {
     displayName: row.display_name,
     externalSubject: row.external_subject,
     avatarUrl: row.avatar_url,
+    emailVerified: Boolean(row.email_verified_at),
     expiresAt: row.expires_at.toISOString()
   };
 }

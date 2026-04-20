@@ -14,7 +14,6 @@ import {
 
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 const INVALID_CREDENTIALS_MESSAGE = "Unable to sign in with those credentials.";
-const EMAIL_NOT_VERIFIED_MESSAGE = "Please verify your email before signing in.";
 const PASSWORD_CHANGE_INVALID_CURRENT_MESSAGE = "Current password is incorrect.";
 const PASSWORD_CHANGE_REQUIRE_AUTH_MESSAGE = "You must be signed in to change your password.";
 const PASSWORD_MIN_LENGTH = Number(process.env.PASSWORD_MIN_LENGTH ?? 8);
@@ -66,7 +65,8 @@ function toSessionPayload(req: express.Request) {
       id: session.accountId,
       displayName: session.displayName,
       externalSubject: session.externalSubject,
-      avatarUrl: session.avatarUrl
+        avatarUrl: session.avatarUrl,
+        emailVerified: session.emailVerified
     },
     role: session.role,
     expiresAt: session.expiresAt
@@ -141,6 +141,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
         displayName: String
         externalSubject: String!
         avatarUrl: String
+        emailVerified: Boolean!
       }
 
       type AuthSessionPayload {
@@ -248,18 +249,6 @@ export function createAuthGraphqlPlugin(pool: Pool) {
               );
             }
 
-            if (!candidate.email_verified_at) {
-              throw new GraphQLError(
-                EMAIL_NOT_VERIFIED_MESSAGE,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                { code: "FORBIDDEN" }
-              );
-            }
-
             clearFailedLoginAttempts(rateLimitKey);
 
             const nextSession = await createSessionForAccount(pool, {
@@ -274,6 +263,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
               displayName: candidate.display_name,
               externalSubject: candidate.external_subject,
               avatarUrl: candidate.avatar_url,
+              emailVerified: Boolean(candidate.email_verified_at),
               expiresAt: nextSession.expiresAt
             };
 

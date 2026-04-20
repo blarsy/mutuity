@@ -693,6 +693,7 @@ type AuthLogoutPayload {
 type AuthSessionAccount {
   avatarUrl: String
   displayName: String
+  emailVerified: Boolean!
   externalSubject: String!
   id: String!
 }

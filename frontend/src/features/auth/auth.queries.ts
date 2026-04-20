@@ -11,6 +11,7 @@ export const AUTH_SESSION_QUERY = gql`
         displayName
         externalSubject
         avatarUrl
+        emailVerified
       }
     }
   }
@@ -28,6 +29,7 @@ export const AUTH_LOGIN_MUTATION = gql`
           displayName
           externalSubject
           avatarUrl
+          emailVerified
         }
       }
     }
@@ -46,6 +48,7 @@ export const AUTH_LOGOUT_MUTATION = gql`
           displayName
           externalSubject
           avatarUrl
+          emailVerified
         }
       }
     }
@@ -64,6 +67,7 @@ export const AUTH_CHANGE_PASSWORD_MUTATION = gql`
           displayName
           externalSubject
           avatarUrl
+          emailVerified
         }
       }
     }

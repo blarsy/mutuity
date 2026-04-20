@@ -13,7 +13,8 @@ describe("auth session bootstrap", () => {
       account: {
         id: "acc-1",
         displayName: "Alice",
-        externalSubject: "local:acc-1"
+        externalSubject: "local:acc-1",
+        emailVerified: true
       },
       role: "identified_account",
       expiresAt: "2026-04-18T10:00:00.000Z"
