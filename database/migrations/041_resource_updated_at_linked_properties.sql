@@ -1,38 +1,33 @@
-drop function if exists app_public.publish_resource(
-  text,
-  text,
-  text,
-  numeric,
-  numeric,
-  app_public.need_intensity,
-  integer,
-  text[],
-  boolean,
-  boolean,
-  boolean,
-  boolean,
-  boolean,
-  boolean,
-  timestamptz
-);
+begin;
 
-drop function if exists app_public.publish_resource(
-  text,
-  text,
-  text,
-  numeric,
-  numeric,
-  app_public.need_intensity,
-  integer,
-  integer[],
-  boolean,
-  boolean,
-  boolean,
-  boolean,
-  boolean,
-  boolean,
-  timestamptz
-);
+drop function if exists app_private.touch_resource_updated_at_from_category_assignment();
+create or replace function app_private.touch_resource_updated_at_from_category_assignment()
+returns trigger
+language plpgsql
+security definer
+set search_path = app_public, app_private, public
+as $$
+declare
+  v_resource_id uuid := coalesce(new.resource_id, old.resource_id);
+begin
+  if v_resource_id is null then
+    return coalesce(new, old);
+  end if;
+
+  update app_public.resource
+  set updated_at = now()
+  where id = v_resource_id;
+
+  return coalesce(new, old);
+end;
+$$;
+
+drop trigger if exists trg_resource_category_assignment_touch_resource_updated_at
+  on app_public.resource_category_assignment;
+create trigger trg_resource_category_assignment_touch_resource_updated_at
+  after insert or update or delete on app_public.resource_category_assignment
+  for each row
+  execute function app_private.touch_resource_updated_at_from_category_assignment();
 
 drop function if exists app_public.publish_resource(
   text,
@@ -72,35 +67,6 @@ drop function if exists app_public.publish_resource(
   timestamptz,
   uuid
 );
-
-drop function if exists app_private.touch_resource_updated_at_from_category_assignment();
-create or replace function app_private.touch_resource_updated_at_from_category_assignment()
-returns trigger
-language plpgsql
-security definer
-set search_path = app_public, app_private, public
-as $$
-declare
-  v_resource_id uuid := coalesce(new.resource_id, old.resource_id);
-begin
-  if v_resource_id is null then
-    return coalesce(new, old);
-  end if;
-
-  update app_public.resource
-  set updated_at = now()
-  where id = v_resource_id;
-
-  return coalesce(new, old);
-end;
-$$;
-
-drop trigger if exists trg_resource_category_assignment_touch_resource_updated_at
-  on app_public.resource_category_assignment;
-create trigger trg_resource_category_assignment_touch_resource_updated_at
-  after insert or update or delete on app_public.resource_category_assignment
-  for each row
-  execute function app_private.touch_resource_updated_at_from_category_assignment();
 
 create or replace function app_public.publish_resource(
   title text,
@@ -311,3 +277,5 @@ grant execute on function app_public.publish_resource(
   timestamptz,
   uuid
 ) to anonymous, identified_account, manager, admin;
+
+commit;

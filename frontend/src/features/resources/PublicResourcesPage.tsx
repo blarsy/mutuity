@@ -160,7 +160,7 @@ export default function PublicResourcesPage() {
               Browse needs
             </Button>
             <Button component={NextLink} href={publishResourceHref} variant="contained">
-              Add
+              Add resource
             </Button>
             {session.authenticated ? (
               <LogoutButton color="inherit" redirectTo="/resources" variant="outlined">

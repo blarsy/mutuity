@@ -118,7 +118,7 @@ export default function CreateResourcePage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Publish a resource
+            Edit resource
           </Typography>
           <Alert severity="info">
             {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
@@ -134,7 +134,7 @@ export default function CreateResourcePage() {
         <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Publish a resource
+              Edit resource
             </Typography>
             <Typography color="text.secondary">
               Share an object or service nearby. The optional token amount is only a negotiable starting point.
@@ -427,7 +427,7 @@ export default function CreateResourcePage() {
                 </Box>
 
                 <Button disabled={isSubmitting || loading || loadingCategories} type="submit" variant="contained">
-                  Publish resource
+                  Add resource
                 </Button>
               </Stack>
             </Form>
