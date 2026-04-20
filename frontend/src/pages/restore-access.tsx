@@ -18,13 +18,11 @@ export default function RestoreAccessPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [devPasswordResetToken, setDevPasswordResetToken] = useState<string | null>(null);
 
   const handleRequestReset = async () => {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    setDevPasswordResetToken(null);
 
     try {
       const response = await requestPasswordReset({
@@ -32,7 +30,6 @@ export default function RestoreAccessPage() {
       });
 
       setSuccess(response?.message ?? "Password reset requested.");
-      setDevPasswordResetToken(response?.passwordResetToken ?? null);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
     } finally {
@@ -79,19 +76,6 @@ export default function RestoreAccessPage() {
         <Stack spacing={2}>
           {error ? <Alert severity="error">{error}</Alert> : null}
           {success ? <Alert severity="success">{success}</Alert> : null}
-          {devPasswordResetToken ? (
-            <Alert severity="info">
-              Development reset token: {devPasswordResetToken}
-            </Alert>
-          ) : null}
-          {devPasswordResetToken ? (
-            <Button
-              component={NextLink}
-              href={`/restore-access?token=${encodeURIComponent(devPasswordResetToken)}`}
-            >
-              Continue with reset token (development)
-            </Button>
-          ) : null}
 
           {tokenFromQuery ? (
             <>

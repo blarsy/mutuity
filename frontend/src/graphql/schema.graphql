@@ -5152,6 +5152,7 @@ input RegisterLocalAccountInput {
 
 """The output of our `registerLocalAccount` mutation."""
 type RegisterLocalAccountPayload {
+  boolean: Boolean
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -5159,7 +5160,6 @@ type RegisterLocalAccountPayload {
   clientMutationId: String
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
-  string: String
 }
 
 """All input for the `registerLocalAccountWithPassword` mutation."""
@@ -5177,6 +5177,7 @@ input RegisterLocalAccountWithPasswordInput {
 
 """The output of our `registerLocalAccountWithPassword` mutation."""
 type RegisterLocalAccountWithPasswordPayload {
+  boolean: Boolean
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -5184,7 +5185,6 @@ type RegisterLocalAccountWithPasswordPayload {
   clientMutationId: String
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
-  string: String
 }
 
 """All input for the `rejectCampaignNeed` mutation."""
@@ -5235,6 +5235,7 @@ input RequestEmailVerificationInput {
 
 """The output of our `requestEmailVerification` mutation."""
 type RequestEmailVerificationPayload {
+  boolean: Boolean
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -5242,7 +5243,6 @@ type RequestEmailVerificationPayload {
   clientMutationId: String
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
-  string: String
 }
 
 """All input for the `requestPasswordReset` mutation."""
@@ -5259,6 +5259,7 @@ input RequestPasswordResetInput {
 
 """The output of our `requestPasswordReset` mutation."""
 type RequestPasswordResetPayload {
+  boolean: Boolean
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -5266,7 +5267,6 @@ type RequestPasswordResetPayload {
   clientMutationId: String
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
-  string: String
 }
 
 type Resource implements Node {

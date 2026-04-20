@@ -83,7 +83,7 @@ export function registerLocalAccount(input: {
   password: string;
 }) {
   return apolloClient
-    .mutate<{ registerLocalAccountWithPassword?: { string?: string | null } }>({
+    .mutate<{ registerLocalAccountWithPassword?: { boolean?: boolean | null } }>({
       mutation: REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION,
       variables: {
         identifier: input.identifier,
@@ -92,9 +92,8 @@ export function registerLocalAccount(input: {
         verificationTtlMs: Number(process.env.NEXT_PUBLIC_EMAIL_VERIFICATION_TOKEN_TTL_MS ?? 24 * 60 * 60 * 1000)
       }
     })
-    .then(result => ({
-      message: "Account created. Please verify your email before signing in.",
-      verificationToken: result.data?.registerLocalAccountWithPassword?.string ?? undefined
+    .then(() => ({
+      message: "Account created. Please verify your email."
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
@@ -103,7 +102,7 @@ export function registerLocalAccount(input: {
 
 export function requestEmailVerification(input: { identifier: string }) {
   return apolloClient
-    .mutate<{ requestEmailVerification?: { string?: string | null } }>({
+    .mutate<{ requestEmailVerification?: { boolean?: boolean | null } }>({
       mutation: REQUEST_EMAIL_VERIFICATION_MUTATION,
       variables: {
         identifier: input.identifier,
@@ -111,9 +110,8 @@ export function requestEmailVerification(input: { identifier: string }) {
         throttleMs: Number(process.env.NEXT_PUBLIC_EMAIL_VERIFICATION_RESEND_THROTTLE_MS ?? 60 * 1000)
       }
     })
-    .then(result => ({
-      message: "If an account exists for that email, verification instructions have been sent.",
-      verificationToken: result.data?.requestEmailVerification?.string ?? undefined
+    .then(() => ({
+      message: "If an account exists for that email, verification instructions have been sent."
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
@@ -138,7 +136,7 @@ export function confirmEmailVerification(input: { token: string }) {
 
 export function requestPasswordReset(input: { identifier: string }) {
   return apolloClient
-    .mutate<{ requestPasswordReset?: { string?: string | null } }>({
+    .mutate<{ requestPasswordReset?: { boolean?: boolean | null } }>({
       mutation: REQUEST_PASSWORD_RESET_MUTATION,
       variables: {
         identifier: input.identifier,
@@ -146,9 +144,8 @@ export function requestPasswordReset(input: { identifier: string }) {
         throttleMs: Number(process.env.NEXT_PUBLIC_PASSWORD_RESET_REQUEST_THROTTLE_MS ?? 60 * 1000)
       }
     })
-    .then(result => ({
-      message: "If an account exists for that email, password reset instructions have been sent.",
-      passwordResetToken: result.data?.requestPasswordReset?.string ?? undefined
+    .then(() => ({
+      message: "If an account exists for that email, password reset instructions have been sent."
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));

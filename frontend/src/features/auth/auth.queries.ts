@@ -89,7 +89,7 @@ export const REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION = gql`
         verificationTtlMs: $verificationTtlMs
       }
     ) {
-      string
+      boolean
     }
   }
 `;
@@ -107,7 +107,7 @@ export const REQUEST_EMAIL_VERIFICATION_MUTATION = gql`
         throttleMs: $throttleMs
       }
     ) {
-      string
+      boolean
     }
   }
 `;
@@ -129,7 +129,7 @@ export const REQUEST_PASSWORD_RESET_MUTATION = gql`
         throttleMs: $throttleMs
       }
     ) {
-      string
+      boolean
     }
   }
 `;
