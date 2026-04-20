@@ -77,11 +77,12 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 ### Slice 7 — Authentication parity with Tope-la (P1)
 - keep account creation profile-minimal: only account name is mandatory
 - support local email/password account creation with verification-before-trust flow
-- support login/account creation through Google and Apple providers
 - implement forgot-password request and reset-token completion flow
 - implement authenticated change-password flow
-- add safe identity-linking and duplicate-account prevention rules between local/social identities
-- keep auth/security-sensitive rules SQL-owned where applicable and backend-owned for provider callbacks and token validation
+- enforce immediate post-signup sign-in while preserving unverified-account restrictions until email verification
+- enforce resend-throttling and one-time token lifecycle protections for verification and reset flows
+- keep auth/security-sensitive rules SQL-owned where applicable and backend-owned for token validation
+- keep Google/Apple provider sign-in/up and local-social identity linking as explicit parity targets, deferred to the social-auth increment
 
 ### Slice 8 — Unified cross-component logging (P1)
 - replace split client/server logging writes with a single operational log table
@@ -123,7 +124,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 | `ResourceCard` | Show resource summary content in wrapping browse lists with separate click affordances for creator, image, and main body | search results, account pages, campaign pages, resource management lists |
 | `NeedCard` | Show need summary content in wrapping browse lists with separate click affordances for creator and main body | contribute page, account pages, campaign pages, need management lists |
 | `Login` | Capture email/password sign-in with secondary actions for password reset and registration | dialog entry from top bar and contextual action gates |
-| `Register` | Capture local sign-up plus Google and Apple providers | standalone auth page or dialog follow-up |
+| `Register` | Capture local sign-up (social provider actions documented but deferred in current phase) | standalone auth page or dialog follow-up |
 | `ResetPassword` | Confirm that a password-reset link has been sent for the entered email address | password-reset flow |
 | `ChangePassword` | Let authenticated users update password with current-password confirmation | profile/preferences security section |
 
@@ -173,11 +174,11 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 ### Authentication model and operational rules
 - Account creation should require only account name at profile level; email/password belongs to local-auth credential setup, not to the base account profile contract.
 - Local signup should create an unverified account identity and trigger an email verification token delivery.
+- Local signup should establish a session immediately after successful registration; account verification state then gates protected account-owner capabilities.
 - Verification and reset tokens should be one-time-use, time-bounded, and validated server-side.
-- Social-provider callback handling should support both first-time account creation and login to an existing linked identity.
-- On first-time social account creation, provider account name should prefill a suggested account name in the registration form and remain editable before final submit.
-- When social identity claims an email that matches an existing verified account, mapping should be explicit and safe to prevent account takeover and duplicate rows.
+- Verification and reset request issuance should enforce abuse-safe resend throttling.
 - Change-password should require the current password and should trigger appropriate session hardening behavior after update.
+- Social-provider callback handling, provider-name prefill, and duplicate-account-safe local/social linking remain documented requirements but are deferred from the current local-auth execution slice.
 
 ### Logging model and operational rules
 - Use a single DB table for operational logs emitted by mobile app, backoffice web, web API, and non-interactive jobs.

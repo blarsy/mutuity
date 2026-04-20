@@ -140,23 +140,25 @@ As an authenticated user, I can configure how and how often I receive out-of-app
 
 ### User Story 8 - Account Creation And Access Recovery (Priority: P1)
 
-As a visitor or account holder, I can create and access my account with either email/password or Apple/Google sign-in, and I can verify or recover my credentials safely.
+As a visitor or account holder, I can create and access my account with local email/password credentials, verify my email, and recover my credentials safely.
 
 **Why this priority**: Account entry and recovery are core trust flows; without complete signup/login/recovery options, users drop off before they can participate in needs, resources, chat, or contribution loops.
 
-**Independent Test**: Register with email/password and verify email before first authenticated usage, register/sign in with Google and Apple, request forgot-password reset and complete it via tokenized link, and perform authenticated change-password while signed in.
+**Independent Test**: Register with email/password and verify email, sign in immediately after account creation, request forgot-password reset and complete it via tokenized link, and perform authenticated change-password while signed in.
 
 **Acceptance Scenarios**:
 
 1. **Given** a new visitor creating an account, **When** account information is submitted, **Then** `account name` is the only mandatory account-profile field required to create the account.
 2. **Given** a new visitor, **When** they choose email/password registration, **Then** an account is created in unverified state and an email verification message is sent.
-3. **Given** first-time account creation through Google or Apple, **When** provider profile information is received, **Then** the provider account name is prefilled as a suggested account name that remains editable before final account creation.
-4. **Given** an unverified local account, **When** the user opens the verification link and token validation succeeds, **Then** the account email is marked verified and the user can continue into authenticated flows.
-5. **Given** a new or existing visitor, **When** they choose Google sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
-6. **Given** a new or existing visitor, **When** they choose Apple sign-in, **Then** the system signs in an existing mapped account or creates a new account and starts an authenticated session.
-7. **Given** an account holder who forgot their password, **When** they request password reset by email and submit the reset form with a valid token, **Then** the password is updated and the token cannot be reused.
-8. **Given** an authenticated account holder, **When** they change password from account settings with correct current credentials and valid new credentials, **Then** the password is updated and session-security rules are applied.
-9. **Given** invalid or expired verification/reset tokens, **When** those links are opened, **Then** the system rejects the request with safe generic copy and offers a resend/retry path.
+3. **Given** an unverified local account, **When** the user opens the verification link and token validation succeeds, **Then** the account email is marked verified and the user can continue into authenticated flows.
+4. **Given** an account holder who forgot their password, **When** they request password reset by email and submit the reset form with a valid token, **Then** the password is updated and the token cannot be reused.
+5. **Given** an authenticated account holder, **When** they change password from account settings with correct current credentials and valid new credentials, **Then** the password is updated and session-security rules are applied.
+6. **Given** invalid or expired verification/reset tokens, **When** those links are opened, **Then** the system rejects the request with safe generic copy and offers a resend/retry path.
+
+**Phase Note (Auth Parity Scope)**:
+
+- Local email/password parity (register, immediate sign-in, verification lifecycle, forgot/reset, change-password, token replay protection) is in active implementation scope for the current phase.
+- Google/Apple sign-in/up with suggested-name prefill remains documented parity target but is explicitly deferred to a dedicated social-auth increment.
 
 ---
 
@@ -355,16 +357,16 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-087**: The preference model MUST remain extensible to future channels and event categories without schema-breaking migration patterns.
 - **FR-088**: Email/password account registration MUST require email verification before the account is treated as fully verified for protected account-owner operations.
 - **FR-089**: The system MUST support resend of email-verification messages for unverified local accounts with abuse-safe throttling.
-- **FR-090**: The platform MUST support sign-in and account creation through Google OAuth.
-- **FR-091**: The platform MUST support sign-in and account creation through Apple OAuth.
-- **FR-092**: External-identity login MUST map to existing accounts safely when identity/email matches, and MUST avoid duplicate-account creation.
+- **FR-090**: The platform MUST support sign-in and account creation through Google OAuth (deferred from current local-auth phase).
+- **FR-091**: The platform MUST support sign-in and account creation through Apple OAuth (deferred from current local-auth phase).
+- **FR-092**: External-identity login MUST map to existing accounts safely when identity/email matches, and MUST avoid duplicate-account creation (deferred from current local-auth phase).
 - **FR-093**: Forgot-password flow MUST issue one-time reset tokens with expiration, deliver reset links by email, and reject expired/invalid/reused tokens.
 - **FR-094**: Authenticated users MUST be able to change their password by providing current password plus valid new password.
 - **FR-095**: Password and token handling MUST follow secure storage and transport patterns: salted password hashing, server-side token hashing, and sanitized error responses.
 - **FR-096**: The web information architecture MUST include explicit entry points for `Register`, `Login`, `ResetPassword`, and email verification completion.
 - **FR-097**: Account creation MUST require only `account name` as mandatory account-profile information; all other profile fields are optional at creation time.
 - **FR-098**: Local email/password authentication setup MUST require an email and password for that auth method, while remaining separate from the minimal account-profile requirement.
-- **FR-099**: During first-time account creation via Google or Apple, the provider account name MUST be used to prefill a suggested account name, and the user MUST be able to edit it before final submission.
+- **FR-099**: During first-time account creation via Google or Apple, the provider account name MUST be used to prefill a suggested account name, and the user MUST be able to edit it before final submission (deferred from current local-auth phase).
 - **FR-100**: The platform MUST persist operational logs in a single unified database table across mobile app, backoffice web, web API, and non-interactive jobs.
 - **FR-101**: Each log entry MUST include at least: `created_at`, `level`, `component`, and `message`.
 - **FR-102**: Each log entry MUST support optional `context` for activity/session correlation, especially for mobile/backoffice user activity traces.

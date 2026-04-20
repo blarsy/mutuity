@@ -27,7 +27,7 @@ Cadence: update at least once per workday
 |---|---|---|---|---|---|
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
-| P3 | Local auth completion (no social) | 005 (Auth subset) | IN PROGRESS | 60% | TBD |
+| P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
@@ -92,17 +92,17 @@ Definition of Done:
 
 ### P3 - Local Auth Completion (005 auth subset, no social)
 
-Status: IN PROGRESS
+Status: COMPLETE
 Goal: finish a production-grade local auth vertical slice end-to-end before resuming non-auth feature expansion.
 
 Scope included now (complete before exit):
 
-- [ ] T051 auth-parity documentation update, scoped to local credential flow first.
-- [ ] T052 local identity model updates only (email/password credentials, duplicate-account prevention for local path).
-- [ ] T053 email verification lifecycle (issue, resend with throttling, verify, invalid/expired handling).
-- [ ] T054 forgot/reset password lifecycle (request, token validation, password update, single-use invalidation).
-- [ ] T055 authenticated change-password with current-password validation and session hardening.
-- [ ] T057 end-to-end verification for local signup/login/verify/reset/change-password and token expiry/reuse protections.
+- [x] T051 auth-parity documentation update, scoped to local credential flow first.
+- [x] T052 local identity model updates only (email/password credentials, duplicate-account prevention for local path).
+- [x] T053 email verification lifecycle (issue, resend with throttling, verify, invalid/expired handling).
+- [x] T054 forgot/reset password lifecycle (request, token validation, password update, single-use invalidation).
+- [x] T055 authenticated change-password with current-password validation and session hardening.
+- [x] T057 end-to-end verification for local signup/login/verify/reset/change-password and token expiry/reuse protections.
 
 Explicitly deferred to later phase:
 
@@ -119,18 +119,18 @@ Execution order (to limit security regressions):
 
 Checkpoints:
 
-- [ ] Visitor can sign up with account name + email/password and receives verification email.
-- [ ] Unverified account cannot access trust-sensitive authenticated flows until verification completes.
-- [ ] Verification token flow is one-time, time-bounded, resend-throttled, and safely fails on invalid/expired tokens.
-- [ ] Forgot-password token flow is one-time, time-bounded, and cannot be replayed.
-- [ ] Authenticated user can change password with current-password validation and hardened post-change session behavior.
-- [ ] Local auth E2E scenarios pass (happy path + key abuse/edge cases).
+- [x] Visitor can sign up with account name + email/password and receives verification email.
+- [x] Unverified account cannot access trust-sensitive authenticated flows until verification completes.
+- [x] Verification token flow is one-time, time-bounded, resend-throttled, and safely fails on invalid/expired tokens.
+- [x] Forgot-password token flow is one-time, time-bounded, and cannot be replayed.
+- [x] Authenticated user can change password with current-password validation and hardened post-change session behavior.
+- [x] Local auth E2E scenarios pass (happy path + key abuse/edge cases).
 
 Definition of Done:
 
-- [ ] Local email/password account creation and recovery are production-ready and fully test-covered.
-- [ ] No placeholder or partial auth routes remain for local flow.
-- [ ] Social auth remains disabled/deferred, not half-exposed in UX.
+- [x] Local email/password account creation and recovery are production-ready and fully test-covered.
+- [x] No placeholder or partial auth routes remain for local flow.
+- [x] Social auth remains disabled/deferred, not half-exposed in UX.
 
 ### P4 - Resource Loop MVP (005 Slices 1-4)
 
@@ -213,14 +213,14 @@ Definition of Done:
 
 ## Active Work Queue
 
-Current phase: P3
-Current milestone: P3-M1 - Local auth completion kickoff
+Current phase: P4
+Current milestone: P4-M1 - Resource discovery baseline kickoff
 
 This week priorities:
 
-1. Execute complete local auth slice (signup, verification, forgot/reset, change-password) with no social login exposure.
-2. Land security-critical tests first for token lifecycle, replay prevention, and invalid/expired paths.
-3. Keep P1/P2 auth-protected-route behavior as smoke checks while refactoring auth flows.
+1. Start P4 Slice 1 with active resource discovery baseline (visibility, expiration, location sort, tie-break).
+2. Implement and validate tri-state modality filter behavior end-to-end (`neutral` / `yes` / `no`).
+3. Add focused backend/frontend verification for browse correctness before moving to publish/bid surfaces.
 
 ## Session Log
 
@@ -247,6 +247,11 @@ This week priorities:
 | 2026-04-19 | P2 closeout | Validated full core needs loop and campaign/triage baseline with passing backend integration sweep and frontend needs tests + typecheck, then marked P2 complete in tracker. | npm -C backend test -- tests/integration/need-search.spec.ts tests/integration/need-filtering.spec.ts tests/integration/need-claim.spec.ts tests/integration/claim-messaging.spec.ts tests/integration/claim-settlement.spec.ts tests/integration/campaign-approval.spec.ts tests/integration/campaign-need-triage.spec.ts tests/integration/need-create.spec.ts tests/integration/audit-trail.spec.ts; npm -C frontend run typecheck; npm -C frontend test -- --runInBand tests/needs | None | Kick off P3 resource-loop completion and associated tests. |
 | 2026-04-19 | Replanning | Re-sequenced post-P2 roadmap to prioritize complete local email/password auth (signup + verification + forgot/reset + change-password) before resuming resource-loop expansion; social login deferred by explicit gate. | specs/implementation-progress-tracker.md; specs/005-resource-discovery-and-publishing/tasks.md | None | Start P3 with T052 local identity model subset and token-lifecycle test scaffolding. |
 | 2026-04-19 | P3 execution | Implemented local-auth foundation and flows: migration for verification/reset tokens and credential verification state, backend register/verify/reset/change-password endpoints, frontend register/verify-email/restore-access/change-password pages, and passing backend auth integration + contract tests. | database/migrations/032_local_auth_account_creation_and_recovery.sql; backend/src/auth/routes.ts; backend/tests/integration/auth-register.spec.ts; backend/tests/integration/auth-password-recovery.spec.ts; frontend/src/pages/register.tsx; frontend/src/pages/restore-access.tsx; frontend/src/pages/verify-email.tsx; frontend/src/pages/change-password.tsx; npm -C backend test -- --runInBand tests/integration/auth-login.spec.ts tests/integration/auth-session.spec.ts tests/integration/auth-logout.spec.ts tests/integration/auth-register.spec.ts tests/integration/auth-password-recovery.spec.ts tests/contract/auth.contract.spec.ts; npm -C frontend run typecheck | Outbound email delivery is still mocked by dev token echo in HTTP responses. | Replace dev-token echo with real mail delivery and add frontend tests for register/verify/reset/change-password pages. |
+| 2026-04-20 | P3 execution | Enabled unverified-account session access with global activation UX: users are signed in immediately after registration, see activation banner with resend action, and unverified accounts are blocked at DB policy/search layer from externally visible needs/resources. | commit aff6985; database/migrations/039_account_activation_visibility_guards.sql; backend/src/auth/session.ts; backend/src/postgraphile/authGraphqlPlugin.ts; frontend/src/features/layout/AppShell.tsx; frontend/src/pages/register.tsx; npm --workspace backend run typecheck; npm --workspace frontend run typecheck | None | Remove remaining dev-token contract and complete auth E2E coverage sweep. |
+| 2026-04-20 | P3 execution | Removed dev token API surface from local auth flows: GraphQL-facing register/resend/reset-request functions now return boolean, frontend no longer consumes token payloads, schema/codegen regenerated, migration applied, and checks passed. | commit 0fc74fa; database/migrations/040_auth_mutations_remove_dev_token_returns.sql; frontend/src/features/auth/auth.api.ts; frontend/src/features/auth/auth.queries.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm --workspace frontend run graphql:schema; npm --workspace frontend run typecheck; npm --workspace backend run typecheck | None | Execute T051 docs parity update and close T057 with local auth E2E + abuse-path scenarios. |
+| 2026-04-20 | P3 execution | Completed T051 auth-parity documentation update in feature-005 spec/plan/tasks: local email/password parity captured as implemented scope (including immediate post-signup sign-in with unverified restrictions, verification/reset token lifecycle, resend throttling, and change-password), while Google/Apple parity remains explicitly documented as deferred. | specs/005-resource-discovery-and-publishing/spec.md; specs/005-resource-discovery-and-publishing/plan.md; specs/005-resource-discovery-and-publishing/tasks.md; specs/implementation-progress-tracker.md | None | Implement T057 local-auth E2E + abuse-path verification sweep. |
+| 2026-04-20 | P3 execution | Completed T057 local-auth verification sweep by extending backend abuse-path integration coverage (verification token replay rejection, resend throttling behavior, reset token replay + forced-expiry rejection) and adding frontend auth API flow tests for register/verify/reset/change-password variable wiring, normalized session mapping, and safe error handling. | backend/tests/integration/auth-graphql.spec.ts; npm -C backend test -- --runInBand tests/integration/auth-graphql.spec.ts; frontend/tests/auth/auth-api.spec.ts; npm -C frontend test -- tests/auth/auth-api.spec.ts | None | Re-assess P3 definition-of-done closure and decide whether any browser-level flow tests are still required before moving to P4. |
+| 2026-04-20 | P3 closeout | Closed P3 local-auth phase after validating all local-scope checkpoints and definition-of-done items: production-ready local signup/login/verify/reset/change-password, no local placeholder routes, and explicit social deferral maintained. | specs/implementation-progress-tracker.md; frontend/src/pages/register.tsx; frontend/src/pages/verify-email.tsx; frontend/src/pages/restore-access.tsx; frontend/src/pages/change-password.tsx; backend/tests/integration/auth-graphql.spec.ts; frontend/tests/auth/auth-api.spec.ts | None | Kick off P4 Slice 1 (resource discovery baseline + tri-state filters). |
 
 ## Decisions Log
 
@@ -266,7 +271,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 complete; P3 local-auth completion in progress
+- Overall progress: P1 complete, P2 complete, P3 complete; P4 ready to start
 - Current health: GREEN
-- Main risk: shipping local auth without real outbound verification/reset emails (current dev-token echo fallback).
-- Requested supervisor input: confirm mail delivery approach for verification/reset so P3 can close without temporary dev-only behavior.
+- Main risk: P4 scope can expand too quickly unless discovery baseline (filters/sorting/expiration invariants) is validated before publish/bid UI growth.
+- Requested supervisor input: confirm whether P4 should prioritize public discovery-only completion before any resource publish UX expansion.
