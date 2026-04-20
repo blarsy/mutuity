@@ -1,0 +1,62 @@
+name: SQL Database Quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  sql-db-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build PostgreSQL image with plpgsql_check
+        run: docker build -f .github/ci/postgres-plpgsql-check.Dockerfile -t mutuity-pgcheck .
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d --name mutuity-pgcheck-db \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_DB=mutuity \
+            -p 55432:5432 \
+            mutuity-pgcheck
+
+      - name: Wait for PostgreSQL readiness
+        run: |
+          for i in {1..30}; do
+            if docker exec mutuity-pgcheck-db pg_isready -U postgres -d mutuity; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PostgreSQL did not become ready in time"
+          exit 1
+
+      - name: Apply migrations on fresh database
+        run: |
+          docker run --rm --network host \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/mutuity \
+            postgres:16 \
+            bash ./database/migrate.sh
+
+      - name: Validate PLpgSQL semantics
+        run: |
+          docker run --rm --network host \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/mutuity \
+            postgres:16 \
+            bash ./scripts/check-plpgsql-quality.sh
+
+      - name: Dump PostgreSQL logs on failure
+        if: failure()
+        run: docker logs mutuity-pgcheck-db || true
+
+      - name: Stop PostgreSQL
+        if: always()
+        run: docker rm -f mutuity-pgcheck-db || true
