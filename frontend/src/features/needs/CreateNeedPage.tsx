@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -22,7 +23,12 @@ import {
   type CreateNeedValues,
   type NeedIntensityValue
 } from "./createNeed.validation";
-import { CREATE_NEED_MUTATION, LINKABLE_CAMPAIGN_OPTIONS_QUERY } from "./needs.queries";
+import {
+  CREATE_NEED_MUTATION,
+  LINKABLE_CAMPAIGN_OPTIONS_QUERY,
+  NEED_EDIT_DETAIL_QUERY,
+  UPDATE_NEED_MUTATION
+} from "./needs.queries";
 
 type CreateNeedMutationData = {
   createNeed: {
@@ -52,6 +58,34 @@ type CreateNeedMutationVariables = {
   expiresAt?: string;
 };
 
+type UpdateNeedMutationData = {
+  updateNeedById: {
+    need: {
+      id: string;
+      title: string;
+      intensity: string;
+      proposedTopesAmount: number | null;
+    } | null;
+  } | null;
+};
+
+type UpdateNeedMutationVariables = {
+  id: string;
+  title: string;
+  description?: string;
+  location: string;
+  intensity: NeedIntensityValue;
+  proposedTopesAmount?: number;
+  objectRequired?: boolean;
+  competenceRequired?: boolean;
+  toolingRequired?: boolean;
+  multiplePeopleRequired?: boolean;
+  requiredCompetenceText?: string;
+  requiredToolingText?: string;
+  requiredPeopleCount?: number;
+  expiresAt?: string;
+};
+
 type LinkableCampaignOptionsData = {
   allCampaigns: {
     nodes: Array<{
@@ -63,6 +97,30 @@ type LinkableCampaignOptionsData = {
   };
 };
 
+type NeedEditDetailData = {
+  needById: {
+    id: string;
+    title: string;
+    description: string | null;
+    location: string;
+    intensity: NeedIntensityValue;
+    proposedTopesAmount: number | null;
+    objectRequired: boolean;
+    competenceRequired: boolean;
+    toolingRequired: boolean;
+    multiplePeopleRequired: boolean;
+    requiredCompetenceText: string | null;
+    requiredToolingText: string | null;
+    requiredPeopleCount: number | null;
+    expiresAt: string | null;
+    campaignNeedsByNeedId: {
+      nodes: Array<{
+        campaignId: string;
+      }>;
+    };
+  } | null;
+};
+
 function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   const startAt = new Date(startAtIso);
   const endAt = new Date(endAtIso);
@@ -70,19 +128,38 @@ function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   return now >= startAt && now <= endAt;
 }
 
-export default function CreateNeedPage() {
+export default function EditNeedPage() {
+  const router = useRouter();
+  const needId = typeof router.query.needId === "string" ? router.query.needId : null;
+  const isEditMode = Boolean(needId);
   const [createNeed, { loading, error, data }] = useMutation<CreateNeedMutationData, CreateNeedMutationVariables>(
     CREATE_NEED_MUTATION
   );
+  const [updateNeedById, { loading: updateLoading, error: updateError, data: updateData }] = useMutation<
+    UpdateNeedMutationData,
+    UpdateNeedMutationVariables
+  >(UPDATE_NEED_MUTATION);
   const {
     data: campaignOptions,
     loading: campaignOptionsLoading,
     error: campaignOptionsError
   } = useQuery<LinkableCampaignOptionsData>(LINKABLE_CAMPAIGN_OPTIONS_QUERY);
+  const {
+    data: editNeedData,
+    loading: editNeedLoading,
+    error: editNeedError
+  } = useQuery<NeedEditDetailData>(NEED_EDIT_DETAIL_QUERY, {
+    skip: !needId,
+    variables: {
+      needId: needId ?? ""
+    }
+  });
 
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
 
-  const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error)
+    ?? getUserFacingGraphQLErrorMessage(updateError)
+    ?? getUserFacingGraphQLErrorMessage(editNeedError);
   const campaignOptionsErrorMessage = getUserFacingGraphQLErrorMessage(campaignOptionsError);
 
   const activeCampaignOptions = useMemo(() => {
@@ -92,33 +169,98 @@ export default function CreateNeedPage() {
     return nodes.filter(node => isCampaignActive(now, node.startAt, node.endAt));
   }, [campaignOptions?.allCampaigns.nodes]);
 
+  const initialValues = useMemo<CreateNeedValues>(() => {
+    const editNeed = editNeedData?.needById;
+
+    if (!editNeed) {
+      return createNeedInitialValues;
+    }
+
+    return {
+      title: editNeed.title,
+      description: editNeed.description ?? "",
+      location: editNeed.location,
+      intensity: editNeed.intensity,
+      proposedTopesAmount: editNeed.proposedTopesAmount ?? "",
+      objectRequired: editNeed.objectRequired,
+      competenceRequired: editNeed.competenceRequired,
+      toolingRequired: editNeed.toolingRequired,
+      multiplePeopleRequired: editNeed.multiplePeopleRequired,
+      requiredCompetenceText: editNeed.requiredCompetenceText ?? "",
+      requiredToolingText: editNeed.requiredToolingText ?? "",
+      requiredPeopleCount: editNeed.requiredPeopleCount ?? "",
+      campaignId: editNeed.campaignNeedsByNeedId.nodes[0]?.campaignId ?? "",
+      expiresAt: editNeed.expiresAt ? new Date(editNeed.expiresAt).toISOString().slice(0, 16) : ""
+    };
+  }, [editNeedData?.needById]);
+
   const submit = async (values: CreateNeedValues) => {
+    const normalizedVariables = {
+      title: values.title.trim(),
+      description: values.description.trim() || undefined,
+      location: values.location.trim(),
+      intensity: values.intensity,
+      proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
+      objectRequired: values.objectRequired,
+      competenceRequired: values.competenceRequired,
+      toolingRequired: values.toolingRequired,
+      multiplePeopleRequired: values.multiplePeopleRequired,
+      requiredCompetenceText: values.requiredCompetenceText.trim() || undefined,
+      requiredToolingText: values.requiredToolingText.trim() || undefined,
+      requiredPeopleCount: values.requiredPeopleCount === "" ? undefined : Number(values.requiredPeopleCount),
+      expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : undefined
+    };
+
+    if (isEditMode && needId) {
+      await updateNeedById({
+        variables: {
+          id: needId,
+          ...normalizedVariables
+        }
+      });
+      return;
+    }
+
     await createNeed({
       variables: {
-        title: values.title.trim(),
-        description: values.description.trim() || undefined,
-        location: values.location.trim(),
-        intensity: values.intensity,
-        proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
-        objectRequired: values.objectRequired,
-        competenceRequired: values.competenceRequired,
-        toolingRequired: values.toolingRequired,
-        multiplePeopleRequired: values.multiplePeopleRequired,
-        requiredCompetenceText: values.requiredCompetenceText.trim() || undefined,
-        requiredToolingText: values.requiredToolingText.trim() || undefined,
-        requiredPeopleCount: values.requiredPeopleCount === "" ? undefined : Number(values.requiredPeopleCount),
-        campaignId: values.campaignId || undefined,
-        expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : undefined
+        ...normalizedVariables,
+        campaignId: values.campaignId || undefined
       }
     });
   };
+
+  if (isEditMode && editNeedLoading) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 6 }}>
+          <Typography component="h1" gutterBottom variant="h4">
+            Edit need
+          </Typography>
+          <Alert severity="info">Loading need…</Alert>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (isEditMode && !editNeedData?.needById && !editNeedLoading) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 6 }}>
+          <Typography component="h1" gutterBottom variant="h4">
+            Edit need
+          </Typography>
+          <Alert severity="warning">This need was not found or is no longer accessible.</Alert>
+        </Box>
+      </Container>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Create a need
+            Edit need
           </Typography>
           <Alert severity="info">
             {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
@@ -132,10 +274,12 @@ export default function CreateNeedPage() {
     <Container maxWidth="sm">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Create a need
+          Edit need
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Create a standalone need or link it to an approved, currently active campaign.
+          {isEditMode
+            ? "Update your need details and availability settings."
+            : "Create a standalone need or link it to an approved, currently active campaign."}
         </Typography>
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
@@ -145,13 +289,21 @@ export default function CreateNeedPage() {
             Need created: {data.createNeed.need.title}.
           </Alert>
         ) : null}
+        {updateData?.updateNeedById?.need ? (
+          <Alert sx={{ mb: 2 }} severity="success">
+            Need updated: {updateData.updateNeedById.need.title}.
+          </Alert>
+        ) : null}
 
         <Formik
-          initialValues={createNeedInitialValues}
+          enableReinitialize
+          initialValues={initialValues}
           onSubmit={async (values, helpers) => {
             try {
               await submit(values);
-              helpers.resetForm();
+              if (!isEditMode) {
+                helpers.resetForm();
+              }
             } finally {
               helpers.setSubmitting(false);
             }
@@ -323,6 +475,7 @@ export default function CreateNeedPage() {
                   value={values.campaignId}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  disabled={isEditMode}
                   helperText={campaignOptionsLoading ? "Loading campaign options…" : "Only approved and active campaigns are listed"}
                 >
                   <MenuItem value="">No campaign</MenuItem>
@@ -343,8 +496,8 @@ export default function CreateNeedPage() {
                   InputLabelProps={{ shrink: true }}
                 />
 
-                <Button disabled={isSubmitting || loading} type="submit" variant="contained">
-                  Create need
+                <Button disabled={isSubmitting || loading || updateLoading} type="submit" variant="contained">
+                  {isEditMode ? "Save need" : "Add need"}
                 </Button>
               </Stack>
             </Form>

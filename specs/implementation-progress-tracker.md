@@ -257,6 +257,7 @@ This week priorities:
 | 2026-04-20 | P4 execution | Completed T032 by replacing the resources workspace placeholder with an authenticated paginated list (page size 10), infinite-scroll loading, and most-recently-updated-first presentation in UI, validated by frontend GraphQL codegen + typecheck. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | GraphQL schema currently does not expose `ResourcesOrderBy.UPDATED_AT_DESC`; UI enforces updated-time descending after each page load while backend pagination uses available ordering. | Implement T033 (resource workspace Edit/Delete actions with soft-delete confirmation). |
 | 2026-04-20 | P4 execution | Completed T033 by adding workspace card actions for Edit and Delete: Edit now opens the resource form in modification mode with pre-populated values, while Delete opens a confirmation dialog and performs a soft delete (`isActive=false`) before refetching the workspace list. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/CreateResourcePage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C frontend run graphql:schema; npm -C frontend run typecheck | None | Implement T034 fixed Add resource action on resources workspace page. |
 | 2026-04-20 | P4 execution | Completed T034 by adding a fixed-position `Add resource` button on the resources workspace page so creation entry remains visible at all scroll positions and links directly to `/resources/create`. | frontend/src/pages/resources/manage.tsx; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Begin Phase 7 with T035 (rename create-need page to edit-need page for create+modify mode). |
+| 2026-04-20 | P4 execution | Completed T035 by converting the need creation surface into an edit-capable page (`Edit need`) that supports both creation and modification modes: edit mode now preloads need data via `needById`, submits through `updateNeedById`, and keeps creation mode on the same route with mode-specific copy and actions. | frontend/src/features/needs/CreateNeedPage.tsx; frontend/src/features/needs/needs.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | Updating campaign linkage is intentionally create-only for now because campaign linking is modeled in the campaign-need relation rather than direct need patch fields. | Implement T036 (`updatedAt` propagation for need linked-property changes). |
 
 ## Decisions Log
 
@@ -276,7 +277,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 complete, P3 complete; P4 ready to start
+- Overall progress: P1 complete, P2 complete, P3 complete; P4 in progress through resources workspace and T035 kickoff for needs workspace.
 - Current health: GREEN
 - Main risk: P4 scope can expand too quickly unless discovery baseline (filters/sorting/expiration invariants) is validated before publish/bid UI growth.
 - Requested supervisor input: confirm whether P4 should prioritize public discovery-only completion before any resource publish UX expansion.

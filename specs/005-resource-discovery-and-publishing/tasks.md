@@ -65,7 +65,7 @@
 
 ## Phase 7: Needs Workspace Page
 
-- [ ] T035 Rename the create-need page to edit-need page to support both creation and modification modes
+- [x] T035 Rename the create-need page to edit-need page to support both creation and modification modes
 - [ ] T036 Extend the need data model and mutation to update `updatedAt` (last modification time) whenever any linked property changes, including images and categories
 - [ ] T037 Implement the `Needs` workspace page: query with `updatedAt`-descending sort, page size 10, infinite scroll loading 10 more, and authentication guard
 - [ ] T038 Add Edit and Delete card actions to the needs workspace page: Edit navigates to the edit-need page in modification mode; Delete shows a confirmation dialog and performs a soft delete on confirmation
