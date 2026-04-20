@@ -4528,6 +4528,7 @@ input PublishResourceInput {
   latitude: BigFloat
   location: String
   longitude: BigFloat
+  resourceId: UUID
   title: String
 }
 

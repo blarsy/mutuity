@@ -1,4 +1,5 @@
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -14,10 +15,11 @@ import {
   Typography
 } from "@mui/material";
 import { Form, Formik } from "formik";
+import { useMemo } from "react";
 
 import { useRequireAuth } from "../auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
-import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
+import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import {
   createResourceInitialValues,
   createResourceValidationSchema,
@@ -39,6 +41,7 @@ type PublishResourceMutationData = {
 };
 
 type PublishResourceMutationVariables = {
+  resourceId?: string;
   title: string;
   description?: string;
   location: string;
@@ -63,6 +66,32 @@ type ResourceCategoryOptionsQueryData = {
   };
 };
 
+type ResourceDetailForEditQueryData = {
+  resourceById: {
+    id: string;
+    title: string;
+    description: string | null;
+    location: string;
+    latitude: number;
+    longitude: number;
+    intensity: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
+    defaultTokenAmount: number | null;
+    imageUrls: string[];
+    isProduct: boolean;
+    isService: boolean;
+    canBeGiven: boolean;
+    canBeExchanged: boolean;
+    canBeTakenAway: boolean;
+    canBeDelivered: boolean;
+    expiresAt: string | null;
+    resourceCategoryAssignmentsByResourceId: {
+      nodes: Array<{
+        categoryCode: number;
+      }>;
+    };
+  } | null;
+};
+
 function normalizeOptionalInteger(value: number | "") {
   if (value === "") {
     return undefined;
@@ -78,21 +107,91 @@ function parseImageUrls(value: string) {
     .filter(Boolean);
 }
 
+function fromGraphQLResourceIntensity(value: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION") {
+  switch (value) {
+    case "LEG_UP":
+      return "leg_up" as const;
+    case "SHARING":
+      return "sharing" as const;
+    case "COMMITMENT":
+      return "commitment" as const;
+    case "RARE_CONTRIBUTION":
+      return "rare_contribution" as const;
+    default:
+      return "sharing" as const;
+  }
+}
+
+function toDateTimeLocalValue(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const timestamp = new Date(value).getTime();
+
+  if (Number.isNaN(timestamp)) {
+    return "";
+  }
+
+  return new Date(timestamp).toISOString().slice(0, 16);
+}
+
 export default function CreateResourcePage() {
+  const router = useRouter();
+  const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
+  const isEditMode = Boolean(resourceId);
   const [publishResource, { loading, error, data }] = useMutation<
     PublishResourceMutationData,
     PublishResourceMutationVariables
   >(PUBLISH_RESOURCE_MUTATION);
   const { data: categoryData, loading: loadingCategories, error: categoryError } =
     useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
+  const {
+    data: editData,
+    loading: loadingEditResource,
+    error: editResourceError
+  } = useQuery<ResourceDetailForEditQueryData>(RESOURCE_DETAIL_QUERY, {
+    skip: !resourceId,
+    variables: {
+      resourceId: resourceId ?? ""
+    }
+  });
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
+  const editResourceErrorMessage = getUserFacingGraphQLErrorMessage(editResourceError);
   const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
+  const editResource = editData?.resourceById ?? null;
+
+  const initialValues = useMemo<CreateResourceValues>(() => {
+    if (!editResource) {
+      return createResourceInitialValues;
+    }
+
+    return {
+      title: editResource.title,
+      description: editResource.description ?? "",
+      imageUrlsText: editResource.imageUrls.join("\n"),
+      location: editResource.location,
+      latitude: editResource.latitude,
+      longitude: editResource.longitude,
+      intensity: fromGraphQLResourceIntensity(editResource.intensity),
+      defaultTokenAmount: editResource.defaultTokenAmount ?? "",
+      categoryCodes: editResource.resourceCategoryAssignmentsByResourceId.nodes.map(node => node.categoryCode),
+      isProduct: editResource.isProduct,
+      isService: editResource.isService,
+      canBeGiven: editResource.canBeGiven,
+      canBeExchanged: editResource.canBeExchanged,
+      canBeTakenAway: editResource.canBeTakenAway,
+      canBeDelivered: editResource.canBeDelivered,
+      expiresAt: toDateTimeLocalValue(editResource.expiresAt)
+    };
+  }, [editResource]);
 
   const submit = async (values: CreateResourceValues) => {
     await publishResource({
       variables: {
+        resourceId: resourceId ?? undefined,
         title: values.title.trim(),
         description: values.description.trim() || undefined,
         location: values.location.trim(),
@@ -123,6 +222,32 @@ export default function CreateResourcePage() {
           <Alert severity="info">
             {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
           </Alert>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (isEditMode && loadingEditResource) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 6 }}>
+          <Typography component="h1" gutterBottom variant="h4">
+            Edit resource
+          </Typography>
+          <Alert severity="info">Loading resource…</Alert>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (isEditMode && !editResource && !loadingEditResource) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 6 }}>
+          <Typography component="h1" gutterBottom variant="h4">
+            Edit resource
+          </Typography>
+          <Alert severity="warning">This resource was not found or is no longer accessible.</Alert>
         </Box>
       </Container>
     );
@@ -163,19 +288,28 @@ export default function CreateResourcePage() {
           </Alert>
         ) : null}
 
+        {editResourceErrorMessage ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {editResourceErrorMessage}
+          </Alert>
+        ) : null}
+
         {data?.publishResource?.resource ? (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Resource “{data.publishResource.resource.title}” is now published.
+            Resource “{data.publishResource.resource.title}” has been {isEditMode ? "updated" : "published"}.
           </Alert>
         ) : null}
 
         <Formik
-          initialValues={createResourceInitialValues}
+          enableReinitialize
+          initialValues={initialValues}
           validationSchema={createResourceValidationSchema}
           onSubmit={async (values, helpers) => {
             try {
               await submit(values);
-              helpers.resetForm();
+              if (!isEditMode) {
+                helpers.resetForm();
+              }
             } finally {
               helpers.setSubmitting(false);
             }
@@ -426,8 +560,8 @@ export default function CreateResourcePage() {
                   </FormGroup>
                 </Box>
 
-                <Button disabled={isSubmitting || loading || loadingCategories} type="submit" variant="contained">
-                  Add resource
+                <Button disabled={isSubmitting || loading || loadingCategories || loadingEditResource} type="submit" variant="contained">
+                  {isEditMode ? "Save resource" : "Add resource"}
                 </Button>
               </Stack>
             </Form>

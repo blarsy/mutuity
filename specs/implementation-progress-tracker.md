@@ -28,7 +28,7 @@ Cadence: update at least once per workday
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
-| P4 | Resource loop MVP | 005 (Slices 1-4) | NOT STARTED | 0% | TBD |
+| P4 | Resource loop MVP | 005 (Slices 1-4) | IN PROGRESS | 45% | TBD |
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | NOT STARTED | 0% | TBD |
@@ -134,7 +134,7 @@ Definition of Done:
 
 ### P4 - Resource Loop MVP (005 Slices 1-4)
 
-Status: NOT STARTED
+Status: IN PROGRESS
 Goal: deliver resource discovery/publish/bid baseline and core notifications.
 
 Checkpoints:
@@ -254,6 +254,8 @@ This week priorities:
 | 2026-04-20 | P3 closeout | Closed P3 local-auth phase after validating all local-scope checkpoints and definition-of-done items: production-ready local signup/login/verify/reset/change-password, no local placeholder routes, and explicit social deferral maintained. | specs/implementation-progress-tracker.md; frontend/src/pages/register.tsx; frontend/src/pages/verify-email.tsx; frontend/src/pages/restore-access.tsx; frontend/src/pages/change-password.tsx; backend/tests/integration/auth-graphql.spec.ts; frontend/tests/auth/auth-api.spec.ts | None | Kick off P4 Slice 1 (resource discovery baseline + tri-state filters). |
 | 2026-04-20 | P4 execution | Completed T030 copy-alignment step by renaming resource publishing labels to `Edit resource` / `Add resource` in the resource discovery/create surfaces to match workspace terminology. | frontend/src/features/resources/PublicResourcesPage.tsx; frontend/src/features/resources/CreateResourcePage.tsx; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T031 (`updatedAt` propagation across resource linked-property updates). |
 | 2026-04-20 | P4 execution | Completed T031 by extending resource mutation/model behavior to support edit-mode updates and guaranteed `updated_at` propagation for linked property changes (category assignment trigger + image/category updates), with migration `041` applied and integration tests passing. | database/migrations/041_resource_updated_at_linked_properties.sql; database/functions/resource/publish_resource.sql; backend/tests/integration/resource-publish.spec.ts; docker compose -f docker-compose.yml run --rm migrate; npm -C backend test -- --runInBand tests/integration/resource-publish.spec.ts | None | Start T032 resources workspace page (updatedAt-desc query + page-size 10 + infinite scroll + auth guard). |
+| 2026-04-20 | P4 execution | Completed T032 by replacing the resources workspace placeholder with an authenticated paginated list (page size 10), infinite-scroll loading, and most-recently-updated-first presentation in UI, validated by frontend GraphQL codegen + typecheck. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | GraphQL schema currently does not expose `ResourcesOrderBy.UPDATED_AT_DESC`; UI enforces updated-time descending after each page load while backend pagination uses available ordering. | Implement T033 (resource workspace Edit/Delete actions with soft-delete confirmation). |
+| 2026-04-20 | P4 execution | Completed T033 by adding workspace card actions for Edit and Delete: Edit now opens the resource form in modification mode with pre-populated values, while Delete opens a confirmation dialog and performs a soft delete (`isActive=false`) before refetching the workspace list. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/CreateResourcePage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C frontend run graphql:schema; npm -C frontend run typecheck | None | Implement T034 fixed Add resource action on resources workspace page. |
 
 ## Decisions Log
 

@@ -2,6 +2,7 @@ import { gql } from "@apollo/client";
 
 export const PUBLISH_RESOURCE_MUTATION = gql`
   mutation PublishResource(
+    $resourceId: UUID
     $title: String!
     $description: String
     $location: String!
@@ -21,6 +22,7 @@ export const PUBLISH_RESOURCE_MUTATION = gql`
   ) {
     publishResource(
       input: {
+        resourceId: $resourceId
         title: $title
         description: $description
         location: $location
@@ -139,6 +141,11 @@ export const RESOURCE_DETAIL_QUERY = gql`
       defaultTokenAmount
       imageUrls
       categoryLabels
+      resourceCategoryAssignmentsByResourceId(orderBy: CATEGORY_CODE_ASC) {
+        nodes {
+          categoryCode
+        }
+      }
       isProduct
       isService
       canBeGiven
@@ -171,6 +178,18 @@ export const RESOURCE_DETAIL_QUERY = gql`
             externalSubject
           }
         }
+      }
+    }
+  }
+`;
+
+export const SOFT_DELETE_RESOURCE_MUTATION = gql`
+  mutation SoftDeleteResource($id: UUID!) {
+    updateResourceById(input: { id: $id, resourcePatch: { isActive: false } }) {
+      resource {
+        id
+        isActive
+        updatedAt
       }
     }
   }
@@ -213,6 +232,46 @@ export const RESOURCE_BIDS_OVERVIEW_QUERY = gql`
             externalSubject
           }
         }
+      }
+    }
+  }
+`;
+
+export const MY_RESOURCES_CONNECTION_QUERY = gql`
+  query MyResourcesConnection($creatorAccountId: UUID!, $first: Int!, $after: Cursor) {
+    allResources(
+      condition: { creatorAccountId: $creatorAccountId, isActive: true }
+      orderBy: ID_DESC
+      first: $first
+      after: $after
+    ) {
+      nodes {
+        id
+        creatorAccountId
+        title
+        description
+        location
+        defaultTokenAmount
+        imageUrls
+        categoryLabels
+        isProduct
+        isService
+        canBeGiven
+        canBeExchanged
+        canBeTakenAway
+        canBeDelivered
+        expiresAt
+        createdAt
+        updatedAt
+        accountByCreatorAccountId {
+          id
+          displayName
+          externalSubject
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
       }
     }
   }

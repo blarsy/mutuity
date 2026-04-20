@@ -1,17 +1,295 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
-import { Button } from "@mui/material";
+import { useRouter } from "next/router";
+import { useMutation, useQuery } from "@apollo/client/react";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography
+} from "@mui/material";
 
-import { PlaceholderPage } from "../../features/layout/PlaceholderPage";
+import { useAuth } from "../../features/auth/AuthProvider";
+import { useRequireAuth } from "../../features/auth/requireAuth";
+import { MY_RESOURCES_CONNECTION_QUERY, SOFT_DELETE_RESOURCE_MUTATION } from "../../features/resources/resources.queries";
+import { ResourceCard } from "../../features/ui/ResourceCard";
+import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+
+type ManageResourceNode = {
+  id: string;
+  creatorAccountId: string;
+  title: string;
+  description: string | null;
+  location: string;
+  defaultTokenAmount: number | null;
+  imageUrls: string[] | null;
+  categoryLabels: string[];
+  isProduct: boolean;
+  isService: boolean;
+  canBeGiven: boolean;
+  canBeExchanged: boolean;
+  canBeTakenAway: boolean;
+  canBeDelivered: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  accountByCreatorAccountId: {
+    id: string;
+    displayName: string | null;
+    externalSubject: string;
+  } | null;
+};
+
+type MyResourcesData = {
+  allResources: {
+    nodes: ManageResourceNode[];
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string | null;
+    };
+  };
+};
+
+type MyResourcesVariables = {
+  creatorAccountId: string;
+  first: number;
+  after?: string;
+};
+
+const PAGE_SIZE = 10;
+
+function formatUpdatedAt(value: string) {
+  return new Date(value).toLocaleString();
+}
 
 export default function ManageResourcesPage() {
+  const router = useRouter();
+  const { session } = useAuth();
+  const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [resourcePendingDelete, setResourcePendingDelete] = useState<ManageResourceNode | null>(null);
+
+  const {
+    data,
+    loading,
+    error,
+    fetchMore,
+    refetch
+  } = useQuery<MyResourcesData, MyResourcesVariables>(MY_RESOURCES_CONNECTION_QUERY, {
+    skip: !isAuthenticated || !session.account?.id,
+    variables: {
+      creatorAccountId: session.account?.id ?? "",
+      first: PAGE_SIZE
+    }
+  });
+  const [softDeleteResource, { loading: deleting, error: deleteError }] = useMutation(SOFT_DELETE_RESOURCE_MUTATION);
+
+  const hasNextPage = data?.allResources.pageInfo.hasNextPage ?? false;
+  const endCursor = data?.allResources.pageInfo.endCursor ?? null;
+
+  useEffect(() => {
+    if (!loadMoreRef.current || !isAuthenticated) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      const [entry] = entries;
+
+      if (!entry?.isIntersecting || loading || !hasNextPage || !endCursor || !session.account?.id) {
+        return;
+      }
+
+      void fetchMore({
+        variables: {
+          creatorAccountId: session.account.id,
+          first: PAGE_SIZE,
+          after: endCursor
+        },
+        updateQuery: (previousResult, { fetchMoreResult }) => {
+          if (!fetchMoreResult) {
+            return previousResult;
+          }
+
+          return {
+            allResources: {
+              ...fetchMoreResult.allResources,
+              nodes: [...previousResult.allResources.nodes, ...fetchMoreResult.allResources.nodes]
+            }
+          };
+        }
+      });
+    });
+
+    observer.observe(loadMoreRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [endCursor, fetchMore, hasNextPage, isAuthenticated, loading, session.account?.id]);
+
+  const sortedResources = useMemo(() => {
+    return [...(data?.allResources.nodes ?? [])].sort(
+      (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+    );
+  }, [data?.allResources.nodes]);
+
+  const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(deleteError);
+
+  const confirmSoftDelete = async () => {
+    if (!resourcePendingDelete) {
+      return;
+    }
+
+    await softDeleteResource({
+      variables: {
+        id: resourcePendingDelete.id
+      }
+    });
+
+    setResourcePendingDelete(null);
+    await refetch();
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ py: 6 }}>
+          <Typography component="h1" gutterBottom variant="h4">
+            Resources
+          </Typography>
+          <Alert severity="info">
+            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+          </Alert>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
-    <PlaceholderPage
-      title="My resources"
-      description="This page will list the resources created by the logged-in account."
-    >
-      <Button component={NextLink} href="/resources/create" variant="contained">
-        Add
-      </Button>
-    </PlaceholderPage>
+    <Container maxWidth="lg">
+      <Box sx={{ py: 6 }}>
+        <Stack spacing={3}>
+          <Box>
+            <Typography component="h1" gutterBottom variant="h4">
+              Resources workspace
+            </Typography>
+            <Typography color="text.secondary">
+              Your resources are shown with the most recently modified items first.
+            </Typography>
+          </Box>
+
+          {loading ? <Alert severity="info">Loading your resources…</Alert> : null}
+          {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
+
+          {!loading && !errorMessage && sortedResources.length === 0 ? (
+            <Alert severity="info">You have not published any resources yet.</Alert>
+          ) : null}
+
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
+            }}
+          >
+            {sortedResources.map(resource => {
+              const creatorLabel = resource.accountByCreatorAccountId?.displayName
+                ?? resource.accountByCreatorAccountId?.externalSubject
+                ?? resource.creatorAccountId;
+
+              return (
+                <ResourceCard
+                  actions={(
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                      <Button
+                        component={NextLink}
+                        href={`/resources/create?resourceId=${resource.id}`}
+                        size="small"
+                        variant="outlined"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        color="error"
+                        disabled={deleting}
+                        onClick={() => setResourcePendingDelete(resource)}
+                        size="small"
+                        variant="text"
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  )}
+                  chips={
+                    <>
+                      <Chip label={`${resource.defaultTokenAmount ?? "—"} tokens`} size="small" variant="outlined" />
+                      {resource.categoryLabels.slice(0, 2).map(label => (
+                        <Chip key={`${resource.id}-${label}`} label={label} size="small" variant="outlined" />
+                      ))}
+                    </>
+                  }
+                  creatorName={creatorLabel}
+                  description={resource.description}
+                  expiresAt={resource.expiresAt}
+                  footer={(
+                    <Typography color="text.secondary" variant="body2">
+                      Last updated: {formatUpdatedAt(resource.updatedAt)}
+                    </Typography>
+                  )}
+                  imageUrl={resource.imageUrls?.[0] ?? null}
+                  key={resource.id}
+                  location={resource.location}
+                  onClick={() => {
+                    void router.push(`/resources/${resource.id}`);
+                  }}
+                  onCreatorClick={() => {
+                    void router.push(`/accounts/${resource.creatorAccountId}`);
+                  }}
+                  title={resource.title}
+                />
+              );
+            })}
+          </Box>
+
+          {hasNextPage ? (
+            <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+              <Chip label="Loading more…" size="small" variant="outlined" />
+            </Box>
+          ) : null}
+
+          <Typography color="text.secondary" variant="body2">
+            Need a new offer? Use the Add resource action from the search page.
+          </Typography>
+
+          <Typography color="text.secondary" variant="body2">
+            <NextLink href="/resources">Back to resource search</NextLink>
+          </Typography>
+        </Stack>
+      </Box>
+
+      <Dialog onClose={() => setResourcePendingDelete(null)} open={Boolean(resourcePendingDelete)}>
+        <DialogTitle>Delete resource?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            This will archive “{resourcePendingDelete?.title ?? "this resource"}” from active listings.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={deleting} onClick={() => setResourcePendingDelete(null)}>
+            Cancel
+          </Button>
+          <Button color="error" disabled={deleting} onClick={() => void confirmSoftDelete()} variant="contained">
+            {deleting ? "Deleting…" : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 }
