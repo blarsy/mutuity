@@ -67,9 +67,9 @@
 
 - [x] T035 Rename the create-need page to edit-need page to support both creation and modification modes
 - [x] T036 Extend the need data model and mutation to update `updatedAt` (last modification time) whenever any linked property changes, including images and categories
-- [ ] T037 Implement the `Needs` workspace page: query with `updatedAt`-descending sort, page size 10, infinite scroll loading 10 more, and authentication guard
-- [ ] T038 Add Edit and Delete card actions to the needs workspace page: Edit navigates to the edit-need page in modification mode; Delete shows a confirmation dialog and performs a soft delete on confirmation
-- [ ] T039 Add a fixed "Add need" button to the needs workspace page that remains visible at all scroll positions and navigates to the edit-need page in creation mode
+- [x] T037 Implement the `Needs` workspace page: query with `updatedAt`-descending sort, page size 10, infinite scroll loading 10 more, and authentication guard
+- [x] T038 Add Edit and Delete card actions to the needs workspace page: Edit navigates to the edit-need page in modification mode; Delete shows a confirmation dialog and performs a soft delete on confirmation
+- [x] T039 Add a fixed "Add need" button to the needs workspace page that remains visible at all scroll positions and navigates to the edit-need page in creation mode
 
 ## Phase 8: Contribution Page Informative UX
 

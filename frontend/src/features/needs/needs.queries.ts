@@ -186,3 +186,53 @@ export const PUBLIC_NEEDS_QUERY = gql`
     }
   }
 `;
+
+export const MY_NEEDS_CONNECTION_QUERY = gql`
+  query MyNeedsConnection($creatorAccountId: UUID!, $first: Int!, $after: Cursor) {
+    allNeeds(
+      condition: { creatorAccountId: $creatorAccountId, isActive: true }
+      orderBy: ID_DESC
+      first: $first
+      after: $after
+    ) {
+      nodes {
+        id
+        creatorAccountId
+        title
+        description
+        location
+        intensity
+        proposedTopesAmount
+        objectRequired
+        competenceRequired
+        toolingRequired
+        multiplePeopleRequired
+        requiredPeopleCount
+        expiresAt
+        createdAt
+        updatedAt
+        accountByCreatorAccountId {
+          id
+          displayName
+          externalSubject
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const SOFT_DELETE_NEED_MUTATION = gql`
+  mutation SoftDeleteNeed($id: UUID!) {
+    updateNeedById(input: { id: $id, needPatch: { isActive: false } }) {
+      need {
+        id
+        isActive
+        updatedAt
+      }
+    }
+  }
+`;
