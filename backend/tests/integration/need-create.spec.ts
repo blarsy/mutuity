@@ -13,6 +13,33 @@ type SeededCampaign = {
   id: string;
 };
 
+async function fetchNeedUpdatedAtEpoch(needId: string): Promise<number> {
+  const client = new Client({
+    connectionString: TEST_DATABASE_URL
+  });
+
+  await client.connect();
+
+  try {
+    const result = await client.query<{ updated_at_epoch: string }>(
+      `
+        select extract(epoch from n.updated_at)::text as updated_at_epoch
+        from app_public.need n
+        where n.id = $1
+      `,
+      [needId]
+    );
+
+    if (result.rowCount !== 1) {
+      throw new Error(`Expected one need row for ${needId} but found ${result.rowCount}`);
+    }
+
+    return Number(result.rows[0].updated_at_epoch);
+  } finally {
+    await client.end();
+  }
+}
+
 async function seedApprovedActiveCampaign(creatorAccountId: string, stamp: number): Promise<SeededCampaign> {
   const client = new Client({
     connectionString: TEST_DATABASE_URL
@@ -254,5 +281,85 @@ describe("need create integration", () => {
         }
       ]
     });
+  });
+
+  it("updates need updatedAt when linked campaign_need status changes", async () => {
+    const stamp = Date.now();
+    const creator = await seedDemoAccount({
+      identifier: `need-updated-at-${stamp}@example.com`,
+      displayName: "Need UpdatedAt"
+    });
+
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
+    const approvedCampaign = await seedApprovedActiveCampaign(creator.accountId, stamp);
+
+    const linkedResponse = await postGraphql(
+      {
+        query: `
+          mutation CreateNeed($title: String!, $location: String!, $intensity: NeedIntensity!, $campaignId: UUID!) {
+            createNeed(
+              input: {
+                title: $title
+                location: $location
+                intensity: $intensity
+                campaignId: $campaignId
+              }
+            ) {
+              need {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          title: `Linked updatedAt need ${stamp}`,
+          location: "Tournai",
+          intensity: "SHARING",
+          campaignId: approvedCampaign.id
+        }
+      },
+      creatorCookie
+    );
+
+    expect(linkedResponse.status).toBe(200);
+    const linkedPayload = (await linkedResponse.json()) as {
+      data?: {
+        createNeed?: {
+          need?: {
+            id: string;
+          };
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(linkedPayload.errors).toBeUndefined();
+    const linkedNeedId = linkedPayload.data?.createNeed?.need?.id;
+    expect(linkedNeedId).toBeTruthy();
+
+    const beforeUpdateEpoch = await fetchNeedUpdatedAtEpoch(linkedNeedId as string);
+
+    const dbClient = new Client({
+      connectionString: TEST_DATABASE_URL
+    });
+    await dbClient.connect();
+    try {
+      await dbClient.query(
+        `
+          update app_public.campaign_need
+          set status = 'accepted',
+              acted_by_account_id = $3,
+              acted_at = now()
+          where campaign_id = $1
+            and need_id = $2
+        `,
+        [approvedCampaign.id, linkedNeedId, creator.accountId]
+      );
+    } finally {
+      await dbClient.end();
+    }
+
+    const afterUpdateEpoch = await fetchNeedUpdatedAtEpoch(linkedNeedId as string);
+    expect(afterUpdateEpoch).toBeGreaterThan(beforeUpdateEpoch);
   });
 });
