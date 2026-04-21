@@ -1,6 +1,8 @@
 import NextLink from "next/link";
 import { useQuery } from "@apollo/client/react";
-import { AppBar, Box, Button, Menu, MenuItem, Stack, Toolbar, Typography } from "@mui/material";
+import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
+import { AppBar, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
@@ -8,6 +10,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { LoginDialog } from "../auth/LoginDialog";
 import { TOKEN_BALANCE_QUERY } from "../contribution/contribution.queries";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
+import type { AppColorMode } from "../../theme";
 
 const signedOutLinks = [
   { label: "Search", href: "/resources" },
@@ -26,7 +29,13 @@ const signedInLinks = [
   { label: "Notifications", href: "/notifications" }
 ];
 
-export function AppTopBar() {
+export function AppTopBar({
+  colorMode,
+  onToggleColorMode
+}: {
+  colorMode: AppColorMode;
+  onToggleColorMode: () => void;
+}) {
   const router = useRouter();
   const { session, signOut } = useAuth();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
@@ -89,6 +98,11 @@ export function AppTopBar() {
                 <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
                   {balanceData?.currentTokenBalance ?? 0} tokens
                 </Button>
+                <Tooltip title={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}>
+                  <IconButton aria-label="Toggle color mode" color="inherit" onClick={onToggleColorMode}>
+                    {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+                  </IconButton>
+                </Tooltip>
                 <AvatarIconButton
                   aria-label="Open profile menu"
                   displayName={currentLabel}
@@ -97,11 +111,18 @@ export function AppTopBar() {
                 />
               </>
             ) : (
-              <AvatarIconButton
-                aria-label="Open sign in dialog"
-                displayName="Sign in"
-                onClick={() => setLoginDialogOpen(true)}
-              />
+              <>
+                <Tooltip title={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}>
+                  <IconButton aria-label="Toggle color mode" color="inherit" onClick={onToggleColorMode}>
+                    {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+                  </IconButton>
+                </Tooltip>
+                <AvatarIconButton
+                  aria-label="Open sign in dialog"
+                  displayName="Sign in"
+                  onClick={() => setLoginDialogOpen(true)}
+                />
+              </>
             )}
           </Stack>
         </Toolbar>

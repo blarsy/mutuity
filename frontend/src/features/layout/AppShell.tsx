@@ -5,8 +5,17 @@ import type { ReactNode } from "react";
 import { requestEmailVerification } from "../auth/auth.api";
 import { useAuth } from "../auth/AuthProvider";
 import { AppTopBar } from "./AppTopBar";
+import type { AppColorMode } from "../../theme";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  colorMode,
+  onToggleColorMode
+}: {
+  children: ReactNode;
+  colorMode: AppColorMode;
+  onToggleColorMode: () => void;
+}) {
   const { session } = useAuth();
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
@@ -38,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
-      <AppTopBar />
+      <AppTopBar colorMode={colorMode} onToggleColorMode={onToggleColorMode} />
       {shouldShowActivationBanner ? (
         <Alert
           action={(
