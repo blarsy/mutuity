@@ -1,6 +1,7 @@
 import NextLink from "next/link";
 import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 type PlaceholderPageProps = {
   title: string;
@@ -9,6 +10,7 @@ type PlaceholderPageProps = {
 };
 
 export function PlaceholderPage({ title, description, children }: PlaceholderPageProps) {
+  const { t } = useTranslation("common");
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
@@ -21,17 +23,17 @@ export function PlaceholderPage({ title, description, children }: PlaceholderPag
           </Box>
 
           <Alert severity="info">
-            This page is reserved in the new shared navigation shell and will be filled out in a later slice.
+            {t("placeholder.reserved")}
           </Alert>
 
           {children}
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button component={NextLink} href="/resources" variant="contained">
-              Go to search
+              {t("placeholder.goToSearch")}
             </Button>
             <Button component={NextLink} href="/needs" variant="outlined">
-              Go to contribute
+              {t("placeholder.goToContribute")}
             </Button>
           </Stack>
         </Stack>

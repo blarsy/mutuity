@@ -1,4 +1,5 @@
 import { Button, Dialog, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { LoginForm } from "./LoginForm";
 
@@ -14,16 +15,20 @@ export function LoginDialog({
   open,
   onClose,
   nextDestination = "/",
-  title = "Sign in",
-  subtitle = "Access protected actions and your account session."
+  title,
+  subtitle
 }: LoginDialogProps) {
+  const { t } = useTranslation("auth");
+  const resolvedTitle = title ?? t("dialog.title");
+  const resolvedSubtitle = subtitle ?? t("dialog.subtitle");
+
   return (
     <Dialog fullWidth maxWidth="sm" onClose={onClose} open={open}>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle>{resolvedTitle}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Typography color="text.secondary" variant="body2">
-            {subtitle}
+            {resolvedSubtitle}
           </Typography>
 
           <LoginForm
@@ -34,7 +39,7 @@ export function LoginDialog({
             }}
           />
 
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>{t("dialog.close")}</Button>
         </Stack>
       </DialogContent>
     </Dialog>

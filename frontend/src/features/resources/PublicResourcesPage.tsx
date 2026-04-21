@@ -3,6 +3,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Card, CardContent, Chip, Container, Stack, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
@@ -83,6 +84,7 @@ function buildResourceTags(resource: PublicResourceCard) {
 export default function PublicResourcesPage() {
   const router = useRouter();
   const { session, status } = useAuth();
+  const { t } = useTranslation("resources");
   const publishResourceHref = session.authenticated
     ? "/resources/create"
     : "/login?next=%2Fresources%2Fcreate";
@@ -145,10 +147,10 @@ export default function PublicResourcesPage() {
         >
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Discover active resources
+              {t("browse.title")}
             </Typography>
             <Typography color="text.secondary">
-              Browse nearby offers of objects and services, then refine results with tri-state modality filters.
+              {t("browse.subtitle")}
             </Typography>
           </Box>
 
@@ -166,12 +168,12 @@ export default function PublicResourcesPage() {
 
         {status === "loading" && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Checking your session…
+            {t("authGuard.checking", { ns: "common" })}
           </Alert>
         )}
 
         <Alert severity="info" sx={{ mb: 2 }}>
-          Results are sorted by geographical closeness. Equal distances are broken by newest resources first.
+          {t("browse.sortDescription")}
         </Alert>
 
         <Alert severity="info" sx={{ mb: 3 }}>
@@ -195,8 +197,8 @@ export default function PublicResourcesPage() {
             <Stack spacing={2}>
               <TextField
                 fullWidth
-                label="Search resources"
-                placeholder="Try creator name, title, description, or category"
+              label={t("browse.searchLabel")}
+              placeholder={t("browse.searchPlaceholder")}
                 value={filters.searchText}
                 onChange={event => {
                   setFilters(current => ({
@@ -208,7 +210,7 @@ export default function PublicResourcesPage() {
 
               <Box>
                 <Typography gutterBottom variant="subtitle2">
-                  Categories
+                  {t("browse.categoriesLabel")}
                 </Typography>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
                   {categoryOptions.map(category => {
@@ -237,22 +239,22 @@ export default function PublicResourcesPage() {
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                 <Button onClick={() => toggleFilter("isProduct")} size="small" variant={filterVariant(filters.isProduct)}>
-                  Product: {describeTriStateFilter(filters.isProduct)}
+                  {t("filters.product")}: {describeTriStateFilter(filters.isProduct)}
                 </Button>
                 <Button onClick={() => toggleFilter("isService")} size="small" variant={filterVariant(filters.isService)}>
-                  Service: {describeTriStateFilter(filters.isService)}
+                  {t("filters.service")}: {describeTriStateFilter(filters.isService)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeGiven")} size="small" variant={filterVariant(filters.canBeGiven)}>
-                  Giveable: {describeTriStateFilter(filters.canBeGiven)}
+                  {t("filters.giveable")}: {describeTriStateFilter(filters.canBeGiven)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeExchanged")} size="small" variant={filterVariant(filters.canBeExchanged)}>
-                  Exchangeable: {describeTriStateFilter(filters.canBeExchanged)}
+                  {t("filters.exchangeable")}: {describeTriStateFilter(filters.canBeExchanged)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeTakenAway")} size="small" variant={filterVariant(filters.canBeTakenAway)}>
-                  Pickup: {describeTriStateFilter(filters.canBeTakenAway)}
+                  {t("filters.pickup")}: {describeTriStateFilter(filters.canBeTakenAway)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeDelivered")} size="small" variant={filterVariant(filters.canBeDelivered)}>
-                  Delivery: {describeTriStateFilter(filters.canBeDelivered)}
+                  {t("filters.delivery")}: {describeTriStateFilter(filters.canBeDelivered)}
                 </Button>
               </Stack>
             </Stack>
@@ -260,9 +262,9 @@ export default function PublicResourcesPage() {
         </Card>
 
         {loading ? (
-          <Alert severity="info">Loading nearby resources…</Alert>
+          <Alert severity="info">{t("browse.loading")}</Alert>
         ) : resources.length === 0 ? (
-          <Alert severity="warning">No resources match the current filters yet.</Alert>
+          <Alert severity="warning">{t("browse.empty")}</Alert>
         ) : (
           <Box
             sx={{

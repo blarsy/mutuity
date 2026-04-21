@@ -15,6 +15,7 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useRequireAuth } from "../../features/auth/requireAuth";
@@ -92,6 +93,7 @@ function buildNeedTags(need: ManageNeedNode) {
 export default function ManageNeedsPage() {
   const router = useRouter();
   const { session } = useAuth();
+  const { t } = useTranslation("needs");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [needPendingDelete, setNeedPendingDelete] = useState<ManageNeedNode | null>(null);
@@ -176,10 +178,10 @@ export default function ManageNeedsPage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Needs
+            {t("manage.title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -192,18 +194,18 @@ export default function ManageNeedsPage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Needs workspace
+              {t("manage.title")}
             </Typography>
             <Typography color="text.secondary">
-              Your needs are shown with the most recently modified items first.
+              {t("manage.subtitle")}
             </Typography>
           </Box>
 
-          {loading ? <Alert severity="info">Loading your needs…</Alert> : null}
+          {loading ? <Alert severity="info">{t("manage.loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           {!loading && !errorMessage && sortedNeeds.length === 0 ? (
-            <Alert severity="info">You have not created any needs yet.</Alert>
+            <Alert severity="info">{t("manage.empty")}</Alert>
           ) : null}
 
           <Box
@@ -228,7 +230,7 @@ export default function ManageNeedsPage() {
                         size="small"
                         variant="outlined"
                       >
-                        Edit
+                        {t("actions.edit", { ns: "common" })}
                       </Button>
                       <Button
                         color="error"
@@ -237,7 +239,7 @@ export default function ManageNeedsPage() {
                         size="small"
                         variant="text"
                       >
-                        Delete
+                        {t("actions.delete", { ns: "common" })}
                       </Button>
                     </Stack>
                   )}
@@ -254,7 +256,7 @@ export default function ManageNeedsPage() {
                   expiresAt={need.expiresAt}
                   footer={(
                     <Typography color="text.secondary" variant="body2">
-                      Last updated: {formatUpdatedAt(need.updatedAt)}
+                      {t("lastUpdated", { ns: "common", date: formatUpdatedAt(need.updatedAt) })}
                     </Typography>
                   )}
                   key={need.id}
@@ -272,29 +274,29 @@ export default function ManageNeedsPage() {
 
           {hasNextPage ? (
             <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-              <Chip label="Loading more…" size="small" variant="outlined" />
+              <Chip label={t("manage.loadingMore")} size="small" variant="outlined" />
             </Box>
           ) : null}
 
           <Typography color="text.secondary" variant="body2">
-            <NextLink href="/needs">Back to needs search</NextLink>
+            <NextLink href="/needs">{t("manage.backToSearch")}</NextLink>
           </Typography>
         </Stack>
       </Box>
 
       <Dialog onClose={() => setNeedPendingDelete(null)} open={Boolean(needPendingDelete)}>
-        <DialogTitle>Delete need?</DialogTitle>
+        <DialogTitle>{t("manage.deleteDialog.title")}</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            This will archive “{needPendingDelete?.title ?? "this need"}” from active listings.
+            {t("manage.deleteDialog.body", { title: needPendingDelete?.title ?? "" })}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button disabled={deleting} onClick={() => setNeedPendingDelete(null)}>
-            Cancel
+            {t("actions.cancel", { ns: "common" })}
           </Button>
           <Button color="error" disabled={deleting} onClick={() => void confirmSoftDelete()} variant="contained">
-            {deleting ? "Deleting…" : "Delete"}
+            {deleting ? t("manage.deleteDialog.deleting") : t("actions.delete", { ns: "common" })}
           </Button>
         </DialogActions>
       </Dialog>
@@ -310,7 +312,7 @@ export default function ManageNeedsPage() {
         }}
         variant="contained"
       >
-        Add need
+        {t("manage.addButton")}
       </Button>
     </Container>
   );

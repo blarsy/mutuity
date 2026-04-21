@@ -14,6 +14,7 @@ import {
   Typography
 } from "@mui/material";
 import { Form, Formik } from "formik";
+import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -130,6 +131,7 @@ function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
 
 export default function EditNeedPage() {
   const router = useRouter();
+  const { t } = useTranslation("needs");
   const needId = typeof router.query.needId === "string" ? router.query.needId : null;
   const isEditMode = Boolean(needId);
   const [createNeed, { loading, error, data }] = useMutation<CreateNeedMutationData, CreateNeedMutationVariables>(
@@ -234,9 +236,9 @@ export default function EditNeedPage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Edit need
+            {t("form.title")}
           </Typography>
-          <Alert severity="info">Loading need…</Alert>
+          <Alert severity="info">{t("form.loading")}</Alert>
         </Box>
       </Container>
     );
@@ -247,9 +249,9 @@ export default function EditNeedPage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Edit need
+            {t("form.title")}
           </Typography>
-          <Alert severity="warning">This need was not found or is no longer accessible.</Alert>
+          <Alert severity="warning">{t("form.notFound")}</Alert>
         </Box>
       </Container>
     );
@@ -260,10 +262,10 @@ export default function EditNeedPage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Edit need
+            {t("form.title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -274,24 +276,24 @@ export default function EditNeedPage() {
     <Container maxWidth="sm">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Edit need
+          {t("form.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {isEditMode
-            ? "Update your need details and availability settings."
-            : "Create a standalone need or link it to an approved, currently active campaign."}
+            ? t("form.editSubtitle")
+            : t("form.createSubtitle")}
         </Typography>
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
         {campaignOptionsErrorMessage ? <Alert severity="error">{campaignOptionsErrorMessage}</Alert> : null}
         {data?.createNeed?.need ? (
           <Alert sx={{ mb: 2 }} severity="success">
-            Need created: {data.createNeed.need.title}.
+            {t("form.createSuccess", { title: data.createNeed.need.title })}
           </Alert>
         ) : null}
         {updateData?.updateNeedById?.need ? (
           <Alert sx={{ mb: 2 }} severity="success">
-            Need updated: {updateData.updateNeedById.need.title}.
+            {t("form.updateSuccess", { title: updateData.updateNeedById.need.title })}
           </Alert>
         ) : null}
 
@@ -315,7 +317,7 @@ export default function EditNeedPage() {
               <Stack spacing={2}>
                 <TextField
                   name="title"
-                  label="Need title"
+                  label={t("form.titleLabel")}
                   value={values.title}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -326,7 +328,7 @@ export default function EditNeedPage() {
 
                 <TextField
                   name="description"
-                  label="Description"
+                  label={t("form.descriptionLabel")}
                   value={values.description}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -336,7 +338,7 @@ export default function EditNeedPage() {
 
                 <TextField
                   name="location"
-                  label="Location"
+                  label={t("form.locationLabel")}
                   value={values.location}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -348,7 +350,7 @@ export default function EditNeedPage() {
                 <TextField
                   select
                   name="intensity"
-                  label="Intensity"
+                  label={t("form.intensityLabel")}
                   value={values.intensity}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -356,26 +358,26 @@ export default function EditNeedPage() {
                   helperText={touched.intensity ? errors.intensity : ""}
                   required
                 >
-                  <MenuItem value="LEG_UP">Leg up</MenuItem>
-                  <MenuItem value="SHARING">Sharing</MenuItem>
-                  <MenuItem value="COMMITMENT">Commitment</MenuItem>
-                  <MenuItem value="RARE_CONTRIBUTION">Rare contribution</MenuItem>
+                  <MenuItem value="LEG_UP">{t("form.intensityLegUp")}</MenuItem>
+                  <MenuItem value="SHARING">{t("form.intensitySharing")}</MenuItem>
+                  <MenuItem value="COMMITMENT">{t("form.intensityCommitment")}</MenuItem>
+                  <MenuItem value="RARE_CONTRIBUTION">{t("form.intensityRareContribution")}</MenuItem>
                 </TextField>
 
                 <TextField
                   name="proposedTopesAmount"
-                  label="Proposed Topes amount"
+                  label={t("form.proposedTopesLabel")}
                   type="number"
                   value={values.proposedTopesAmount}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={Boolean(touched.proposedTopesAmount && errors.proposedTopesAmount)}
-                  helperText={touched.proposedTopesAmount ? errors.proposedTopesAmount : "Optional"}
+                  helperText={touched.proposedTopesAmount ? errors.proposedTopesAmount : t("form.optionalLabel", { ns: "common" })}
                   inputProps={{ min: 1 }}
                 />
 
                 <Stack spacing={0}>
-                  <Typography variant="subtitle2">Need nature</Typography>
+                  <Typography variant="subtitle2">{t("form.needNatureLabel")}</Typography>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -385,7 +387,7 @@ export default function EditNeedPage() {
                         }}
                       />
                     }
-                    label="Object required"
+                    label={t("form.objectRequired")}
                   />
                   <FormControlLabel
                     control={
@@ -396,7 +398,7 @@ export default function EditNeedPage() {
                         }}
                       />
                     }
-                    label="Tooling required"
+                    label={t("form.toolingRequired")}
                   />
                   <FormControlLabel
                     control={
@@ -407,7 +409,7 @@ export default function EditNeedPage() {
                         }}
                       />
                     }
-                    label="Competence required"
+                    label={t("form.competenceRequired")}
                   />
                   <FormControlLabel
                     control={
@@ -418,7 +420,7 @@ export default function EditNeedPage() {
                         }}
                       />
                     }
-                    label="Multiple people required"
+                    label={t("form.multiplePeopleRequired")}
                   />
                   {((submitCount > 0 || touched.objectRequired) && typeof errors.objectRequired === "string") ? (
                     <Typography color="error" variant="caption">
@@ -430,7 +432,7 @@ export default function EditNeedPage() {
                 {values.toolingRequired ? (
                   <TextField
                     name="requiredToolingText"
-                    label="Required tooling details"
+                    label={t("form.requiredToolingLabel")}
                     value={values.requiredToolingText}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -443,7 +445,7 @@ export default function EditNeedPage() {
                 {values.competenceRequired ? (
                   <TextField
                     name="requiredCompetenceText"
-                    label="Required competence details"
+                    label={t("form.requiredCompetenceLabel")}
                     value={values.requiredCompetenceText}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -456,7 +458,7 @@ export default function EditNeedPage() {
                 {values.multiplePeopleRequired ? (
                   <TextField
                     name="requiredPeopleCount"
-                    label="Required people count"
+                    label={t("form.requiredPeopleCountLabel")}
                     type="number"
                     value={values.requiredPeopleCount}
                     onChange={handleChange}
@@ -471,14 +473,14 @@ export default function EditNeedPage() {
                 <TextField
                   select
                   name="campaignId"
-                  label="Link to campaign (optional)"
+                  label={t("form.campaignLabel")}
                   value={values.campaignId}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   disabled={isEditMode}
-                  helperText={campaignOptionsLoading ? "Loading campaign options…" : "Only approved and active campaigns are listed"}
+                  helperText={campaignOptionsLoading ? t("form.loadingCampaigns") : t("form.campaignHelper")}
                 >
-                  <MenuItem value="">No campaign</MenuItem>
+                  <MenuItem value="">{t("form.noCampaign")}</MenuItem>
                   {activeCampaignOptions.map(campaign => (
                     <MenuItem key={campaign.id} value={campaign.id}>
                       {campaign.title}
@@ -488,7 +490,7 @@ export default function EditNeedPage() {
 
                 <TextField
                   name="expiresAt"
-                  label="Expires at (optional)"
+                  label={t("form.expiresAtLabel")}
                   type="datetime-local"
                   value={values.expiresAt}
                   onChange={handleChange}
@@ -497,7 +499,7 @@ export default function EditNeedPage() {
                 />
 
                 <Button disabled={isSubmitting || loading || updateLoading} type="submit" variant="contained">
-                  {isEditMode ? "Save need" : "Add need"}
+                  {isEditMode ? t("form.saveButton") : t("form.addButton")}
                 </Button>
               </Stack>
             </Form>

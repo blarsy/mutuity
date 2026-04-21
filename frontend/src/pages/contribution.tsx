@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Card, CardContent, Chip, Container, Stack, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { CONTRIBUTION_OVERVIEW_QUERY, GIFT_TOKENS_MUTATION } from "../features/contribution/contribution.queries";
@@ -60,6 +61,7 @@ function formatAmount(amountDelta: number) {
 
 export default function ContributionPage() {
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const { t } = useTranslation("contribution");
   const { data, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
     pollInterval: isAuthenticated ? 15000 : 0,
     skip: !isAuthenticated,
@@ -95,7 +97,7 @@ export default function ContributionPage() {
 
     setGiftAmount("");
     setGiftMessage("");
-    setGiftSuccess("Gift sent.");
+    setGiftSuccess(t("giftSent"));
     await refetch();
   };
 
@@ -104,10 +106,10 @@ export default function ContributionPage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Contribution
+            {t("title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -120,29 +122,29 @@ export default function ContributionPage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Contribution
+              {t("title")}
             </Typography>
             <Typography color="text.secondary">
-              Review your current Topes balance and the ledger events recorded from profile completion, resource milestones, bids, claims, gifts, and campaigns.
+              {t("subtitle")}
             </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Chip color={balance >= 0 ? "success" : "error"} label={`${balance} Topes`} />
-            <Chip label={`${movements.length} ledger entries`} variant="outlined" />
+            <Chip label={t("ledgerEntriesCount", { count: movements.length })} variant="outlined" />
           </Stack>
 
           <Alert severity="info">
-            This ledger slice records profile-completion rewards, first resource milestone rewards, bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.
+            {t("ledgerInfo")}
           </Alert>
 
           <Card variant="outlined">
             <CardContent>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="h6">Send a gift</Typography>
+                  <Typography variant="h6">{t("giftForm.title")}</Typography>
                   <Typography color="text.secondary" variant="body2">
-                    Transfer Topes to another account. For now, enter the recipient account id directly.
+                    {t("giftForm.subtitle")}
                   </Typography>
                 </Box>
 
@@ -151,12 +153,12 @@ export default function ContributionPage() {
                 <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                   <TextField
                     fullWidth
-                    label="Recipient account id"
+                    label={t("giftForm.recipientLabel")}
                     onChange={event => setRecipientAccountId(event.target.value)}
                     value={recipientAccountId}
                   />
                   <TextField
-                    label="Amount"
+                    label={t("giftForm.amountLabel")}
                     onChange={event => setGiftAmount(event.target.value)}
                     type="number"
                     value={giftAmount}
@@ -165,7 +167,7 @@ export default function ContributionPage() {
 
                 <TextField
                   fullWidth
-                  label="Optional message"
+                  label={t("giftForm.messageLabel")}
                   minRows={2}
                   multiline
                   onChange={event => setGiftMessage(event.target.value)}
@@ -178,18 +180,18 @@ export default function ContributionPage() {
                     onClick={() => void handleGift()}
                     variant="contained"
                   >
-                    {gifting ? "Sending…" : "Send gift"}
+                    {gifting ? t("giftForm.sendingButton") : t("giftForm.sendButton")}
                   </Button>
                 </Stack>
               </Stack>
             </CardContent>
           </Card>
 
-          {loading ? <Alert severity="info">Loading your contribution history…</Alert> : null}
+          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           {movements.length === 0 ? (
-            <Alert severity="info">No token movements recorded yet.</Alert>
+            <Alert severity="info">{t("empty")}</Alert>
           ) : (
             <Stack spacing={1.5}>
               {movements.map(movement => (
@@ -197,7 +199,7 @@ export default function ContributionPage() {
                   <CardContent>
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
                       <Stack spacing={0.5}>
-                        <Typography variant="body1">{formatMovementTitle(movement.eventType)}</Typography>
+                        <Typography variant="body1">{t(`movements.${movement.eventType}`, { defaultValue: movement.eventType.replaceAll("_", " ").toLowerCase() })}</Typography>
                         <Typography color="text.secondary" variant="caption">
                           {new Date(movement.createdAt).toLocaleString()}
                           {movement.referenceType && movement.referenceId

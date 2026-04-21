@@ -1,0 +1,28 @@
+{
+  "authGuard": {
+    "checking": "Vérification de votre session…",
+    "redirecting": "Redirection vers la connexion…",
+    "signInRequired": "Veuillez vous connecter pour continuer."
+  },
+  "actions": {
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "close": "Fermer"
+  },
+  "placeholder": {
+    "reserved": "Cette page est réservée dans la nouvelle architecture de navigation et sera implémentée dans une prochaine tranche.",
+    "goToSearch": "Aller à la recherche",
+    "goToContribute": "Aller à contribuer"
+  },
+  "placeholders": {
+    "chat": "Cet espace listera vos conversations actives sur les ressources et les besoins.",
+    "preferences": "Cette page permettra au compte connecté d'ajuster ses préférences de notification et d'application."
+  },
+  "errors": {
+    "genericRetry": "Une erreur s'est produite. Veuillez réessayer."
+  },
+  "lastUpdated": "Dernière mise à jour : {{date}}",
+  "optionalLabel": "Optionnel"
+}

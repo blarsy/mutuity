@@ -1,0 +1,73 @@
+{
+  "page": {
+    "title": "Needs",
+    "editTitle": "Edit need",
+    "detailTitle": "Need details",
+    "detailDescription": "A dedicated public detail page for {{needId}} is reserved in the new shared UI architecture."
+  },
+  "browse": {
+    "title": "Discover active needs",
+    "subtitle": "Search by text, refine with tri-state filters, and rank results from the best available location context.",
+    "sortDescription": "Current ranking mixes closeness (50%), ease of setup (30%), and sooner expiry (20%).",
+    "searchLabel": "Search needs",
+    "searchPlaceholder": "Try creator name, title, tooling, or competence",
+    "loading": "Loading active needs…",
+    "empty": "No active needs match the current filters right now."
+  },
+  "form": {
+    "titleLabel": "Need title",
+    "descriptionLabel": "Description",
+    "locationLabel": "Location",
+    "intensityLabel": "Intensity",
+    "intensityLegUp": "Leg up",
+    "intensitySharing": "Sharing",
+    "intensityCommitment": "Commitment",
+    "intensityRareContribution": "Rare contribution",
+    "proposedTopesLabel": "Proposed Topes amount",
+    "proposedTopesHelper": "Optional",
+    "natureLabel": "Need nature",
+    "objectRequired": "Object required",
+    "toolingRequired": "Tooling required",
+    "competenceRequired": "Competence required",
+    "multiplePeopleRequired": "Multiple people required",
+    "requiredCompetenceText": "Required competence description",
+    "requiredToolingText": "Required tooling description",
+    "requiredPeopleCount": "Required people count",
+    "requiredPeopleCountHelper": "Optional",
+    "campaignLabel": "Link to campaign",
+    "campaignNone": "None",
+    "loadingCampaigns": "Loading campaign options…",
+    "campaignHelper": "Only approved and active campaigns are listed",
+    "noCampaign": "No campaign",
+    "expiresAtLabel": "Expires at (optional)",
+    "expiresAtHelper": "Leave empty to keep the need permanent.",
+    "subtitleCreate": "Create a standalone need or link it to an approved, currently active campaign.",
+    "subtitleEdit": "Update your need details and availability settings.",
+    "submitCreate": "Create need",
+    "submitUpdate": "Update need",
+    "needCreated": "Need created: {{title}}.",
+    "needUpdated": "Need updated: {{title}}.",
+    "loadingNeed": "Loading need…",
+    "notFound": "This need was not found or is no longer accessible."
+  },
+  "manage": {
+    "title": "Needs workspace",
+    "subtitle": "Your needs are shown with the most recently modified items first.",
+    "empty": "You have not created any needs yet.",
+    "loading": "Loading your needs…",
+    "addButton": "Add need",
+    "loadingMore": "Loading more…",
+    "backToSearch": "Back to needs search",
+    "deleteDialog": {
+      "title": "Delete need?",
+      "body": "This will archive \"{{title}}\" from active listings.",
+      "deleting": "Deleting…"
+    }
+  },
+  "filters": {
+    "objectRequired": "Object",
+    "toolingRequired": "Tooling",
+    "competenceRequired": "Competence",
+    "multiplePeopleRequired": "Multiple people"
+  }
+}

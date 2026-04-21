@@ -1,0 +1,75 @@
+{
+  "page": {
+    "title": "Resources",
+    "editTitle": "Edit resource"
+  },
+  "browse": {
+    "title": "Discover available resources",
+    "subtitle": "Search by text, refine with category and modality filters, and browse what people have to offer nearby.",
+    "sortDescription": "Current ranking mixes closeness (50%), freshness (30%), and sooner expiry (20%).",
+    "searchLabel": "Search resources",
+    "searchPlaceholder": "Try title, description, or creator name",
+    "categoriesLabel": "Categories",
+    "loading": "Loading active resources…",
+    "empty": "No active resources match the current filters right now."
+  },
+  "form": {
+    "titleLabel": "Resource title",
+    "descriptionLabel": "Description",
+    "descriptionHelper": "Optional, up to 8000 characters.",
+    "intensityLabel": "Intensity",
+    "intensityHelper": "Choose the same intensity scale used for needs.",
+    "tokenAmountLabel": "Suggested token amount",
+    "tokenAmountHelperPrefix": "Optional.",
+    "imageUrlsLabel": "Image URLs",
+    "imageUrlsHelper": "Optional. Paste one or more image URLs separated by commas or new lines.",
+    "locationLabel": "Location label",
+    "locationHelper": "Shown to nearby people when they browse.",
+    "latitudeLabel": "Latitude",
+    "latitudeHelper": "For distance sorting",
+    "longitudeLabel": "Longitude",
+    "longitudeHelper": "For distance sorting",
+    "categoriesLabel": "Categories",
+    "categoriesHelper": "Choose from the fixed system-provided category list derived from the legacy product.",
+    "loadingCategories": "Loading categories…",
+    "expiresAtLabel": "Expiration datetime",
+    "expiresAtHelper": "Leave empty to keep the resource permanent.",
+    "typeLabel": "Resource type",
+    "isProduct": "Product",
+    "isService": "Service",
+    "canBeGiven": "Can be given",
+    "canBeExchanged": "Can be exchanged",
+    "canBeTakenAway": "Can be taken away",
+    "canBeDelivered": "Can be delivered",
+    "browseResources": "Browse resources",
+    "browseNeeds": "Browse needs",
+    "subtitle": "Share an object or service nearby. The optional token amount is only a negotiable starting point.",
+    "publishedSuccess": "Resource \"{{title}}\" has been {{action}}.",
+    "publishedActionCreated": "published",
+    "publishedActionUpdated": "updated",
+    "loadingResource": "Loading resource…",
+    "notFound": "This resource was not found or is no longer accessible."
+  },
+  "manage": {
+    "title": "Resources workspace",
+    "subtitle": "Your resources are shown with the most recently modified items first.",
+    "empty": "You have not published any resources yet.",
+    "loading": "Loading your resources…",
+    "addButton": "Add resource",
+    "loadingMore": "Loading more…",
+    "backToSearch": "Back to resource search",
+    "deleteDialog": {
+      "title": "Delete resource?",
+      "body": "This will archive \"{{title}}\" from active listings.",
+      "deleting": "Deleting…"
+    }
+  },
+  "filters": {
+    "isProduct": "Product",
+    "isService": "Service",
+    "canBeGiven": "Given",
+    "canBeExchanged": "Exchanged",
+    "canBeTakenAway": "Take away",
+    "canBeDelivered": "Delivered"
+  }
+}

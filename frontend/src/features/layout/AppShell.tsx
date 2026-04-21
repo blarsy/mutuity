@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Alert, Box, Button } from "@mui/material";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { requestEmailVerification } from "../auth/auth.api";
 import { useAuth } from "../auth/AuthProvider";
@@ -17,6 +18,7 @@ export function AppShell({
   onToggleColorMode: () => void;
 }) {
   const { session } = useAuth();
+  const { t } = useTranslation("layout");
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [resendError, setResendError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export function AppShell({
       });
       setResendMessage(response.message);
     } catch (error) {
-      setResendError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+      setResendError(error instanceof Error ? error.message : t("errors.genericRetry", { ns: "common" }));
     } finally {
       setResendLoading(false);
     }
@@ -58,14 +60,13 @@ export function AppShell({
               size="small"
               variant="text"
             >
-              Resend activation mail
+              {t("activationBanner.resendButton")}
             </Button>
           )}
           severity="warning"
           sx={{ borderRadius: 0, py: 0.5 }}
         >
-          Your account is not activated yet. Until activation, no resource or need created by your account will be
-          visible to other accounts.
+          {t("activationBanner.text")}
           {resendMessage ? ` ${resendMessage}` : ""}
           {resendError ? ` ${resendError}` : ""}
         </Alert>

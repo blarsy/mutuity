@@ -1,0 +1,73 @@
+{
+  "page": {
+    "title": "Besoins",
+    "editTitle": "Modifier le besoin",
+    "detailTitle": "Détails du besoin",
+    "detailDescription": "Une page de détail publique dédiée à {{needId}} est réservée dans la nouvelle architecture."
+  },
+  "browse": {
+    "title": "Découvrir les besoins actifs",
+    "subtitle": "Recherchez par texte, affinez avec des filtres tri-état et classez les résultats selon le meilleur contexte de localisation disponible.",
+    "sortDescription": "Le classement actuel mélange la proximité (50 %), la facilité de mise en place (30 %) et l'expiration la plus proche (20 %).",
+    "searchLabel": "Rechercher des besoins",
+    "searchPlaceholder": "Essayez le nom du créateur, le titre, l'outillage ou la compétence",
+    "loading": "Chargement des besoins actifs…",
+    "empty": "Aucun besoin actif ne correspond aux filtres actuels pour l'instant."
+  },
+  "form": {
+    "titleLabel": "Titre du besoin",
+    "descriptionLabel": "Description",
+    "locationLabel": "Lieu",
+    "intensityLabel": "Intensité",
+    "intensityLegUp": "Coup de pouce",
+    "intensitySharing": "Partage",
+    "intensityCommitment": "Engagement",
+    "intensityRareContribution": "Contribution rare",
+    "proposedTopesLabel": "Montant de Topes proposé",
+    "proposedTopesHelper": "Optionnel",
+    "natureLabel": "Nature du besoin",
+    "objectRequired": "Objet requis",
+    "toolingRequired": "Outillage requis",
+    "competenceRequired": "Compétence requise",
+    "multiplePeopleRequired": "Plusieurs personnes requises",
+    "requiredCompetenceText": "Description de la compétence requise",
+    "requiredToolingText": "Description de l'outillage requis",
+    "requiredPeopleCount": "Nombre de personnes requises",
+    "requiredPeopleCountHelper": "Optionnel",
+    "campaignLabel": "Lier à une campagne",
+    "campaignNone": "Aucune",
+    "loadingCampaigns": "Chargement des options de campagne…",
+    "campaignHelper": "Seules les campagnes approuvées et actives sont listées",
+    "noCampaign": "Aucune campagne",
+    "expiresAtLabel": "Expire le (optionnel)",
+    "expiresAtHelper": "Laissez vide pour rendre le besoin permanent.",
+    "subtitleCreate": "Créez un besoin autonome ou associez-le à une campagne approuvée et actuellement active.",
+    "subtitleEdit": "Mettez à jour les détails et les paramètres de disponibilité de votre besoin.",
+    "submitCreate": "Créer le besoin",
+    "submitUpdate": "Mettre à jour le besoin",
+    "needCreated": "Besoin créé : {{title}}.",
+    "needUpdated": "Besoin mis à jour : {{title}}.",
+    "loadingNeed": "Chargement du besoin…",
+    "notFound": "Ce besoin n'a pas été trouvé ou n'est plus accessible."
+  },
+  "manage": {
+    "title": "Espace de gestion des besoins",
+    "subtitle": "Vos besoins sont affichés en commençant par les plus récemment modifiés.",
+    "empty": "Vous n'avez pas encore créé de besoins.",
+    "loading": "Chargement de vos besoins…",
+    "addButton": "Ajouter un besoin",
+    "loadingMore": "Chargement en cours…",
+    "backToSearch": "Retour à la recherche de besoins",
+    "deleteDialog": {
+      "title": "Supprimer le besoin ?",
+      "body": "Cela archivera « {{title}} » des annonces actives.",
+      "deleting": "Suppression…"
+    }
+  },
+  "filters": {
+    "objectRequired": "Objet",
+    "toolingRequired": "Outillage",
+    "competenceRequired": "Compétence",
+    "multiplePeopleRequired": "Plusieurs personnes"
+  }
+}

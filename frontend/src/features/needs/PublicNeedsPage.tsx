@@ -15,6 +15,7 @@ import {
   TextField,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
@@ -149,6 +150,7 @@ function formatClaimStatus(status: string) {
 export default function PublicNeedsPage() {
   const router = useRouter();
   const { session, status } = useAuth();
+  const { t } = useTranslation("needs");
   const createNeedHref = session.authenticated
     ? "/needs/create"
     : "/login?next=%2Fneeds%2Fcreate";
@@ -241,10 +243,10 @@ export default function PublicNeedsPage() {
         >
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Discover active needs
+              {t("browse.title")}
             </Typography>
             <Typography color="text.secondary">
-              Search by text, refine with tri-state filters, and rank results from the best available location context.
+              {t("browse.subtitle")}
             </Typography>
           </Box>
 
@@ -262,12 +264,12 @@ export default function PublicNeedsPage() {
 
         {status === "loading" && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Checking your session…
+            {t("authGuard.checking", { ns: "common" })}
           </Alert>
         )}
 
         <Alert severity="info" sx={{ mb: 2 }}>
-          Current ranking mixes closeness (50%), ease of setup (30%), and sooner expiry (20%).
+          {t("browse.sortDescription")}
         </Alert>
 
         <Alert severity="info" sx={{ mb: 3 }}>
@@ -298,8 +300,8 @@ export default function PublicNeedsPage() {
             <Stack spacing={2}>
               <TextField
                 fullWidth
-                label="Search needs"
-                placeholder="Try creator name, title, tooling, or competence"
+              label={t("browse.searchLabel")}
+              placeholder={t("browse.searchPlaceholder")}
                 value={filters.searchText}
                 onChange={event => {
                   setFilters(current => ({
@@ -311,27 +313,27 @@ export default function PublicNeedsPage() {
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                 <Button onClick={() => toggleFilter("objectRequired")} size="small" variant={filterVariant(filters.objectRequired)}>
-                  Object: {describeTriStateFilter(filters.objectRequired)}
+                  {t("filters.object")}: {describeTriStateFilter(filters.objectRequired)}
                 </Button>
                 <Button onClick={() => toggleFilter("toolingRequired")} size="small" variant={filterVariant(filters.toolingRequired)}>
-                  Tooling: {describeTriStateFilter(filters.toolingRequired)}
+                  {t("filters.tooling")}: {describeTriStateFilter(filters.toolingRequired)}
                 </Button>
                 <Button onClick={() => toggleFilter("competenceRequired")} size="small" variant={filterVariant(filters.competenceRequired)}>
-                  Competence: {describeTriStateFilter(filters.competenceRequired)}
+                  {t("filters.competence")}: {describeTriStateFilter(filters.competenceRequired)}
                 </Button>
                 <Button onClick={() => toggleFilter("multiplePeopleRequired")} size="small" variant={filterVariant(filters.multiplePeopleRequired)}>
-                  People: {describeTriStateFilter(filters.multiplePeopleRequired)}
+                  {t("filters.people")}: {describeTriStateFilter(filters.multiplePeopleRequired)}
                 </Button>
               </Stack>
             </Stack>
           </CardContent>
         </Card>
 
-        {loading ? <Alert severity="info">Loading active needs…</Alert> : null}
+        {loading ? <Alert severity="info">{t("browse.loading")}</Alert> : null}
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
         {!loading && !errorMessage && needs.length === 0 ? (
-          <Alert severity="warning">No active needs match the current filters right now.</Alert>
+          <Alert severity="warning">{t("browse.empty")}</Alert>
         ) : null}
 
         <Box

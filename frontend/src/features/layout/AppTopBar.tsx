@@ -5,6 +5,7 @@ import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import { AppBar, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LoginDialog } from "../auth/LoginDialog";
@@ -13,20 +14,20 @@ import { AvatarIconButton } from "../ui/AvatarIconButton";
 import type { AppColorMode } from "../../theme";
 
 const signedOutLinks = [
-  { label: "Search", href: "/resources" },
-  { label: "Contribute", href: "/needs" }
+  { labelKey: "nav.search", href: "/resources" },
+  { labelKey: "nav.contribute", href: "/needs" }
 ];
 
 const signedInLinks = [
-  { label: "Search", href: "/resources" },
-  { label: "Contribute", href: "/needs" },
-  { label: "Resources", href: "/resources/manage" },
-  { label: "Bids", href: "/bids" },
-  { label: "Needs", href: "/needs/manage" },
-  { label: "Claims", href: "/claims" },
-  { label: "Campaigns", href: "/campaigns" },
-  { label: "Chat", href: "/chat" },
-  { label: "Notifications", href: "/notifications" }
+  { labelKey: "nav.search", href: "/resources" },
+  { labelKey: "nav.contribute", href: "/needs" },
+  { labelKey: "nav.resources", href: "/resources/manage" },
+  { labelKey: "nav.bids", href: "/bids" },
+  { labelKey: "nav.needs", href: "/needs/manage" },
+  { labelKey: "nav.claims", href: "/claims" },
+  { labelKey: "nav.campaigns", href: "/campaigns" },
+  { labelKey: "nav.chat", href: "/chat" },
+  { labelKey: "nav.notifications", href: "/notifications" }
 ];
 
 export function AppTopBar({
@@ -38,6 +39,7 @@ export function AppTopBar({
 }) {
   const router = useRouter();
   const { session, signOut } = useAuth();
+  const { t } = useTranslation("layout");
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { data: balanceData } = useQuery<{ currentTokenBalance: number }>(TOKEN_BALANCE_QUERY, {
@@ -55,7 +57,7 @@ export function AppTopBar({
     }
 
     if (session.role === "manager" || session.role === "admin") {
-      return [...signedInLinks, { label: "Campaign Review", href: "/campaigns/pending" }];
+      return [...signedInLinks, { labelKey: "nav.campaignReview", href: "/campaigns/pending" }];
     }
 
     return signedInLinks;
@@ -86,7 +88,7 @@ export function AppTopBar({
                   size="small"
                   variant={router.pathname === link.href ? "contained" : "text"}
                 >
-                  {link.label}
+                  {t(link.labelKey)}
                 </Button>
               ))}
             </Stack>
@@ -96,15 +98,15 @@ export function AppTopBar({
             {session.authenticated ? (
               <>
                 <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
-                  {balanceData?.currentTokenBalance ?? 0} tokens
+                  {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
                 </Button>
-                <Tooltip title={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}>
-                  <IconButton aria-label="Toggle color mode" color="inherit" onClick={onToggleColorMode}>
+                <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
+                  <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
                     {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
                   </IconButton>
                 </Tooltip>
                 <AvatarIconButton
-                  aria-label="Open profile menu"
+                  aria-label={t("topbar.openProfileMenu")}
                   displayName={currentLabel}
                   imageUrl={session.account?.avatarUrl ?? null}
                   onClick={event => setMenuAnchor(event.currentTarget)}
@@ -112,13 +114,13 @@ export function AppTopBar({
               </>
             ) : (
               <>
-                <Tooltip title={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}>
-                  <IconButton aria-label="Toggle color mode" color="inherit" onClick={onToggleColorMode}>
+                <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
+                  <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
                     {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
                   </IconButton>
                 </Tooltip>
                 <AvatarIconButton
-                  aria-label="Open sign in dialog"
+                  aria-label={t("topbar.openSignInDialog")}
                   displayName="Sign in"
                   onClick={() => setLoginDialogOpen(true)}
                 />
@@ -133,19 +135,19 @@ export function AppTopBar({
           {currentLabel}
         </MenuItem>
         <MenuItem component={NextLink} href="/preferences" onClick={() => setMenuAnchor(null)}>
-          Preferences
+          {t("menu.preferences")}
         </MenuItem>
         <MenuItem component={NextLink} href="/contribution" onClick={() => setMenuAnchor(null)}>
-          Contribution
+          {t("menu.contribution")}
         </MenuItem>
-        <MenuItem onClick={() => void handleLogOut()}>Log out</MenuItem>
+        <MenuItem onClick={() => void handleLogOut()}>{t("menu.logOut")}</MenuItem>
       </Menu>
 
       <LoginDialog
         nextDestination={router.asPath}
         onClose={() => setLoginDialogOpen(false)}
         open={loginDialogOpen}
-        subtitle="Connect to access bids, claims, chat, and your account workspace."
+        subtitle={t("loginDialogSubtitle")}
       />
     </>
   );

@@ -3,6 +3,7 @@ import { Alert, Button, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "./AuthProvider";
 import {
@@ -26,6 +27,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const router = useRouter();
   const { signIn, status } = useAuth();
+  const { t } = useTranslation("auth");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (values: LoginValues) => {
@@ -51,7 +53,7 @@ export function LoginForm({
         try {
           await handleSubmit(values);
         } catch (error) {
-          setSubmitError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+          setSubmitError(error instanceof Error ? error.message : t("form.submitError", { ns: "common", defaultValue: "Something went wrong. Please try again." }));
         } finally {
           helpers.setSubmitting(false);
         }
@@ -67,7 +69,7 @@ export function LoginForm({
               autoFocus
               error={Boolean(touched.identifier && errors.identifier)}
               helperText={touched.identifier ? errors.identifier : ""}
-              label="Email or account identifier"
+              label={t("form.identifierLabel")}
               name="identifier"
               onBlur={handleBlur}
               onChange={handleChange}
@@ -78,7 +80,7 @@ export function LoginForm({
               autoComplete="current-password"
               error={Boolean(touched.password && errors.password)}
               helperText={touched.password ? errors.password : ""}
-              label="Password"
+              label={t("form.passwordLabel")}
               name="password"
               onBlur={handleBlur}
               onChange={handleChange}
@@ -87,13 +89,13 @@ export function LoginForm({
               value={values.password}
             />
             <Button disabled={isSubmitting || status === "loading"} type="submit" variant="contained">
-              Sign in
+              {t("form.submitButton")}
             </Button>
 
             {showSecondaryActions ? (
               <Stack alignItems="flex-start" spacing={0.5}>
                 <Typography color="text.secondary" variant="body2">
-                  Other actions
+                  {t("form.otherActions")}
                 </Typography>
                 <Button
                   component={NextLink}
@@ -102,7 +104,7 @@ export function LoginForm({
                   size="small"
                   type="button"
                 >
-                  Password reset
+                  {t("form.passwordReset")}
                 </Button>
                 <Button
                   component={NextLink}
@@ -111,7 +113,7 @@ export function LoginForm({
                   size="small"
                   type="button"
                 >
-                  Create account
+                  {t("form.createAccount")}
                 </Button>
               </Stack>
             ) : null}

@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "search": "Rechercher",
+    "contribute": "Contribuer",
+    "resources": "Ressources",
+    "bids": "Offres",
+    "needs": "Besoins",
+    "claims": "Demandes",
+    "campaigns": "Campagnes",
+    "chat": "Discussion",
+    "notifications": "Notifications",
+    "campaignReview": "Révision de campagnes"
+  },
+  "topbar": {
+    "tokenBalance": "{{count}} Topes",
+    "switchToDark": "Passer en mode sombre",
+    "switchToLight": "Passer en mode clair",
+    "toggleColorMode": "Basculer le mode couleur",
+    "openProfileMenu": "Ouvrir le menu profil",
+    "openSignInDialog": "Ouvrir la fenêtre de connexion"
+  },
+  "menu": {
+    "preferences": "Préférences",
+    "contribution": "Contribution",
+    "logOut": "Se déconnecter"
+  },
+  "activationBanner": {
+    "text": "Votre compte n'est pas encore activé. Tant que l'activation n'est pas effectuée, aucune ressource ni besoin créés par votre compte ne seront visibles par les autres utilisateurs.",
+    "resendButton": "Renvoyer le mail d'activation"
+  },
+  "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, demandes, discussions et à votre espace de gestion."
+}

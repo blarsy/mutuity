@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { confirmPasswordReset, requestPasswordReset } from "../features/auth/auth.api";
 
 export default function RestoreAccessPage() {
   const router = useRouter();
+  const { t } = useTranslation("auth");
   const tokenFromQuery = useMemo(
     () => (typeof router.query.token === "string" ? router.query.token.trim() : ""),
     [router.query.token]
@@ -29,9 +31,9 @@ export default function RestoreAccessPage() {
         identifier: identifier.trim().toLowerCase()
       });
 
-      setSuccess(response?.message ?? "Password reset requested.");
+      setSuccess(response?.message ?? t("restoreAccess.resetRequestedFallback"));
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
+      setError(submitError instanceof Error ? submitError.message : t("errors.genericRetry", { ns: "common" }));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function RestoreAccessPage() {
 
   const handleConfirmReset = async () => {
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("restoreAccess.passwordMismatch"));
       return;
     }
 
@@ -53,9 +55,9 @@ export default function RestoreAccessPage() {
         password
       });
 
-      setSuccess(response?.message ?? "Password updated.");
+      setSuccess(response?.message ?? t("restoreAccess.passwordUpdated", { defaultValue: "Password updated." }));
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
+      setError(submitError instanceof Error ? submitError.message : t("errors.genericRetry", { ns: "common" }));
     } finally {
       setLoading(false);
     }
@@ -65,12 +67,12 @@ export default function RestoreAccessPage() {
     <Container maxWidth="sm">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Restore access
+          {t("restoreAccess.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {tokenFromQuery
-            ? "Set your new password to complete access recovery."
-            : "Request a password-reset link for your account email."}
+            ? t("restoreAccess.subtitleWithToken")
+            : t("restoreAccess.subtitleWithoutToken")}
         </Typography>
 
         <Stack spacing={2}>
@@ -80,41 +82,41 @@ export default function RestoreAccessPage() {
           {tokenFromQuery ? (
             <>
               <TextField
-                helperText="Minimum 8 characters"
-                label="New password"
+                helperText={t("restoreAccess.newPasswordHelper")}
+                label={t("restoreAccess.newPasswordLabel")}
                 onChange={event => setPassword(event.target.value)}
                 required
                 type="password"
                 value={password}
               />
               <TextField
-                label="Confirm password"
+                label={t("restoreAccess.confirmPasswordLabel")}
                 onChange={event => setConfirmPassword(event.target.value)}
                 required
                 type="password"
                 value={confirmPassword}
               />
               <Button disabled={loading || password.length < 8 || confirmPassword.length < 8} onClick={handleConfirmReset} variant="contained">
-                Set new password
+                {t("restoreAccess.setPasswordButton")}
               </Button>
             </>
           ) : (
             <>
               <TextField
-                label="Email"
+                label={t("restoreAccess.emailLabel")}
                 onChange={event => setIdentifier(event.target.value)}
                 required
                 type="email"
                 value={identifier}
               />
               <Button disabled={loading || identifier.trim().length === 0} onClick={handleRequestReset} variant="contained">
-                Send reset instructions
+                {t("restoreAccess.sendResetButton")}
               </Button>
             </>
           )}
 
           <Button component={NextLink} href="/login">
-            Back to sign in
+            {t("restoreAccess.backToSignIn")}
           </Button>
         </Stack>
       </Box>

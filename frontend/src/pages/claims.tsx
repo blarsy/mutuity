@@ -3,6 +3,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Chip, Container, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
@@ -60,9 +61,9 @@ type ViewerClaimOverviewData = {
   };
 };
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, noDateLabel: string) {
   if (!value) {
-    return "No update yet";
+    return noDateLabel;
   }
 
   return new Date(value).toLocaleString();
@@ -71,6 +72,7 @@ function formatDate(value: string | null) {
 export default function ClaimsPage() {
   const router = useRouter();
   const { session } = useAuth();
+  const { t } = useTranslation("claims");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const { data, loading, error, refetch } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
@@ -94,10 +96,10 @@ export default function ClaimsPage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Claims
+            {t("title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -110,20 +112,20 @@ export default function ClaimsPage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Claims workspace
+              {t("workspaceTitle")}
             </Typography>
             <Typography color="text.secondary">
-              Follow the needs you claimed, review incoming helpers on your own needs, and continue each related conversation.
+              {t("workspaceSubtitle")}
             </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Chip color="primary" label={`${sentClaims.length} sent`} />
-            <Chip color="secondary" label={`${receivedClaims.length} received`} />
-            <Chip color="info" label={`${notifications.length} notifications`} />
+            <Chip color="primary" label={t("sentCount", { count: sentClaims.length })} />
+            <Chip color="secondary" label={t("receivedCount", { count: receivedClaims.length })} />
+            <Chip color="info" label={t("notificationsCount", { count: notifications.length })} />
           </Stack>
 
-          {loading ? <Alert severity="info">Loading your claims…</Alert> : null}
+          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           <ClaimNotificationsPanel
@@ -140,9 +142,9 @@ export default function ClaimsPage() {
           />
 
           <Stack spacing={2}>
-            <Typography variant="h5">Claims you sent</Typography>
+            <Typography variant="h5">{t("sentSection")}</Typography>
             {sentClaims.length === 0 ? (
-              <Alert severity="info">You have not claimed any needs yet.</Alert>
+              <Alert severity="info">{t("sentEmpty")}</Alert>
             ) : (
               <Box
                 sx={{
@@ -164,10 +166,10 @@ export default function ClaimsPage() {
                             }}
                             variant="contained"
                           >
-                            {claim.claimConversationByNeedClaimId ? "Open thread" : "View claim"}
+                            {claim.claimConversationByNeedClaimId ? t("actions.openThread") : t("actions.viewClaim")}
                           </Button>
                           <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
-                            View need
+                            {t("actions.viewNeed")}
                           </Button>
                         </Stack>
                       }
@@ -184,17 +186,17 @@ export default function ClaimsPage() {
                           ) : null}
                         </>
                       }
-                      creatorName={need.creatorAccountId === currentAccountId ? "You" : "Need owner"}
+                      creatorName={need.creatorAccountId === currentAccountId ? t("you") : t("needOwner")}
                       description={
                         claim.message?.trim()
-                          ? `Your note: ${claim.message}`
-                          : "Open this claim to continue the conversation and review the latest status."
+                          ? t("yourNote", { message: claim.message })
+                          : t("openClaimHint")
                       }
                       footer={
                         <Stack spacing={0.5}>
                           <Typography color="text.secondary" variant="body2">
-                            Sent: {formatDate(claim.createdAt)}
-                            {claim.updatedAt !== claim.createdAt ? ` • Updated: ${formatDate(claim.updatedAt)}` : ""}
+                            {t("sent")}: {formatDate(claim.createdAt, t("noDateYet"))}
+                            {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"))}` : ""}
                           </Typography>
                         </Stack>
                       }
@@ -214,9 +216,9 @@ export default function ClaimsPage() {
           </Stack>
 
           <Stack spacing={2}>
-            <Typography variant="h5">Claims received on your needs</Typography>
+            <Typography variant="h5">{t("receivedSection")}</Typography>
             {receivedClaims.length === 0 ? (
-              <Alert severity="info">No helpers have claimed your needs yet.</Alert>
+              <Alert severity="info">{t("receivedEmpty")}</Alert>
             ) : (
               <Box
                 sx={{
@@ -241,10 +243,10 @@ export default function ClaimsPage() {
                             }}
                             variant="contained"
                           >
-                            {claim.claimConversationByNeedClaimId ? "Manage thread" : "Review claim"}
+                            {claim.claimConversationByNeedClaimId ? t("actions.manageThread") : t("actions.reviewClaim")}
                           </Button>
                           <Button component={NextLink} href={`/accounts/${claim.claimerAccountId}`} variant="text">
-                            View claimer
+                            {t("actions.viewClaimer")}
                           </Button>
                         </Stack>
                       }
@@ -262,14 +264,14 @@ export default function ClaimsPage() {
                       creatorName={claimerLabel}
                       description={
                         claim.message?.trim()
-                          ? `Helper note: ${claim.message}`
-                          : "Open this claim to reply, continue the thread, or settle the need when fulfilled."
+                          ? t("helperNote", { message: claim.message })
+                          : t("reviewClaimHint")
                       }
                       footer={
                         <Stack spacing={0.5}>
                           <Typography color="text.secondary" variant="body2">
-                            Received: {formatDate(claim.createdAt)}
-                            {claim.updatedAt !== claim.createdAt ? ` • Updated: ${formatDate(claim.updatedAt)}` : ""}
+                            {t("received")}: {formatDate(claim.createdAt, t("noDateYet"))}
+                            {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"))}` : ""}
                           </Typography>
                         </Stack>
                       }

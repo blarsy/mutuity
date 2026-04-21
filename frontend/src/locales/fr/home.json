@@ -1,0 +1,10 @@
+{
+  "title": "Mutuity",
+  "subtitle": "Découvrez les besoins et ressources disponibles. Une expérience d'intégration plus complète sera ajoutée ici.",
+  "checkingSession": "Vérification de la session…",
+  "welcomeBack": "Bienvenue {{name}}",
+  "signIn": "Se connecter",
+  "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, demandes, discussions et à votre espace de gestion.",
+  "browseNeeds": "Besoins",
+  "browseResources": "Ressources"
+}

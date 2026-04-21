@@ -2,6 +2,7 @@ import { useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { registerLocalAccount } from "../features/auth/auth.api";
 import { useAuth } from "../features/auth/AuthProvider";
@@ -9,6 +10,7 @@ import { useAuth } from "../features/auth/AuthProvider";
 export default function RegisterPage() {
   const router = useRouter();
   const { signIn } = useAuth();
+  const { t } = useTranslation("auth");
   const [displayName, setDisplayName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -38,10 +40,10 @@ export default function RegisterPage() {
         password
       });
 
-      setSuccess(response?.message ?? "Account created. Please verify your email.");
+      setSuccess(response?.message ?? t("register.successFallback"));
       await router.replace("/");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
+      setError(submitError instanceof Error ? submitError.message : t("errors.genericRetry", { ns: "common" }));
     } finally {
       setLoading(false);
     }
@@ -51,10 +53,10 @@ export default function RegisterPage() {
     <Container maxWidth="sm">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Create account
+          {t("register.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Create your local email/password account. You will be signed in immediately and can verify your email from the banner.
+          {t("register.subtitle")}
         </Typography>
 
         <Stack spacing={2}>
@@ -62,21 +64,21 @@ export default function RegisterPage() {
           {success ? <Alert severity="success">{success}</Alert> : null}
 
           <TextField
-            label="Account name"
+            label={t("register.accountNameLabel")}
             onChange={event => setDisplayName(event.target.value)}
             required
             value={displayName}
           />
           <TextField
-            label="Email"
+            label={t("register.emailLabel")}
             onChange={event => setIdentifier(event.target.value)}
             required
             type="email"
             value={identifier}
           />
           <TextField
-            helperText="Minimum 8 characters"
-            label="Password"
+            helperText={t("register.passwordHelper")}
+            label={t("register.passwordLabel")}
             onChange={event => setPassword(event.target.value)}
             required
             type="password"
@@ -84,10 +86,10 @@ export default function RegisterPage() {
           />
 
           <Button disabled={!canSubmit} onClick={handleSubmit} variant="contained">
-            Create account
+            {t("register.submitButton")}
           </Button>
           <Button component={NextLink} href="/login">
-            Back to sign in
+            {t("register.backToSignIn")}
           </Button>
         </Stack>
       </Box>

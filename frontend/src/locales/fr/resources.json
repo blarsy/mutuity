@@ -1,0 +1,75 @@
+{
+  "page": {
+    "title": "Ressources",
+    "editTitle": "Modifier la ressource"
+  },
+  "browse": {
+    "title": "Découvrir les ressources disponibles",
+    "subtitle": "Recherchez par texte, affinez avec des filtres de catégorie et de modalité, et explorez ce que les gens ont à offrir à proximité.",
+    "sortDescription": "Le classement actuel mélange la proximité (50 %), la fraîcheur (30 %) et l’expiration la plus proche (20 %).",
+    "searchLabel": "Rechercher des ressources",
+    "searchPlaceholder": "Essayez le titre, la description ou le nom du créateur",
+    "categoriesLabel": "Catégories",
+    "loading": "Chargement des ressources actives…",
+    "empty": "Aucune ressource active ne correspond aux filtres actuels pour l’instant."
+  },
+  "form": {
+    "titleLabel": "Titre de la ressource",
+    "descriptionLabel": "Description",
+    "descriptionHelper": "Optionnel, jusqu’à 8000 caractères.",
+    "intensityLabel": "Intensité",
+    "intensityHelper": "Choisissez la même échelle d’intensité que pour les besoins.",
+    "tokenAmountLabel": "Montant de jetons suggéré",
+    "tokenAmountHelperPrefix": "Optionnel.",
+    "imageUrlsLabel": "URLs d’images",
+    "imageUrlsHelper": "Optionnel. Collez une ou plusieurs URLs d’images séparées par des virgules ou des sauts de ligne.",
+    "locationLabel": "Libellé de lieu",
+    "locationHelper": "Affiché aux personnes à proximité lors de la navigation.",
+    "latitudeLabel": "Latitude",
+    "latitudeHelper": "Pour le tri par distance",
+    "longitudeLabel": "Longitude",
+    "longitudeHelper": "Pour le tri par distance",
+    "categoriesLabel": "Catégories",
+    "categoriesHelper": "Choisissez dans la liste fixe des catégories système.",
+    "loadingCategories": "Chargement des catégories…",
+    "expiresAtLabel": "Date d’expiration",
+    "expiresAtHelper": "Laissez vide pour rendre la ressource permanente.",
+    "typeLabel": "Type de ressource",
+    "isProduct": "Produit",
+    "isService": "Service",
+    "canBeGiven": "Peut être donné",
+    "canBeExchanged": "Peut être échangé",
+    "canBeTakenAway": "Peut être emporté",
+    "canBeDelivered": "Peut être livré",
+    "browseResources": "Voir les ressources",
+    "browseNeeds": "Voir les besoins",
+    "subtitle": "Partagez un objet ou un service à proximité. Le montant de jetons optionnel n’est qu’un point de départ négociable.",
+    "publishedSuccess": "La ressource « {{title}} » a été {{action}}.",
+    "publishedActionCreated": "publiée",
+    "publishedActionUpdated": "mise à jour",
+    "loadingResource": "Chargement de la ressource…",
+    "notFound": "Cette ressource n’a pas été trouvée ou n’est plus accessible."
+  },
+  "manage": {
+    "title": "Espace de gestion des ressources",
+    "subtitle": "Vos ressources sont affichées en commençant par les plus récemment modifiées.",
+    "empty": "Vous n’avez pas encore publié de ressources.",
+    "loading": "Chargement de vos ressources…",
+    "addButton": "Ajouter une ressource",
+    "loadingMore": "Chargement en cours…",
+    "backToSearch": "Retour à la recherche de ressources",
+    "deleteDialog": {
+      "title": "Supprimer la ressource ?",
+      "body": "Cela archivera « {{title}} » des annonces actives.",
+      "deleting": "Suppression…"
+    }
+  },
+  "filters": {
+    "isProduct": "Produit",
+    "isService": "Service",
+    "canBeGiven": "Don",
+    "canBeExchanged": "Échange",
+    "canBeTakenAway": "À emporter",
+    "canBeDelivered": "Livraison"
+  }
+}

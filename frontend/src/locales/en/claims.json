@@ -1,0 +1,32 @@
+{
+  "title": "Claims",
+  "workspaceTitle": "Claims workspace",
+  "workspaceSubtitle": "Follow the needs you claimed, review incoming helpers on your own needs, and continue each related conversation.",
+  "loading": "Loading your claims…",
+  "sentCount": "{{count}} sent",
+  "receivedCount": "{{count}} received",
+  "notificationsCount": "{{count}} notifications",
+  "noDateYet": "No update yet",
+  "sentSection": "Claims you sent",
+  "receivedSection": "Claims on your needs",
+  "sentEmpty": "You have not claimed any needs yet.",
+  "receivedEmpty": "No helpers have claimed your needs yet.",
+  "you": "You",
+  "needOwner": "Need owner",
+  "yourNote": "Your note: {{message}}",
+  "openClaimHint": "Open this claim to continue the conversation and review the latest status.",
+  "helperNote": "Helper note: {{message}}",
+  "reviewClaimHint": "Open this claim to reply, continue the thread, or settle the need when fulfilled.",
+  "sent": "Sent",
+  "received": "Received",
+  "updated": "Updated",
+  "noTopes": "No Topes",
+  "actions": {
+    "openThread": "Open thread",
+    "viewClaim": "View claim",
+    "viewNeed": "View need",
+    "manageThread": "Manage thread",
+    "reviewClaim": "Review claim",
+    "viewClaimer": "View claimer"
+  }
+}

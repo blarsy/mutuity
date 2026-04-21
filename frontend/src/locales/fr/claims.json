@@ -1,0 +1,32 @@
+{
+  "title": "Demandes",
+  "workspaceTitle": "Espace de gestion des demandes",
+  "workspaceSubtitle": "Suivez les besoins que vous avez demandés, examinez les aidants entrants sur vos propres besoins et continuez chaque conversation associée.",
+  "loading": "Chargement de vos demandes…",
+  "sentCount": "{{count}} envoyées",
+  "receivedCount": "{{count}} reçues",
+  "notificationsCount": "{{count}} notifications",
+  "noDateYet": "Pas encore de mise à jour",
+  "sentSection": "Demandes envoyées",
+  "receivedSection": "Demandes sur vos besoins",
+  "sentEmpty": "Vous n'avez encore demandé aucun besoin.",
+  "receivedEmpty": "Personne n'a encore demandé vos besoins.",
+  "you": "Vous",
+  "needOwner": "Propriétaire du besoin",
+  "yourNote": "Votre note : {{message}}",
+  "openClaimHint": "Ouvrez cette demande pour continuer la conversation et examiner l'état le plus récent.",
+  "helperNote": "Note de l'aidant : {{message}}",
+  "reviewClaimHint": "Ouvrez cette demande pour répondre, continuer le fil ou régler le besoin une fois accompli.",
+  "sent": "Envoyée",
+  "received": "Reçue",
+  "updated": "Mise à jour",
+  "noTopes": "Aucun Tope",
+  "actions": {
+    "openThread": "Ouvrir le fil",
+    "viewClaim": "Voir la demande",
+    "viewNeed": "Voir le besoin",
+    "manageThread": "Gérer le fil",
+    "reviewClaim": "Examiner la demande",
+    "viewClaimer": "Voir l'aidant"
+  }
+}

@@ -15,6 +15,7 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useRequireAuth } from "../../features/auth/requireAuth";
@@ -72,6 +73,7 @@ function formatUpdatedAt(value: string) {
 export default function ManageResourcesPage() {
   const router = useRouter();
   const { session } = useAuth();
+  const { t } = useTranslation("resources");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [resourcePendingDelete, setResourcePendingDelete] = useState<ManageResourceNode | null>(null);
@@ -162,10 +164,10 @@ export default function ManageResourcesPage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Resources
+            {t("manage.title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -178,18 +180,18 @@ export default function ManageResourcesPage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Resources workspace
+              {t("manage.title")}
             </Typography>
             <Typography color="text.secondary">
-              Your resources are shown with the most recently modified items first.
+              {t("manage.subtitle")}
             </Typography>
           </Box>
 
-          {loading ? <Alert severity="info">Loading your resources…</Alert> : null}
+          {loading ? <Alert severity="info">{t("manage.loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           {!loading && !errorMessage && sortedResources.length === 0 ? (
-            <Alert severity="info">You have not published any resources yet.</Alert>
+            <Alert severity="info">{t("manage.empty")}</Alert>
           ) : null}
 
           <Box
@@ -214,7 +216,7 @@ export default function ManageResourcesPage() {
                         size="small"
                         variant="outlined"
                       >
-                        Edit
+                        {t("actions.edit", { ns: "common" })}
                       </Button>
                       <Button
                         color="error"
@@ -223,7 +225,7 @@ export default function ManageResourcesPage() {
                         size="small"
                         variant="text"
                       >
-                        Delete
+                        {t("actions.delete", { ns: "common" })}
                       </Button>
                     </Stack>
                   )}
@@ -240,7 +242,7 @@ export default function ManageResourcesPage() {
                   expiresAt={resource.expiresAt}
                   footer={(
                     <Typography color="text.secondary" variant="body2">
-                      Last updated: {formatUpdatedAt(resource.updatedAt)}
+                      {t("lastUpdated", { ns: "common", date: formatUpdatedAt(resource.updatedAt) })}
                     </Typography>
                   )}
                   imageUrl={resource.imageUrls?.[0] ?? null}
@@ -260,29 +262,29 @@ export default function ManageResourcesPage() {
 
           {hasNextPage ? (
             <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-              <Chip label="Loading more…" size="small" variant="outlined" />
+              <Chip label={t("manage.loadingMore")} size="small" variant="outlined" />
             </Box>
           ) : null}
 
           <Typography color="text.secondary" variant="body2">
-            <NextLink href="/resources">Back to resource search</NextLink>
+            <NextLink href="/resources">{t("manage.backToSearch")}</NextLink>
           </Typography>
         </Stack>
       </Box>
 
       <Dialog onClose={() => setResourcePendingDelete(null)} open={Boolean(resourcePendingDelete)}>
-        <DialogTitle>Delete resource?</DialogTitle>
+        <DialogTitle>{t("manage.deleteDialog.title")}</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            This will archive “{resourcePendingDelete?.title ?? "this resource"}” from active listings.
+            {t("manage.deleteDialog.body", { title: resourcePendingDelete?.title ?? "" })}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button disabled={deleting} onClick={() => setResourcePendingDelete(null)}>
-            Cancel
+            {t("actions.cancel", { ns: "common" })}
           </Button>
           <Button color="error" disabled={deleting} onClick={() => void confirmSoftDelete()} variant="contained">
-            {deleting ? "Deleting…" : "Delete"}
+            {deleting ? t("manage.deleteDialog.deleting") : t("actions.delete", { ns: "common" })}
           </Button>
         </DialogActions>
       </Dialog>
@@ -298,7 +300,7 @@ export default function ManageResourcesPage() {
         }}
         variant="contained"
       >
-        Add resource
+        {t("manage.addButton")}
       </Button>
     </Container>
   );

@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "search": "Search",
+    "contribute": "Contribute",
+    "resources": "Resources",
+    "bids": "Bids",
+    "needs": "Needs",
+    "claims": "Claims",
+    "campaigns": "Campaigns",
+    "chat": "Chat",
+    "notifications": "Notifications",
+    "campaignReview": "Campaign Review"
+  },
+  "topbar": {
+    "tokenBalance": "{{count}} tokens",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode",
+    "toggleColorMode": "Toggle color mode",
+    "openProfileMenu": "Open profile menu",
+    "openSignInDialog": "Open sign in dialog"
+  },
+  "menu": {
+    "preferences": "Preferences",
+    "contribution": "Contribution",
+    "logOut": "Log out"
+  },
+  "activationBanner": {
+    "text": "Your account is not activated yet. Until activation, no resource or need created by your account will be visible to other accounts.",
+    "resendButton": "Resend activation mail"
+  },
+  "loginDialogSubtitle": "Connect to access bids, claims, chat, and your account workspace."
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Contribution",
+  "subtitle": "Consultez votre solde de Topes actuel et les événements du registre enregistrés depuis la complétion du profil, les jalons des ressources, les offres, demandes, dons et campagnes.",
+  "loading": "Chargement de votre historique de contribution…",
+  "empty": "Aucun mouvement de jetons enregistré.",
+  "ledgerInfo": "Ce registre enregistre les récompenses de complétion de profil, les récompenses de premier jalon de ressource, les réserves/remboursements d'offres, les transferts de règlement de demandes, les dons directs entre comptes, les récompenses différées de 24 heures et les paiements d'airdrop de campagne.",
+  "ledgerEntriesCount": "{{count}} entrées de registre",
+  "giftSent": "Don envoyé.",
+  "giftForm": {
+    "title": "Envoyer un don",
+    "subtitle": "Transférez des Topes vers un autre compte. Pour l'instant, saisissez directement l'identifiant du compte destinataire.",
+    "recipientLabel": "Identifiant du compte destinataire",
+    "amountLabel": "Montant",
+    "messageLabel": "Message optionnel",
+    "sendButton": "Envoyer le don",
+    "sendingButton": "Envoi…"
+  },
+  "movements": {
+    "resource_bid_reserved": "Offre créée / jetons réservés",
+    "resource_bid_refunded": "Offre remboursée",
+    "claim_settlement_credit": "Demande réglée en votre faveur",
+    "claim_settlement_debit": "Vous avez réglé une demande sur votre besoin",
+    "profile_first_avatar_reward": "Premier avatar de profil ajouté",
+    "profile_first_bio_reward": "Première biographie de profil ajoutée",
+    "profile_first_location_reward": "Première localisation de profil ajoutée",
+    "profile_first_link_reward": "Premier lien de profil ajouté",
+    "resource_first_image_reward": "Première image de ressource ajoutée",
+    "resource_first_default_token_amount_reward": "Premier montant de Topes par défaut défini sur une ressource",
+    "resource_age_24h_reward": "La ressource a atteint le jalon des 24 heures",
+    "claim_age_24h_reward": "La demande est restée valide pendant 24 heures",
+    "campaign_airdrop_received": "Airdrop de campagne reçu"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "authGuard": {
+    "checking": "Checking your session…",
+    "redirecting": "Redirecting to sign in…",
+    "signInRequired": "Please sign in to continue."
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "close": "Close"
+  },
+  "placeholder": {
+    "reserved": "This page is reserved in the new shared navigation shell and will be filled out in a later slice.",
+    "goToSearch": "Go to search",
+    "goToContribute": "Go to contribute"
+  },
+  "placeholders": {
+    "chat": "This workspace will list your active conversations about resources and needs.",
+    "preferences": "This page will let the logged-in account adjust notification and application preferences."
+  },
+  "errors": {
+    "genericRetry": "Something went wrong. Please try again."
+  },
+  "lastUpdated": "Last updated: {{date}}",
+  "optionalLabel": "Optional"
+}

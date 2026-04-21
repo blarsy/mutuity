@@ -1,0 +1,33 @@
+{
+  "title": "Contribution",
+  "subtitle": "Review your current Topes balance and the ledger events recorded from profile completion, resource milestones, bids, claims, gifts, and campaigns.",
+  "loading": "Loading your contribution history…",
+  "empty": "No token movements recorded yet.",
+  "ledgerInfo": "This ledger slice records profile-completion rewards, first resource milestone rewards, bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.",
+  "ledgerEntriesCount": "{{count}} ledger entries",
+  "giftSent": "Gift sent.",
+  "giftForm": {
+    "title": "Send a gift",
+    "subtitle": "Transfer Topes to another account. For now, enter the recipient account id directly.",
+    "recipientLabel": "Recipient account id",
+    "amountLabel": "Amount",
+    "messageLabel": "Optional message",
+    "sendButton": "Send gift",
+    "sendingButton": "Sending…"
+  },
+  "movements": {
+    "resource_bid_reserved": "Bid created / tokens reserved",
+    "resource_bid_refunded": "Bid refunded",
+    "claim_settlement_credit": "Claim settled in your favor",
+    "claim_settlement_debit": "You settled a claim on your need",
+    "profile_first_avatar_reward": "First profile avatar added",
+    "profile_first_bio_reward": "First profile bio added",
+    "profile_first_location_reward": "First profile location added",
+    "profile_first_link_reward": "First profile link added",
+    "resource_first_image_reward": "First resource image added",
+    "resource_first_default_token_amount_reward": "First default Topes amount set on a resource",
+    "resource_age_24h_reward": "Resource reached the 24-hour milestone",
+    "claim_age_24h_reward": "Claim stayed valid for 24 hours",
+    "campaign_airdrop_received": "Campaign airdrop received"
+  }
+}

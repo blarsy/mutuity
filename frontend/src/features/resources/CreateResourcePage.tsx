@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -138,6 +139,7 @@ function toDateTimeLocalValue(value: string | null) {
 
 export default function CreateResourcePage() {
   const router = useRouter();
+  const { t } = useTranslation("resources");
   const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
   const isEditMode = Boolean(resourceId);
   const [publishResource, { loading, error, data }] = useMutation<
@@ -217,10 +219,10 @@ export default function CreateResourcePage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Edit resource
+            {t("form.title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -232,9 +234,9 @@ export default function CreateResourcePage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Edit resource
+            {t("form.title")}
           </Typography>
-          <Alert severity="info">Loading resource…</Alert>
+          <Alert severity="info">{t("form.loading")}</Alert>
         </Box>
       </Container>
     );
@@ -245,9 +247,9 @@ export default function CreateResourcePage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Edit resource
+            {t("form.title")}
           </Typography>
-          <Alert severity="warning">This resource was not found or is no longer accessible.</Alert>
+          <Alert severity="warning">{t("form.notFound")}</Alert>
         </Box>
       </Container>
     );
@@ -259,19 +261,19 @@ export default function CreateResourcePage() {
         <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Edit resource
+              {t("form.title")}
             </Typography>
             <Typography color="text.secondary">
-              Share an object or service nearby. The optional token amount is only a negotiable starting point.
+              {t("form.subtitle")}
             </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button component={NextLink} href="/resources" variant="outlined">
-              Browse resources
+              {t("form.browseResources")}
             </Button>
             <Button component={NextLink} href="/needs" variant="outlined">
-              Browse needs
+              {t("form.browseNeeds")}
             </Button>
           </Stack>
         </Stack>
@@ -296,7 +298,7 @@ export default function CreateResourcePage() {
 
         {data?.publishResource?.resource ? (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Resource “{data.publishResource.resource.title}” has been {isEditMode ? "updated" : "published"}.
+            {t(isEditMode ? "form.updateSuccess" : "form.createSuccess", { title: data.publishResource.resource.title })}
           </Alert>
         ) : null}
 
@@ -320,7 +322,7 @@ export default function CreateResourcePage() {
               <Stack spacing={2}>
                 <TextField
                   name="title"
-                  label="Resource title"
+                  label={t("form.titleLabel")}
                   value={values.title}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -332,12 +334,12 @@ export default function CreateResourcePage() {
                 <TextField
                   select
                   name="intensity"
-                  label="Intensity"
+                  label={t("form.intensityLabel")}
                   value={values.intensity}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={Boolean(touched.intensity && errors.intensity)}
-                  helperText={touched.intensity ? errors.intensity : "Choose the same intensity scale used for needs."}
+                  helperText={touched.intensity ? errors.intensity : t("form.intensityHelper")}
                   required
                 >
                   {RESOURCE_INTENSITY_OPTIONS.map(option => (
@@ -349,7 +351,7 @@ export default function CreateResourcePage() {
 
                 <TextField
                   name="defaultTokenAmount"
-                  label="Suggested token amount"
+                  label={t("form.defaultTokenLabel")}
                   type="number"
                   value={values.defaultTokenAmount}
                   onChange={handleChange}
@@ -358,68 +360,68 @@ export default function CreateResourcePage() {
                   helperText={
                     touched.defaultTokenAmount && errors.defaultTokenAmount
                       ? errors.defaultTokenAmount
-                      : `Optional. ${getTokenRangeLabel(values.intensity)} tokens for this intensity.`
+                      : t("form.defaultTokenHelper", { range: getTokenRangeLabel(values.intensity) })
                   }
                   inputProps={{ min: 1 }}
                 />
 
                 <TextField
                   name="description"
-                  label="Description"
+                  label={t("form.descriptionLabel")}
                   value={values.description}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={Boolean(touched.description && errors.description)}
-                  helperText={touched.description ? errors.description : "Optional, up to 8000 characters."}
+                  helperText={touched.description ? errors.description : t("form.descriptionHelper")}
                   multiline
                   minRows={5}
                 />
 
                 <TextField
                   name="imageUrlsText"
-                  label="Image URLs"
+                  label={t("form.imageUrlsLabel")}
                   value={values.imageUrlsText}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={Boolean(touched.imageUrlsText && errors.imageUrlsText)}
-                  helperText={touched.imageUrlsText ? errors.imageUrlsText : "Optional. Paste one or more image URLs separated by commas or new lines."}
+                  helperText={touched.imageUrlsText ? errors.imageUrlsText : t("form.imageUrlsHelper")}
                   multiline
                   minRows={2}
                 />
 
                 <TextField
                   name="location"
-                  label="Location label"
+                  label={t("form.locationLabel")}
                   value={values.location}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={Boolean(touched.location && errors.location)}
-                  helperText={touched.location ? errors.location : "Shown to nearby people when they browse."}
+                  helperText={touched.location ? errors.location : t("form.locationHelper")}
                   required
                 />
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                   <TextField
                     name="latitude"
-                    label="Latitude"
+                    label={t("form.latitudeLabel")}
                     type="number"
                     value={values.latitude}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={Boolean(touched.latitude && errors.latitude)}
-                    helperText={touched.latitude ? errors.latitude : "For distance sorting"}
+                    helperText={touched.latitude ? errors.latitude : t("form.coordinatesHelper")}
                     required
                     fullWidth
                   />
                   <TextField
                     name="longitude"
-                    label="Longitude"
+                    label={t("form.longitudeLabel")}
                     type="number"
                     value={values.longitude}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={Boolean(touched.longitude && errors.longitude)}
-                    helperText={touched.longitude ? errors.longitude : "For distance sorting"}
+                    helperText={touched.longitude ? errors.longitude : t("form.coordinatesHelper")}
                     required
                     fullWidth
                   />
@@ -427,13 +429,13 @@ export default function CreateResourcePage() {
 
                 <Box>
                   <Typography gutterBottom variant="subtitle1">
-                    Categories
+                    {t("form.categoriesTitle")}
                   </Typography>
                   <Typography color="text.secondary" sx={{ mb: 1 }} variant="body2">
-                    Choose from the fixed system-provided category list derived from the legacy product.
+                    {t("form.categoriesHelper")}
                   </Typography>
                   {loadingCategories ? (
-                    <Alert severity="info">Loading categories…</Alert>
+                    <Alert severity="info">{t("form.loadingCategories")}</Alert>
                   ) : (
                     <FormGroup>
                       {categoryOptions.map(category => (
@@ -459,7 +461,7 @@ export default function CreateResourcePage() {
 
                 <TextField
                   name="expiresAt"
-                  label="Expiration datetime"
+                  label={t("form.expiresAtLabel")}
                   type="datetime-local"
                   value={values.expiresAt}
                   onChange={handleChange}
@@ -468,14 +470,14 @@ export default function CreateResourcePage() {
                   helperText={
                     touched.expiresAt && errors.expiresAt
                       ? errors.expiresAt
-                      : "Leave empty to keep the resource permanent."
+                      : t("form.expiresAtHelper")
                   }
                   InputLabelProps={{ shrink: true }}
                 />
 
                 <Box>
                   <Typography gutterBottom variant="subtitle1">
-                    Resource type
+                    {t("form.resourceTypeTitle")}
                   </Typography>
                   <FormGroup row>
                     <FormControlLabel
@@ -487,7 +489,7 @@ export default function CreateResourcePage() {
                           }}
                         />
                       }
-                      label="Product"
+                      label={t("form.isProduct")}
                     />
                     <FormControlLabel
                       control={
@@ -498,7 +500,7 @@ export default function CreateResourcePage() {
                           }}
                         />
                       }
-                      label="Service"
+                      label={t("form.isService")}
                     />
                   </FormGroup>
                   {errors.isService ? (
@@ -510,7 +512,7 @@ export default function CreateResourcePage() {
 
                 <Box>
                   <Typography gutterBottom variant="subtitle1">
-                    Modality flags
+                    {t("form.modalityFlagsTitle")}
                   </Typography>
                   <FormGroup row>
                     <FormControlLabel
@@ -522,7 +524,7 @@ export default function CreateResourcePage() {
                           }}
                         />
                       }
-                      label="Can be given"
+                      label={t("form.canBeGiven")}
                     />
                     <FormControlLabel
                       control={
@@ -533,7 +535,7 @@ export default function CreateResourcePage() {
                           }}
                         />
                       }
-                      label="Can be exchanged"
+                      label={t("form.canBeExchanged")}
                     />
                     <FormControlLabel
                       control={
@@ -544,7 +546,7 @@ export default function CreateResourcePage() {
                           }}
                         />
                       }
-                      label="Can be taken away"
+                      label={t("form.canBeTakenAway")}
                     />
                     <FormControlLabel
                       control={
@@ -555,13 +557,13 @@ export default function CreateResourcePage() {
                           }}
                         />
                       }
-                      label="Can be delivered"
+                      label={t("form.canBeDelivered")}
                     />
                   </FormGroup>
                 </Box>
 
                 <Button disabled={isSubmitting || loading || loadingCategories || loadingEditResource} type="submit" variant="contained">
-                  {isEditMode ? "Save resource" : "Add resource"}
+                  {isEditMode ? t("form.saveButton") : t("form.addButton")}
                 </Button>
               </Stack>
             </Form>
