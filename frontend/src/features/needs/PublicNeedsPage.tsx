@@ -249,17 +249,10 @@ export default function PublicNeedsPage() {
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href="/" variant="outlined">
-              Back home
-            </Button>
             <Button component={NextLink} href={createNeedHref} variant="contained">
               Add
             </Button>
-            {session.authenticated ? (
-              <LogoutButton color="inherit" redirectTo="/needs" variant="outlined">
-                Sign out
-              </LogoutButton>
-            ) : (
+            {!session.authenticated &&(
               <Button component={NextLink} href="/login?next=%2Fneeds" variant="contained">
                 Sign in
               </Button>
@@ -275,11 +268,7 @@ export default function PublicNeedsPage() {
           <Alert severity="success" sx={{ mb: 2 }}>
             Signed in as {session.account?.displayName ?? session.account?.externalSubject ?? "account"}. Claiming can build on this session next.
           </Alert>
-        ) : (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            You can browse needs while signed out. Sign in will be required for claiming.
-          </Alert>
-        )}
+        ) : null}
 
         <Alert severity="info" sx={{ mb: 2 }}>
           Current ranking mixes closeness (50%), ease of setup (30%), and sooner expiry (20%).

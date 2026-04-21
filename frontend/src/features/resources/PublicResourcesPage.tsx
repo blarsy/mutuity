@@ -153,38 +153,20 @@ export default function PublicResourcesPage() {
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href="/" variant="outlined">
-              Back home
-            </Button>
-            <Button component={NextLink} href="/needs" variant="outlined">
-              Browse needs
-            </Button>
             <Button component={NextLink} href={publishResourceHref} variant="contained">
-              Add resource
+              Add
             </Button>
-            {session.authenticated ? (
-              <LogoutButton color="inherit" redirectTo="/resources" variant="outlined">
-                Sign out
-              </LogoutButton>
-            ) : (
+            {!session.authenticated &&
               <Button component={NextLink} href="/login?next=%2Fresources" variant="contained">
                 Sign in
               </Button>
-            )}
+            }
           </Stack>
         </Stack>
 
-        {status === "loading" ? (
+        {status === "loading" && (
           <Alert severity="info" sx={{ mb: 2 }}>
             Checking your session…
-          </Alert>
-        ) : session.authenticated ? (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Signed in as {session.account?.displayName ?? session.account?.externalSubject ?? "account"}.
-          </Alert>
-        ) : (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            You can browse resources while signed out. Sign in will be required for publishing and bidding.
           </Alert>
         )}
 

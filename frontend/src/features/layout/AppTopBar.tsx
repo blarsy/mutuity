@@ -11,17 +11,17 @@ import { AvatarIconButton } from "../ui/AvatarIconButton";
 
 const signedOutLinks = [
   { label: "Search", href: "/resources" },
-  { label: "Campaigns", href: "/campaigns" }
+  { label: "Contribute", href: "/needs" }
 ];
 
 const signedInLinks = [
   { label: "Search", href: "/resources" },
-  { label: "Campaigns", href: "/campaigns" },
   { label: "Contribute", href: "/needs" },
   { label: "Resources", href: "/resources/manage" },
   { label: "Bids", href: "/bids" },
   { label: "Needs", href: "/needs/manage" },
   { label: "Claims", href: "/claims" },
+  { label: "Campaigns", href: "/campaigns" },
   { label: "Chat", href: "/chat" },
   { label: "Notifications", href: "/notifications" }
 ];

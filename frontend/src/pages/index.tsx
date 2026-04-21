@@ -1,10 +1,16 @@
 import NextLink from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { LoginDialog } from "../features/auth/LoginDialog";
 
 export default function HomePage() {
+  const router = useRouter();
   const { session, status } = useAuth();
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const accountName = session.account?.displayName ?? session.account?.externalSubject ?? "account";
 
   return (
     <Container maxWidth="md">
@@ -23,13 +29,15 @@ export default function HomePage() {
         ) : null}
 
         {session.authenticated ? (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            Signed in as {session.account?.displayName ?? session.account?.externalSubject ?? "account"} ({session.role}).
-          </Alert>
+          <Typography sx={{ mb: 3 }} variant="h5">
+            Welcome back {accountName}
+          </Typography>
         ) : (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            You are currently signed out.
-          </Alert>
+          <Box sx={{ mb: 3 }}>
+            <Button onClick={() => setLoginDialogOpen(true)} variant="outlined">
+              Sign in
+            </Button>
+          </Box>
         )}
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -40,6 +48,13 @@ export default function HomePage() {
             Resources
           </Button>
         </Stack>
+
+        <LoginDialog
+          nextDestination={router.asPath}
+          onClose={() => setLoginDialogOpen(false)}
+          open={loginDialogOpen}
+          subtitle="Connect to access bids, claims, chat, and your account workspace."
+        />
       </Box>
     </Container>
   );
