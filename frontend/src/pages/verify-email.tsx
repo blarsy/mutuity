@@ -4,9 +4,11 @@ import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
 
 import { confirmEmailVerification } from "../features/auth/auth.api";
+import { useAuth } from "../features/auth/AuthProvider";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
+  const { refreshSession } = useAuth();
   const token = useMemo(
     () => (typeof router.query.token === "string" ? router.query.token.trim() : ""),
     [router.query.token]
@@ -30,10 +32,11 @@ export default function VerifyEmailPage() {
     const run = async () => {
       try {
         const { message: successMessage } = await confirmEmailVerification({ token });
+        await refreshSession();
 
         if (!cancelled) {
           setStatus("success");
-          setMessage(successMessage ?? "Email verified. You can now sign in.");
+          setMessage(successMessage ?? "Email verified.");
         }
       } catch (error) {
         if (!cancelled) {
@@ -48,7 +51,7 @@ export default function VerifyEmailPage() {
     return () => {
       cancelled = true;
     };
-  }, [router.isReady, token]);
+  }, [refreshSession, router.isReady, token]);
 
   return (
     <Container maxWidth="sm">
@@ -61,13 +64,6 @@ export default function VerifyEmailPage() {
           {status === "loading" ? <Alert severity="info">{message}</Alert> : null}
           {status === "success" ? <Alert severity="success">{message}</Alert> : null}
           {status === "error" ? <Alert severity="error">{message}</Alert> : null}
-
-          <Button component={NextLink} href="/login" variant="contained">
-            Continue to sign in
-          </Button>
-          <Button component={NextLink} href="/register">
-            Back to create account
-          </Button>
         </Stack>
       </Box>
     </Container>

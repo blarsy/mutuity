@@ -127,7 +127,7 @@ export function confirmEmailVerification(input: { token: string }) {
       }
     })
     .then(() => ({
-      message: "Email verified. You can now sign in."
+      message: "Email verified."
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));

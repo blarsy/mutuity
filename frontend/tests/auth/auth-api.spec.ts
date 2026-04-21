@@ -163,7 +163,7 @@ describe("auth api local flow coverage", () => {
       });
 
     await expect(confirmEmailVerification({ token: "verification-token" })).resolves.toEqual({
-      message: "Email verified. You can now sign in."
+      message: "Email verified."
     });
 
     expect(mockedApollo().mutate).toHaveBeenNthCalledWith(
