@@ -260,15 +260,11 @@ export default function PublicNeedsPage() {
           </Stack>
         </Stack>
 
-        {status === "loading" ? (
+        {status === "loading" && (
           <Alert severity="info" sx={{ mb: 2 }}>
             Checking your session…
           </Alert>
-        ) : session.authenticated ? (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Signed in as {session.account?.displayName ?? session.account?.externalSubject ?? "account"}. Claiming can build on this session next.
-          </Alert>
-        ) : null}
+        )}
 
         <Alert severity="info" sx={{ mb: 2 }}>
           Current ranking mixes closeness (50%), ease of setup (30%), and sooner expiry (20%).
