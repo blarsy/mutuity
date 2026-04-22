@@ -20,6 +20,8 @@
   "sent": "Sent",
   "received": "Received",
   "updated": "Updated",
+  "threadOpen": "thread open",
+  "topesAmount": "{{amount}} Topes",
   "noTopes": "No Topes",
   "actions": {
     "openThread": "Open thread",

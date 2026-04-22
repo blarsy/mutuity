@@ -245,7 +245,7 @@ export default function ManageNeedsPage() {
                   )}
                   chips={
                     <>
-                      <Chip label={`${need.proposedTopesAmount ?? "-"} topes`} size="small" variant="outlined" />
+                      <Chip label={t("manage.topesChip", { amount: need.proposedTopesAmount ?? "-" })} size="small" variant="outlined" />
                       {buildNeedTags(need).slice(0, 2).map(tag => (
                         <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                       ))}

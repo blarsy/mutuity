@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Campaigns",
+    "backHome": "Back home",
+    "launchCampaign": "Launch campaign",
+    "seeInspiration": "See others for inspiration",
+    "signInHint": "Sign in to see your campaigns and launch new ones.",
+    "loadingMine": "Loading your campaigns…",
+    "emptyMine": "You have not created any campaigns yet.",
+    "loadingMore": "Loading more…",
+    "inspirationTitle": "Approved campaigns for inspiration",
+    "inspirationEmpty": "No approved campaigns available yet."
+  },
+  "public": {
+    "title": "Public campaigns",
+    "subtitle": "Browse campaigns currently active on the platform.",
+    "loading": "Loading campaigns…",
+    "empty": "No active approved campaigns at the moment."
+  },
+  "pending": {
+    "title": "Pending campaigns",
+    "subtitle": "Review pending campaigns and approve those that should be publicly listed.",
+    "onlyManagers": "Only manager accounts can approve campaigns.",
+    "loading": "Loading pending campaigns…",
+    "empty": "No campaigns are waiting for approval.",
+    "approveButton": "Approve campaign"
+  },
+  "create": {
+    "title": "Create a campaign",
+    "subtitle": "Campaigns are created in pending moderation state.",
+    "success": "Campaign created with status {{status}}.",
+    "submitButton": "Submit for moderation",
+    "fields": {
+      "title": "Campaign title",
+      "theme": "Theme",
+      "noteForManager": "Note for manager",
+      "rewardsMultiplier": "Rewards multiplier",
+      "airdropAmount": "Airdrop amount",
+      "startDatetime": "Start datetime",
+      "airdropDatetime": "Airdrop datetime",
+      "endDatetime": "End datetime"
+    }
+  },
+  "moderationNotes": {
+    "title": "Add Moderation Note",
+    "noteLabel": "Moderation note",
+    "notePlaceholder": "Explain what should be updated before approval",
+    "sendButton": "Send Note",
+    "empty": "No moderation notes yet.",
+    "noteMeta": "Manager {{managerAccountId}} • {{createdAt}}"
+  },
+  "triage": {
+    "title": "Campaign need triage",
+    "subtitle": "Review needs joined to campaigns you created and accept or reject pending requests.",
+    "filteringByCampaignId": "Filtering by campaign ID: {{campaignId}}",
+    "totalLinkedNeeds": "Total linked needs: {{count}}",
+    "pendingTriage": "Pending triage: {{count}}",
+    "loading": "Loading joined needs…",
+    "empty": "No joined needs available for triage.",
+    "campaignLabel": "Campaign",
+    "needFallback": "Need {{needId}}",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
+  "labels": {
+    "theme": "Theme",
+    "submitted": "Submitted",
+    "start": "Start",
+    "airdrop": "Airdrop",
+    "end": "End",
+    "created": "Created"
+  },
+  "statuses": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "active": "Active",
+    "ended": "Ended",
+    "upcoming": "Upcoming"
+  }
+}

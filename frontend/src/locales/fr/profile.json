@@ -1,0 +1,31 @@
+{
+  "title": "Profil",
+  "subtitle": "Complétez votre profil et débloquez des récompenses Topes uniques pour votre premier avatar, votre bio, votre localisation et votre premier lien ajouté.",
+  "avatarPreviewHint": "L'aperçu de votre avatar se met à jour pendant que vous modifiez l'URL de l'image ci-dessous.",
+  "loading": "Chargement de votre profil…",
+  "successUpdated": "Profil mis à jour.",
+  "profileLinksTitle": "Liens du profil",
+  "addLink": "Ajouter un lien",
+  "noLinksYet": "Aucun lien de profil pour l'instant. Ajoutez un site web ou un lien social si vous souhaitez en partager un.",
+  "removeLink": "Supprimer le lien",
+  "savingButton": "Enregistrement…",
+  "saveButton": "Enregistrer le profil",
+  "fields": {
+    "displayName": "Nom affiché",
+    "bio": "Bio",
+    "location": "Localisation",
+    "avatarUrl": "URL de l'image d'avatar",
+    "avatarPlaceholder": "https://example.com/avatar.png",
+    "linkType": "Type",
+    "caption": "Légende",
+    "captionPlaceholder": "ex. Site principal",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com"
+  },
+  "linkTypes": {
+    "website": "Site web",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "x": "X"
+  }
+}

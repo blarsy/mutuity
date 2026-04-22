@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Card, CardContent, Container, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
@@ -28,10 +29,10 @@ type AccountProfileData = {
 };
 
 const PROFILE_LINK_TYPE_OPTIONS: Array<{ value: ProfileLinkType; label: string }> = [
-  { value: "website", label: "Website" },
-  { value: "facebook", label: "Facebook" },
-  { value: "instagram", label: "Instagram" },
-  { value: "x", label: "X" }
+  { value: "website", label: "linkTypes.website" },
+  { value: "facebook", label: "linkTypes.facebook" },
+  { value: "instagram", label: "linkTypes.instagram" },
+  { value: "x", label: "linkTypes.x" }
 ];
 
 function createEmptyProfileLink(): ProfileLink {
@@ -45,6 +46,7 @@ function createEmptyProfileLink(): ProfileLink {
 export default function ProfilePage() {
   const { session, refreshSession } = useAuth();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const { t } = useTranslation("profile");
   const accountId = session.account?.id ?? null;
   const { data, loading, error, refetch } = useQuery<AccountProfileData>(ACCOUNT_PROFILE_QUERY, {
     skip: !accountId,
@@ -108,7 +110,7 @@ export default function ProfilePage() {
     });
 
     await Promise.all([refetch(), refreshSession()]);
-    setSuccessMessage("Profile updated.");
+    setSuccessMessage(t("successUpdated"));
   };
 
   if (!isAuthenticated) {
@@ -116,10 +118,10 @@ export default function ProfilePage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Profile
+            {t("title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -132,10 +134,10 @@ export default function ProfilePage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Profile
+              {t("title")}
             </Typography>
             <Typography color="text.secondary">
-              Complete your profile and unlock one-time Topes rewards for your first avatar, bio, location, and first added link.
+              {t("subtitle")}
             </Typography>
           </Box>
 
@@ -144,45 +146,45 @@ export default function ProfilePage() {
               <Stack alignItems="center" spacing={2}>
                 <AvatarIconButton displayName={displayName || session.account?.displayName} imageUrl={avatarUrl || null} size={72} />
                 <Typography color="text.secondary" variant="body2">
-                  Your avatar preview updates as you edit the profile image URL below.
+                  {t("avatarPreviewHint")}
                 </Typography>
               </Stack>
             </CardContent>
           </Card>
 
-          {loading ? <Alert severity="info">Loading your profile…</Alert> : null}
+          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
           {successMessage ? <Alert severity="success">{successMessage}</Alert> : null}
 
           <Card variant="outlined">
             <CardContent>
               <Stack spacing={2}>
-                <TextField label="Display name" onChange={event => setDisplayName(event.target.value)} value={displayName} />
+                <TextField label={t("fields.displayName")} onChange={event => setDisplayName(event.target.value)} value={displayName} />
                 <TextField
-                  label="Bio"
+                  label={t("fields.bio")}
                   minRows={3}
                   multiline
                   onChange={event => setBio(event.target.value)}
                   value={bio}
                 />
-                <TextField label="Location" onChange={event => setLocation(event.target.value)} value={location} />
+                <TextField label={t("fields.location")} onChange={event => setLocation(event.target.value)} value={location} />
                 <TextField
-                  label="Avatar image URL"
+                  label={t("fields.avatarUrl")}
                   onChange={event => setAvatarUrl(event.target.value)}
-                  placeholder="https://example.com/avatar.png"
+                  placeholder={t("fields.avatarPlaceholder")}
                   value={avatarUrl}
                 />
 
                 <Stack spacing={1.5}>
                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>
-                    <Typography variant="subtitle1">Profile links</Typography>
+                    <Typography variant="subtitle1">{t("profileLinksTitle")}</Typography>
                     <Button onClick={() => setProfileLinks(current => [...current, createEmptyProfileLink()])} variant="outlined">
-                      Add link
+                      {t("addLink")}
                     </Button>
                   </Stack>
 
                   {profileLinks.length === 0 ? (
-                    <Alert severity="info">No profile links yet. Add a website or social link if you want to share one.</Alert>
+                    <Alert severity="info">{t("noLinksYet")}</Alert>
                   ) : (
                     profileLinks.map((link, index) => (
                       <Card key={`profile-link-${index}`} variant="outlined">
@@ -190,7 +192,7 @@ export default function ProfilePage() {
                           <Stack spacing={1.5}>
                             <TextField
                               select
-                              label="Type"
+                              label={t("fields.linkType")}
                               onChange={event => {
                                 const nextType = event.target.value as ProfileLinkType;
                                 setProfileLinks(current =>
@@ -201,30 +203,30 @@ export default function ProfilePage() {
                             >
                               {PROFILE_LINK_TYPE_OPTIONS.map(option => (
                                 <MenuItem key={option.value} value={option.value}>
-                                  {option.label}
+                                  {t(option.label)}
                                 </MenuItem>
                               ))}
                             </TextField>
                             <TextField
-                              label="Caption"
+                              label={t("fields.caption")}
                               onChange={event => {
                                 const nextLabel = event.target.value;
                                 setProfileLinks(current =>
                                   current.map((item, itemIndex) => (itemIndex === index ? { ...item, label: nextLabel } : item))
                                 );
                               }}
-                              placeholder="e.g. Main website"
+                              placeholder={t("fields.captionPlaceholder")}
                               value={link.label}
                             />
                             <TextField
-                              label="URL"
+                              label={t("fields.url")}
                               onChange={event => {
                                 const nextUrl = event.target.value;
                                 setProfileLinks(current =>
                                   current.map((item, itemIndex) => (itemIndex === index ? { ...item, url: nextUrl } : item))
                                 );
                               }}
-                              placeholder="https://example.com"
+                              placeholder={t("fields.urlPlaceholder")}
                               value={link.url}
                             />
                             <Stack direction="row" justifyContent="flex-end">
@@ -232,7 +234,7 @@ export default function ProfilePage() {
                                 color="error"
                                 onClick={() => setProfileLinks(current => current.filter((_, itemIndex) => itemIndex !== index))}
                               >
-                                Remove link
+                                {t("removeLink")}
                               </Button>
                             </Stack>
                           </Stack>
@@ -244,7 +246,7 @@ export default function ProfilePage() {
 
                 <Stack direction="row" justifyContent="flex-end">
                   <Button disabled={saving || loading} onClick={() => void handleSave()} variant="contained">
-                    {saving ? "Saving…" : "Save profile"}
+                    {saving ? t("savingButton") : t("saveButton")}
                   </Button>
                 </Stack>
               </Stack>

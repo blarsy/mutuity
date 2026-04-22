@@ -1,5 +1,6 @@
 import { Box, ButtonBase, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AvatarIconButton } from "./AvatarIconButton";
 
@@ -19,9 +20,9 @@ type ResourceCardProps = {
   onImageClick?: () => void;
 };
 
-function truncateDescription(value?: string | null, maxLength = 100) {
+function truncateDescription(value: string | null | undefined, noDescriptionLabel: string, maxLength = 100) {
   if (!value) {
-    return "No description yet.";
+    return noDescriptionLabel;
   }
 
   const normalized = value.trim().replace(/\s+/g, " ");
@@ -33,9 +34,9 @@ function truncateDescription(value?: string | null, maxLength = 100) {
   return `${normalized.slice(0, maxLength).trimEnd()}…`;
 }
 
-function formatExpiry(value?: string | null) {
+function formatExpiry(value: string | null | undefined, noDateLabel: string) {
   if (!value) {
-    return "Permanent";
+    return noDateLabel;
   }
 
   return new Date(value).toLocaleDateString();
@@ -56,6 +57,8 @@ export function ResourceCard({
   onCreatorClick,
   onImageClick
 }: ResourceCardProps) {
+  const { t } = useTranslation("resources");
+
   return (
     <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }} variant="outlined">
       <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={1} sx={{ px: 2, pt: 2 }}>
@@ -74,7 +77,7 @@ export function ResourceCard({
           </ButtonBase>
         </Stack>
 
-        <Chip label={`Expires: ${formatExpiry(expiresAt)}`} size="small" variant="outlined" />
+        <Chip label={`${t("card.expires")}: ${formatExpiry(expiresAt, t("card.permanent"))}`} size="small" variant="outlined" />
       </Stack>
 
       <ButtonBase
@@ -98,7 +101,7 @@ export function ResourceCard({
             overflow: "hidden"
           }}
         >
-          {!imageUrl ? <Typography variant="body2">No image yet</Typography> : null}
+          {!imageUrl ? <Typography variant="body2">{t("card.noImageYet")}</Typography> : null}
         </Box>
       </ButtonBase>
 
@@ -120,7 +123,7 @@ export function ResourceCard({
             </Box>
 
             <Typography color="text.secondary" variant="body2">
-              {truncateDescription(description)}
+              {truncateDescription(description, t("card.noDescriptionYet"))}
             </Typography>
 
             {chips ? (

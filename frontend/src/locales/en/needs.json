@@ -3,7 +3,8 @@
     "title": "Needs",
     "editTitle": "Edit need",
     "detailTitle": "Need details",
-    "detailDescription": "A dedicated public detail page for {{needId}} is reserved in the new shared UI architecture."
+    "detailDescription": "A dedicated public detail page for {{needId}} is reserved in the new shared UI architecture.",
+    "thisNeed": "this need"
   },
   "browse": {
     "title": "Discover active needs",
@@ -11,8 +12,29 @@
     "sortDescription": "Current ranking mixes closeness (50%), ease of setup (30%), and sooner expiry (20%).",
     "searchLabel": "Search needs",
     "searchPlaceholder": "Try creator name, title, tooling, or competence",
+    "addButton": "Add",
+    "signInButton": "Sign in",
+    "locationFallbackStatus": "Using account or Tournai fallback when no explicit coordinates are provided.",
+    "locationBrowserStatus": "Browser coordinates are available as a fallback when account coordinates are unavailable.",
     "loading": "Loading active needs…",
-    "empty": "No active needs match the current filters right now."
+    "empty": "No active needs match the current filters right now.",
+    "yourNeedChip": "your need",
+    "manageIncomingClaims": "Manage incoming claims",
+    "noClaimsYet": "No claims yet",
+    "signInToClaim": "Sign in to claim",
+    "topesProposed": "{{amount}} Topes proposed",
+    "yourClaim": "your claim: {{status}}",
+    "incomingClaims_one": "{{count}} incoming claim",
+    "incomingClaims_other": "{{count}} incoming claims",
+    "tooling": "Tooling",
+    "competence": "Competence",
+    "weightedScore": "Weighted score",
+    "closeness": "Closeness",
+    "ease": "Ease",
+    "expiry": "Expiry",
+    "expires": "Expires",
+    "queryOrigin": "Query origin",
+    "noExpirySet": "No expiry set"
   },
   "form": {
     "titleLabel": "Need title",
@@ -58,6 +80,7 @@
     "addButton": "Add need",
     "loadingMore": "Loading more…",
     "backToSearch": "Back to needs search",
+    "topesChip": "{{amount}} topes",
     "deleteDialog": {
       "title": "Delete need?",
       "body": "This will archive \"{{title}}\" from active listings.",
@@ -69,5 +92,84 @@
     "toolingRequired": "Tooling",
     "competenceRequired": "Competence",
     "multiplePeopleRequired": "Multiple people"
+  },
+  "triState": {
+    "neutral": "any",
+    "yes": "yes",
+    "no": "no"
+  },
+  "needTags": {
+    "objectRequired": "object required",
+    "toolingRequired": "tooling required",
+    "competenceRequired": "competence required",
+    "multiplePeople": "multiple people",
+    "multiplePeopleCount": "{{count}}+ people"
+  },
+  "summaryFacts": {
+    "location": "Location",
+    "intensity": "Intensity",
+    "proposedTopes": "Proposed Topes",
+    "joined": "Joined",
+    "triaged": "Triaged",
+    "na": "N/A"
+  },
+  "claimDialog": {
+    "updateClaimNote": "Update claim note",
+    "claimAgain": "Claim again ({{status}})",
+    "claimThisNeed": "Claim this need",
+    "updateYourClaim": "Update your claim",
+    "claimingHintPrefix": "You are claiming",
+    "claimingHintSuffix": "Add an optional note so the creator knows how you can help.",
+    "optionalMessage": "Optional message",
+    "placeholder": "Describe what you can do, when you are available, or anything the creator should know.",
+    "saving": "Saving…",
+    "saveClaim": "Save claim",
+    "submitClaim": "Submit claim"
+  },
+  "claimConversation": {
+    "read": "read",
+    "loading": "Loading claim conversation…",
+    "notFound": "This claim could not be loaded.",
+    "title": "Conversation for {{needTitle}}",
+    "claimer": "Claimer",
+    "sendFirstReply": "Send the first reply to open the private conversation.",
+    "creatorNotReplied": "The creator has not replied yet. You will be able to continue once the conversation is started.",
+    "initialClaimNote": "Initial claim note",
+    "settledInfo": "This claim is settled. The conversation stays open for follow-up coordination between the two participants.",
+    "reply": "Reply",
+    "firstReply": "First reply",
+    "replyPlaceholder": "Write your next coordination message",
+    "firstReplyPlaceholder": "Write the first message that will open the conversation",
+    "imageHelper": "Optional image URLs, separated by commas or new lines.",
+    "imageMetadata": "Image metadata",
+    "imagePlaceholder": "https://example.com/photo-1.png",
+    "sending": "Sending…",
+    "sendMessage": "Send message",
+    "startConversation": "Start conversation"
+  },
+  "claimNotifications": {
+    "empty": "No claim activity yet. Once you claim a need or receive one on your own need, it will appear here.",
+    "title": "Claim activity",
+    "subtitle": "Track your own claims, incoming requests on your needs, and open the related conversation threads.",
+    "incomingTitle": "Incoming claims on your needs",
+    "submittedTitle": "Your submitted claims",
+    "openThread": "Open thread",
+    "replyNow": "Reply now",
+    "viewStatus": "View status",
+    "yourNote": "Your note: “{{message}}”",
+    "noNote": "No note attached",
+    "recentNotifications": "Recent notifications"
+  },
+  "claimManagement": {
+    "loading": "Loading claim management…",
+    "notAvailable": "This claim is no longer available.",
+    "title": "Manage claim",
+    "need": "Need",
+    "claimer": "Claimer",
+    "settleInfo": "Settling this claim confirms the selected helper and automatically declines the remaining open claims for the same need.",
+    "topesAttached": "{{amount}} Topes are attached to this need.",
+    "noTopesAttached": "No Topes amount is attached to this need.",
+    "settling": "Settling…",
+    "settleButton": "Settle this claim"
   }
 }

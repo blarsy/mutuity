@@ -1,4 +1,5 @@
 import { Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 export function NeedSummaryFacts({
   location,
@@ -13,17 +14,19 @@ export function NeedSummaryFacts({
   joinedAt: string;
   triagedAt?: string | null;
 }) {
+  const { t } = useTranslation("needs");
+
   return (
     <>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
-        <Typography variant="body2">Location: {location ?? "N/A"}</Typography>
-        <Typography variant="body2">Intensity: {intensity ?? "N/A"}</Typography>
-        <Typography variant="body2">Proposed Topes: {proposedTopesAmount ?? "N/A"}</Typography>
+        <Typography variant="body2">{t("summaryFacts.location")}: {location ?? t("summaryFacts.na")}</Typography>
+        <Typography variant="body2">{t("summaryFacts.intensity")}: {intensity ?? t("summaryFacts.na")}</Typography>
+        <Typography variant="body2">{t("summaryFacts.proposedTopes")}: {proposedTopesAmount ?? t("summaryFacts.na")}</Typography>
       </Stack>
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 1 }}>
-        <Typography variant="caption">Joined: {new Date(joinedAt).toLocaleString()}</Typography>
-        {triagedAt ? <Typography variant="caption">Triaged: {new Date(triagedAt).toLocaleString()}</Typography> : null}
+        <Typography variant="caption">{t("summaryFacts.joined")}: {new Date(joinedAt).toLocaleString()}</Typography>
+        {triagedAt ? <Typography variant="caption">{t("summaryFacts.triaged")}: {new Date(triagedAt).toLocaleString()}</Typography> : null}
       </Stack>
     </>
   );

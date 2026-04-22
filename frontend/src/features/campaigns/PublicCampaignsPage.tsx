@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { Alert, Box, Card, CardContent, Chip, Container, Grid, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLIC_CAMPAIGNS_QUERY } from "./campaigns.queries";
@@ -29,6 +30,7 @@ export function isCampaignActive(now: Date, startAtIso: string, endAtIso: string
 }
 
 export default function PublicCampaignsPage() {
+  const { t } = useTranslation("campaigns");
   const { data, loading, error } = useQuery<PublicCampaignsData>(PUBLIC_CAMPAIGNS_QUERY);
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
@@ -43,17 +45,17 @@ export default function PublicCampaignsPage() {
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Public campaigns
+          {t("public.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Browse campaigns currently active on the platform.
+          {t("public.subtitle")}
         </Typography>
 
-        {loading ? <Alert severity="info">Loading campaigns…</Alert> : null}
+        {loading ? <Alert severity="info">{t("public.loading")}</Alert> : null}
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
         {!loading && !errorMessage && activeCampaigns.length === 0 ? (
-          <Alert severity="info">No active approved campaigns at the moment.</Alert>
+          <Alert severity="info">{t("public.empty")}</Alert>
         ) : null}
 
         <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -64,15 +66,15 @@ export default function PublicCampaignsPage() {
                   <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                     <Box>
                       <Typography variant="h6">{campaign.title}</Typography>
-                      <Typography color="text.secondary">Theme: {campaign.theme}</Typography>
+                      <Typography color="text.secondary">{t("labels.theme")}: {campaign.theme}</Typography>
                     </Box>
-                    <Chip color="success" label="Approved" size="small" />
+                    <Chip color="success" label={t("statuses.approved")} size="small" />
                   </Stack>
 
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ mt: 2 }}>
-                    <Typography variant="body2">Start: {new Date(campaign.startAt).toLocaleString()}</Typography>
-                    <Typography variant="body2">Airdrop: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
-                    <Typography variant="body2">End: {new Date(campaign.endAt).toLocaleString()}</Typography>
+                    <Typography variant="body2">{t("labels.start")}: {new Date(campaign.startAt).toLocaleString()}</Typography>
+                    <Typography variant="body2">{t("labels.airdrop")}: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
+                    <Typography variant="body2">{t("labels.end")}: {new Date(campaign.endAt).toLocaleString()}</Typography>
                   </Stack>
                 </CardContent>
               </Card>

@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Campagnes",
+    "backHome": "Retour à l'accueil",
+    "launchCampaign": "Lancer une campagne",
+    "seeInspiration": "Voir d'autres campagnes pour s'inspirer",
+    "signInHint": "Connectez-vous pour voir vos campagnes et en lancer de nouvelles.",
+    "loadingMine": "Chargement de vos campagnes…",
+    "emptyMine": "Vous n'avez encore créé aucune campagne.",
+    "loadingMore": "Chargement supplémentaire…",
+    "inspirationTitle": "Campagnes approuvées pour inspiration",
+    "inspirationEmpty": "Aucune campagne approuvée disponible pour le moment."
+  },
+  "public": {
+    "title": "Campagnes publiques",
+    "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
+    "loading": "Chargement des campagnes…",
+    "empty": "Aucune campagne approuvée active pour le moment."
+  },
+  "pending": {
+    "title": "Campagnes en attente",
+    "subtitle": "Examinez les campagnes en attente et approuvez celles qui doivent être publiées.",
+    "onlyManagers": "Seuls les comptes manager peuvent approuver les campagnes.",
+    "loading": "Chargement des campagnes en attente…",
+    "empty": "Aucune campagne en attente d'approbation.",
+    "approveButton": "Approuver la campagne"
+  },
+  "create": {
+    "title": "Créer une campagne",
+    "subtitle": "Les campagnes sont créées avec le statut de modération en attente.",
+    "success": "Campagne créée avec le statut {{status}}.",
+    "submitButton": "Soumettre pour modération",
+    "fields": {
+      "title": "Titre de la campagne",
+      "theme": "Thème",
+      "noteForManager": "Note pour le manager",
+      "rewardsMultiplier": "Multiplicateur de récompense",
+      "airdropAmount": "Montant de l'airdrop",
+      "startDatetime": "Date/heure de début",
+      "airdropDatetime": "Date/heure de l'airdrop",
+      "endDatetime": "Date/heure de fin"
+    }
+  },
+  "moderationNotes": {
+    "title": "Ajouter une note de modération",
+    "noteLabel": "Note de modération",
+    "notePlaceholder": "Expliquez ce qui doit être mis à jour avant approbation",
+    "sendButton": "Envoyer la note",
+    "empty": "Aucune note de modération pour le moment.",
+    "noteMeta": "Manager {{managerAccountId}} • {{createdAt}}"
+  },
+  "triage": {
+    "title": "Triage des besoins de campagne",
+    "subtitle": "Examinez les besoins rattachés aux campagnes que vous avez créées et acceptez ou rejetez les demandes en attente.",
+    "filteringByCampaignId": "Filtré par ID de campagne : {{campaignId}}",
+    "totalLinkedNeeds": "Besoins liés au total : {{count}}",
+    "pendingTriage": "Triages en attente : {{count}}",
+    "loading": "Chargement des besoins rattachés…",
+    "empty": "Aucun besoin rattaché à trier.",
+    "campaignLabel": "Campagne",
+    "needFallback": "Besoin {{needId}}",
+    "accept": "Accepter",
+    "reject": "Rejeter"
+  },
+  "labels": {
+    "theme": "Thème",
+    "submitted": "Soumis",
+    "start": "Début",
+    "airdrop": "Airdrop",
+    "end": "Fin",
+    "created": "Créée"
+  },
+  "statuses": {
+    "pending": "En attente",
+    "approved": "Approuvée",
+    "active": "Active",
+    "ended": "Terminée",
+    "upcoming": "À venir"
+  }
+}

@@ -177,12 +177,12 @@ export default function ClaimsPage() {
                         <>
                           <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} status={claim.status} />
                           <Chip
-                            label={need.proposedTopesAmount ? `${need.proposedTopesAmount} Topes` : "No Topes"}
+                            label={need.proposedTopesAmount ? t("topesAmount", { amount: need.proposedTopesAmount }) : t("noTopes")}
                             size="small"
                             variant="outlined"
                           />
                           {claim.claimConversationByNeedClaimId ? (
-                            <Chip label="thread open" size="small" variant="outlined" />
+                            <Chip label={t("threadOpen")} size="small" variant="outlined" />
                           ) : null}
                         </>
                       }
@@ -255,7 +255,7 @@ export default function ClaimsPage() {
                           <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} status={claim.status} />
                           <Chip label={claimerLabel} size="small" variant="outlined" />
                           <Chip
-                            label={need.proposedTopesAmount ? `${need.proposedTopesAmount} Topes` : "No Topes"}
+                            label={need.proposedTopesAmount ? t("topesAmount", { amount: need.proposedTopesAmount }) : t("noTopes")}
                             size="small"
                             variant="outlined"
                           />

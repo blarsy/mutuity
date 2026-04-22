@@ -231,7 +231,7 @@ export default function ManageResourcesPage() {
                   )}
                   chips={
                     <>
-                      <Chip label={`${resource.defaultTokenAmount ?? "—"} tokens`} size="small" variant="outlined" />
+                      <Chip label={t("manage.tokensChip", { amount: resource.defaultTokenAmount ?? "—" })} size="small" variant="outlined" />
                       {resource.categoryLabels.slice(0, 2).map(label => (
                         <Chip key={`${resource.id}-${label}`} label={label} size="small" variant="outlined" />
                       ))}

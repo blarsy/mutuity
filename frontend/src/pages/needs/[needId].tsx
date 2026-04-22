@@ -6,7 +6,7 @@ import { PlaceholderPage } from "../../features/layout/PlaceholderPage";
 export default function NeedDetailsPage() {
   const router = useRouter();
   const { t } = useTranslation("needs");
-  const needId = typeof router.query.needId === "string" ? router.query.needId : "this need";
+  const needId = typeof router.query.needId === "string" ? router.query.needId : t("page.thisNeed");
 
   return (
     <PlaceholderPage

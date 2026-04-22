@@ -13,14 +13,17 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { ResourceBidDialog } from "./ResourceBidDialog";
-import { RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
+import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
+import type { ResourceCategoryOption } from "./types";
 
 type ResourceDetailPageProps = {
   resourceId: string;
@@ -69,19 +72,25 @@ type RespondToResourceBidMutationData = {
   };
 };
 
-function formatDate(value: string | null) {
+type ResourceCategoryOptionsQueryData = {
+  allResourceCategories: {
+    nodes: ResourceCategoryOption[];
+  };
+};
+
+function formatDate(value: string | null, noDateLabel: string) {
   if (!value) {
-    return "Permanent";
+    return noDateLabel;
   }
 
   return new Date(value).toLocaleString();
 }
 
-function formatBidStatus(status: ResourceBidStatus) {
-  return status.replaceAll("_", " ").toLowerCase();
+function formatBidStatus(status: ResourceBidStatus, t: (key: string, options?: Record<string, unknown>) => string) {
+  return t(`detail.bidStatuses.${status}`, { defaultValue: status.replaceAll("_", " ").toLowerCase() });
 }
 
-function buildResourceTags(resource: ResourceDetailData["resourceById"]) {
+function buildResourceTags(resource: ResourceDetailData["resourceById"], t: (key: string) => string) {
   if (!resource) {
     return [] as string[];
   }
@@ -89,27 +98,27 @@ function buildResourceTags(resource: ResourceDetailData["resourceById"]) {
   const tags = [resource.intensity.toLowerCase().replaceAll("_", " ")];
 
   if (resource.isProduct) {
-    tags.push("product");
+    tags.push(t("tags.product"));
   }
 
   if (resource.isService) {
-    tags.push("service");
+    tags.push(t("tags.service"));
   }
 
   if (resource.canBeGiven) {
-    tags.push("can be given");
+    tags.push(t("tags.canBeGiven"));
   }
 
   if (resource.canBeExchanged) {
-    tags.push("can be exchanged");
+    tags.push(t("tags.canBeExchanged"));
   }
 
   if (resource.canBeTakenAway) {
-    tags.push("pickup available");
+    tags.push(t("tags.pickupAvailable"));
   }
 
   if (resource.canBeDelivered) {
-    tags.push("delivery available");
+    tags.push(t("tags.deliveryAvailable"));
   }
 
   return tags;
@@ -133,9 +142,11 @@ function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warni
 export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const router = useRouter();
   const { session, status } = useAuth();
+  const { t, i18n } = useTranslation("resources");
   const { data, loading, error, refetch } = useQuery<ResourceDetailData>(RESOURCE_DETAIL_QUERY, {
     variables: { resourceId }
   });
+  const { data: categoryData } = useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
   const [respondToResourceBid, { loading: respondLoading, error: respondError }] =
     useMutation<RespondToResourceBidMutationData>(RESPOND_TO_RESOURCE_BID_MUTATION);
 
@@ -150,9 +161,22 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const creatorLabel = resource?.accountByCreatorAccountId?.displayName
     ?? resource?.accountByCreatorAccountId?.externalSubject
     ?? resource?.creatorAccountId
-    ?? "Unknown account";
+    ?? t("detail.unknownAccount");
   const firstImageUrl = resource?.imageUrls?.[0] ?? null;
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(respondError);
+  const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
+  const isFrench = i18n.language.toLowerCase().startsWith("fr");
+  const localizedCategoryByLabel = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const category of categoryOptions) {
+      const localizedLabel = isFrench ? category.labelFr : category.label;
+      map.set(category.label, localizedLabel);
+      map.set(category.labelFr, localizedLabel);
+    }
+
+    return map;
+  }, [categoryOptions, isFrench]);
 
   const handleDecision = async (resourceBidId: string, nextStatus: "ACCEPTED" | "DECLINED") => {
     await respondToResourceBid({
@@ -168,11 +192,11 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   };
 
   if (loading) {
-    return <Alert severity="info">Loading resource details…</Alert>;
+    return <Alert severity="info">{t("detail.loading")}</Alert>;
   }
 
   if (!resource) {
-    return <Alert severity="warning">This resource is no longer available.</Alert>;
+    return <Alert severity="warning">{t("detail.notAvailable")}</Alert>;
   }
 
   return (
@@ -205,15 +229,15 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button component={NextLink} href="/resources" variant="outlined">
-              Back to resources
+              {t("detail.backToResources")}
             </Button>
             {session.authenticated ? (
               <LogoutButton color="inherit" redirectTo={`/resources/${resource.id}`} variant="outlined">
-                Sign out
+                {t("detail.signOut")}
               </LogoutButton>
             ) : (
               <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                Sign in
+                {t("detail.signIn")}
               </Button>
             )}
           </Stack>
@@ -221,29 +245,29 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
 
         {status === "loading" ? (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Checking your session…
+            {t("authGuard.checking", { ns: "common" })}
           </Alert>
         ) : session.authenticated ? (
           <Alert severity={isCreator ? "success" : "info"} sx={{ mb: 2 }}>
             {isCreator
-              ? "This is your resource. You can review and respond to incoming bids below."
-              : "You can send or update one response for this resource while it remains active."}
+              ? t("detail.creatorHint")
+              : t("detail.bidderHint")}
           </Alert>
         ) : (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Sign in if you want to respond to this resource.
+            {t("detail.signInHint")}
           </Alert>
         )}
 
         {!resource.isActive ? (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            This resource is currently inactive and cannot accept new responses.
+            {t("detail.inactiveWarning")}
           </Alert>
         ) : null}
 
         {isExpired ? (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            This resource has expired and is no longer accepting new responses.
+            {t("detail.expiredWarning")}
           </Alert>
         ) : null}
 
@@ -271,7 +295,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                   overflow: "hidden"
                 }}
               >
-                {!firstImageUrl ? <Typography variant="body2">No image provided for this resource yet.</Typography> : null}
+                {!firstImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
               </Box>
 
               {resource.description ? (
@@ -280,16 +304,22 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 </Typography>
               ) : (
                 <Typography color="text.secondary" variant="body2">
-                  No additional description was provided.
+                  {t("detail.noDescription")}
                 </Typography>
               )}
 
               <Stack direction="row" flexWrap="wrap" gap={1}>
-                {buildResourceTags(resource).map(tag => (
+                {buildResourceTags(resource, t).map(tag => (
                   <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
                 ))}
                 {resource.categoryLabels.map(label => (
-                  <Chip key={`${resource.id}-category-${label}`} color="secondary" label={label} size="small" variant="outlined" />
+                  <Chip
+                    key={`${resource.id}-category-${label}`}
+                    color="secondary"
+                    label={localizedCategoryByLabel.get(label) ?? label}
+                    size="small"
+                    variant="outlined"
+                  />
                 ))}
               </Stack>
 
@@ -297,13 +327,13 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Typography color="text.secondary" variant="body2">
-                  Suggested token amount: {resource.defaultTokenAmount ?? "not set"}
+                  {t("card.suggestedTokenAmount")}: {resource.defaultTokenAmount ?? t("card.notSet")}
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
-                  Expires: {formatDate(resource.expiresAt)}
+                  {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
-                  Published: {formatDate(resource.createdAt)}
+                  {t("detail.published")}: {formatDate(resource.createdAt, t("card.permanent"))}
                 </Typography>
               </Stack>
             </Stack>
@@ -314,15 +344,15 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
           <Card sx={{ mb: 3 }} variant="outlined">
             <CardContent>
               <Stack spacing={2}>
-                <Typography variant="h6">Respond to this resource</Typography>
+                <Typography variant="h6">{t("detail.respondTitle")}</Typography>
 
                 {existingBid ? (
                   <Alert severity={existingBid.status === "ACCEPTED" ? "success" : "info"}>
-                    Your current response is <strong>{formatBidStatus(existingBid.status)}</strong>.
+                    {t("detail.currentResponsePrefix")} <strong>{formatBidStatus(existingBid.status, t)}</strong>.
                   </Alert>
                 ) : (
                   <Typography color="text.secondary" variant="body2">
-                    Send a short note and optionally propose a token amount to start the coordination.
+                    {t("detail.respondHint")}
                   </Typography>
                 )}
 
@@ -330,7 +360,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                   <ResourceBidDialog
                     defaultTokenAmount={resource.defaultTokenAmount}
                     disabled={!resource.isActive || isExpired}
-                    disabledReason={!resource.isActive || isExpired ? "This resource is not accepting new responses." : null}
+                    disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingResponses") : null}
                     existingBid={existingBid ?? undefined}
                     resourceId={resource.id}
                     resourceTitle={resource.title}
@@ -340,7 +370,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                   />
                 ) : (
                   <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                    Sign in to respond
+                    {t("card.signInToRespond")}
                   </Button>
                 )}
               </Stack>
@@ -353,11 +383,11 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
             <CardContent>
               <Stack spacing={2}>
                 <Typography variant="h6">
-                  {isCreator ? "Incoming responses" : "Your response history"}
+                  {isCreator ? t("detail.incomingResponses") : t("detail.yourResponseHistory")}
                 </Typography>
 
                 {resourceBids.length === 0 ? (
-                  <Alert severity="info">No responses have arrived for this resource yet.</Alert>
+                  <Alert severity="info">{t("detail.noResponsesYet")}</Alert>
                 ) : (
                   <Stack spacing={2}>
                     {(isCreator ? resourceBids : resourceBids.filter(bid => bid.bidderAccountId === currentAccountId)).map(bid => {
@@ -377,14 +407,14 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                               >
                                 <Box>
                                   <Typography variant="subtitle1">
-                                    {isCreator ? bidderLabel : "Your response"}
+                                    {isCreator ? bidderLabel : t("detail.yourResponse")}
                                   </Typography>
                                   <Typography color="text.secondary" variant="body2">
-                                    Sent {formatDate(bid.createdAt)}
-                                    {bid.respondedAt ? ` • Reviewed ${formatDate(bid.respondedAt)}` : ""}
+                                    {t("detail.sentAt", { date: formatDate(bid.createdAt, t("card.permanent")) })}
+                                    {bid.respondedAt ? ` • ${t("detail.reviewedAt", { date: formatDate(bid.respondedAt, t("card.permanent")) })}` : ""}
                                   </Typography>
                                 </Box>
-                                <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status)} size="small" />
+                                <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status, t)} size="small" />
                               </Stack>
 
                               {bid.message ? (
@@ -393,12 +423,12 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                                 </Typography>
                               ) : (
                                 <Typography color="text.secondary" variant="body2">
-                                  No opening message was added.
+                                  {t("detail.noOpeningMessage")}
                                 </Typography>
                               )}
 
                               <Typography color="text.secondary" variant="body2">
-                                Proposed token amount: {bid.proposedTokenAmount ?? "not set"}
+                                {t("detail.proposedTokenAmount")}: {bid.proposedTokenAmount ?? t("card.notSet")}
                               </Typography>
 
                               {isCreator && bid.status === "OPEN" ? (
@@ -409,7 +439,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                                     onClick={() => void handleDecision(bid.id, "ACCEPTED")}
                                     variant="contained"
                                   >
-                                    Accept
+                                    {t("detail.accept")}
                                   </Button>
                                   <Button
                                     color="error"
@@ -417,7 +447,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                                     onClick={() => void handleDecision(bid.id, "DECLINED")}
                                     variant="outlined"
                                   >
-                                    Decline
+                                    {t("detail.decline")}
                                   </Button>
                                 </Stack>
                               ) : null}

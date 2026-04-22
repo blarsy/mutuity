@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client/react";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
+import { useTranslation } from "react-i18next";
 import { CREATE_CAMPAIGN_MUTATION } from "./campaigns.queries";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -32,6 +33,7 @@ type CreateCampaignMutationVariables = {
 };
 
 export default function CreateCampaignPage() {
+  const { t } = useTranslation("campaigns");
   const [createCampaign, { loading, error, data }] = useMutation<
     CreateCampaignMutationData,
     CreateCampaignMutationVariables
@@ -59,10 +61,10 @@ export default function CreateCampaignPage() {
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Create a campaign
+            {t("create.title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -73,16 +75,16 @@ export default function CreateCampaignPage() {
     <Container maxWidth="sm">
       <Box sx={{ py: 6 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Create a campaign
+          {t("create.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Campaigns are created in pending moderation state.
+          {t("create.subtitle")}
         </Typography>
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
         {data?.createCampaign?.campaign ? (
           <Alert sx={{ mb: 2 }} severity="success">
-            Campaign created with status {data.createCampaign.campaign.moderationStatus}.
+            {t("create.success", { status: data.createCampaign.campaign.moderationStatus })}
           </Alert>
         ) : null}
 
@@ -103,7 +105,7 @@ export default function CreateCampaignPage() {
               <Stack spacing={2}>
                 <TextField
                   name="title"
-                  label="Campaign title"
+                  label={t("create.fields.title")}
                   value={values.title}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -113,7 +115,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="theme"
-                  label="Theme"
+                  label={t("create.fields.theme")}
                   value={values.theme}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -123,7 +125,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="managerNoteFromCreator"
-                  label="Note for manager"
+                  label={t("create.fields.noteForManager")}
                   value={values.managerNoteFromCreator}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -132,7 +134,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="rewardsMultiplier"
-                  label="Rewards multiplier"
+                  label={t("create.fields.rewardsMultiplier")}
                   type="number"
                   value={values.rewardsMultiplier}
                   onChange={handleChange}
@@ -144,7 +146,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="airdropAmount"
-                  label="Airdrop amount"
+                  label={t("create.fields.airdropAmount")}
                   type="number"
                   value={values.airdropAmount}
                   onChange={handleChange}
@@ -156,7 +158,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="startAt"
-                  label="Start datetime"
+                  label={t("create.fields.startDatetime")}
                   type="datetime-local"
                   value={values.startAt}
                   onChange={handleChange}
@@ -168,7 +170,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="airdropAt"
-                  label="Airdrop datetime"
+                  label={t("create.fields.airdropDatetime")}
                   type="datetime-local"
                   value={values.airdropAt}
                   onChange={handleChange}
@@ -180,7 +182,7 @@ export default function CreateCampaignPage() {
                 />
                 <TextField
                   name="endAt"
-                  label="End datetime"
+                  label={t("create.fields.endDatetime")}
                   type="datetime-local"
                   value={values.endAt}
                   onChange={handleChange}
@@ -192,7 +194,7 @@ export default function CreateCampaignPage() {
                 />
 
                 <Button type="submit" variant="contained" disabled={isSubmitting || loading}>
-                  Submit for moderation
+                  {t("create.submitButton")}
                 </Button>
               </Stack>
             </Form>

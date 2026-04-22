@@ -17,6 +17,7 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -71,9 +72,10 @@ function isCampaignEnded(now: Date, endAtIso: string) {
 type CampaignCardsProps = {
   campaigns: CampaignNode[];
   grayEnded: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
 };
 
-function CampaignCards({ campaigns, grayEnded }: CampaignCardsProps) {
+function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
   const now = new Date();
 
   return (
@@ -91,12 +93,12 @@ function CampaignCards({ campaigns, grayEnded }: CampaignCardsProps) {
                 <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                   <Box>
                     <Typography variant="h6">{campaign.title}</Typography>
-                    <Typography color="text.secondary">Theme: {campaign.theme}</Typography>
+                    <Typography color="text.secondary">{t("labels.theme")}: {campaign.theme}</Typography>
                   </Box>
                   <Stack direction="row" spacing={1}>
                     <Chip
                       color={isCampaignActive(now, campaign.startAt, campaign.endAt) ? "success" : "default"}
-                      label={isCampaignActive(now, campaign.startAt, campaign.endAt) ? "Active" : ended ? "Ended" : "Upcoming"}
+                      label={isCampaignActive(now, campaign.startAt, campaign.endAt) ? t("statuses.active") : ended ? t("statuses.ended") : t("statuses.upcoming")}
                       size="small"
                     />
                     <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
@@ -104,10 +106,10 @@ function CampaignCards({ campaigns, grayEnded }: CampaignCardsProps) {
                 </Stack>
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ mt: 2 }}>
-                  <Typography variant="body2">Created: {new Date(campaign.createdAt).toLocaleString()}</Typography>
-                  <Typography variant="body2">Start: {new Date(campaign.startAt).toLocaleString()}</Typography>
-                  <Typography variant="body2">Airdrop: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
-                  <Typography variant="body2">End: {new Date(campaign.endAt).toLocaleString()}</Typography>
+                  <Typography variant="body2">{t("labels.created")}: {new Date(campaign.createdAt).toLocaleString()}</Typography>
+                  <Typography variant="body2">{t("labels.start")}: {new Date(campaign.startAt).toLocaleString()}</Typography>
+                  <Typography variant="body2">{t("labels.airdrop")}: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
+                  <Typography variant="body2">{t("labels.end")}: {new Date(campaign.endAt).toLocaleString()}</Typography>
                 </Stack>
               </CardContent>
             </Card>
@@ -119,6 +121,7 @@ function CampaignCards({ campaigns, grayEnded }: CampaignCardsProps) {
 }
 
 export default function CampaignsPage() {
+  const { t } = useTranslation("campaigns");
   const { session, status } = useAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [isInspirationOpen, setIsInspirationOpen] = useState(false);
@@ -207,15 +210,15 @@ export default function CampaignsPage() {
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Campaigns
+          {t("page.title")}
         </Typography>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mb: 2 }}>
           <Button component={NextLink} href="/" variant="outlined">
-            Back home
+            {t("page.backHome")}
           </Button>
           <Button component={NextLink} href={createCampaignHref} variant="contained">
-            Launch campaign
+            {t("page.launchCampaign")}
           </Button>
         </Stack>
 
@@ -226,18 +229,18 @@ export default function CampaignsPage() {
           type="button"
           underline="hover"
         >
-          See others for inspiration
+          {t("page.seeInspiration")}
         </Link>
 
         {status === "loading" ? (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Checking your session…
+            {t("authGuard.checking", { ns: "common" })}
           </Alert>
         ) : null}
 
         {!session.authenticated ? (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Sign in to see your campaigns and launch new ones.
+            {t("page.signInHint")}
           </Alert>
         ) : null}
 
@@ -245,31 +248,31 @@ export default function CampaignsPage() {
 
         {session.authenticated ? (
           <>
-            {loading ? <Alert severity="info">Loading your campaigns…</Alert> : null}
+            {loading ? <Alert severity="info">{t("page.loadingMine")}</Alert> : null}
 
             {!loading && !errorMessage && myCampaigns.length === 0 ? (
-              <Alert severity="info">You have not created any campaigns yet.</Alert>
+              <Alert severity="info">{t("page.emptyMine")}</Alert>
             ) : null}
 
-            <CampaignCards campaigns={myCampaigns} grayEnded />
+            <CampaignCards campaigns={myCampaigns} grayEnded t={t} />
 
             {hasNextPage ? (
               <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                <Chip label="Loading more…" size="small" variant="outlined" />
+                <Chip label={t("page.loadingMore")} size="small" variant="outlined" />
               </Box>
             ) : null}
           </>
         ) : null}
 
         <Dialog fullWidth maxWidth="lg" onClose={() => setIsInspirationOpen(false)} open={isInspirationOpen}>
-          <DialogTitle>Approved campaigns for inspiration</DialogTitle>
+          <DialogTitle>{t("page.inspirationTitle")}</DialogTitle>
           <DialogContent>
-            {inspirationLoading ? <Alert severity="info">Loading campaigns…</Alert> : null}
+            {inspirationLoading ? <Alert severity="info">{t("public.loading")}</Alert> : null}
             {inspirationErrorMessage ? <Alert severity="error">{inspirationErrorMessage}</Alert> : null}
             {!inspirationLoading && !inspirationErrorMessage && inspirationCampaigns.length === 0 ? (
-              <Alert severity="info">No approved campaigns available yet.</Alert>
+              <Alert severity="info">{t("page.inspirationEmpty")}</Alert>
             ) : null}
-            <CampaignCards campaigns={inspirationCampaigns} grayEnded={false} />
+            <CampaignCards campaigns={inspirationCampaigns} grayEnded={false} t={t} />
           </DialogContent>
         </Dialog>
       </Box>

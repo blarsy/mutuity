@@ -11,6 +11,7 @@ import {
   TextField,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CREATE_RESOURCE_BID_MUTATION } from "./resources.queries";
@@ -54,6 +55,7 @@ export function ResourceBidDialog({
   disabledReason,
   onSubmitted
 }: ResourceBidDialogProps) {
+  const { t } = useTranslation("resources");
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(existingBid?.message ?? "");
   const [tokenAmount, setTokenAmount] = useState(
@@ -75,19 +77,19 @@ export function ResourceBidDialog({
   const acceptedAlready = existingBid?.status === "ACCEPTED";
   const buttonLabel = useMemo(() => {
     if (acceptedAlready) {
-      return "Response accepted";
+      return t("bidDialog.responseAccepted");
     }
 
     if (existingBid?.status === "OPEN") {
-      return "Update your response";
+      return t("bidDialog.updateResponse");
     }
 
     if (existingBid) {
-      return `Respond again (${formatBidStatus(existingBid.status)})`;
+      return t("bidDialog.respondAgain", { status: formatBidStatus(existingBid.status) });
     }
 
-    return "Respond to this resource";
-  }, [acceptedAlready, existingBid]);
+    return t("bidDialog.respondToResource");
+  }, [acceptedAlready, existingBid, t]);
 
   const errorMessage = localError ?? getUserFacingGraphQLErrorMessage(error);
 
@@ -96,7 +98,7 @@ export function ResourceBidDialog({
     const parsedTokenAmount = trimmedTokenAmount === "" ? null : Number.parseInt(trimmedTokenAmount, 10);
 
     if (trimmedTokenAmount !== "" && (!Number.isInteger(parsedTokenAmount) || (parsedTokenAmount ?? 0) <= 0)) {
-      setLocalError("Please enter a positive whole number for the token amount, or leave it empty.");
+      setLocalError(t("bidDialog.invalidTokenAmount"));
       return;
     }
 
@@ -121,7 +123,7 @@ export function ResourceBidDialog({
   };
 
   const resolvedDisabledReason = acceptedAlready
-    ? "Your response has already been accepted for this resource."
+    ? t("bidDialog.alreadyAccepted")
     : disabledReason;
 
   return (
@@ -138,31 +140,31 @@ export function ResourceBidDialog({
       </Stack>
 
       <Dialog fullWidth maxWidth="sm" onClose={() => setOpen(false)} open={open}>
-        <DialogTitle>{existingBid ? "Update your response" : "Respond to this resource"}</DialogTitle>
+        <DialogTitle>{existingBid ? t("bidDialog.updateResponse") : t("bidDialog.respondToResource")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography color="text.secondary" variant="body2">
-              You are responding to <strong>{resourceTitle}</strong>. Add a short note and optionally propose a token amount.
+              {t("bidDialog.respondingToPrefix")} <strong>{resourceTitle}</strong>. {t("bidDialog.respondingToSuffix")}
             </Typography>
 
             {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
             <TextField
               fullWidth
-              label="Optional message"
+              label={t("bidDialog.optionalMessage")}
               minRows={4}
               multiline
-              placeholder="Describe your availability, what you can offer, or any coordination details."
+              placeholder={t("bidDialog.optionalMessagePlaceholder")}
               value={message}
               onChange={event => setMessage(event.target.value)}
             />
 
             <TextField
               fullWidth
-              helperText={defaultTokenAmount ? `Suggested default: ${defaultTokenAmount} tokens` : "Optional and negotiable."}
+              helperText={defaultTokenAmount ? t("bidDialog.suggestedDefault", { amount: defaultTokenAmount }) : t("bidDialog.optionalNegotiable")}
               inputMode="numeric"
-              label="Proposed token amount"
-              placeholder={defaultTokenAmount?.toString() ?? "Leave blank if not needed"}
+              label={t("bidDialog.proposedTokenAmount")}
+              placeholder={defaultTokenAmount?.toString() ?? t("bidDialog.leaveBlank")}
               value={tokenAmount}
               onChange={event => setTokenAmount(event.target.value)}
             />
@@ -170,10 +172,10 @@ export function ResourceBidDialog({
         </DialogContent>
         <DialogActions>
           <Button disabled={loading} onClick={() => setOpen(false)}>
-            Cancel
+            {t("actions.cancel", { ns: "common" })}
           </Button>
           <Button disabled={loading} onClick={() => void handleSubmit()} variant="contained">
-            {loading ? "Saving…" : existingBid ? "Save response" : "Send response"}
+            {loading ? t("bidDialog.saving") : existingBid ? t("bidDialog.saveResponse") : t("bidDialog.sendResponse")}
           </Button>
         </DialogActions>
       </Dialog>

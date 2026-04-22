@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { NeedClaimManagementPage } from "./NeedClaimManagementPage";
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
@@ -59,6 +60,7 @@ export function ClaimNotificationsPanel({
   onSelectClaim,
   onClaimsChanged
 }: ClaimNotificationsPanelProps) {
+  const { t } = useTranslation("needs");
   const incomingClaims = useMemo(
     () => claims.filter(claim => claim.needByNeedId.creatorAccountId === currentAccountId),
     [claims, currentAccountId]
@@ -71,7 +73,7 @@ export function ClaimNotificationsPanel({
   if (incomingClaims.length === 0 && myClaims.length === 0 && notifications.length === 0) {
     return (
       <Alert severity="info" sx={{ mb: 3 }}>
-        No claim activity yet. Once you claim a need or receive one on your own need, it will appear here.
+        {t("claimNotifications.empty")}
       </Alert>
     );
   }
@@ -82,15 +84,15 @@ export function ClaimNotificationsPanel({
         <CardContent>
           <Stack spacing={2}>
             <Box>
-              <Typography variant="h6">Claim activity</Typography>
+              <Typography variant="h6">{t("claimNotifications.title")}</Typography>
               <Typography color="text.secondary" variant="body2">
-                Track your own claims, incoming requests on your needs, and open the related conversation threads.
+                {t("claimNotifications.subtitle")}
               </Typography>
             </Box>
 
             {incomingClaims.length > 0 ? (
               <Stack spacing={1.5}>
-                <Typography variant="subtitle1">Incoming claims on your needs</Typography>
+                <Typography variant="subtitle1">{t("claimNotifications.incomingTitle")}</Typography>
                 {incomingClaims.map(claim => (
                   <Stack key={claim.id} spacing={1}>
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
@@ -107,7 +109,7 @@ export function ClaimNotificationsPanel({
                       <Stack direction="row" spacing={1}>
                         <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} size="small" status={claim.status} />
                         <Button onClick={() => onSelectClaim(claim.id)} size="small" variant="outlined">
-                          {claim.claimConversationByNeedClaimId ? "Open thread" : "Reply now"}
+                          {claim.claimConversationByNeedClaimId ? t("claimNotifications.openThread") : t("claimNotifications.replyNow")}
                         </Button>
                       </Stack>
                     </Stack>
@@ -119,7 +121,7 @@ export function ClaimNotificationsPanel({
 
             {myClaims.length > 0 ? (
               <Stack spacing={1.5}>
-                <Typography variant="subtitle1">Your submitted claims</Typography>
+                <Typography variant="subtitle1">{t("claimNotifications.submittedTitle")}</Typography>
                 {myClaims.map(claim => (
                   <Stack key={claim.id} spacing={1}>
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
@@ -128,13 +130,13 @@ export function ClaimNotificationsPanel({
                           <strong>{claim.needByNeedId.title}</strong>
                         </Typography>
                         <Typography color="text.secondary" variant="caption">
-                          {claim.message ? `Your note: “${claim.message}”` : "No note attached"}
+                          {claim.message ? t("claimNotifications.yourNote", { message: claim.message }) : t("claimNotifications.noNote")}
                         </Typography>
                       </Box>
                       <Stack direction="row" spacing={1}>
                         <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} size="small" status={claim.status} />
                         <Button onClick={() => onSelectClaim(claim.id)} size="small" variant="outlined">
-                          {claim.claimConversationByNeedClaimId ? "Open thread" : "View status"}
+                          {claim.claimConversationByNeedClaimId ? t("claimNotifications.openThread") : t("claimNotifications.viewStatus")}
                         </Button>
                       </Stack>
                     </Stack>
@@ -146,7 +148,7 @@ export function ClaimNotificationsPanel({
 
             {notifications.length > 0 ? (
               <Stack spacing={1}>
-                <Typography variant="subtitle1">Recent notifications</Typography>
+                <Typography variant="subtitle1">{t("claimNotifications.recentNotifications")}</Typography>
                 {notifications.slice(0, 5).map(notification => (
                   <Typography color="text.secondary" key={notification.id} variant="body2">
                     {notification.eventType.replaceAll("_", " ")} • {new Date(notification.createdAt).toLocaleString()}

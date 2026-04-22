@@ -44,7 +44,7 @@ export default function VerifyEmailPage() {
       } catch (error) {
         if (!cancelled) {
           setStatus("error");
-          setMessage(error instanceof Error ? error.message : "Verification failed.");
+          setMessage(error instanceof Error ? error.message : t("verifyEmail.failureFallback"));
         }
       }
     };

@@ -11,6 +11,7 @@ import {
   TextField,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CLAIM_NEED_MUTATION } from "./needClaims.queries";
@@ -44,6 +45,7 @@ export function NeedClaimDialog({
   disabledReason,
   onClaimed
 }: NeedClaimDialogProps) {
+  const { t } = useTranslation("needs");
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(existingClaim?.message ?? "");
   const [claimNeed, { loading, error }] = useMutation<ClaimNeedMutationData>(CLAIM_NEED_MUTATION);
@@ -56,15 +58,15 @@ export function NeedClaimDialog({
 
   const buttonLabel = useMemo(() => {
     if (existingClaim?.status === "OPEN") {
-      return "Update claim note";
+      return t("claimDialog.updateClaimNote");
     }
 
     if (existingClaim) {
-      return `Claim again (${existingClaim.status.toLowerCase()})`;
+      return t("claimDialog.claimAgain", { status: existingClaim.status.toLowerCase() });
     }
 
-    return "Claim this need";
-  }, [existingClaim]);
+    return t("claimDialog.claimThisNeed");
+  }, [existingClaim, t]);
 
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
@@ -100,21 +102,21 @@ export function NeedClaimDialog({
       </Stack>
 
       <Dialog fullWidth maxWidth="sm" onClose={() => setOpen(false)} open={open}>
-        <DialogTitle>{existingClaim ? "Update your claim" : "Claim this need"}</DialogTitle>
+        <DialogTitle>{existingClaim ? t("claimDialog.updateYourClaim") : t("claimDialog.claimThisNeed")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography color="text.secondary" variant="body2">
-              You are claiming <strong>{needTitle}</strong>. Add an optional note so the creator knows how you can help.
+              {t("claimDialog.claimingHintPrefix")} <strong>{needTitle}</strong>. {t("claimDialog.claimingHintSuffix")}
             </Typography>
 
             {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
             <TextField
               fullWidth
-              label="Optional message"
+              label={t("claimDialog.optionalMessage")}
               minRows={4}
               multiline
-              placeholder="Describe what you can do, when you are available, or anything the creator should know."
+              placeholder={t("claimDialog.placeholder")}
               value={message}
               onChange={event => setMessage(event.target.value)}
             />
@@ -122,10 +124,10 @@ export function NeedClaimDialog({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)} disabled={loading}>
-            Cancel
+            {t("actions.cancel", { ns: "common" })}
           </Button>
           <Button onClick={() => void handleSubmit()} disabled={loading} variant="contained">
-            {loading ? "Saving…" : existingClaim ? "Save claim" : "Submit claim"}
+            {loading ? t("claimDialog.saving") : existingClaim ? t("claimDialog.saveClaim") : t("claimDialog.submitClaim")}
           </Button>
         </DialogActions>
       </Dialog>

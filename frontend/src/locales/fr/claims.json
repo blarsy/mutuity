@@ -20,6 +20,8 @@
   "sent": "Envoyée",
   "received": "Reçue",
   "updated": "Mise à jour",
+  "threadOpen": "fil ouvert",
+  "topesAmount": "{{amount}} Topes",
   "noTopes": "Aucun Tope",
   "actions": {
     "openThread": "Ouvrir le fil",

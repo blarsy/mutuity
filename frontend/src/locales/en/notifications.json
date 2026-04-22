@@ -1,0 +1,35 @@
+{
+  "title": "Notifications",
+  "subtitle": "Events requiring your attention across needs, resources, campaigns, profile completion, and Topes transfers.",
+  "unreadCount": "{{count}} unread",
+  "markAllAsRead": "Set all as read",
+  "loading": "Loading your notifications…",
+  "empty": "No notifications yet.",
+  "open": "Open",
+  "confirmDialog": {
+    "title": "Mark all notifications as read?",
+    "body": "This will set all unread notifications as read.",
+    "confirm": "Confirm"
+  },
+  "eventFallback": {
+    "unknownNeed": "unknown need",
+    "unknownResource": "unknown resource",
+    "unknownCampaign": "unknown campaign",
+    "someone": "Someone"
+  },
+  "events": {
+    "claimCreated": "You got a claim for your need {{needName}}",
+    "resourceBidCreated": "You got a bid for your resource {{resourceName}}",
+    "resourceBidExpiringSoon": "A bid you received is about to expire",
+    "campaignAirdropComingSoon": "The airdrop of campaign {{campaignName}} is coming soon!",
+    "campaignAirdropDone": "Airdrop done on campaign {{campaignName}}! Check your contribution page to see if you got it",
+    "welcomeProfileReward": "Welcome to tope-la, make a polished profile, and earn some Topes!",
+    "giftTokensReceived": "{{senderName}} gave you {{amount}} Topes!",
+    "claimSettled": "Congratulations, your claim on {{needName}} has been settled",
+    "resourceBidAccepted": "Congratulations, your bid on {{resourceName}} has been accepted",
+    "resourceBidDeclined": "Your bid on {{resourceName}} has been rejected",
+    "resourceBidCancelled": "Your bid on {{resourceName}} has been cancelled",
+    "resourceBidExpired": "Your bid on {{resourceName}} has expired without a response",
+    "fallback": "{{eventType}}"
+  }
+}

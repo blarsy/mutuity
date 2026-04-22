@@ -1,11 +1,13 @@
 import { useState } from "react";
 import NextLink from "next/link";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { changePassword } from "../features/auth/auth.api";
 import { useRequireAuth } from "../features/auth/requireAuth";
 
 export default function ChangePasswordPage() {
+  const { t } = useTranslation("auth");
   const { isAuthenticated, isChecking } = useRequireAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -16,7 +18,7 @@ export default function ChangePasswordPage() {
 
   const handleSubmit = async () => {
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("changePassword.passwordMismatch"));
       return;
     }
 
@@ -29,12 +31,12 @@ export default function ChangePasswordPage() {
         currentPassword,
         newPassword
       });
-      setSuccess("Password changed successfully.");
+      setSuccess(t("changePassword.success"));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
+      setError(submitError instanceof Error ? submitError.message : t("errors.genericRetry", { ns: "common" }));
     } finally {
       setLoading(false);
     }
@@ -44,7 +46,7 @@ export default function ChangePasswordPage() {
     return (
       <Container maxWidth="sm">
         <Box sx={{ py: 6 }}>
-          <Alert severity="info">Checking your session…</Alert>
+          <Alert severity="info">{t("authGuard.checking", { ns: "common" })}</Alert>
         </Box>
       </Container>
     );
@@ -58,10 +60,10 @@ export default function ChangePasswordPage() {
     <Container maxWidth="sm">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Change password
+          {t("changePassword.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Update your password for your current account.
+          {t("changePassword.subtitle")}
         </Typography>
 
         <Stack spacing={2}>
@@ -69,22 +71,22 @@ export default function ChangePasswordPage() {
           {success ? <Alert severity="success">{success}</Alert> : null}
 
           <TextField
-            label="Current password"
+            label={t("changePassword.currentPasswordLabel")}
             onChange={event => setCurrentPassword(event.target.value)}
             required
             type="password"
             value={currentPassword}
           />
           <TextField
-            helperText="Minimum 8 characters"
-            label="New password"
+            helperText={t("changePassword.newPasswordHelper")}
+            label={t("changePassword.newPasswordLabel")}
             onChange={event => setNewPassword(event.target.value)}
             required
             type="password"
             value={newPassword}
           />
           <TextField
-            label="Confirm new password"
+            label={t("changePassword.confirmPasswordLabel")}
             onChange={event => setConfirmPassword(event.target.value)}
             required
             type="password"
@@ -96,10 +98,10 @@ export default function ChangePasswordPage() {
             onClick={handleSubmit}
             variant="contained"
           >
-            Update password
+            {t("changePassword.submitButton")}
           </Button>
           <Button component={NextLink} href="/">
-            Back to home
+            {t("changePassword.backHome")}
           </Button>
         </Stack>
       </Box>

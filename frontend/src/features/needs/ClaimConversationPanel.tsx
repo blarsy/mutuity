@@ -11,6 +11,7 @@ import {
   TextField,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
@@ -111,6 +112,8 @@ export function ClaimConversationThreadView({
   currentAccountId: string;
   messages: ClaimConversationViewMessage[];
 }) {
+  const { t } = useTranslation("needs");
+
   return (
     <Stack spacing={1.5}>
       {messages.map(message => {
@@ -139,7 +142,7 @@ export function ClaimConversationThreadView({
               ) : null}
               <Typography color="text.secondary" sx={{ mt: 0.5 }} variant="caption">
                 {new Date(message.createdAt).toLocaleString()}
-                {message.readAt ? " • read" : ""}
+                {message.readAt ? ` • ${t("claimConversation.read")}` : ""}
               </Typography>
             </Box>
           </Box>
@@ -150,6 +153,7 @@ export function ClaimConversationThreadView({
 }
 
 export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConversationPanelProps) {
+  const { t } = useTranslation("needs");
   const [draftBody, setDraftBody] = useState("");
   const [draftImageUrls, setDraftImageUrls] = useState("");
   const { data, loading, error, refetch } = useQuery<ClaimConversationQueryData>(CLAIM_CONVERSATION_QUERY, {
@@ -228,11 +232,11 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   };
 
   if (loading) {
-    return <Alert severity="info">Loading claim conversation…</Alert>;
+    return <Alert severity="info">{t("claimConversation.loading")}</Alert>;
   }
 
   if (!claim) {
-    return <Alert severity="warning">This claim could not be loaded.</Alert>;
+    return <Alert severity="warning">{t("claimConversation.notFound")}</Alert>;
   }
 
   return (
@@ -241,9 +245,9 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
         <Stack spacing={2}>
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
             <Box>
-              <Typography variant="h6">Conversation for {claim.needByNeedId.title}</Typography>
+              <Typography variant="h6">{t("claimConversation.title", { needTitle: claim.needByNeedId.title })}</Typography>
               <Typography color="text.secondary" variant="body2">
-                Claimer: {claim.accountByClaimerAccountId?.displayName ?? claim.accountByClaimerAccountId?.externalSubject ?? claim.claimerAccountId}
+                {t("claimConversation.claimer")}: {claim.accountByClaimerAccountId?.displayName ?? claim.accountByClaimerAccountId?.externalSubject ?? claim.claimerAccountId}
               </Typography>
             </Box>
             <NeedClaimStatusChip
@@ -258,14 +262,14 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
           {!conversation ? (
             <Alert severity={isCreator ? "info" : "warning"}>
               {isCreator
-                ? "Send the first reply to open the private conversation."
-                : "The creator has not replied yet. You will be able to continue once the conversation is started."}
+                ? t("claimConversation.sendFirstReply")
+                : t("claimConversation.creatorNotReplied")}
             </Alert>
           ) : null}
 
           {!conversation && claim.message ? (
             <Box>
-              <Typography variant="subtitle2">Initial claim note</Typography>
+              <Typography variant="subtitle2">{t("claimConversation.initialClaimNote")}</Typography>
               <Typography color="text.secondary" variant="body2">
                 {claim.message}
               </Typography>
@@ -274,7 +278,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
 
           {claimStatus === "SETTLED" ? (
             <Alert severity="success">
-              This claim is settled. The conversation stays open for follow-up coordination between the two participants.
+              {t("claimConversation.settledInfo")}
             </Alert>
           ) : null}
 
@@ -284,13 +288,13 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             <TextField
               fullWidth
               disabled={!canSend || sendLoading}
-              label={conversation ? "Reply" : "First reply"}
+              label={conversation ? t("claimConversation.reply") : t("claimConversation.firstReply")}
               minRows={3}
               multiline
               placeholder={
                 conversation
-                  ? "Write your next coordination message"
-                  : "Write the first message that will open the conversation"
+                  ? t("claimConversation.replyPlaceholder")
+                  : t("claimConversation.firstReplyPlaceholder")
               }
               value={draftBody}
               onChange={event => setDraftBody(event.target.value)}
@@ -298,17 +302,17 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             <TextField
               fullWidth
               disabled={!canSend || sendLoading}
-              helperText="Optional image URLs, separated by commas or new lines."
-              label="Image metadata"
+              helperText={t("claimConversation.imageHelper")}
+              label={t("claimConversation.imageMetadata")}
               minRows={2}
               multiline
-              placeholder="https://example.com/photo-1.png"
+              placeholder={t("claimConversation.imagePlaceholder")}
               value={draftImageUrls}
               onChange={event => setDraftImageUrls(event.target.value)}
             />
             <Box>
               <Button disabled={!canSend || sendLoading || !draftBody.trim()} onClick={() => void handleSendMessage()} variant="contained">
-                {sendLoading ? "Sending…" : conversation ? "Send message" : "Start conversation"}
+                {sendLoading ? t("claimConversation.sending") : conversation ? t("claimConversation.sendMessage") : t("claimConversation.startConversation")}
               </Button>
             </Box>
           </Stack>

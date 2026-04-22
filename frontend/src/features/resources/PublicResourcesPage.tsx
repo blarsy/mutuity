@@ -39,9 +39,9 @@ type ResourceCategoryOptionsQueryData = {
 
 type ToggleFilterKey = Exclude<keyof ResourceSearchFilters, "searchText" | "categoryCodes">;
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, noDateLabel: string) {
   if (!value) {
-    return "Permanent";
+    return noDateLabel;
   }
 
   return new Date(value).toLocaleString();
@@ -51,31 +51,31 @@ function filterVariant(value: TriStateFilter) {
   return value === "neutral" ? "outlined" : "contained";
 }
 
-function buildResourceTags(resource: PublicResourceCard) {
+function buildResourceTags(resource: PublicResourceCard, t: (key: string) => string) {
   const tags = [resource.intensity.toLowerCase().replaceAll("_", " ")];
 
   if (resource.isProduct) {
-    tags.push("product");
+    tags.push(t("tags.product"));
   }
 
   if (resource.isService) {
-    tags.push("service");
+    tags.push(t("tags.service"));
   }
 
   if (resource.canBeGiven) {
-    tags.push("can be given");
+    tags.push(t("tags.canBeGiven"));
   }
 
   if (resource.canBeExchanged) {
-    tags.push("can be exchanged");
+    tags.push(t("tags.canBeExchanged"));
   }
 
   if (resource.canBeTakenAway) {
-    tags.push("pickup available");
+    tags.push(t("tags.pickupAvailable"));
   }
 
   if (resource.canBeDelivered) {
-    tags.push("delivery available");
+    tags.push(t("tags.deliveryAvailable"));
   }
 
   return tags;
@@ -84,15 +84,13 @@ function buildResourceTags(resource: PublicResourceCard) {
 export default function PublicResourcesPage() {
   const router = useRouter();
   const { session, status } = useAuth();
-  const { t } = useTranslation("resources");
+  const { t, i18n } = useTranslation("resources");
   const publishResourceHref = session.authenticated
     ? "/resources/create"
     : "/login?next=%2Fresources%2Fcreate";
   const [filters, setFilters] = useState(DEFAULT_RESOURCE_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<ReturnType<typeof getBrowserLocation> extends Promise<infer T> ? T : never>();
-  const [locationStatus, setLocationStatus] = useState(
-    "Using account or Tournai fallback when no explicit coordinates are provided."
-  );
+  const [locationStatusKey, setLocationStatusKey] = useState("browse.locationFallbackStatus");
 
   useEffect(() => {
     let active = true;
@@ -103,7 +101,7 @@ export default function PublicResourcesPage() {
       }
 
       setBrowserLocation(location);
-      setLocationStatus("Browser coordinates are available as a fallback when account coordinates are unavailable.");
+      setLocationStatusKey("browse.locationBrowserStatus");
     });
 
     return () => {
@@ -128,6 +126,18 @@ export default function PublicResourcesPage() {
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
+  const isFrench = i18n.language.toLowerCase().startsWith("fr");
+  const localizedCategoryByLabel = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const category of categoryOptions) {
+      const localizedLabel = isFrench ? category.labelFr : category.label;
+      map.set(category.label, localizedLabel);
+      map.set(category.labelFr, localizedLabel);
+    }
+
+    return map;
+  }, [categoryOptions, isFrench]);
 
   const toggleFilter = (key: ToggleFilterKey) => {
     setFilters(current => ({
@@ -156,11 +166,11 @@ export default function PublicResourcesPage() {
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button component={NextLink} href={publishResourceHref} variant="contained">
-              Add
+              {t("browse.addButton")}
             </Button>
             {!session.authenticated &&
               <Button component={NextLink} href="/login?next=%2Fresources" variant="contained">
-                Sign in
+                {t("browse.signInButton")}
               </Button>
             }
           </Stack>
@@ -177,7 +187,7 @@ export default function PublicResourcesPage() {
         </Alert>
 
         <Alert severity="info" sx={{ mb: 3 }}>
-          {locationStatus}
+          {t(locationStatusKey)}
         </Alert>
 
         {errorMessage ? (
@@ -230,7 +240,7 @@ export default function PublicResourcesPage() {
                         size="small"
                         variant={selected ? "contained" : "outlined"}
                       >
-                        {category.label}
+                        {isFrench ? category.labelFr : category.label}
                       </Button>
                     );
                   })}
@@ -239,22 +249,22 @@ export default function PublicResourcesPage() {
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                 <Button onClick={() => toggleFilter("isProduct")} size="small" variant={filterVariant(filters.isProduct)}>
-                  {t("filters.product")}: {describeTriStateFilter(filters.isProduct)}
+                  {t("filters.isProduct")}: {t(`triState.${describeTriStateFilter(filters.isProduct)}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("isService")} size="small" variant={filterVariant(filters.isService)}>
-                  {t("filters.service")}: {describeTriStateFilter(filters.isService)}
+                  {t("filters.isService")}: {t(`triState.${describeTriStateFilter(filters.isService)}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeGiven")} size="small" variant={filterVariant(filters.canBeGiven)}>
-                  {t("filters.giveable")}: {describeTriStateFilter(filters.canBeGiven)}
+                  {t("filters.canBeGiven")}: {t(`triState.${describeTriStateFilter(filters.canBeGiven)}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeExchanged")} size="small" variant={filterVariant(filters.canBeExchanged)}>
-                  {t("filters.exchangeable")}: {describeTriStateFilter(filters.canBeExchanged)}
+                  {t("filters.canBeExchanged")}: {t(`triState.${describeTriStateFilter(filters.canBeExchanged)}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeTakenAway")} size="small" variant={filterVariant(filters.canBeTakenAway)}>
-                  {t("filters.pickup")}: {describeTriStateFilter(filters.canBeTakenAway)}
+                  {t("filters.canBeTakenAway")}: {t(`triState.${describeTriStateFilter(filters.canBeTakenAway)}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("canBeDelivered")} size="small" variant={filterVariant(filters.canBeDelivered)}>
-                  {t("filters.delivery")}: {describeTriStateFilter(filters.canBeDelivered)}
+                  {t("filters.canBeDelivered")}: {t(`triState.${describeTriStateFilter(filters.canBeDelivered)}`)}
                 </Button>
               </Stack>
             </Stack>
@@ -281,25 +291,31 @@ export default function PublicResourcesPage() {
                   actions={
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                       <Button component={NextLink} href={`/resources/${resource.id}`} variant="outlined">
-                        {isCreator ? "Review responses" : "View details"}
+                        {isCreator ? t("card.reviewResponses") : t("card.viewDetails")}
                       </Button>
                       {!session.authenticated ? (
                         <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                          Sign in to respond
+                          {t("card.signInToRespond")}
                         </Button>
                       ) : null}
                     </Stack>
                   }
                   chips={
                     <>
-                      <Chip label={`${Number(resource.distanceKm).toFixed(1)} km away`} size="small" />
-                      {buildResourceTags(resource).map(tag => (
+                      <Chip label={t("card.distanceKm", { value: Number(resource.distanceKm).toFixed(1) })} size="small" />
+                      {buildResourceTags(resource, t).map(tag => (
                         <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
                       ))}
                       {resource.categoryLabels.map(label => (
-                        <Chip key={`${resource.id}-category-${label}`} color="secondary" label={label} size="small" variant="outlined" />
+                        <Chip
+                          key={`${resource.id}-category-${label}`}
+                          color="secondary"
+                          label={localizedCategoryByLabel.get(label) ?? label}
+                          size="small"
+                          variant="outlined"
+                        />
                       ))}
-                      {isCreator ? <Chip color="secondary" label="your resource" size="small" /> : null}
+                      {isCreator ? <Chip color="secondary" label={t("card.yourResource")} size="small" /> : null}
                     </>
                   }
                   creatorName={resource.creatorDisplayName}
@@ -307,7 +323,7 @@ export default function PublicResourcesPage() {
                   expiresAt={resource.expiresAt}
                   footer={
                     <Typography color="text.secondary" variant="body2">
-                      Suggested token amount: {resource.defaultTokenAmount ?? "not set"} • Expires: {formatDate(resource.expiresAt)}
+                      {t("card.suggestedTokenAmount")}: {resource.defaultTokenAmount ?? t("card.notSet")} • {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
                     </Typography>
                   }
                   key={resource.id}

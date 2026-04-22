@@ -3,6 +3,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Chip, Container, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
@@ -51,16 +52,16 @@ type ResourceBidsOverviewData = {
   };
 };
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, noDateLabel: string) {
   if (!value) {
-    return "No review yet";
+    return noDateLabel;
   }
 
   return new Date(value).toLocaleString();
 }
 
-function formatBidStatus(status: ResourceBidStatus) {
-  return status.replaceAll("_", " ").toLowerCase();
+function formatBidStatus(status: ResourceBidStatus, t: (key: string, options?: Record<string, unknown>) => string) {
+  return t(`statuses.${status}`, { defaultValue: status.replaceAll("_", " ").toLowerCase() });
 }
 
 function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warning" | "error" | "info" {
@@ -81,6 +82,7 @@ function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warni
 export default function BidsPage() {
   const router = useRouter();
   const { session } = useAuth();
+  const { t } = useTranslation("bids");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const { data, loading, error } = useQuery<ResourceBidsOverviewData>(RESOURCE_BIDS_OVERVIEW_QUERY, {
     pollInterval: isAuthenticated ? 15000 : 0,
@@ -89,7 +91,7 @@ export default function BidsPage() {
   });
 
   const currentAccountId = session.account?.id ?? null;
-  const currentAccountLabel = session.account?.displayName ?? session.account?.externalSubject ?? "You";
+  const currentAccountLabel = session.account?.displayName ?? session.account?.externalSubject ?? t("you");
   const allBids = useMemo(() => {
     return [...(data?.allResourceBids.nodes ?? [])].sort(
       (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
@@ -104,10 +106,10 @@ export default function BidsPage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Bids
+            {t("title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -120,25 +122,25 @@ export default function BidsPage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
-              Bids workspace
+              {t("workspaceTitle")}
             </Typography>
             <Typography color="text.secondary">
-              Track the bids you sent on other accounts’ resources and the incoming bids received on your own resources.
+              {t("workspaceSubtitle")}
             </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Chip color="info" label={`${sentBids.length} sent`} />
-            <Chip color="secondary" label={`${receivedBids.length} received`} />
+            <Chip color="info" label={t("sentCount", { count: sentBids.length })} />
+            <Chip color="secondary" label={t("receivedCount", { count: receivedBids.length })} />
           </Stack>
 
-          {loading ? <Alert severity="info">Loading your bids…</Alert> : null}
+          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           <Stack spacing={2}>
-            <Typography variant="h5">Bids you sent</Typography>
+            <Typography variant="h5">{t("sections.sent")}</Typography>
             {sentBids.length === 0 ? (
-              <Alert severity="info">You have not sent any resource bids yet.</Alert>
+              <Alert severity="info">{t("sentEmpty")}</Alert>
             ) : (
               <Box
                 sx={{
@@ -158,18 +160,18 @@ export default function BidsPage() {
                       actions={
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                           <Button component={NextLink} href={`/resources/${resource.id}`} variant="outlined">
-                            View resource
+                            {t("actions.viewResource")}
                           </Button>
                           <Button component={NextLink} href={`/accounts/${resource.creatorAccountId}`} variant="text">
-                            View creator
+                            {t("actions.viewCreator")}
                           </Button>
                         </Stack>
                       }
                       chips={
                         <>
-                          <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status)} size="small" />
-                          <Chip label={`${bid.proposedTokenAmount ?? resource.defaultTokenAmount ?? "—"} tokens`} size="small" variant="outlined" />
-                          {resource.canBeExchanged ? <Chip label="exchangeable" size="small" variant="outlined" /> : null}
+                          <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status, t)} size="small" />
+                          <Chip label={t("chips.tokens", { value: bid.proposedTokenAmount ?? resource.defaultTokenAmount ?? "—" })} size="small" variant="outlined" />
+                          {resource.canBeExchanged ? <Chip label={t("chips.exchangeable")} size="small" variant="outlined" /> : null}
                         </>
                       }
                       creatorName={creatorLabel}
@@ -178,11 +180,11 @@ export default function BidsPage() {
                       footer={
                         <Stack spacing={0.5}>
                           <Typography color="text.secondary" variant="body2">
-                            Sent: {formatDate(bid.createdAt)}
-                            {bid.respondedAt ? ` • Reviewed: ${formatDate(bid.respondedAt)}` : ""}
+                            {t("sentAt", { date: formatDate(bid.createdAt, t("noReviewYet")) })}
+                            {bid.respondedAt ? ` • ${t("reviewedAt", { date: formatDate(bid.respondedAt, t("noReviewYet")) })}` : ""}
                           </Typography>
                           <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body2">
-                            {bid.message?.trim() ? `Your note: ${bid.message}` : "No note added."}
+                            {bid.message?.trim() ? t("yourNote", { message: bid.message }) : t("noNote")}
                           </Typography>
                         </Stack>
                       }
@@ -203,9 +205,9 @@ export default function BidsPage() {
           </Stack>
 
           <Stack spacing={2}>
-            <Typography variant="h5">Bids received on your resources</Typography>
+            <Typography variant="h5">{t("sections.received")}</Typography>
             {receivedBids.length === 0 ? (
-              <Alert severity="info">No one has responded to your resources yet.</Alert>
+              <Alert severity="info">{t("receivedEmpty")}</Alert>
             ) : (
               <Box
                 sx={{
@@ -225,18 +227,18 @@ export default function BidsPage() {
                       actions={
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                           <Button component={NextLink} href={`/resources/${resource.id}`} variant="contained">
-                            Review on resource page
+                            {t("actions.reviewOnResource")}
                           </Button>
                           <Button component={NextLink} href={`/accounts/${bid.bidderAccountId}`} variant="text">
-                            View bidder
+                            {t("actions.viewBidder")}
                           </Button>
                         </Stack>
                       }
                       chips={
                         <>
-                          <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status)} size="small" />
-                          <Chip label={`Bid from ${bidderLabel}`} size="small" variant="outlined" />
-                          <Chip label={`${bid.proposedTokenAmount ?? resource.defaultTokenAmount ?? "—"} tokens`} size="small" variant="outlined" />
+                          <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status, t)} size="small" />
+                          <Chip label={t("bidFrom", { bidder: bidderLabel })} size="small" variant="outlined" />
+                          <Chip label={t("chips.tokens", { value: bid.proposedTokenAmount ?? resource.defaultTokenAmount ?? "—" })} size="small" variant="outlined" />
                         </>
                       }
                       creatorName={currentAccountLabel}
@@ -245,11 +247,11 @@ export default function BidsPage() {
                       footer={
                         <Stack spacing={0.5}>
                           <Typography color="text.secondary" variant="body2">
-                            Received: {formatDate(bid.createdAt)}
-                            {bid.respondedAt ? ` • Reviewed: ${formatDate(bid.respondedAt)}` : ""}
+                            {t("receivedAt", { date: formatDate(bid.createdAt, t("noReviewYet")) })}
+                            {bid.respondedAt ? ` • ${t("reviewedAt", { date: formatDate(bid.respondedAt, t("noReviewYet")) })}` : ""}
                           </Typography>
                           <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body2">
-                            {bid.message?.trim() ? `Bid note: ${bid.message}` : "No note added."}
+                            {bid.message?.trim() ? t("bidNote", { message: bid.message }) : t("noNote")}
                           </Typography>
                         </Stack>
                       }

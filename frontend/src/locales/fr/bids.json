@@ -1,0 +1,40 @@
+{
+  "title": "Offres",
+  "workspaceTitle": "Espace des offres",
+  "workspaceSubtitle": "Suivez les offres envoyées sur les ressources d'autres comptes et les offres reçues sur vos propres ressources.",
+  "loading": "Chargement de vos offres…",
+  "sentCount": "{{count}} envoyées",
+  "receivedCount": "{{count}} reçues",
+  "sections": {
+    "sent": "Offres envoyées",
+    "received": "Offres reçues sur vos ressources"
+  },
+  "sentEmpty": "Vous n'avez encore envoyé aucune offre de ressource.",
+  "receivedEmpty": "Personne n'a encore répondu à vos ressources.",
+  "noReviewYet": "Pas encore examiné",
+  "noNote": "Aucune note ajoutée.",
+  "you": "Vous",
+  "sentAt": "Envoyé : {{date}}",
+  "receivedAt": "Reçu : {{date}}",
+  "reviewedAt": "Examiné : {{date}}",
+  "yourNote": "Votre note : {{message}}",
+  "bidNote": "Note de l'offre : {{message}}",
+  "bidFrom": "Offre de {{bidder}}",
+  "chips": {
+    "tokens": "{{value}} jetons",
+    "exchangeable": "échangeable"
+  },
+  "actions": {
+    "viewResource": "Voir la ressource",
+    "viewCreator": "Voir le créateur",
+    "reviewOnResource": "Examiner sur la page ressource",
+    "viewBidder": "Voir l'offreur"
+  },
+  "statuses": {
+    "OPEN": "ouverte",
+    "ACCEPTED": "acceptée",
+    "DECLINED": "refusée",
+    "WITHDRAWN": "retirée",
+    "EXPIRED": "expirée"
+  }
+}

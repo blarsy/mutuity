@@ -3,7 +3,8 @@
     "title": "Besoins",
     "editTitle": "Modifier le besoin",
     "detailTitle": "Détails du besoin",
-    "detailDescription": "Une page de détail publique dédiée à {{needId}} est réservée dans la nouvelle architecture."
+    "detailDescription": "Une page de détail publique dédiée à {{needId}} est réservée dans la nouvelle architecture.",
+    "thisNeed": "ce besoin"
   },
   "browse": {
     "title": "Découvrir les besoins actifs",
@@ -11,8 +12,29 @@
     "sortDescription": "Le classement actuel mélange la proximité (50 %), la facilité de mise en place (30 %) et l'expiration la plus proche (20 %).",
     "searchLabel": "Rechercher des besoins",
     "searchPlaceholder": "Essayez le nom du créateur, le titre, l'outillage ou la compétence",
+    "addButton": "Ajouter",
+    "signInButton": "Se connecter",
+    "locationFallbackStatus": "Utilisation des coordonnées du compte ou du repli Tournai lorsqu'aucune coordonnée explicite n'est fournie.",
+    "locationBrowserStatus": "Les coordonnées du navigateur sont disponibles en repli lorsque les coordonnées du compte sont indisponibles.",
     "loading": "Chargement des besoins actifs…",
-    "empty": "Aucun besoin actif ne correspond aux filtres actuels pour l'instant."
+    "empty": "Aucun besoin actif ne correspond aux filtres actuels pour l'instant.",
+    "yourNeedChip": "votre besoin",
+    "manageIncomingClaims": "Gérer les demandes reçues",
+    "noClaimsYet": "Aucune demande pour l'instant",
+    "signInToClaim": "Se connecter pour demander",
+    "topesProposed": "{{amount}} Topes proposés",
+    "yourClaim": "votre demande : {{status}}",
+    "incomingClaims_one": "{{count}} demande reçue",
+    "incomingClaims_other": "{{count}} demandes reçues",
+    "tooling": "Outillage",
+    "competence": "Compétence",
+    "weightedScore": "Score pondéré",
+    "closeness": "Proximité",
+    "ease": "Facilité",
+    "expiry": "Expiration",
+    "expires": "Expire",
+    "queryOrigin": "Origine de la requête",
+    "noExpirySet": "Aucune expiration définie"
   },
   "form": {
     "titleLabel": "Titre du besoin",
@@ -58,6 +80,7 @@
     "addButton": "Ajouter un besoin",
     "loadingMore": "Chargement en cours…",
     "backToSearch": "Retour à la recherche de besoins",
+    "topesChip": "{{amount}} topes",
     "deleteDialog": {
       "title": "Supprimer le besoin ?",
       "body": "Cela archivera « {{title}} » des annonces actives.",
@@ -69,5 +92,84 @@
     "toolingRequired": "Outillage",
     "competenceRequired": "Compétence",
     "multiplePeopleRequired": "Plusieurs personnes"
+  },
+  "triState": {
+    "neutral": "indifférent",
+    "yes": "oui",
+    "no": "non"
+  },
+  "needTags": {
+    "objectRequired": "objet requis",
+    "toolingRequired": "outillage requis",
+    "competenceRequired": "compétence requise",
+    "multiplePeople": "plusieurs personnes",
+    "multiplePeopleCount": "{{count}}+ personnes"
+  },
+  "summaryFacts": {
+    "location": "Lieu",
+    "intensity": "Intensité",
+    "proposedTopes": "Topes proposés",
+    "joined": "Rattaché",
+    "triaged": "Trié",
+    "na": "N/D"
+  },
+  "claimDialog": {
+    "updateClaimNote": "Mettre à jour la note de demande",
+    "claimAgain": "Redemander ({{status}})",
+    "claimThisNeed": "Demander ce besoin",
+    "updateYourClaim": "Mettre à jour votre demande",
+    "claimingHintPrefix": "Vous demandez",
+    "claimingHintSuffix": "Ajoutez une note optionnelle pour que le créateur sache comment vous pouvez aider.",
+    "optionalMessage": "Message optionnel",
+    "placeholder": "Décrivez ce que vous pouvez faire, vos disponibilités, ou toute information utile pour le créateur.",
+    "saving": "Enregistrement…",
+    "saveClaim": "Enregistrer la demande",
+    "submitClaim": "Envoyer la demande"
+  },
+  "claimConversation": {
+    "read": "lu",
+    "loading": "Chargement de la conversation de demande…",
+    "notFound": "Cette demande n'a pas pu être chargée.",
+    "title": "Conversation pour {{needTitle}}",
+    "claimer": "Demandeur",
+    "sendFirstReply": "Envoyez la première réponse pour ouvrir la conversation privée.",
+    "creatorNotReplied": "Le créateur n'a pas encore répondu. Vous pourrez continuer dès que la conversation sera lancée.",
+    "initialClaimNote": "Note initiale de la demande",
+    "settledInfo": "Cette demande est réglée. La conversation reste ouverte pour le suivi entre les deux participants.",
+    "reply": "Réponse",
+    "firstReply": "Première réponse",
+    "replyPlaceholder": "Écrivez votre prochain message de coordination",
+    "firstReplyPlaceholder": "Écrivez le premier message qui ouvrira la conversation",
+    "imageHelper": "URLs d'image optionnelles, séparées par des virgules ou des retours à la ligne.",
+    "imageMetadata": "Métadonnées d'image",
+    "imagePlaceholder": "https://example.com/photo-1.png",
+    "sending": "Envoi…",
+    "sendMessage": "Envoyer le message",
+    "startConversation": "Démarrer la conversation"
+  },
+  "claimNotifications": {
+    "empty": "Aucune activité de demande pour le moment. Dès que vous demandez un besoin ou en recevez une sur l'un de vos besoins, cela apparaîtra ici.",
+    "title": "Activité des demandes",
+    "subtitle": "Suivez vos propres demandes, les demandes reçues sur vos besoins et ouvrez les fils de conversation associés.",
+    "incomingTitle": "Demandes reçues sur vos besoins",
+    "submittedTitle": "Vos demandes envoyées",
+    "openThread": "Ouvrir le fil",
+    "replyNow": "Répondre maintenant",
+    "viewStatus": "Voir le statut",
+    "yourNote": "Votre note : « {{message}} »",
+    "noNote": "Aucune note jointe",
+    "recentNotifications": "Notifications récentes"
+  },
+  "claimManagement": {
+    "loading": "Chargement de la gestion de la demande…",
+    "notAvailable": "Cette demande n'est plus disponible.",
+    "title": "Gérer la demande",
+    "need": "Besoin",
+    "claimer": "Demandeur",
+    "settleInfo": "Régler cette demande confirme l'aidant sélectionné et refuse automatiquement les autres demandes ouvertes pour le même besoin.",
+    "topesAttached": "{{amount}} Topes sont rattachés à ce besoin.",
+    "noTopesAttached": "Aucun montant de Topes n'est rattaché à ce besoin.",
+    "settling": "Règlement…",
+    "settleButton": "Régler cette demande"
   }
 }

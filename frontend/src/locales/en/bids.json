@@ -1,0 +1,40 @@
+{
+  "title": "Bids",
+  "workspaceTitle": "Bids workspace",
+  "workspaceSubtitle": "Track the bids you sent on other accounts' resources and the incoming bids received on your own resources.",
+  "loading": "Loading your bids…",
+  "sentCount": "{{count}} sent",
+  "receivedCount": "{{count}} received",
+  "sections": {
+    "sent": "Bids you sent",
+    "received": "Bids received on your resources"
+  },
+  "sentEmpty": "You have not sent any resource bids yet.",
+  "receivedEmpty": "No one has responded to your resources yet.",
+  "noReviewYet": "No review yet",
+  "noNote": "No note added.",
+  "you": "You",
+  "sentAt": "Sent: {{date}}",
+  "receivedAt": "Received: {{date}}",
+  "reviewedAt": "Reviewed: {{date}}",
+  "yourNote": "Your note: {{message}}",
+  "bidNote": "Bid note: {{message}}",
+  "bidFrom": "Bid from {{bidder}}",
+  "chips": {
+    "tokens": "{{value}} tokens",
+    "exchangeable": "exchangeable"
+  },
+  "actions": {
+    "viewResource": "View resource",
+    "viewCreator": "View creator",
+    "reviewOnResource": "Review on resource page",
+    "viewBidder": "View bidder"
+  },
+  "statuses": {
+    "OPEN": "open",
+    "ACCEPTED": "accepted",
+    "DECLINED": "declined",
+    "WITHDRAWN": "withdrawn",
+    "EXPIRED": "expired"
+  }
+}

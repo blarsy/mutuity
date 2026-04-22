@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { ClaimConversationPanel } from "./ClaimConversationPanel";
@@ -48,6 +49,7 @@ export function NeedClaimManagementPage({
   currentAccountId,
   onClaimsChanged
 }: NeedClaimManagementPageProps) {
+  const { t } = useTranslation("needs");
   const { data, loading, error, refetch } = useQuery<NeedClaimManagementData>(NEED_CLAIM_MANAGEMENT_QUERY, {
     variables: { claimId }
   });
@@ -78,11 +80,11 @@ export function NeedClaimManagementPage({
   };
 
   if (loading) {
-    return <Alert severity="info">Loading claim management…</Alert>;
+    return <Alert severity="info">{t("claimManagement.loading")}</Alert>;
   }
 
   if (!claim) {
-    return <Alert severity="warning">This claim is no longer available.</Alert>;
+    return <Alert severity="warning">{t("claimManagement.notAvailable")}</Alert>;
   }
 
   const participantLabel =
@@ -97,12 +99,12 @@ export function NeedClaimManagementPage({
           <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
               <Box>
-                <Typography variant="h6">Manage claim</Typography>
+                <Typography variant="h6">{t("claimManagement.title")}</Typography>
                 <Typography color="text.secondary" variant="body2">
-                  Need: {claim.needByNeedId.title}
+                  {t("claimManagement.need")}: {claim.needByNeedId.title}
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
-                  Claimer: {participantLabel}
+                  {t("claimManagement.claimer")}: {participantLabel}
                 </Typography>
               </Box>
               <NeedClaimStatusChip
@@ -116,20 +118,20 @@ export function NeedClaimManagementPage({
 
             {canSettle ? (
               <Alert severity="info">
-                Settling this claim confirms the selected helper and automatically declines the remaining open claims for the same need.
+                {t("claimManagement.settleInfo")}
               </Alert>
             ) : null}
 
             <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
               <Typography color="text.secondary" variant="body2">
                 {claim.needByNeedId.proposedTopesAmount
-                  ? `${claim.needByNeedId.proposedTopesAmount} Topes are attached to this need.`
-                  : "No Topes amount is attached to this need."}
+                  ? t("claimManagement.topesAttached", { amount: claim.needByNeedId.proposedTopesAmount })
+                  : t("claimManagement.noTopesAttached")}
               </Typography>
 
               {canSettle ? (
                 <Button color="success" disabled={settleLoading} onClick={() => void handleSettle()} variant="contained">
-                  {settleLoading ? "Settling…" : "Settle this claim"}
+                  {settleLoading ? t("claimManagement.settling") : t("claimManagement.settleButton")}
                 </Button>
               ) : null}
             </Stack>

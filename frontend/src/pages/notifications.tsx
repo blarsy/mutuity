@@ -17,6 +17,7 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../features/auth/requireAuth";
 import {
@@ -97,6 +98,8 @@ type UnifiedNotification = {
   url: string;
 };
 
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+
 function asText(value: unknown) {
   return typeof value === "string" ? value : null;
 }
@@ -113,40 +116,44 @@ function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
 }
 
-function notificationMessage(notification: UnifiedNotification) {
+function notificationMessage(notification: UnifiedNotification, t: TranslateFn) {
   const needName = asText(notification.payload.needName) ?? asText(notification.payload.needTitle);
   const resourceName = asText(notification.payload.resourceName) ?? asText(notification.payload.resourceTitle);
   const campaignName = asText(notification.payload.campaignName);
   const senderName = asText(notification.payload.senderName);
   const amount = asNumber(notification.payload.amountReceived);
+  const unknownNeed = t("eventFallback.unknownNeed");
+  const unknownResource = t("eventFallback.unknownResource");
+  const unknownCampaign = t("eventFallback.unknownCampaign");
+  const someone = t("eventFallback.someone");
 
   switch (notification.eventType) {
     case "claim_created":
-      return `You got a claim for your need ${needName ?? "(unknown need)"}`;
+      return t("events.claimCreated", { needName: needName ?? unknownNeed });
     case "resource_bid_created":
-      return `You got a bid for your resource ${resourceName ?? "(unknown resource)"}`;
+      return t("events.resourceBidCreated", { resourceName: resourceName ?? unknownResource });
     case "resource_bid_expiring_soon":
-      return "A bid you received is about to expire";
+      return t("events.resourceBidExpiringSoon");
     case "campaign_airdrop_coming_soon":
-      return `The airdrop of campaign ${campaignName ?? "(unknown campaign)"} is coming soon !`;
+      return t("events.campaignAirdropComingSoon", { campaignName: campaignName ?? unknownCampaign });
     case "campaign_airdrop_done":
-      return `Airdrop done on campaign ${campaignName ?? "(unknown campaign)"} ! Check your contribution page to see if you got it`;
+      return t("events.campaignAirdropDone", { campaignName: campaignName ?? unknownCampaign });
     case "welcome_profile_reward":
-      return "Welcome to tope-la, make a polished profile, and earn some Topes !";
+      return t("events.welcomeProfileReward");
     case "gift_tokens_received":
-      return `${senderName ?? "Someone"} gave you ${amount ?? 0} Topes !`;
+      return t("events.giftTokensReceived", { senderName: senderName ?? someone, amount: amount ?? 0 });
     case "claim_settled":
-      return `Congratulations, your claim on ${needName ?? "(unknown need)"} has been settled`;
+      return t("events.claimSettled", { needName: needName ?? unknownNeed });
     case "resource_bid_accepted":
-      return `Congratulations, your bid on ${resourceName ?? "(unknown resource)"} has been accepted`;
+      return t("events.resourceBidAccepted", { resourceName: resourceName ?? unknownResource });
     case "resource_bid_declined":
-      return `Your bid on ${resourceName ?? "(unknown resource)"} has been rejected`;
+      return t("events.resourceBidDeclined", { resourceName: resourceName ?? unknownResource });
     case "resource_bid_cancelled":
-      return `Your bid on ${resourceName ?? "(unknown resource)"} has been cancelled`;
+      return t("events.resourceBidCancelled", { resourceName: resourceName ?? unknownResource });
     case "resource_bid_expired":
-      return `Your bid on ${resourceName ?? "(unknown resource)"} has expired without a response`;
+      return t("events.resourceBidExpired", { resourceName: resourceName ?? unknownResource });
     default:
-      return formatEvent(notification.eventType);
+      return t("events.fallback", { eventType: formatEvent(notification.eventType) });
   }
 }
 
@@ -180,6 +187,7 @@ function notificationUrl(notification: UnifiedNotification) {
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const { t } = useTranslation("notifications");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { data, loading, error, refetch } = useQuery<NotificationsOverviewData>(NOTIFICATIONS_OVERVIEW_QUERY, {
@@ -227,7 +235,7 @@ export default function NotificationsPage() {
 
       return {
         ...baseNotification,
-        message: notificationMessage(baseNotification),
+        message: notificationMessage(baseNotification, t),
         url: notificationUrl(baseNotification)
       };
     });
@@ -252,7 +260,7 @@ export default function NotificationsPage() {
 
       return {
         ...baseNotification,
-        message: notificationMessage(baseNotification),
+        message: notificationMessage(baseNotification, t),
         url: notificationUrl(baseNotification)
       };
     });
@@ -272,7 +280,7 @@ export default function NotificationsPage() {
 
       return {
         ...baseNotification,
-        message: notificationMessage(baseNotification),
+        message: notificationMessage(baseNotification, t),
         url: notificationUrl(baseNotification)
       };
     });
@@ -285,7 +293,8 @@ export default function NotificationsPage() {
     data?.allResourceBidNotifications.nodes,
     data?.allAccountNotifications.nodes,
     data?.allNeedClaims.nodes,
-    data?.allResourceBids.nodes
+    data?.allResourceBids.nodes,
+    t
   ]);
 
   const unreadCount = items.filter(item => !item.readAt).length;
@@ -324,10 +333,10 @@ export default function NotificationsPage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Notifications
+            {t("title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session..." : isRedirecting ? "Redirecting to sign in..." : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -341,30 +350,30 @@ export default function NotificationsPage() {
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
             <Box>
               <Typography component="h1" gutterBottom variant="h4">
-                Notifications
+                {t("title")}
               </Typography>
               <Typography color="text.secondary">
-                Events requiring your attention across needs, resources, campaigns, profile completion, and Topes transfers.
+                {t("subtitle")}
               </Typography>
             </Box>
 
             <Stack direction="row" spacing={1}>
-              <Chip color={unreadCount > 0 ? "warning" : "success"} label={`${unreadCount} unread`} />
+              <Chip color={unreadCount > 0 ? "warning" : "success"} label={t("unreadCount", { count: unreadCount })} />
               <Button
                 disabled={busy || unreadCount === 0}
                 onClick={() => setConfirmOpen(true)}
                 variant="outlined"
               >
-                Set all as read
+                {t("markAllAsRead")}
               </Button>
             </Stack>
           </Stack>
 
-          {loading ? <Alert severity="info">Loading your notifications...</Alert> : null}
+          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           {items.length === 0 ? (
-            <Alert severity="info">No notifications yet.</Alert>
+            <Alert severity="info">{t("empty")}</Alert>
           ) : (
             <Stack spacing={1.5}>
               {items.map(item => (
@@ -394,7 +403,7 @@ export default function NotificationsPage() {
                           size="small"
                           variant="contained"
                         >
-                          Open
+                          {t("open")}
                         </Button>
                       </Stack>
                     </Stack>
@@ -407,18 +416,18 @@ export default function NotificationsPage() {
       </Box>
 
       <Dialog onClose={() => setConfirmOpen(false)} open={confirmOpen}>
-        <DialogTitle>Mark all notifications as read?</DialogTitle>
+        <DialogTitle>{t("confirmDialog.title")}</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            This will set all unread notifications as read.
+            {t("confirmDialog.body")}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button disabled={markAllLoading} onClick={() => setConfirmOpen(false)}>
-            No
+            {t("actions.cancel", { ns: "common" })}
           </Button>
           <Button disabled={markAllLoading} onClick={() => void markAllUnreadAsRead()} variant="contained">
-            Yes
+            {t("confirmDialog.confirm")}
           </Button>
         </DialogActions>
       </Dialog>

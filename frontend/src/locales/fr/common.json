@@ -18,7 +18,10 @@
   },
   "placeholders": {
     "chat": "Cet espace listera vos conversations actives sur les ressources et les besoins.",
-    "preferences": "Cette page permettra au compte connecté d'ajuster ses préférences de notification et d'application."
+    "preferences": "Cette page permettra au compte connecté d'ajuster ses préférences de notification et d'application.",
+    "thisAccount": "ce compte",
+    "accountDetailsTitle": "Détails du compte",
+    "accountDetailsDescription": "Cette page publique réservée affichera le profil, les ressources et les besoins de {{accountId}}."
   },
   "errors": {
     "genericRetry": "Une erreur s'est produite. Veuillez réessayer."

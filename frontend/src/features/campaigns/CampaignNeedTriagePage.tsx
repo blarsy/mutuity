@@ -14,6 +14,7 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { CampaignNeedStatusChip, type CampaignNeedStatus } from "../../components/campaign/CampaignNeedStatusChip";
 import { NeedSummaryFacts } from "../../components/need/NeedSummaryFacts";
@@ -86,6 +87,7 @@ function nodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId">) {
 }
 
 export default function CampaignNeedTriagePage() {
+  const { t } = useTranslation("campaigns");
   const router = useRouter();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const campaignIdFilter = typeof router.query.campaignId === "string" ? router.query.campaignId : undefined;
@@ -178,7 +180,7 @@ export default function CampaignNeedTriagePage() {
       await refetch();
     } catch (error) {
       clearOptimistic(key);
-      const fallbackMessage = error instanceof Error ? error.message : "Something went wrong";
+      const fallbackMessage = error instanceof Error ? error.message : t("errors.genericRetry", { ns: "common" });
       setRowError(key, fallbackMessage);
     } finally {
       setBusyKey(current => (current === key ? null : current));
@@ -190,10 +192,10 @@ export default function CampaignNeedTriagePage() {
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
-            Campaign need triage
+            {t("triage.title")}
           </Typography>
           <Alert severity="info">
-            {isChecking ? "Checking your session…" : isRedirecting ? "Redirecting to sign in…" : "Please sign in to continue."}
+            {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
       </Container>
@@ -204,30 +206,30 @@ export default function CampaignNeedTriagePage() {
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Campaign need triage
+          {t("triage.title")}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Review needs joined to campaigns you created and accept or reject pending requests.
+          {t("triage.subtitle")}
         </Typography>
 
         {campaignIdFilter ? (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Filtering by campaign ID: {campaignIdFilter}
+            {t("triage.filteringByCampaignId", { campaignId: campaignIdFilter })}
           </Alert>
         ) : null}
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
-          <Chip label={`Total linked needs: ${nodes.length}`} variant="outlined" />
-          <Chip color="warning" label={`Pending triage: ${pendingCount}`} variant="outlined" />
+          <Chip label={t("triage.totalLinkedNeeds", { count: nodes.length })} variant="outlined" />
+          <Chip color="warning" label={t("triage.pendingTriage", { count: pendingCount })} variant="outlined" />
         </Stack>
 
-        {queryLoading ? <Alert severity="info">Loading joined needs…</Alert> : null}
+        {queryLoading ? <Alert severity="info">{t("triage.loading")}</Alert> : null}
         {queryErrorMessage ? <Alert severity="error">{queryErrorMessage}</Alert> : null}
         {acceptErrorMessage ? <Alert severity="error">{acceptErrorMessage}</Alert> : null}
         {rejectErrorMessage ? <Alert severity="error">{rejectErrorMessage}</Alert> : null}
 
         {!queryLoading && !queryErrorMessage && nodes.length === 0 ? (
-          <Alert severity="success">No joined needs available for triage.</Alert>
+          <Alert severity="success">{t("triage.empty")}</Alert>
         ) : null}
 
         <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -243,9 +245,9 @@ export default function CampaignNeedTriagePage() {
                   <CardContent>
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                       <Box>
-                        <Typography variant="h6">{node.needByNeedId?.title ?? `Need ${node.needId}`}</Typography>
+                        <Typography variant="h6">{node.needByNeedId?.title ?? t("triage.needFallback", { needId: node.needId })}</Typography>
                         <Typography color="text.secondary">
-                          Campaign: {node.campaignByCampaignId?.title ?? node.campaignId}
+                          {t("triage.campaignLabel")}: {node.campaignByCampaignId?.title ?? node.campaignId}
                         </Typography>
                       </Box>
                       <CampaignNeedStatusChip status={status} />
@@ -274,7 +276,7 @@ export default function CampaignNeedTriagePage() {
                         size="small"
                         variant="contained"
                       >
-                        Accept
+                        {t("triage.accept")}
                       </Button>
                       <Button
                         color="error"
@@ -283,7 +285,7 @@ export default function CampaignNeedTriagePage() {
                         size="small"
                         variant="outlined"
                       >
-                        Reject
+                        {t("triage.reject")}
                       </Button>
                     </CardActions>
                   ) : null}

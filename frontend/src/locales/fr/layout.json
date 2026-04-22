@@ -17,7 +17,9 @@
     "switchToLight": "Passer en mode clair",
     "toggleColorMode": "Basculer le mode couleur",
     "openProfileMenu": "Ouvrir le menu profil",
-    "openSignInDialog": "Ouvrir la fenêtre de connexion"
+    "openSignInDialog": "Ouvrir la fenêtre de connexion",
+    "profileFallback": "Profil",
+    "signInFallback": "Se connecter"
   },
   "menu": {
     "preferences": "Préférences",

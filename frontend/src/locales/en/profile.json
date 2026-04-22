@@ -1,0 +1,31 @@
+{
+  "title": "Profile",
+  "subtitle": "Complete your profile and unlock one-time Topes rewards for your first avatar, bio, location, and first added link.",
+  "avatarPreviewHint": "Your avatar preview updates as you edit the profile image URL below.",
+  "loading": "Loading your profile…",
+  "successUpdated": "Profile updated.",
+  "profileLinksTitle": "Profile links",
+  "addLink": "Add link",
+  "noLinksYet": "No profile links yet. Add a website or social link if you want to share one.",
+  "removeLink": "Remove link",
+  "savingButton": "Saving…",
+  "saveButton": "Save profile",
+  "fields": {
+    "displayName": "Display name",
+    "bio": "Bio",
+    "location": "Location",
+    "avatarUrl": "Avatar image URL",
+    "avatarPlaceholder": "https://example.com/avatar.png",
+    "linkType": "Type",
+    "caption": "Caption",
+    "captionPlaceholder": "e.g. Main website",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com"
+  },
+  "linkTypes": {
+    "website": "Website",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "x": "X"
+  }
+}

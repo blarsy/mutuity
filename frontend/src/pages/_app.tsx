@@ -11,6 +11,8 @@ import { type AppColorMode, createAppTheme } from "../theme";
 import i18n from "../i18n";
 
 const COLOR_MODE_STORAGE_KEY = "mutuity-color-mode";
+const LANGUAGE_STORAGE_KEY = "mutuity-language";
+const SUPPORTED_LANGUAGES = new Set(["fr", "en"]);
 
 export default function App({ Component, pageProps }: AppProps) {
   const [colorMode, setColorMode] = useState<AppColorMode>("light");
@@ -29,6 +31,28 @@ export default function App({ Component, pageProps }: AppProps) {
 
     const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
     setColorMode(prefersDark ? "dark" : "light");
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    const browserLanguage = window.navigator.language?.split("-")[0]?.toLowerCase();
+
+    const nextLanguage =
+      (storedLanguage && SUPPORTED_LANGUAGES.has(storedLanguage) && storedLanguage)
+      || (browserLanguage && SUPPORTED_LANGUAGES.has(browserLanguage) && browserLanguage)
+      || "fr";
+
+    if (storedLanguage !== nextLanguage) {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
+    }
+
+    if (i18n.language !== nextLanguage) {
+      void i18n.changeLanguage(nextLanguage);
+    }
   }, []);
 
   const handleToggleColorMode = () => {

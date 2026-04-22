@@ -109,31 +109,35 @@ type ViewerClaimOverviewData = {
 
 type ToggleFilterKey = Exclude<keyof NeedSearchFilters, "searchText">;
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, fallback: string) {
   if (!value) {
-    return "No expiry set";
+    return fallback;
   }
 
   return new Date(value).toLocaleString();
 }
 
-function buildNeedTags(need: NeedNode) {
+function buildNeedTags(need: NeedNode, t: (key: string, options?: Record<string, unknown>) => string) {
   const tags = [need.intensity.toLowerCase().replaceAll("_", " ")];
 
   if (need.objectRequired) {
-    tags.push("object required");
+    tags.push(t("needTags.objectRequired"));
   }
 
   if (need.toolingRequired) {
-    tags.push("tooling required");
+    tags.push(t("needTags.toolingRequired"));
   }
 
   if (need.competenceRequired) {
-    tags.push("competence required");
+    tags.push(t("needTags.competenceRequired"));
   }
 
   if (need.multiplePeopleRequired) {
-    tags.push(need.requiredPeopleCount ? `${need.requiredPeopleCount}+ people` : "multiple people");
+    tags.push(
+      need.requiredPeopleCount
+        ? t("needTags.multiplePeopleCount", { count: need.requiredPeopleCount })
+        : t("needTags.multiplePeople")
+    );
   }
 
   return tags;
@@ -158,7 +162,7 @@ export default function PublicNeedsPage() {
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [locationStatus, setLocationStatus] = useState(
-    "Using account or Tournai fallback when no explicit coordinates are provided."
+    "browse.locationFallbackStatus"
   );
 
   useEffect(() => {
@@ -170,7 +174,7 @@ export default function PublicNeedsPage() {
       }
 
       setBrowserLocation(location);
-      setLocationStatus("Browser coordinates are available as a fallback when account coordinates are unavailable.");
+      setLocationStatus("browse.locationBrowserStatus");
     });
 
     return () => {
@@ -252,11 +256,11 @@ export default function PublicNeedsPage() {
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button component={NextLink} href={createNeedHref} variant="contained">
-              Add
+              {t("browse.addButton")}
             </Button>
             {!session.authenticated &&(
               <Button component={NextLink} href="/login?next=%2Fneeds" variant="contained">
-                Sign in
+                {t("browse.signInButton")}
               </Button>
             )}
           </Stack>
@@ -273,7 +277,7 @@ export default function PublicNeedsPage() {
         </Alert>
 
         <Alert severity="info" sx={{ mb: 3 }}>
-          {locationStatus}
+          {t(locationStatus)}
         </Alert>
 
         {claimOverviewMessage ? (
@@ -313,16 +317,16 @@ export default function PublicNeedsPage() {
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                 <Button onClick={() => toggleFilter("objectRequired")} size="small" variant={filterVariant(filters.objectRequired)}>
-                  {t("filters.object")}: {describeTriStateFilter(filters.objectRequired)}
+                  {t("filters.objectRequired")}: {t(`triState.${filters.objectRequired}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("toolingRequired")} size="small" variant={filterVariant(filters.toolingRequired)}>
-                  {t("filters.tooling")}: {describeTriStateFilter(filters.toolingRequired)}
+                  {t("filters.toolingRequired")}: {t(`triState.${filters.toolingRequired}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("competenceRequired")} size="small" variant={filterVariant(filters.competenceRequired)}>
-                  {t("filters.competence")}: {describeTriStateFilter(filters.competenceRequired)}
+                  {t("filters.competenceRequired")}: {t(`triState.${filters.competenceRequired}`)}
                 </Button>
                 <Button onClick={() => toggleFilter("multiplePeopleRequired")} size="small" variant={filterVariant(filters.multiplePeopleRequired)}>
-                  {t("filters.people")}: {describeTriStateFilter(filters.multiplePeopleRequired)}
+                  {t("filters.multiplePeopleRequired")}: {t(`triState.${filters.multiplePeopleRequired}`)}
                 </Button>
               </Stack>
             </Stack>
@@ -362,7 +366,7 @@ export default function PublicNeedsPage() {
                         onClick={() => setSelectedClaimId(firstIncomingClaim?.id ?? null)}
                         variant="outlined"
                       >
-                        {firstIncomingClaim ? "Manage incoming claims" : "No claims yet"}
+                        {firstIncomingClaim ? t("browse.manageIncomingClaims") : t("browse.noClaimsYet")}
                       </Button>
                     ) : (
                       <NeedClaimDialog
@@ -374,24 +378,24 @@ export default function PublicNeedsPage() {
                     )
                   ) : (
                     <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
-                      Sign in to claim
+                      {t("browse.signInToClaim")}
                     </Button>
                   )
                 }
                 chips={
                   <>
-                    {buildNeedTags(need).map(tag => (
+                    {buildNeedTags(need, t).map(tag => (
                       <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                     ))}
                     {need.proposedTopesAmount ? (
-                      <Chip label={`${need.proposedTopesAmount} Topes proposed`} size="small" color="primary" />
+                      <Chip label={t("browse.topesProposed", { amount: need.proposedTopesAmount })} size="small" color="primary" />
                     ) : null}
-                    {isCreator ? <Chip label="your need" size="small" color="secondary" /> : null}
+                    {isCreator ? <Chip label={t("browse.yourNeedChip")} size="small" color="secondary" /> : null}
                     {ownClaim ? (
-                      <Chip label={`your claim: ${formatClaimStatus(ownClaim.status)}`} size="small" color="success" />
+                      <Chip label={t("browse.yourClaim", { status: formatClaimStatus(ownClaim.status) })} size="small" color="success" />
                     ) : null}
                     {isCreator && incomingClaimCount > 0 ? (
-                      <Chip label={`${incomingClaimCount} incoming claim${incomingClaimCount > 1 ? "s" : ""}`} size="small" color="warning" />
+                      <Chip label={t("browse.incomingClaims", { count: incomingClaimCount })} size="small" color="warning" />
                     ) : null}
                   </>
                 }
@@ -403,10 +407,10 @@ export default function PublicNeedsPage() {
                     {(need.requiredToolingText || need.requiredCompetenceText) ? (
                       <Box>
                         {need.requiredToolingText ? (
-                          <Typography variant="body2">Tooling: {need.requiredToolingText}</Typography>
+                          <Typography variant="body2">{t("browse.tooling")}: {need.requiredToolingText}</Typography>
                         ) : null}
                         {need.requiredCompetenceText ? (
-                          <Typography variant="body2">Competence: {need.requiredCompetenceText}</Typography>
+                          <Typography variant="body2">{t("browse.competence")}: {need.requiredCompetenceText}</Typography>
                         ) : null}
                       </Box>
                     ) : null}
@@ -414,14 +418,14 @@ export default function PublicNeedsPage() {
                     <Divider />
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                      <Typography variant="body2">Weighted score: {need.weightedScore}</Typography>
-                      <Typography variant="body2">Closeness: {need.closenessScore}</Typography>
-                      <Typography variant="body2">Ease: {need.easeOfSetupScore}</Typography>
-                      <Typography variant="body2">Expiry: {need.expirationScore}</Typography>
+                      <Typography variant="body2">{t("browse.weightedScore")}: {need.weightedScore}</Typography>
+                      <Typography variant="body2">{t("browse.closeness")}: {need.closenessScore}</Typography>
+                      <Typography variant="body2">{t("browse.ease")}: {need.easeOfSetupScore}</Typography>
+                      <Typography variant="body2">{t("browse.expiry")}: {need.expirationScore}</Typography>
                     </Stack>
 
                     <Typography color="text.secondary" variant="caption">
-                      {need.location} • Expires: {formatDate(need.expiresAt)} • Query origin: {need.queryLatitude}, {need.queryLongitude}
+                      {need.location} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))} • {t("browse.queryOrigin")}: {need.queryLatitude}, {need.queryLongitude}
                     </Typography>
                   </Stack>
                 }

@@ -1,0 +1,35 @@
+{
+  "title": "Notifications",
+  "subtitle": "Événements nécessitant votre attention sur les besoins, les ressources, les campagnes, la complétion du profil et les transferts de Topes.",
+  "unreadCount": "{{count}} non lues",
+  "markAllAsRead": "Tout marquer comme lu",
+  "loading": "Chargement de vos notifications…",
+  "empty": "Aucune notification pour l'instant.",
+  "open": "Ouvrir",
+  "confirmDialog": {
+    "title": "Marquer toutes les notifications comme lues ?",
+    "body": "Toutes les notifications non lues seront marquées comme lues.",
+    "confirm": "Confirmer"
+  },
+  "eventFallback": {
+    "unknownNeed": "besoin inconnu",
+    "unknownResource": "ressource inconnue",
+    "unknownCampaign": "campagne inconnue",
+    "someone": "Quelqu'un"
+  },
+  "events": {
+    "claimCreated": "Vous avez reçu une demande pour votre besoin {{needName}}",
+    "resourceBidCreated": "Vous avez reçu une offre pour votre ressource {{resourceName}}",
+    "resourceBidExpiringSoon": "Une offre reçue va bientôt expirer",
+    "campaignAirdropComingSoon": "L'airdrop de la campagne {{campaignName}} arrive bientôt !",
+    "campaignAirdropDone": "Airdrop effectué sur la campagne {{campaignName}} ! Consultez votre page contribution pour voir si vous l'avez reçu",
+    "welcomeProfileReward": "Bienvenue sur tope-la, soignez votre profil et gagnez des Topes !",
+    "giftTokensReceived": "{{senderName}} vous a donné {{amount}} Topes !",
+    "claimSettled": "Félicitations, votre demande sur {{needName}} a été réglée",
+    "resourceBidAccepted": "Félicitations, votre offre sur {{resourceName}} a été acceptée",
+    "resourceBidDeclined": "Votre offre sur {{resourceName}} a été refusée",
+    "resourceBidCancelled": "Votre offre sur {{resourceName}} a été annulée",
+    "resourceBidExpired": "Votre offre sur {{resourceName}} a expiré sans réponse",
+    "fallback": "{{eventType}}"
+  }
+}

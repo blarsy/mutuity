@@ -48,8 +48,8 @@ export function AppTopBar({
   });
 
   const currentLabel = useMemo(() => {
-    return session.account?.displayName ?? session.account?.externalSubject ?? "Profile";
-  }, [session.account?.displayName, session.account?.externalSubject]);
+    return session.account?.displayName ?? session.account?.externalSubject ?? t("topbar.profileFallback");
+  }, [session.account?.displayName, session.account?.externalSubject, t]);
 
   const links = useMemo(() => {
     if (!session.authenticated) {
@@ -121,7 +121,7 @@ export function AppTopBar({
                 </Tooltip>
                 <AvatarIconButton
                   aria-label={t("topbar.openSignInDialog")}
-                  displayName="Sign in"
+                  displayName={t("topbar.signInFallback")}
                   onClick={() => setLoginDialogOpen(true)}
                 />
               </>

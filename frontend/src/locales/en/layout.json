@@ -17,7 +17,9 @@
     "switchToLight": "Switch to light mode",
     "toggleColorMode": "Toggle color mode",
     "openProfileMenu": "Open profile menu",
-    "openSignInDialog": "Open sign in dialog"
+    "openSignInDialog": "Open sign in dialog",
+    "profileFallback": "Profile",
+    "signInFallback": "Sign in"
   },
   "menu": {
     "preferences": "Preferences",

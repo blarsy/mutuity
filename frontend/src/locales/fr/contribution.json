@@ -5,6 +5,7 @@
   "empty": "Aucun mouvement de jetons enregistré.",
   "ledgerInfo": "Ce registre enregistre les récompenses de complétion de profil, les récompenses de premier jalon de ressource, les réserves/remboursements d'offres, les transferts de règlement de demandes, les dons directs entre comptes, les récompenses différées de 24 heures et les paiements d'airdrop de campagne.",
   "ledgerEntriesCount": "{{count}} entrées de registre",
+  "topesAmount": "{{amount}} Topes",
   "giftSent": "Don envoyé.",
   "giftForm": {
     "title": "Envoyer un don",

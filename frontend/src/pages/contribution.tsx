@@ -22,41 +22,8 @@ type ContributionOverviewData = {
   };
 };
 
-function formatMovementTitle(eventType: string) {
-  switch (eventType) {
-    case "resource_bid_reserved":
-      return "Bid created / tokens reserved";
-    case "resource_bid_refunded":
-      return "Bid refunded";
-    case "claim_settlement_credit":
-      return "Claim settled in your favor";
-    case "claim_settlement_debit":
-      return "You settled a claim on your need";
-    case "profile_first_avatar_reward":
-      return "First profile avatar added";
-    case "profile_first_bio_reward":
-      return "First profile bio added";
-    case "profile_first_location_reward":
-      return "First profile location added";
-    case "profile_first_link_reward":
-      return "First profile link added";
-    case "resource_first_image_reward":
-      return "First resource image added";
-    case "resource_first_default_token_amount_reward":
-      return "First default Topes amount set on a resource";
-    case "resource_age_24h_reward":
-      return "Resource reached the 24-hour milestone";
-    case "claim_age_24h_reward":
-      return "Claim stayed valid for 24 hours";
-    case "campaign_airdrop_received":
-      return "Campaign airdrop received";
-    default:
-      return eventType.replaceAll("_", " ").toLowerCase();
-  }
-}
-
-function formatAmount(amountDelta: number) {
-  return `${amountDelta > 0 ? "+" : ""}${amountDelta} Topes`;
+function formatSignedAmount(amountDelta: number) {
+  return `${amountDelta > 0 ? "+" : ""}${amountDelta}`;
 }
 
 export default function ContributionPage() {
@@ -130,7 +97,7 @@ export default function ContributionPage() {
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Chip color={balance >= 0 ? "success" : "error"} label={`${balance} Topes`} />
+            <Chip color={balance >= 0 ? "success" : "error"} label={t("topesAmount", { amount: balance })} />
             <Chip label={t("ledgerEntriesCount", { count: movements.length })} variant="outlined" />
           </Stack>
 
@@ -210,7 +177,7 @@ export default function ContributionPage() {
 
                       <Chip
                         color={movement.amountDelta >= 0 ? "success" : "error"}
-                        label={formatAmount(movement.amountDelta)}
+                        label={t("topesAmount", { amount: formatSignedAmount(movement.amountDelta) })}
                         size="small"
                       />
                     </Stack>

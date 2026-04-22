@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { Alert, Box, CircularProgress, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CAMPAIGN_MODERATION_HISTORY_QUERY } from "./campaignModeration.queries";
 
@@ -23,6 +24,7 @@ type ModerationHistoryVariables = {
 };
 
 export function CampaignModerationHistory({ campaignId }: CampaignModerationHistoryProps) {
+  const { t } = useTranslation("campaigns");
   const { data, loading, error } = useQuery<ModerationHistoryData, ModerationHistoryVariables>(
     CAMPAIGN_MODERATION_HISTORY_QUERY,
     {
@@ -44,7 +46,7 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
   if (notes.length === 0) {
     return (
       <Box sx={{ p: 2, border: "1px dashed", borderColor: "divider", borderRadius: 1 }}>
-        <Typography color="text.secondary">No moderation notes yet.</Typography>
+        <Typography color="text.secondary">{t("moderationNotes.empty")}</Typography>
       </Box>
     );
   }
@@ -55,7 +57,10 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
         <ListItem key={note.id} divider>
           <ListItemText
             primary={note.body}
-            secondary={`Manager ${note.managerAccountId} • ${new Date(note.createdAt).toLocaleString()}`}
+            secondary={t("moderationNotes.noteMeta", {
+              managerAccountId: note.managerAccountId,
+              createdAt: new Date(note.createdAt).toLocaleString()
+            })}
           />
         </ListItem>
       ))}

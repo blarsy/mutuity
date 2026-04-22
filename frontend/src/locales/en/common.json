@@ -18,7 +18,10 @@
   },
   "placeholders": {
     "chat": "This workspace will list your active conversations about resources and needs.",
-    "preferences": "This page will let the logged-in account adjust notification and application preferences."
+    "preferences": "This page will let the logged-in account adjust notification and application preferences.",
+    "thisAccount": "this account",
+    "accountDetailsTitle": "Account details",
+    "accountDetailsDescription": "This reserved public page will show the profile, resources, and needs for {{accountId}}."
   },
   "errors": {
     "genericRetry": "Something went wrong. Please try again."
