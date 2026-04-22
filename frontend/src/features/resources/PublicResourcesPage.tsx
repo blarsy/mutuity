@@ -22,6 +22,7 @@ import {
   type ResourceSearchFilters,
   type TriStateFilter
 } from "./types";
+import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { ResourceCard } from "../ui/ResourceCard";
 import { PUBLIC_RESOURCES_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
 
@@ -52,7 +53,7 @@ function filterVariant(value: TriStateFilter) {
 }
 
 function buildResourceTags(resource: PublicResourceCard, t: (key: string) => string) {
-  const tags = [resource.intensity.toLowerCase().replaceAll("_", " ")];
+  const tags = [getDisplayIntensityLabel(resource.intensity, t)];
 
   if (resource.isProduct) {
     tags.push(t("tags.product"));

@@ -1,6 +1,8 @@
 import { Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { getDisplayIntensityLabel } from "../../features/shared/displayIntensity";
+
 export function NeedSummaryFacts({
   location,
   intensity,
@@ -15,12 +17,13 @@ export function NeedSummaryFacts({
   triagedAt?: string | null;
 }) {
   const { t } = useTranslation("needs");
+  const translatedIntensity = intensity ? getDisplayIntensityLabel(intensity as Parameters<typeof getDisplayIntensityLabel>[0], t) : t("summaryFacts.na");
 
   return (
     <>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
         <Typography variant="body2">{t("summaryFacts.location")}: {location ?? t("summaryFacts.na")}</Typography>
-        <Typography variant="body2">{t("summaryFacts.intensity")}: {intensity ?? t("summaryFacts.na")}</Typography>
+        <Typography variant="body2">{t("summaryFacts.intensity")}: {translatedIntensity}</Typography>
         <Typography variant="body2">{t("summaryFacts.proposedTopes")}: {proposedTopesAmount ?? t("summaryFacts.na")}</Typography>
       </Stack>
 

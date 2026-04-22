@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
 import { ClaimNotificationsPanel } from "./ClaimNotificationsPanel";
 import { NeedClaimDialog } from "./NeedClaimDialog";
@@ -118,7 +119,7 @@ function formatDate(value: string | null, fallback: string) {
 }
 
 function buildNeedTags(need: NeedNode, t: (key: string, options?: Record<string, unknown>) => string) {
-  const tags = [need.intensity.toLowerCase().replaceAll("_", " ")];
+  const tags = [getDisplayIntensityLabel(need.intensity as Parameters<typeof getDisplayIntensityLabel>[0], t)];
 
   if (need.objectRequired) {
     tags.push(t("needTags.objectRequired"));

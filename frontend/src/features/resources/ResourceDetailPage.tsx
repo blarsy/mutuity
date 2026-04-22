@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { ResourceBidDialog } from "./ResourceBidDialog";
 import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
@@ -95,7 +96,7 @@ function buildResourceTags(resource: ResourceDetailData["resourceById"], t: (key
     return [] as string[];
   }
 
-  const tags = [resource.intensity.toLowerCase().replaceAll("_", " ")];
+  const tags = [getDisplayIntensityLabel(resource.intensity, t)];
 
   if (resource.isProduct) {
     tags.push(t("tags.product"));

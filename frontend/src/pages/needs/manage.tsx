@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import { MY_NEEDS_CONNECTION_QUERY, SOFT_DELETE_NEED_MUTATION } from "../../features/needs/needs.queries";
+import { getDisplayIntensityLabel } from "../../features/shared/displayIntensity";
 import { NeedCard } from "../../features/ui/NeedCard";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
@@ -68,23 +69,23 @@ function formatUpdatedAt(value: string) {
   return new Date(value).toLocaleString();
 }
 
-function buildNeedTags(need: ManageNeedNode) {
-  const tags = [need.intensity.toLowerCase().replaceAll("_", " ")];
+function buildNeedTags(need: ManageNeedNode, t: (key: string, options?: Record<string, unknown>) => string) {
+  const tags = [getDisplayIntensityLabel(need.intensity as Parameters<typeof getDisplayIntensityLabel>[0], t)];
 
   if (need.objectRequired) {
-    tags.push("object");
+    tags.push(t("filters.objectRequired"));
   }
 
   if (need.toolingRequired) {
-    tags.push("tooling");
+    tags.push(t("filters.toolingRequired"));
   }
 
   if (need.competenceRequired) {
-    tags.push("competence");
+    tags.push(t("filters.competenceRequired"));
   }
 
   if (need.multiplePeopleRequired) {
-    tags.push(need.requiredPeopleCount ? `${need.requiredPeopleCount}+ people` : "multiple people");
+    tags.push(need.requiredPeopleCount ? t("needTags.multiplePeopleCount", { count: need.requiredPeopleCount }) : t("filters.multiplePeopleRequired"));
   }
 
   return tags;
@@ -246,7 +247,7 @@ export default function ManageNeedsPage() {
                   chips={
                     <>
                       <Chip label={t("manage.topesChip", { amount: need.proposedTopesAmount ?? "-" })} size="small" variant="outlined" />
-                      {buildNeedTags(need).slice(0, 2).map(tag => (
+                      {buildNeedTags(need, t).slice(0, 2).map(tag => (
                         <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                       ))}
                     </>
