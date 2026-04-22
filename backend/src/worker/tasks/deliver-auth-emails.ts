@@ -9,11 +9,49 @@ type DeliverAuthEmailsPayload = {
 
 type TokenKind = "email_verification" | "password_reset";
 
+type SupportedLocale = "en" | "fr";
+
 type PendingAuthEmail = {
   id: string;
   recipient_email: string;
   mail_kind: string;
   auth_token: string | null;
+  locale: string | null;
+};
+
+type EmailStrings = {
+  subject: string;
+  text: string;
+  html: string;
+};
+
+type LocalizedEmailTemplates = Record<TokenKind, Record<SupportedLocale, (productName: string, link: string) => EmailStrings>>;
+
+const EMAIL_TEMPLATES: LocalizedEmailTemplates = {
+  email_verification: {
+    en: (productName, link) => ({
+      subject: `Verify your email for ${productName}`,
+      text: `Welcome to ${productName}. Verify your email by opening this link: ${link}`,
+      html: `<p>Welcome to ${productName}.</p><p>Please verify your email by opening this link:</p><p><a href="${link}">${link}</a></p>`
+    }),
+    fr: (productName, link) => ({
+      subject: `Vérifiez votre adresse e-mail pour ${productName}`,
+      text: `Bienvenue sur ${productName}. Vérifiez votre adresse e-mail en ouvrant ce lien : ${link}`,
+      html: `<p>Bienvenue sur ${productName}.</p><p>Veuillez vérifier votre adresse e-mail en ouvrant ce lien :</p><p><a href="${link}">${link}</a></p>`
+    })
+  },
+  password_reset: {
+    en: (productName, link) => ({
+      subject: `Reset your ${productName} password`,
+      text: `A password reset was requested for your ${productName} account. Set a new password using this link: ${link}`,
+      html: `<p>A password reset was requested for your ${productName} account.</p><p>Set a new password using this link:</p><p><a href="${link}">${link}</a></p>`
+    }),
+    fr: (productName, link) => ({
+      subject: `Réinitialisez votre mot de passe ${productName}`,
+      text: `Une réinitialisation du mot de passe a été demandée pour votre compte ${productName}. Définissez un nouveau mot de passe via ce lien : ${link}`,
+      html: `<p>Une réinitialisation du mot de passe a été demandée pour votre compte ${productName}.</p><p>Définissez un nouveau mot de passe via ce lien :</p><p><a href="${link}">${link}</a></p>`
+    })
+  }
 };
 
 const CLAIM_PENDING_EMAILS_SQL =
@@ -55,18 +93,9 @@ function buildAuthEmailContent(email: PendingAuthEmail) {
 
   const link = url.toString();
   const productName = getProductName();
-  const subject =
-    tokenKind === "email_verification"
-      ? `Verify your email for ${productName}`
-      : `Reset your ${productName} password`;
-  const text =
-    tokenKind === "email_verification"
-      ? `Welcome to ${productName}. Verify your email by opening this link: ${link}`
-      : `A password reset was requested for your ${productName} account. Set a new password using this link: ${link}`;
-  const html =
-    tokenKind === "email_verification"
-      ? `<p>Welcome to ${productName}.</p><p>Please verify your email by opening this link:</p><p><a href="${link}">${link}</a></p>`
-      : `<p>A password reset was requested for your ${productName} account.</p><p>Set a new password using this link:</p><p><a href="${link}">${link}</a></p>`;
+  const rawLocale = email.locale?.trim().toLowerCase() ?? "en";
+  const locale: SupportedLocale = rawLocale === "fr" ? "fr" : "en";
+  const { subject, text, html } = EMAIL_TEMPLATES[tokenKind][locale](productName, link);
 
   return {
     from: getFromAddress(),

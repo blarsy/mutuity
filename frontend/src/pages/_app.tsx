@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 
 import { AuthProvider } from "../features/auth/AuthProvider";
+import { LanguagePersistenceSync } from "../features/auth/LanguagePersistenceSync";
 import { AppShell } from "../features/layout/AppShell";
 import { apolloClient } from "../services/graphql/client";
 import { type AppColorMode, createAppTheme } from "../theme";
@@ -73,6 +74,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <I18nextProvider i18n={i18n}>
       <ApolloProvider client={apolloClient}>
         <AuthProvider>
+          <LanguagePersistenceSync />
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <AppShell colorMode={colorMode} onToggleColorMode={handleToggleColorMode}>
