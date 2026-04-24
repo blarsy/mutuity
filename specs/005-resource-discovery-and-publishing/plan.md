@@ -74,6 +74,24 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - persist non-broadcasted summary-eligible events and process them via a daily 08:00 digest job
 - emit at most one digest email per account per run with per-category sections and idempotent mark-as-broadcasted updates
 
+Preferences IA matrix and control rules:
+
+- Channels:
+	- `in-app` stays always on and is not user-disableable from Preferences
+	- `push` is mobile only and only for categories using `realtime push`
+	- `email summary` is digest-based and only for categories using `email summary`
+- Managed categories: `new_resource_added`, `new_need_added`, `unread_notifications`, `new_chat_message_received`
+- Strategy matrix by category:
+	- `realtime push`: immediate push when no active session is present
+	- `email summary`: persist pending digest entry and broadcast by selected cadence (`1`, `3`, `7`, `30`; default `1`)
+- Activity gate:
+	- evaluate active web/mobile session presence at event time
+	- when active session exists, suppress out-of-app send and keep in-app behavior unchanged
+- Digest:
+	- run once daily at `08:00` server time
+	- send at most one digest email per account, grouping pending items by category
+	- mark selected pending items as broadcasted only after successful send
+
 ### Slice 7 — Authentication parity with Tope-la (P1)
 - keep account creation profile-minimal: only account name is mandatory
 - support local email/password account creation with verification-before-trust flow

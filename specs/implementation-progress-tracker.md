@@ -31,7 +31,7 @@ Cadence: update at least once per workday
 | P4 | Resource loop MVP | 005 (Slices 1-4) | IN PROGRESS | 92% | TBD |
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
-| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | NOT STARTED | 0% | TBD |
+| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 20% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | NOT STARTED | 0% | TBD |
 
 ## Phase Details And Checkpoints
@@ -265,6 +265,7 @@ This week priorities:
 | 2026-04-24 | P4 execution | Completed T040 by adding a Topes explanation carousel entry button on the Contribution page, with open/close behavior, previous/next slide navigation, progress indicator, and EN/FR copy coverage. | frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Implement T041 token-transaction history pagination (`first: 10`, newest-first, `Load more` appending older entries). |
 | 2026-04-24 | P4 execution | Completed T041 and T042 by updating contribution history to load newest-first in pages of 10, append older transactions through `Load more`, and hide the action when no more history remains. | frontend/src/features/contribution/contribution.queries.ts; frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Implement T043 Topes-earning opportunities list with action label, amount, and destination link rows. |
 | 2026-04-24 | P4 execution | Completed T043 by adding a Topes-earning opportunities list on the Contribution page with action labels, Topes amounts (or variable amount when campaign-dependent), and direct destination links. | frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Start Phase 9 with T044 preferences information architecture documentation updates in spec and plan. |
+| 2026-04-24 | P7 execution | Completed T044 and T045 by documenting Preferences IA (channels, managed categories, strategy matrix, activity-gating) and implementing SQL-owned per-account delivery preference persistence/retrieval with validated frequency constraints and defaults. | specs/005-resource-discovery-and-publishing/spec.md; specs/005-resource-discovery-and-publishing/plan.md; database/migrations/048_account_delivery_preferences.sql; database/functions/notification/set_account_delivery_preference.sql; database/functions/notification/get_account_delivery_preferences.sql; database/functions/notification/get_account_delivery_preferences_for_account.sql; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T046 ranked targeting SQL helpers for `new_need_added` parity and align `new_resource_added` targeting behavior. |
 
 ## Decisions Log
 

@@ -136,6 +136,32 @@ As an authenticated user, I can configure how and how often I receive out-of-app
 6. **Given** eligible non-broadcasted events exist for one account at the daily digest time, **When** the 08:00 digest job runs, **Then** exactly one email is produced for that account, containing one section per event category with pending items, and those items are marked as broadcasted.
 7. **Given** no pending digest items exist for an account, **When** the 08:00 digest job runs, **Then** no digest email is sent.
 
+**Preferences Information Architecture**:
+
+- Channels in scope:
+	- `in-app` (always on, not disabled from Preferences)
+	- `push` (mobile only, out-of-app)
+	- `email summary` (out-of-app digest)
+- Managed event categories:
+	- `new_resource_added`
+	- `new_need_added`
+	- `unread_notifications`
+	- `new_chat_message_received`
+
+| Category | In-app channel | Realtime push strategy | Email summary strategy |
+|---|---|---|---|
+| `new_resource_added` | Always emitted to in-app notifications | Send push immediately when activity gate is open | Queue digest item for next eligible cadence window |
+| `new_need_added` | Always emitted to in-app notifications | Send push immediately when activity gate is open | Queue digest item for next eligible cadence window |
+| `unread_notifications` | Always emitted to in-app notifications | Send push immediately when activity gate is open | Queue digest item for next eligible cadence window |
+| `new_chat_message_received` | Always emitted to in-app notifications | Send push immediately when activity gate is open | Queue digest item for next eligible cadence window |
+
+Activity-gating rules:
+
+1. Out-of-app delivery (`push`, `email summary`) is allowed only when the target account has no active web session and no active mobile session at event time.
+2. When the activity gate is closed, only in-app delivery is persisted for that event.
+3. For `email summary` strategy, pending items are retained until selected by cadence (`1`, `3`, `7`, `30` days, default `1`) and marked broadcasted after successful digest send.
+4. The daily digest job runs at `08:00` server time and emits at most one digest email per account per run.
+
 ---
 
 ### User Story 8 - Account Creation And Access Recovery (Priority: P1)
