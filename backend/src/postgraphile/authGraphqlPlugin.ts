@@ -41,6 +41,7 @@ type LoginCandidate = {
   password_hash: string;
   role_name: string;
   email_verified_at: Date | null;
+  preferred_language: string;
 };
 
 type PasswordHashRow = {
@@ -66,7 +67,8 @@ function toSessionPayload(req: express.Request) {
       displayName: session.displayName,
       externalSubject: session.externalSubject,
         avatarUrl: session.avatarUrl,
-        emailVerified: session.emailVerified
+        emailVerified: session.emailVerified,
+        preferredLanguage: session.preferredLanguage
     },
     role: session.role,
     expiresAt: session.expiresAt
@@ -142,6 +144,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
         externalSubject: String!
         avatarUrl: String
         emailVerified: Boolean!
+        preferredLanguage: String!
       }
 
       type AuthSessionPayload {
@@ -264,6 +267,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
               externalSubject: candidate.external_subject,
               avatarUrl: candidate.avatar_url,
               emailVerified: Boolean(candidate.email_verified_at),
+              preferredLanguage: candidate.preferred_language,
               expiresAt: nextSession.expiresAt
             };
 

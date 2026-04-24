@@ -6,6 +6,7 @@ export type CurrentAccount = {
   externalSubject: string;
   avatarUrl?: string | null;
   emailVerified: boolean;
+  preferredLanguage?: string | null;
 };
 
 export type AuthSession = {

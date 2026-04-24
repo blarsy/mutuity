@@ -14,6 +14,7 @@
     "displayName": "Nom affiché",
     "bio": "Bio",
     "location": "Localisation",
+    "language": "Langue préférée",
     "avatarUrl": "URL de l'image d'avatar",
     "avatarPlaceholder": "https://example.com/avatar.png",
     "linkType": "Type",
@@ -21,6 +22,10 @@
     "captionPlaceholder": "ex. Site principal",
     "url": "URL",
     "urlPlaceholder": "https://example.com"
+  },
+  "languages": {
+    "en": "Anglais",
+    "fr": "Français"
   },
   "linkTypes": {
     "website": "Site web",

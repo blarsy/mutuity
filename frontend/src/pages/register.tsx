@@ -10,7 +10,7 @@ import { useAuth } from "../features/auth/AuthProvider";
 export default function RegisterPage() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const { t } = useTranslation("auth");
+  const { t, i18n } = useTranslation("auth");
   const [displayName, setDisplayName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +32,8 @@ export default function RegisterPage() {
       const response = await registerLocalAccount({
         displayName: displayName.trim(),
         identifier: normalizedIdentifier,
-        password
+        password,
+        preferredLanguage: i18n.language.toLowerCase().startsWith("en") ? "en" : "fr"
       });
 
       await signIn({

@@ -11,6 +11,9 @@ import {
 import { getCurrentSession, login as loginRequest, logout as logoutRequest } from "./auth.api";
 import { AUTH_REQUIRED_EVENT } from "./events";
 import type { AuthSession, LoginInput } from "./types";
+import i18n from "../../i18n";
+
+const LANGUAGE_STORAGE_KEY = "mutuity-language";
 
 export type AuthStatus = "loading" | "authenticated" | "anonymous";
 
@@ -98,6 +101,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refreshSession();
   }, [refreshSession]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+  }, [refreshSession]);
+
+  useEffect(() => {
+    if (!session.authenticated || !session.account?.preferredLanguage) {
+      return;
+    }
+
+    const lang = session.account.preferredLanguage;
+
+    if (i18n.language !== lang) {
+      void i18n.changeLanguage(lang);
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    }
+  }, [session.authenticated, session.account?.preferredLanguage]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

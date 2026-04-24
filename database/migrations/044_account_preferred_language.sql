@@ -72,6 +72,8 @@ end;
 $$;
 
 -- Replace claim_pending_mail_outbox to return the locale field
+drop function if exists app_private.claim_pending_mail_outbox(uuid, integer);
+
 create or replace function app_private.claim_pending_mail_outbox(
   p_mail_id uuid default null,
   p_batch_size integer default 25

@@ -18,6 +18,9 @@ const signedOutLinks = [
   { labelKey: "nav.contribute", href: "/needs" }
 ];
 
+const LANGUAGE_STORAGE_KEY = "mutuity-language";
+const AVAILABLE_LANGUAGES = ["fr", "en"] as const;
+
 const signedInLinks = [
   { labelKey: "nav.search", href: "/resources" },
   { labelKey: "nav.contribute", href: "/needs" },
@@ -39,7 +42,7 @@ export function AppTopBar({
 }) {
   const router = useRouter();
   const { session, signOut } = useAuth();
-  const { t } = useTranslation("layout");
+  const { t, i18n } = useTranslation("layout");
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const { data: balanceData } = useQuery<{ currentTokenBalance: number }>(TOKEN_BALANCE_QUERY, {
@@ -67,6 +70,20 @@ export function AppTopBar({
     setMenuAnchor(null);
     await signOut();
     await router.push("/resources");
+  };
+
+  const currentLanguage = i18n.language.toLowerCase().startsWith("en") ? "en" : "fr";
+
+  const handleLanguageChange = (language: "en" | "fr") => {
+    if (currentLanguage === language) {
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    }
+
+    void i18n.changeLanguage(language);
   };
 
   return (
@@ -114,6 +131,19 @@ export function AppTopBar({
               </>
             ) : (
               <>
+                <Stack direction="row" spacing={0.5}>
+                  {AVAILABLE_LANGUAGES.map(language => (
+                    <Button
+                      color="inherit"
+                      key={language}
+                      onClick={() => handleLanguageChange(language)}
+                      size="small"
+                      variant={currentLanguage === language ? "contained" : "outlined"}
+                    >
+                      {language.toUpperCase()}
+                    </Button>
+                  ))}
+                </Stack>
                 <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
                   <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
                     {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}

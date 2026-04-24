@@ -24,9 +24,12 @@ type AccountProfileData = {
     bio: string | null;
     location: string | null;
     avatarUrl: string | null;
+    preferredLanguage: "en" | "fr" | null;
     profileLinks: ProfileLink[] | null;
   } | null;
 };
+
+type PreferredLanguage = "en" | "fr";
 
 const PROFILE_LINK_TYPE_OPTIONS: Array<{ value: ProfileLinkType; label: string }> = [
   { value: "website", label: "linkTypes.website" },
@@ -46,7 +49,7 @@ function createEmptyProfileLink(): ProfileLink {
 export default function ProfilePage() {
   const { session, refreshSession } = useAuth();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const { t } = useTranslation("profile");
+  const { t, i18n } = useTranslation("profile");
   const accountId = session.account?.id ?? null;
   const { data, loading, error, refetch } = useQuery<AccountProfileData>(ACCOUNT_PROFILE_QUERY, {
     skip: !accountId,
@@ -57,6 +60,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>("fr");
   const [profileLinks, setProfileLinks] = useState<ProfileLink[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(saveError);
@@ -72,6 +76,7 @@ export default function ProfilePage() {
     setBio(profile.bio ?? "");
     setLocation(profile.location ?? "");
     setAvatarUrl(profile.avatarUrl ?? "");
+    setPreferredLanguage(profile.preferredLanguage === "en" ? "en" : "fr");
     setProfileLinks(
       Array.isArray(profile.profileLinks)
         ? profile.profileLinks.map(link => ({
@@ -98,6 +103,7 @@ export default function ProfilePage() {
           bio: bio.trim() || null,
           location: location.trim() || null,
           avatarUrl: avatarUrl.trim() || null,
+          preferredLanguage,
           profileLinks: profileLinks
             .map(link => ({
               url: link.url.trim(),
@@ -108,6 +114,14 @@ export default function ProfilePage() {
         }
       }
     });
+
+    if (i18n.language !== preferredLanguage) {
+      void i18n.changeLanguage(preferredLanguage);
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("mutuity-language", preferredLanguage);
+    }
 
     await Promise.all([refetch(), refreshSession()]);
     setSuccessMessage(t("successUpdated"));
@@ -168,6 +182,18 @@ export default function ProfilePage() {
                   value={bio}
                 />
                 <TextField label={t("fields.location")} onChange={event => setLocation(event.target.value)} value={location} />
+                <TextField
+                  select
+                  label={t("fields.language")}
+                  onChange={event => {
+                    const nextLanguage = event.target.value === "en" ? "en" : "fr";
+                    setPreferredLanguage(nextLanguage);
+                  }}
+                  value={preferredLanguage}
+                >
+                  <MenuItem value="fr">{t("languages.fr")}</MenuItem>
+                  <MenuItem value="en">{t("languages.en")}</MenuItem>
+                </TextField>
                 <TextField
                   label={t("fields.avatarUrl")}
                   onChange={event => setAvatarUrl(event.target.value)}

@@ -8,6 +8,7 @@ export const ACCOUNT_PROFILE_QUERY = gql`
       bio
       location
       avatarUrl
+      preferredLanguage
       profileLinks
     }
   }
@@ -22,6 +23,7 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
         bio
         location
         avatarUrl
+        preferredLanguage
         profileLinks
       }
     }

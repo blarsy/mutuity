@@ -81,6 +81,7 @@ export function registerLocalAccount(input: {
   identifier: string;
   displayName: string;
   password: string;
+  preferredLanguage?: "en" | "fr";
 }) {
   return apolloClient
     .mutate<{ registerLocalAccountWithPassword?: { boolean?: boolean | null } }>({
@@ -89,7 +90,8 @@ export function registerLocalAccount(input: {
         identifier: input.identifier,
         displayName: input.displayName,
         password: input.password,
-        verificationTtlMs: Number(process.env.NEXT_PUBLIC_EMAIL_VERIFICATION_TOKEN_TTL_MS ?? 24 * 60 * 60 * 1000)
+        verificationTtlMs: Number(process.env.NEXT_PUBLIC_EMAIL_VERIFICATION_TOKEN_TTL_MS ?? 24 * 60 * 60 * 1000),
+        preferredLanguage: input.preferredLanguage
       }
     })
     .then(() => ({

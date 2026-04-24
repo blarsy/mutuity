@@ -8,7 +8,7 @@
     "start": "next start",
     "graphql:schema": "graphql-codegen --config codegen.schema.cjs",
     "graphql:codegen": "graphql-codegen --config codegen.cjs",
-    "graphql:check": "npm run graphql:codegen",
+    "graphql:check": "npm run graphql:schema && npm run graphql:codegen",
     "typecheck": "npm run graphql:check && tsc --noEmit -p tsconfig.json",
     "lint": "next lint",
     "test": "jest --passWithNoTests"

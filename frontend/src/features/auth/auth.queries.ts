@@ -12,6 +12,7 @@ export const AUTH_SESSION_QUERY = gql`
         externalSubject
         avatarUrl
         emailVerified
+        preferredLanguage
       }
     }
   }
@@ -30,6 +31,7 @@ export const AUTH_LOGIN_MUTATION = gql`
           externalSubject
           avatarUrl
           emailVerified
+          preferredLanguage
         }
       }
     }
@@ -49,6 +51,7 @@ export const AUTH_LOGOUT_MUTATION = gql`
           externalSubject
           avatarUrl
           emailVerified
+          preferredLanguage
         }
       }
     }
@@ -80,6 +83,7 @@ export const REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION = gql`
     $displayName: String!
     $password: String!
     $verificationTtlMs: BigInt
+    $preferredLanguage: String
   ) {
     registerLocalAccountWithPassword(
       input: {
@@ -87,6 +91,7 @@ export const REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION = gql`
         displayName: $displayName
         password: $password
         verificationTtlMs: $verificationTtlMs
+        preferredLanguage: $preferredLanguage
       }
     ) {
       boolean

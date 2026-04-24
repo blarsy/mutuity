@@ -329,6 +329,8 @@ type Account implements Node {
   ): NeedsConnection!
   """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
   nodeId: ID!
+  """The account owner's preferred UI and email language. Supported values: en, fr."""
+  preferredLanguage: String!
   profileLinks: JSON!
   """Reads and enables pagination through a set of `ResourceBidNotification`."""
   resourceBidNotificationsByRecipientAccountId(
@@ -472,6 +474,8 @@ input AccountInput {
   latitude: BigFloat
   location: String
   longitude: BigFloat
+  """The account owner's preferred UI and email language. Supported values: en, fr."""
+  preferredLanguage: String
   profileLinks: JSON
   updatedAt: Datetime
 }
@@ -563,6 +567,8 @@ input AccountPatch {
   latitude: BigFloat
   location: String
   longitude: BigFloat
+  """The account owner's preferred UI and email language. Supported values: en, fr."""
+  preferredLanguage: String
   profileLinks: JSON
   updatedAt: Datetime
 }
@@ -696,6 +702,7 @@ type AuthSessionAccount {
   emailVerified: Boolean!
   externalSubject: String!
   id: String!
+  preferredLanguage: String!
 }
 
 type AuthSessionPayload {
@@ -5148,6 +5155,7 @@ input RegisterLocalAccountInput {
   displayName: String
   identifier: String
   passwordHash: String
+  preferredLanguage: String
   verificationTtlMs: BigInt
 }
 
@@ -5173,6 +5181,7 @@ input RegisterLocalAccountWithPasswordInput {
   displayName: String
   identifier: String
   password: String
+  preferredLanguage: String
   verificationTtlMs: BigInt
 }
 
