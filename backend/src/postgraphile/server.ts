@@ -127,6 +127,13 @@ const AUTHENTICATION_ERROR_PATTERNS = [
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const port = Number(process.env.BACKEND_PORT ?? 5050);
+const isProduction = process.env.NODE_ENV === "production";
+const allowGraphiql = process.env.ALLOW_GRAPHIQL
+  ? process.env.ALLOW_GRAPHIQL === "true"
+  : !isProduction;
+const watchPg = process.env.POSTGRAPHILE_WATCH_PG
+  ? process.env.POSTGRAPHILE_WATCH_PG === "true"
+  : !isProduction;
 const allowDevAuthHeaders = process.env.ALLOW_DEV_AUTH_HEADERS !== "false";
 const sessionSecret = process.env.SESSION_SECRET ?? "dev-only-change-me";
 const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:3000")
@@ -218,6 +225,18 @@ function sanitizeGraphQLError(error: GraphQLError) {
   );
 }
 
+function isLocalBackendOrigin(origin: string) {
+  try {
+    const url = new URL(origin);
+    const hostnameIsLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    const originPort = Number(url.port || (url.protocol === "https:" ? 443 : 80));
+
+    return hostnameIsLocal && originPort === port;
+  } catch {
+    return false;
+  }
+}
+
 app.use(cookieParser(sessionSecret));
 app.use(createAuthSessionMiddleware(pool));
 app.use(
@@ -226,6 +245,11 @@ app.use(
     origin: (origin, callback) => {
       // Allow same-origin and non-browser requests (no Origin header).
       if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (!isProduction && isLocalBackendOrigin(origin)) {
         callback(null, true);
         return;
       }
@@ -244,10 +268,10 @@ app.use(
 // are exposed as GraphQL mutations by PostGraphile.
 app.use(
   postgraphile(DATABASE_URL, process.env.GRAPHILE_SCHEMA ?? "app_public", {
-    graphiql: true,
-    enhanceGraphiql: true,
+    graphiql: allowGraphiql,
+    enhanceGraphiql: allowGraphiql,
     dynamicJson: true,
-    watchPg: true,
+    watchPg,
     setofFunctionsContainNulls: false,
     ignoreRBAC: false,
     ignoreIndexes: false,

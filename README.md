@@ -157,6 +157,16 @@ docker compose run --rm migrate
 docker compose up --build -d backend worker frontend
 ```
 
+To temporarily enable GraphiQL locally for schema exploration:
+
+```bash
+BACKEND_NODE_ENV=development ALLOW_GRAPHIQL=true docker compose up --build -d backend
+```
+
+Production-safe defaults remain:
+- `BACKEND_NODE_ENV=production`
+- `ALLOW_GRAPHIQL=false`
+
 ### 4. Verify
 
 ```bash
@@ -185,6 +195,10 @@ Use the same `docker-compose.yml` on the target server.
 1. Install Docker and Compose plugin on server.
 2. Pull repository on server.
 3. Create/update env files (`backend/.env`, `frontend/.env.local`) with server values.
+   - Backend hardening minimums for non-dev environments:
+     - `ALLOW_GRAPHIQL=false`
+     - `ALLOW_DEV_AUTH_HEADERS=false`
+     - `BACKEND_CORS_ORIGINS=https://your-frontend-domain`
 4. Run:
 
 ```bash
