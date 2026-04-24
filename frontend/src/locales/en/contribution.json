@@ -2,10 +2,55 @@
   "title": "Contribution",
   "subtitle": "Review your current Topes balance and the ledger events recorded from profile completion, resource milestones, bids, claims, gifts, and campaigns.",
   "loading": "Loading your contribution history…",
+  "loadMore": "Load more",
+  "loadingMore": "Loading more…",
   "empty": "No token movements recorded yet.",
   "ledgerInfo": "This ledger slice records profile-completion rewards, first resource milestone rewards, bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.",
   "ledgerEntriesCount": "{{count}} ledger entries",
   "topesAmount": "{{amount}} Topes",
+  "topesGuide": {
+    "openButton": "How Topes work",
+    "title": "Topes guide",
+    "stepLabel": "Step {{current}} of {{total}}",
+    "closeButton": "Close",
+    "previousButton": "Previous",
+    "nextButton": "Next",
+    "slides": {
+      "what": {
+        "title": "Topes track contribution, not price tags",
+        "body": "Topes are used to recognize participation across needs, resources, settlements, gifts, and campaign outcomes."
+      },
+      "earn": {
+        "title": "You earn Topes from actions",
+        "body": "Profile completion milestones, resource milestones, claim progress, and campaign events can credit your balance."
+      },
+      "spend": {
+        "title": "You spend Topes in exchanges",
+        "body": "Bids, claim settlements, and direct gifts can debit your balance, and related refunds or credits are recorded in the ledger."
+      },
+      "tips": {
+        "title": "Use the ledger as your source of truth",
+        "body": "Every movement is timestamped and categorized so you can understand why your balance changed and where it came from."
+      }
+    }
+  },
+  "opportunities": {
+    "title": "Topes earning opportunities",
+    "subtitle": "Use these actions to earn Topes through profile milestones, resource activity, claims, and campaigns.",
+    "goButton": "Open",
+    "variableAmount": "Variable amount",
+    "items": {
+      "profileAvatar": "Add your first profile avatar",
+      "profileBio": "Add your first profile bio",
+      "profileLocation": "Add your first profile location",
+      "profileFirstLink": "Add your first profile link",
+      "resourceFirstImage": "Add the first image on a resource",
+      "resourceDefaultTokenAmount": "Set a default Topes amount on a resource for the first time",
+      "resourceAge24h": "Keep a resource active for at least 24 hours",
+      "claimAge24h": "Keep a claim active for at least 24 hours",
+      "campaignAirdrop": "Meet campaign eligibility for airdrop payouts"
+    }
+  },
   "giftSent": "Gift sent.",
   "giftForm": {
     "title": "Send a gift",

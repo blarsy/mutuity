@@ -2,10 +2,55 @@
   "title": "Contribution",
   "subtitle": "Consultez votre solde de Topes actuel et les événements du registre enregistrés depuis la complétion du profil, les jalons des ressources, les offres, demandes, dons et campagnes.",
   "loading": "Chargement de votre historique de contribution…",
+  "loadMore": "Charger plus",
+  "loadingMore": "Chargement…",
   "empty": "Aucun mouvement de jetons enregistré.",
   "ledgerInfo": "Ce registre enregistre les récompenses de complétion de profil, les récompenses de premier jalon de ressource, les réserves/remboursements d'offres, les transferts de règlement de demandes, les dons directs entre comptes, les récompenses différées de 24 heures et les paiements d'airdrop de campagne.",
   "ledgerEntriesCount": "{{count}} entrées de registre",
   "topesAmount": "{{amount}} Topes",
+  "topesGuide": {
+    "openButton": "Comprendre les Topes",
+    "title": "Guide des Topes",
+    "stepLabel": "Etape {{current}} sur {{total}}",
+    "closeButton": "Fermer",
+    "previousButton": "Precedent",
+    "nextButton": "Suivant",
+    "slides": {
+      "what": {
+        "title": "Les Topes suivent la contribution, pas un prix fixe",
+        "body": "Les Topes servent a reconnaitre la participation dans les besoins, les ressources, les reglements, les dons et les campagnes."
+      },
+      "earn": {
+        "title": "Vous gagnez des Topes par vos actions",
+        "body": "Les jalons du profil, des ressources, des demandes et des campagnes peuvent crediter votre solde."
+      },
+      "spend": {
+        "title": "Vous depensez des Topes dans les echanges",
+        "body": "Les offres, les reglements de demandes et les dons directs peuvent debiter votre solde, avec remboursements et credits traces dans le registre."
+      },
+      "tips": {
+        "title": "Le registre est votre source de verite",
+        "body": "Chaque mouvement est horodate et categorise pour expliquer clairement l'origine de chaque variation de solde."
+      }
+    }
+  },
+  "opportunities": {
+    "title": "Opportunites de gains Topes",
+    "subtitle": "Utilisez ces actions pour gagner des Topes via les jalons de profil, les ressources, les demandes et les campagnes.",
+    "goButton": "Ouvrir",
+    "variableAmount": "Montant variable",
+    "items": {
+      "profileAvatar": "Ajouter votre premier avatar de profil",
+      "profileBio": "Ajouter votre premiere bio de profil",
+      "profileLocation": "Ajouter votre premiere localisation de profil",
+      "profileFirstLink": "Ajouter votre premier lien de profil",
+      "resourceFirstImage": "Ajouter la premiere image sur une ressource",
+      "resourceDefaultTokenAmount": "Definir pour la premiere fois un montant Topes par defaut sur une ressource",
+      "resourceAge24h": "Maintenir une ressource active pendant au moins 24 heures",
+      "claimAge24h": "Maintenir une demande active pendant au moins 24 heures",
+      "campaignAirdrop": "Remplir les criteres de campagne pour les paiements d'airdrop"
+    }
+  },
   "giftSent": "Don envoyé.",
   "giftForm": {
     "title": "Envoyer un don",

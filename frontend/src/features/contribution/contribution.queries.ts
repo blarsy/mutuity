@@ -7,18 +7,26 @@ export const TOKEN_BALANCE_QUERY = gql`
 `;
 
 export const CONTRIBUTION_OVERVIEW_QUERY = gql`
-  query ContributionOverview($first: Int = 50) {
+  query ContributionOverview($first: Int = 10, $after: Cursor) {
     currentTokenBalance
-    allTokenMovements(first: $first) {
-      nodes {
-        id
-        eventType
-        amountDelta
-        referenceType
-        referenceId
-        payload
-        createdAt
+    allTokenMovements(first: $first, after: $after) {
+      edges {
+        cursor
+        node {
+          id
+          eventType
+          amountDelta
+          referenceType
+          referenceId
+          payload
+          createdAt
+        }
       }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      totalCount
     }
   }
 `;

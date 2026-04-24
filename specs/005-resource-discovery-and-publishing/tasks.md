@@ -73,10 +73,10 @@
 
 ## Phase 8: Contribution Page Informative UX
 
-- [ ] T040 Add a Topes explanation carousel entry button on the `Contribution` page and implement carousel open/close/slide navigation behavior
-- [ ] T041 Implement token-transaction history on the `Contribution` page with newest-first ordering, initial page size 10, and `Load more` appending 10 older transactions until exhausted
-- [ ] T042 Hide or disable the `Load more` action once the first transaction has been reached and all available history is displayed
-- [ ] T043 Add a Topes-earning opportunities list on the `Contribution` page where each row includes earning-action label, token amount, and destination link to the corresponding page
+- [x] T040 Add a Topes explanation carousel entry button on the `Contribution` page and implement carousel open/close/slide navigation behavior
+- [x] T041 Implement token-transaction history on the `Contribution` page with newest-first ordering, initial page size 10, and `Load more` appending 10 older transactions until exhausted
+- [x] T042 Hide or disable the `Load more` action once the first transaction has been reached and all available history is displayed
+- [x] T043 Add a Topes-earning opportunities list on the `Contribution` page where each row includes earning-action label, token amount, and destination link to the corresponding page
 
 ## Phase 9: Preferences Page And Out-Of-App Delivery Controls
 
