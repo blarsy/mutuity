@@ -31,7 +31,7 @@ Cadence: update at least once per workday
 | P4 | Resource loop MVP | 005 (Slices 1-4) | IN PROGRESS | 92% | TBD |
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
-| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 20% | TBD |
+| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 35% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | NOT STARTED | 0% | TBD |
 
 ## Phase Details And Checkpoints
@@ -266,6 +266,7 @@ This week priorities:
 | 2026-04-24 | P4 execution | Completed T041 and T042 by updating contribution history to load newest-first in pages of 10, append older transactions through `Load more`, and hide the action when no more history remains. | frontend/src/features/contribution/contribution.queries.ts; frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Implement T043 Topes-earning opportunities list with action label, amount, and destination link rows. |
 | 2026-04-24 | P4 execution | Completed T043 by adding a Topes-earning opportunities list on the Contribution page with action labels, Topes amounts (or variable amount when campaign-dependent), and direct destination links. | frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Start Phase 9 with T044 preferences information architecture documentation updates in spec and plan. |
 | 2026-04-24 | P7 execution | Completed T044 and T045 by documenting Preferences IA (channels, managed categories, strategy matrix, activity-gating) and implementing SQL-owned per-account delivery preference persistence/retrieval with validated frequency constraints and defaults. | specs/005-resource-discovery-and-publishing/spec.md; specs/005-resource-discovery-and-publishing/plan.md; database/migrations/048_account_delivery_preferences.sql; database/functions/notification/set_account_delivery_preference.sql; database/functions/notification/get_account_delivery_preferences.sql; database/functions/notification/get_account_delivery_preferences_for_account.sql; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T046 ranked targeting SQL helpers for `new_need_added` parity and align `new_resource_added` targeting behavior. |
+| 2026-04-24 | P7 execution | Completed T046 by adding SQL-owned ranked targeting helpers for both `new_resource_added` and `new_need_added`, combining proximity, campaign-overlap, and inferred intent scoring with threshold + capped recipient selection. | database/migrations/049_notification_targeting_helpers.sql; database/functions/notification/get_accounts_to_notify_of_new_resource.sql; database/functions/notification/get_accounts_to_notify_of_new_need.sql; specs/005-resource-discovery-and-publishing/tasks.md; docker compose -f docker-compose.yml run --rm migrate | None | Implement T047 out-of-app dispatch gating based on active web/mobile session presence. |
 
 ## Decisions Log
 
