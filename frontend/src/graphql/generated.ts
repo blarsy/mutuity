@@ -2085,6 +2085,39 @@ export type CreateNeedPayloadNeedEdgeArgs = {
   orderBy?: InputMaybe<Array<NeedsOrderBy>>;
 };
 
+/** All input for the create `OperationalLog` mutation. */
+export type CreateOperationalLogInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `OperationalLog` to be created by this mutation. */
+  operationalLog: OperationalLogInput;
+};
+
+/** The output of our create `OperationalLog` mutation. */
+export type CreateOperationalLogPayload = {
+  __typename: 'CreateOperationalLogPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** The `OperationalLog` that was created by this mutation. */
+  operationalLog: Maybe<OperationalLog>;
+  /** An edge for our `OperationalLog`. May be used by Relay 1. */
+  operationalLogEdge: Maybe<OperationalLogsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `OperationalLog` mutation. */
+export type CreateOperationalLogPayloadOperationalLogEdgeArgs = {
+  orderBy?: InputMaybe<Array<OperationalLogsOrderBy>>;
+};
+
 /** All input for the create `ResourceBid` mutation. */
 export type CreateResourceBidInput = {
   /**
@@ -3020,6 +3053,50 @@ export type DeleteNeedPayloadNeedEdgeArgs = {
   orderBy?: InputMaybe<Array<NeedsOrderBy>>;
 };
 
+/** All input for the `deleteOperationalLogById` mutation. */
+export type DeleteOperationalLogByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteOperationalLog` mutation. */
+export type DeleteOperationalLogInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `OperationalLog` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `OperationalLog` mutation. */
+export type DeleteOperationalLogPayload = {
+  __typename: 'DeleteOperationalLogPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedOperationalLogId: Maybe<Scalars['ID']['output']>;
+  /** The `OperationalLog` that was deleted by this mutation. */
+  operationalLog: Maybe<OperationalLog>;
+  /** An edge for our `OperationalLog`. May be used by Relay 1. */
+  operationalLogEdge: Maybe<OperationalLogsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `OperationalLog` mutation. */
+export type DeleteOperationalLogPayloadOperationalLogEdgeArgs = {
+  orderBy?: InputMaybe<Array<OperationalLogsOrderBy>>;
+};
+
 /** All input for the `deleteResourceBidById` mutation. */
 export type DeleteResourceBidByIdInput = {
   /**
@@ -3648,6 +3725,8 @@ export type Mutation = {
   createNeedClaimNotification: Maybe<CreateNeedClaimNotificationPayload>;
   /** Creates a single `NeedClaimSettlementEvent`. */
   createNeedClaimSettlementEvent: Maybe<CreateNeedClaimSettlementEventPayload>;
+  /** Creates a single `OperationalLog`. */
+  createOperationalLog: Maybe<CreateOperationalLogPayload>;
   /** Creates a single `Resource`. */
   createResource: Maybe<CreateResourcePayload>;
   /** Creates a single `ResourceBid`. */
@@ -3724,6 +3803,10 @@ export type Mutation = {
   deleteNeedClaimSettlementEventById: Maybe<DeleteNeedClaimSettlementEventPayload>;
   /** Deletes a single `NeedClaimSettlementEvent` using a unique key. */
   deleteNeedClaimSettlementEventByNeedClaimId: Maybe<DeleteNeedClaimSettlementEventPayload>;
+  /** Deletes a single `OperationalLog` using its globally unique id. */
+  deleteOperationalLog: Maybe<DeleteOperationalLogPayload>;
+  /** Deletes a single `OperationalLog` using a unique key. */
+  deleteOperationalLogById: Maybe<DeleteOperationalLogPayload>;
   /** Deletes a single `Resource` using its globally unique id. */
   deleteResource: Maybe<DeleteResourcePayload>;
   /** Deletes a single `ResourceBid` using its globally unique id. */
@@ -3769,6 +3852,7 @@ export type Mutation = {
   requestEmailVerification: Maybe<RequestEmailVerificationPayload>;
   requestPasswordReset: Maybe<RequestPasswordResetPayload>;
   respondToResourceBid: Maybe<RespondToResourceBidPayload>;
+  searchOperationalLogs: Maybe<SearchOperationalLogsPayload>;
   sendClaimMessage: Maybe<SendClaimMessagePayload>;
   setAccountDeliveryPreference: Maybe<SetAccountDeliveryPreferencePayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
@@ -3837,6 +3921,10 @@ export type Mutation = {
   updateNeedClaimSettlementEventById: Maybe<UpdateNeedClaimSettlementEventPayload>;
   /** Updates a single `NeedClaimSettlementEvent` using a unique key and a patch. */
   updateNeedClaimSettlementEventByNeedClaimId: Maybe<UpdateNeedClaimSettlementEventPayload>;
+  /** Updates a single `OperationalLog` using its globally unique id and a patch. */
+  updateOperationalLog: Maybe<UpdateOperationalLogPayload>;
+  /** Updates a single `OperationalLog` using a unique key and a patch. */
+  updateOperationalLogById: Maybe<UpdateOperationalLogPayload>;
   /** Updates a single `Resource` using its globally unique id and a patch. */
   updateResource: Maybe<UpdateResourcePayload>;
   /** Updates a single `ResourceBid` using its globally unique id and a patch. */
@@ -3867,6 +3955,7 @@ export type Mutation = {
   updateTokenMovementById: Maybe<UpdateTokenMovementPayload>;
   /** Updates a single `TokenMovement` using a unique key and a patch. */
   updateTokenMovementByIdempotencyKey: Maybe<UpdateTokenMovementPayload>;
+  writeOperationalLog: Maybe<WriteOperationalLogPayload>;
 };
 
 
@@ -4017,6 +4106,12 @@ export type MutationCreateNeedClaimNotificationArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateNeedClaimSettlementEventArgs = {
   input: CreateNeedClaimSettlementEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateOperationalLogArgs = {
+  input: CreateOperationalLogInput;
 };
 
 
@@ -4249,6 +4344,18 @@ export type MutationDeleteNeedClaimSettlementEventByNeedClaimIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteOperationalLogArgs = {
+  input: DeleteOperationalLogInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteOperationalLogByIdArgs = {
+  input: DeleteOperationalLogByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteResourceArgs = {
   input: DeleteResourceInput;
 };
@@ -4425,6 +4532,12 @@ export type MutationRequestPasswordResetArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationRespondToResourceBidArgs = {
   input: RespondToResourceBidInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSearchOperationalLogsArgs = {
+  input: SearchOperationalLogsInput;
 };
 
 
@@ -4645,6 +4758,18 @@ export type MutationUpdateNeedClaimSettlementEventByNeedClaimIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateOperationalLogArgs = {
+  input: UpdateOperationalLogInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateOperationalLogByIdArgs = {
+  input: UpdateOperationalLogByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateResourceArgs = {
   input: UpdateResourceInput;
 };
@@ -4731,6 +4856,12 @@ export type MutationUpdateTokenMovementByIdArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateTokenMovementByIdempotencyKeyArgs = {
   input: UpdateTokenMovementByIdempotencyKeyInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationWriteOperationalLogArgs = {
+  input: WriteOperationalLogInput;
 };
 
 /** Need published by authenticated accounts with optional campaign link and moderation-aware constraints. */
@@ -5248,6 +5379,97 @@ export type Node = {
   nodeId: Scalars['ID']['output'];
 };
 
+/** Unified operational log sink for mobile app, backoffice web, web API, and worker jobs. */
+export type OperationalLog = Node & {
+  __typename: 'OperationalLog';
+  accountId: Maybe<Scalars['UUID']['output']>;
+  component: Scalars['String']['output'];
+  context: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['Datetime']['output'];
+  id: Scalars['UUID']['output'];
+  level: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  metadata: Scalars['JSON']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+};
+
+/**
+ * A condition to be used against `OperationalLog` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type OperationalLogCondition = {
+  /** Checks for equality with the object’s `component` field. */
+  component?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `level` field. */
+  level?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** An input for mutations affecting `OperationalLog` */
+export type OperationalLogInput = {
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  component: Scalars['String']['input'];
+  context?: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  level: Scalars['String']['input'];
+  message: Scalars['String']['input'];
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+/** Represents an update to a `OperationalLog`. Fields that are set will be updated. */
+export type OperationalLogPatch = {
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  component?: InputMaybe<Scalars['String']['input']>;
+  context?: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  level?: InputMaybe<Scalars['String']['input']>;
+  message?: InputMaybe<Scalars['String']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+/** A connection to a list of `OperationalLog` values. */
+export type OperationalLogsConnection = {
+  __typename: 'OperationalLogsConnection';
+  /** A list of edges which contains the `OperationalLog` and cursor to aid in pagination. */
+  edges: Array<OperationalLogsEdge>;
+  /** A list of `OperationalLog` objects. */
+  nodes: Array<OperationalLog>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `OperationalLog` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `OperationalLog` edge in the connection. */
+export type OperationalLogsEdge = {
+  __typename: 'OperationalLogsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `OperationalLog` at the end of the edge. */
+  node: OperationalLog;
+};
+
+/** Methods to use when ordering `OperationalLog`. */
+export enum OperationalLogsOrderBy {
+  ComponentAsc = 'COMPONENT_ASC',
+  ComponentDesc = 'COMPONENT_DESC',
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  LevelAsc = 'LEVEL_ASC',
+  LevelDesc = 'LEVEL_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
 /** Information about pagination in a connection. */
 export type PageInfo = {
   __typename: 'PageInfo';
@@ -5351,6 +5573,8 @@ export type Query = Node & {
   allNeedClaims: Maybe<NeedClaimsConnection>;
   /** Reads and enables pagination through a set of `Need`. */
   allNeeds: Maybe<NeedsConnection>;
+  /** Reads and enables pagination through a set of `OperationalLog`. */
+  allOperationalLogs: Maybe<OperationalLogsConnection>;
   /** Reads and enables pagination through a set of `ResourceBidNotification`. */
   allResourceBidNotifications: Maybe<ResourceBidNotificationsConnection>;
   /** Reads and enables pagination through a set of `ResourceBid`. */
@@ -5406,6 +5630,9 @@ export type Query = Node & {
   node: Maybe<Node>;
   /** The root query type must be a `Node` to work well with Relay 1 mutations. This just resolves to `query`. */
   nodeId: Scalars['ID']['output'];
+  /** Reads a single `OperationalLog` using its globally unique `ID`. */
+  operationalLog: Maybe<OperationalLog>;
+  operationalLogById: Maybe<OperationalLog>;
   /**
    * Exposes the root query type nested one level down. This is helpful for Relay 1
    * which can only query top level fields if they are in a particular form.
@@ -5649,6 +5876,18 @@ export type QueryAllNeedsArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryAllOperationalLogsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<OperationalLogCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<OperationalLogsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryAllResourceBidNotificationsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -5886,6 +6125,18 @@ export type QueryNeedClaimSettlementEventByNeedClaimIdArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryNodeArgs = {
   nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryOperationalLogArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryOperationalLogByIdArgs = {
+  id: Scalars['UUID']['input'];
 };
 
 
@@ -6804,6 +7055,47 @@ export type SearchNeedsRecord = {
   toolingRequired: Maybe<Scalars['Boolean']['output']>;
   updatedAt: Maybe<Scalars['Datetime']['output']>;
   weightedScore: Maybe<Scalars['BigFloat']['output']>;
+};
+
+/** All input for the `searchOperationalLogs` mutation. */
+export type SearchOperationalLogsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  pComponent?: InputMaybe<Scalars['String']['input']>;
+  pContext?: InputMaybe<Scalars['String']['input']>;
+  pLevel?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** The output of our `searchOperationalLogs` mutation. */
+export type SearchOperationalLogsPayload = {
+  __typename: 'SearchOperationalLogsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<SearchOperationalLogsRecord>>>;
+};
+
+/** The return type of our `searchOperationalLogs` mutation. */
+export type SearchOperationalLogsRecord = {
+  __typename: 'SearchOperationalLogsRecord';
+  accountId: Maybe<Scalars['UUID']['output']>;
+  component: Maybe<Scalars['String']['output']>;
+  context: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  level: Maybe<Scalars['String']['output']>;
+  message: Maybe<Scalars['String']['output']>;
+  metadata: Maybe<Scalars['JSON']['output']>;
 };
 
 /** A `SearchResourcesRecord` edge in the connection. */
@@ -7881,6 +8173,53 @@ export type UpdateNeedPayloadNeedEdgeArgs = {
   orderBy?: InputMaybe<Array<NeedsOrderBy>>;
 };
 
+/** All input for the `updateOperationalLogById` mutation. */
+export type UpdateOperationalLogByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `OperationalLog` being updated. */
+  operationalLogPatch: OperationalLogPatch;
+};
+
+/** All input for the `updateOperationalLog` mutation. */
+export type UpdateOperationalLogInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `OperationalLog` to be updated. */
+  nodeId: Scalars['ID']['input'];
+  /** An object where the defined keys will be set on the `OperationalLog` being updated. */
+  operationalLogPatch: OperationalLogPatch;
+};
+
+/** The output of our update `OperationalLog` mutation. */
+export type UpdateOperationalLogPayload = {
+  __typename: 'UpdateOperationalLogPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** The `OperationalLog` that was updated by this mutation. */
+  operationalLog: Maybe<OperationalLog>;
+  /** An edge for our `OperationalLog`. May be used by Relay 1. */
+  operationalLogEdge: Maybe<OperationalLogsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `OperationalLog` mutation. */
+export type UpdateOperationalLogPayloadOperationalLogEdgeArgs = {
+  orderBy?: InputMaybe<Array<OperationalLogsOrderBy>>;
+};
+
 /** All input for the `updateResourceBidById` mutation. */
 export type UpdateResourceBidByIdInput = {
   /**
@@ -8221,6 +8560,34 @@ export type UpdateTokenMovementPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
 };
 
+/** All input for the `writeOperationalLog` mutation. */
+export type WriteOperationalLogInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  pComponent?: InputMaybe<Scalars['String']['input']>;
+  pContext?: InputMaybe<Scalars['String']['input']>;
+  pLevel?: InputMaybe<Scalars['String']['input']>;
+  pMessage?: InputMaybe<Scalars['String']['input']>;
+  pMetadata?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+/** The output of our `writeOperationalLog` mutation. */
+export type WriteOperationalLogPayload = {
+  __typename: 'WriteOperationalLogPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  uuid: Maybe<Scalars['UUID']['output']>;
+};
+
 export type AuthSessionQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -8398,6 +8765,18 @@ export type GiftTokensMutationVariables = Exact<{
 
 
 export type GiftTokensMutation = { __typename: 'Mutation', giftTokens: { __typename: 'GiftTokensPayload', tokenMovement: { __typename: 'TokenMovement', id: any, eventType: string, amountDelta: number, referenceType: string | null, referenceId: any | null, createdAt: any } | null } | null };
+
+export type WriteOperationalLogMutationVariables = Exact<{
+  level: Scalars['String']['input'];
+  component: Scalars['String']['input'];
+  message: Scalars['String']['input'];
+  context?: InputMaybe<Scalars['String']['input']>;
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+}>;
+
+
+export type WriteOperationalLogMutation = { __typename: 'Mutation', writeOperationalLog: { __typename: 'WriteOperationalLogPayload', uuid: any | null } | null };
 
 export type ClaimConversationQueryVariables = Exact<{
   claimId: Scalars['UUID']['input'];
@@ -8710,6 +9089,7 @@ export const InspirationCampaignsDocument = {"kind":"Document","definitions":[{"
 export const TokenBalanceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TokenBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTokenBalance"}}]}}]} as unknown as DocumentNode<TokenBalanceQuery, TokenBalanceQueryVariables>;
 export const ContributionOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ContributionOverview"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"10"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Cursor"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTokenBalance"}},{"kind":"Field","name":{"kind":"Name","value":"allTokenMovements"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"amountDelta"}},{"kind":"Field","name":{"kind":"Name","value":"referenceType"}},{"kind":"Field","name":{"kind":"Name","value":"referenceId"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]} as unknown as DocumentNode<ContributionOverviewQuery, ContributionOverviewQueryVariables>;
 export const GiftTokensDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GiftTokens"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GiftTokensInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"giftTokens"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tokenMovement"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"amountDelta"}},{"kind":"Field","name":{"kind":"Name","value":"referenceType"}},{"kind":"Field","name":{"kind":"Name","value":"referenceId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<GiftTokensMutation, GiftTokensMutationVariables>;
+export const WriteOperationalLogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"WriteOperationalLog"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"level"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"component"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"message"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"context"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"writeOperationalLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pLevel"},"value":{"kind":"Variable","name":{"kind":"Name","value":"level"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pComponent"},"value":{"kind":"Variable","name":{"kind":"Name","value":"component"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"message"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pContext"},"value":{"kind":"Variable","name":{"kind":"Name","value":"context"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMetadata"},"value":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"uuid"}}]}}]}}]} as unknown as DocumentNode<WriteOperationalLogMutation, WriteOperationalLogMutationVariables>;
 export const ClaimConversationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ClaimConversation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaimById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"claimConversationByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessagesByConversationId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ClaimConversationQuery, ClaimConversationQueryVariables>;
 export const SendClaimMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendClaimMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendClaimMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendClaimMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SendClaimMessageMutation, SendClaimMessageMutationVariables>;
 export const MarkClaimMessagesReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkClaimMessagesRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkClaimMessagesReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markClaimMessagesRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"integer"}}]}}]}}]} as unknown as DocumentNode<MarkClaimMessagesReadMutation, MarkClaimMessagesReadMutationVariables>;

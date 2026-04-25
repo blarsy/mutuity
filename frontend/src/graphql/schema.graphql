@@ -2130,6 +2130,35 @@ type CreateNeedPayload {
   query: Query
 }
 
+"""All input for the create `OperationalLog` mutation."""
+input CreateOperationalLogInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `OperationalLog` to be created by this mutation."""
+  operationalLog: OperationalLogInput!
+}
+
+"""The output of our create `OperationalLog` mutation."""
+type CreateOperationalLogPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """The `OperationalLog` that was created by this mutation."""
+  operationalLog: OperationalLog
+  """An edge for our `OperationalLog`. May be used by Relay 1."""
+  operationalLogEdge(
+    """The method to use when ordering `OperationalLog`."""
+    orderBy: [OperationalLogsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OperationalLogsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the create `ResourceBid` mutation."""
 input CreateResourceBidInput {
   """
@@ -2994,6 +3023,46 @@ type DeleteNeedPayload {
   query: Query
 }
 
+"""All input for the `deleteOperationalLogById` mutation."""
+input DeleteOperationalLogByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteOperationalLog` mutation."""
+input DeleteOperationalLogInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `OperationalLog` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `OperationalLog` mutation."""
+type DeleteOperationalLogPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedOperationalLogId: ID
+  """The `OperationalLog` that was deleted by this mutation."""
+  operationalLog: OperationalLog
+  """An edge for our `OperationalLog`. May be used by Relay 1."""
+  operationalLogEdge(
+    """The method to use when ordering `OperationalLog`."""
+    orderBy: [OperationalLogsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OperationalLogsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `deleteResourceBidById` mutation."""
 input DeleteResourceBidByIdInput {
   """
@@ -3651,6 +3720,11 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateNeedClaimSettlementEventInput!
   ): CreateNeedClaimSettlementEventPayload
+  """Creates a single `OperationalLog`."""
+  createOperationalLog(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateOperationalLogInput!
+  ): CreateOperationalLogPayload
   """Creates a single `Resource`."""
   createResource(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -3841,6 +3915,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: DeleteNeedClaimSettlementEventByNeedClaimIdInput!
   ): DeleteNeedClaimSettlementEventPayload
+  """Deletes a single `OperationalLog` using its globally unique id."""
+  deleteOperationalLog(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteOperationalLogInput!
+  ): DeleteOperationalLogPayload
+  """Deletes a single `OperationalLog` using a unique key."""
+  deleteOperationalLogById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteOperationalLogByIdInput!
+  ): DeleteOperationalLogPayload
   """Deletes a single `Resource` using its globally unique id."""
   deleteResource(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -3976,6 +4060,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: RespondToResourceBidInput!
   ): RespondToResourceBidPayload
+  searchOperationalLogs(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: SearchOperationalLogsInput!
+  ): SearchOperationalLogsPayload
   sendClaimMessage(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SendClaimMessageInput!
@@ -4152,6 +4240,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateNeedClaimSettlementEventByNeedClaimIdInput!
   ): UpdateNeedClaimSettlementEventPayload
+  """Updates a single `OperationalLog` using its globally unique id and a patch."""
+  updateOperationalLog(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateOperationalLogInput!
+  ): UpdateOperationalLogPayload
+  """Updates a single `OperationalLog` using a unique key and a patch."""
+  updateOperationalLogById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateOperationalLogByIdInput!
+  ): UpdateOperationalLogPayload
   """Updates a single `Resource` using its globally unique id and a patch."""
   updateResource(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -4227,6 +4325,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateTokenMovementByIdempotencyKeyInput!
   ): UpdateTokenMovementPayload
+  writeOperationalLog(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: WriteOperationalLogInput!
+  ): WriteOperationalLogPayload
 }
 
 """Need published by authenticated accounts with optional campaign link and moderation-aware constraints."""
@@ -4768,6 +4870,94 @@ interface Node {
   nodeId: ID!
 }
 
+"""Unified operational log sink for mobile app, backoffice web, web API, and worker jobs."""
+type OperationalLog implements Node {
+  accountId: UUID
+  component: String!
+  context: String
+  createdAt: Datetime!
+  id: UUID!
+  level: String!
+  message: String!
+  metadata: JSON!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+}
+
+"""
+A condition to be used against `OperationalLog` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input OperationalLogCondition {
+  """Checks for equality with the object’s `component` field."""
+  component: String
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+  """Checks for equality with the object’s `level` field."""
+  level: String
+}
+
+"""An input for mutations affecting `OperationalLog`"""
+input OperationalLogInput {
+  accountId: UUID
+  component: String!
+  context: String
+  createdAt: Datetime
+  id: UUID
+  level: String!
+  message: String!
+  metadata: JSON
+}
+
+"""Represents an update to a `OperationalLog`. Fields that are set will be updated."""
+input OperationalLogPatch {
+  accountId: UUID
+  component: String
+  context: String
+  createdAt: Datetime
+  id: UUID
+  level: String
+  message: String
+  metadata: JSON
+}
+
+"""A connection to a list of `OperationalLog` values."""
+type OperationalLogsConnection {
+  """A list of edges which contains the `OperationalLog` and cursor to aid in pagination."""
+  edges: [OperationalLogsEdge!]!
+  """A list of `OperationalLog` objects."""
+  nodes: [OperationalLog!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `OperationalLog` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `OperationalLog` edge in the connection."""
+type OperationalLogsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `OperationalLog` at the end of the edge."""
+  node: OperationalLog!
+}
+
+"""Methods to use when ordering `OperationalLog`."""
+enum OperationalLogsOrderBy {
+  COMPONENT_ASC
+  COMPONENT_DESC
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  ID_ASC
+  ID_DESC
+  LEVEL_ASC
+  LEVEL_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
 """Information about pagination in a connection."""
 type PageInfo {
   """When paginating forwards, the cursor to continue."""
@@ -5126,6 +5316,26 @@ type Query implements Node {
     """The method to use when ordering `Need`."""
     orderBy: [NeedsOrderBy!] = [PRIMARY_KEY_ASC]
   ): NeedsConnection
+  """Reads and enables pagination through a set of `OperationalLog`."""
+  allOperationalLogs(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: OperationalLogCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `OperationalLog`."""
+    orderBy: [OperationalLogsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OperationalLogsConnection
   """Reads and enables pagination through a set of `ResourceBidNotification`."""
   allResourceBidNotifications(
     """Read all values in the set after (below) this cursor."""
@@ -5339,6 +5549,12 @@ type Query implements Node {
   ): Node
   """The root query type must be a `Node` to work well with Relay 1 mutations. This just resolves to `query`."""
   nodeId: ID!
+  """Reads a single `OperationalLog` using its globally unique `ID`."""
+  operationalLog(
+    """The globally unique `ID` to be used in selecting a single `OperationalLog`."""
+    nodeId: ID!
+  ): OperationalLog
+  operationalLogById(id: UUID!): OperationalLog
   """
   Exposes the root query type nested one level down. This is helpful for Relay 1
   which can only query top level fields if they are in a particular form.
@@ -6223,6 +6439,45 @@ type SearchNeedsRecord {
   toolingRequired: Boolean
   updatedAt: Datetime
   weightedScore: BigFloat
+}
+
+"""All input for the `searchOperationalLogs` mutation."""
+input SearchOperationalLogsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pAccountId: UUID
+  pComponent: String
+  pContext: String
+  pLevel: String
+  pLimit: Int
+  pOffset: Int
+}
+
+"""The output of our `searchOperationalLogs` mutation."""
+type SearchOperationalLogsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [SearchOperationalLogsRecord]
+}
+
+"""The return type of our `searchOperationalLogs` mutation."""
+type SearchOperationalLogsRecord {
+  accountId: UUID
+  component: String
+  context: String
+  createdAt: Datetime
+  id: UUID
+  level: String
+  message: String
+  metadata: JSON
 }
 
 """A `SearchResourcesRecord` edge in the connection."""
@@ -7225,6 +7480,49 @@ type UpdateNeedPayload {
   query: Query
 }
 
+"""All input for the `updateOperationalLogById` mutation."""
+input UpdateOperationalLogByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+  """An object where the defined keys will be set on the `OperationalLog` being updated."""
+  operationalLogPatch: OperationalLogPatch!
+}
+
+"""All input for the `updateOperationalLog` mutation."""
+input UpdateOperationalLogInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `OperationalLog` to be updated."""
+  nodeId: ID!
+  """An object where the defined keys will be set on the `OperationalLog` being updated."""
+  operationalLogPatch: OperationalLogPatch!
+}
+
+"""The output of our update `OperationalLog` mutation."""
+type UpdateOperationalLogPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """The `OperationalLog` that was updated by this mutation."""
+  operationalLog: OperationalLog
+  """An edge for our `OperationalLog`. May be used by Relay 1."""
+  operationalLogEdge(
+    """The method to use when ordering `OperationalLog`."""
+    orderBy: [OperationalLogsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OperationalLogsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `updateResourceBidById` mutation."""
 input UpdateResourceBidByIdInput {
   """
@@ -7539,4 +7837,31 @@ type UpdateTokenMovementPayload {
     """The method to use when ordering `TokenMovement`."""
     orderBy: [TokenMovementsOrderBy!] = [PRIMARY_KEY_ASC]
   ): TokenMovementsEdge
+}
+
+"""All input for the `writeOperationalLog` mutation."""
+input WriteOperationalLogInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pAccountId: UUID
+  pComponent: String
+  pContext: String
+  pLevel: String
+  pMessage: String
+  pMetadata: JSON
+}
+
+"""The output of our `writeOperationalLog` mutation."""
+type WriteOperationalLogPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  uuid: UUID
 }

@@ -20,6 +20,7 @@ import {
   SEND_CLAIM_MESSAGE_MUTATION
 } from "./claimConversation.queries";
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
+import { logBackofficeError } from "../logging/operationalLogger";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -205,8 +206,16 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
       .then(() => refetch())
       .catch(markReadError => {
         console.error("[needs] Failed to mark claim messages as read", markReadError);
+        void logBackofficeError("[needs] Failed to mark claim messages as read", markReadError, {
+          context: "claim_conversation_mark_read",
+          accountId: currentAccountId ?? undefined,
+          metadata: {
+            conversationId: conversation.id,
+            unreadCount
+          }
+        });
       });
-  }, [conversation?.id, markClaimMessagesRead, refetch, unreadCount]);
+  }, [conversation?.id, currentAccountId, markClaimMessagesRead, refetch, unreadCount]);
 
   const canSend = canSendClaimMessages(claimStatus, Boolean(conversation), isCreator);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(sendError);

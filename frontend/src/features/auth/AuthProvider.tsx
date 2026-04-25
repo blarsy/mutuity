@@ -11,6 +11,7 @@ import {
 import { getCurrentSession, login as loginRequest, logout as logoutRequest } from "./auth.api";
 import { AUTH_REQUIRED_EVENT } from "./events";
 import type { AuthSession, LoginInput } from "./types";
+import { logBackofficeError } from "../logging/operationalLogger";
 import i18n from "../../i18n";
 
 const LANGUAGE_STORAGE_KEY = "mutuity-language";
@@ -74,6 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     } catch (error) {
       console.error("[auth] Failed to restore session", error);
+      void logBackofficeError("[auth] Failed to restore session", error, {
+        context: "auth_session_restore"
+      });
       applySession(ANONYMOUS_SESSION);
     }
   }, [applySession]);
@@ -94,6 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     } catch (error) {
       console.error("[auth] Failed to sign out", error);
+      void logBackofficeError("[auth] Failed to sign out", error, {
+        context: "auth_sign_out"
+      });
       applySession(ANONYMOUS_SESSION);
     }
   }, [applySession]);

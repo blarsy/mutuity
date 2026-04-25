@@ -103,7 +103,7 @@
 - [x] T058 Document the unified logging contract in `spec.md` and `plan.md`: one table, mandatory `component`, optional `context`, and message rules for `info`/`warn`/`error`
 - [x] T059 Implement database schema and SQL-owned write/search helpers for unified operational logs, replacing split-write usage patterns equivalent to client/server table separation
 - [x] T060 Implement backend logging adapter updates in `web_api` and worker paths to write unified log entries with required `component` and error stack formatting
-- [ ] T061 Implement frontend/mobile logging adapter updates so backoffice and mobile emit to the unified log write API with optional account id and activity context
+- [x] T061 Implement frontend/mobile logging adapter updates so backoffice and mobile emit to the unified log write API with optional account id and activity context
 - [ ] T062 Add mandatory exception instrumentation for PostgreSQL interaction failures (GraphQL and direct client usage) and external-provider failures (Google auth, Apple auth, Cloudinary, Expo push, other third-party APIs)
 - [ ] T063 Add fallback logging behavior so unified-log persistence failures degrade to console/file diagnostics without interrupting primary user flows
 - [ ] T064 Add end-to-end verification and operational checks for unified logging coverage, including cross-component filtering by `component`, correlation by `context`, and duplicate-free migration from old write paths
