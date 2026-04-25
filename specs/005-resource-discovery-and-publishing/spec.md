@@ -406,6 +406,16 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-110**: If primary log persistence fails, the runtime MUST use a fallback logger path (console and/or file) and MUST NOT terminate the main user flow solely because logging failed.
 - **FR-111**: The platform MUST expose a system-wide setting for log retention in days, stored in a database-backed system settings table or equivalent SQL-owned configuration source.
 - **FR-112**: Default log retention MUST be 7 days when no override is configured, and scheduled cleanup MUST delete log entries older than the configured retention window.
+
+Unified logging contract (phase-ready definition):
+- Single sink: all new operational writes must target one SQL-owned table (`component_logs` naming TBD at migration time); no new writes to split client/server log stores.
+- Required columns per entry: `created_at`, `level`, `component`, `message`.
+- Optional columns: `account_id`, `context`, and provider/system metadata payload.
+- `component` is mandatory and enumerable across at least `mobile_app`, `backoffice_web`, `web_api`, `worker_job`.
+- Message rules by severity:
+	- `info`: concise operational milestone or state transition.
+	- `warn`: recoverable anomaly that did not stop the primary flow.
+	- `error`: contextual statement that includes error message and stack trace when stack is available.
 - **FR-113**: A grant MUST be creatable or modifiable only by system administrators.
 - **FR-114**: A grant definition MUST support the following optional criteria: target account ids, target emails, max successful-claim count, expiration datetime, and linked campaign participation requirement.
 - **FR-114a**: A grant definition MUST include a fixed awarded token amount that does not vary per claim for that grant.

@@ -208,6 +208,21 @@ Implementation detail such as exact dimensions, MUI primitives, spacing, or prop
 - Log retention should be controlled by a system-wide DB setting expressed in days, defaulting to 7.
 - Cleanup scheduling should read that setting and delete entries older than the configured window.
 
+Unified logging contract implementation shape (T058):
+- Data model contract:
+	- one write target table only;
+	- mandatory fields: `created_at`, `level`, `component`, `message`;
+	- optional fields: `account_id`, `context`, `metadata`.
+- Writer contract:
+	- all adapters (mobile/backoffice/web API/worker) call the same SQL-owned write function;
+	- `component` must always be provided by caller;
+	- `info`/`warn` writes should be concise and action-scoped;
+	- `error` writes must include contextual statement and stack trace when available.
+- Query contract:
+	- filterable by `component`, `level`, and optional `context`;
+	- default ordering newest-first;
+	- retention cleanup reads DB setting with default 7 days.
+
 ### Grants model and operational rules
 - Grant definitions should be mutable only by system administrators.
 - Grant definitions should carry one fixed awarded token amount that applies to all successful claims for that grant.
