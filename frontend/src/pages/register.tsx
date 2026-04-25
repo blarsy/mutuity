@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { registerLocalAccount } from "../features/auth/auth.api";
 import { useAuth } from "../features/auth/AuthProvider";
+import { SocialAuthButtons } from "../features/auth/SocialAuthButtons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +18,24 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const suggestedName =
+    typeof router.query.suggestedName === "string"
+      ? router.query.suggestedName
+      : typeof router.query.name === "string"
+        ? router.query.name
+        : "";
+  const suggestedEmail = typeof router.query.email === "string" ? router.query.email : "";
+  const provider = typeof router.query.provider === "string" ? router.query.provider.toLowerCase() : "";
+
+  useEffect(() => {
+    if (suggestedName && displayName.trim().length === 0) {
+      setDisplayName(suggestedName);
+    }
+
+    if (suggestedEmail && identifier.trim().length === 0) {
+      setIdentifier(suggestedEmail.toLowerCase());
+    }
+  }, [suggestedEmail, suggestedName]);
 
   const canSubmit =
     displayName.trim().length > 0 && identifier.trim().length > 0 && password.length >= 8 && !loading;
@@ -63,6 +82,9 @@ export default function RegisterPage() {
         <Stack spacing={2}>
           {error ? <Alert severity="error">{error}</Alert> : null}
           {success ? <Alert severity="success">{success}</Alert> : null}
+          {provider === "google" || provider === "apple" ? (
+            <Alert severity="info">{t("register.socialPrefillNotice")}</Alert>
+          ) : null}
 
           <TextField
             label={t("register.accountNameLabel")}
@@ -89,6 +111,7 @@ export default function RegisterPage() {
           <Button disabled={!canSubmit} onClick={handleSubmit} variant="contained">
             {t("register.submitButton")}
           </Button>
+          <SocialAuthButtons nextDestination="/" />
           <Button component={NextLink} href="/login">
             {t("register.backToSignIn")}
           </Button>

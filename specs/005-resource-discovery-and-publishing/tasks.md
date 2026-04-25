@@ -92,10 +92,10 @@
 
 - [x] T051 Document Tope-la auth parity in `spec.md` and `plan.md`: profile-minimal account creation (`account name` mandatory), local email/password signup with verification, forgot/reset password, change password, and Google/Apple sign-in/up with suggested-name prefill *(local-parity docs completed; social sign-in remains explicitly documented as deferred)*
 - [x] T052 Implement SQL-owned/auth-backed identity model updates for local credentials, external identities (`google`, `apple`), account-link safety, and duplicate-account prevention
-- [ ] T053 Implement backend endpoints/handlers for email verification lifecycle (issue, resend with throttling, verify, invalid/expired handling)
-- [ ] T054 Implement forgot-password lifecycle (request reset email, token validation, password update, single-use token invalidation)
-- [ ] T055 Implement authenticated change-password flow with current-password validation and post-change session hardening behavior
-- [ ] T056 Implement frontend auth surfaces and routing updates for social sign-in buttons (`Google`, `Apple`) including editable suggested-name prefill from provider profile data, verification completion, forgot/reset password, and change-password UI
+- [x] T053 Implement backend endpoints/handlers for email verification lifecycle (issue, resend with throttling, verify, invalid/expired handling)
+- [x] T054 Implement forgot-password lifecycle (request reset email, token validation, password update, single-use token invalidation)
+- [x] T055 Implement authenticated change-password flow with current-password validation and post-change session hardening behavior
+- [x] T056 Implement frontend auth surfaces and routing updates for social sign-in buttons (`Google`, `Apple`) including editable suggested-name prefill from provider profile data, verification completion, forgot/reset password, and change-password UI
 - [ ] T057 Add end-to-end verification for all auth entry/recovery paths, including signup/login parity across local+social identities and token expiry/reuse protections
 
 ## Phase 11: Unified Cross-Component Logging

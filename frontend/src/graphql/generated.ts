@@ -3403,6 +3403,33 @@ export type GiftTokensPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
 };
 
+/** All input for the `linkAccountExternalIdentity` mutation. */
+export type LinkAccountExternalIdentityInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pMetadata?: InputMaybe<Scalars['JSON']['input']>;
+  pProvider?: InputMaybe<Scalars['String']['input']>;
+  pProviderEmail?: InputMaybe<Scalars['String']['input']>;
+  pProviderEmailVerified?: InputMaybe<Scalars['Boolean']['input']>;
+  pProviderSubject?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `linkAccountExternalIdentity` mutation. */
+export type LinkAccountExternalIdentityPayload = {
+  __typename: 'LinkAccountExternalIdentityPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  string: Maybe<Scalars['String']['output']>;
+};
+
 /** A connection to a list of `ListResourceCategoriesRecord` values. */
 export type ListResourceCategoriesConnection = {
   __typename: 'ListResourceCategoriesConnection';
@@ -3729,6 +3756,7 @@ export type Mutation = {
   deleteTokenMovementByIdempotencyKey: Maybe<DeleteTokenMovementPayload>;
   getAccountDeliveryPreferences: Maybe<GetAccountDeliveryPreferencesPayload>;
   giftTokens: Maybe<GiftTokensPayload>;
+  linkAccountExternalIdentity: Maybe<LinkAccountExternalIdentityPayload>;
   markAccountNotificationRead: Maybe<MarkAccountNotificationReadPayload>;
   markAllNotificationsRead: Maybe<MarkAllNotificationsReadPayload>;
   markClaimMessagesRead: Maybe<MarkClaimMessagesReadPayload>;
@@ -4319,6 +4347,12 @@ export type MutationGetAccountDeliveryPreferencesArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationGiftTokensArgs = {
   input: GiftTokensInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationLinkAccountExternalIdentityArgs = {
+  input: LinkAccountExternalIdentityInput;
 };
 
 

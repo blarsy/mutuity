@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "./AuthProvider";
+import { SocialAuthButtons } from "./SocialAuthButtons";
 import {
   loginInitialValues,
   loginValidationSchema,
@@ -91,6 +92,8 @@ export function LoginForm({
             <Button disabled={isSubmitting || status === "loading"} type="submit" variant="contained">
               {t("form.submitButton")}
             </Button>
+
+            <SocialAuthButtons nextDestination={nextDestination} />
 
             {showSecondaryActions ? (
               <Stack alignItems="flex-start" spacing={0.5}>
