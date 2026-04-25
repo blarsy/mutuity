@@ -1,0 +1,26 @@
+{
+  "title": "Preferences",
+  "subtitle": "Configure how and how often you receive out-of-app information for each event category.",
+  "loading": "Loading your preferences…",
+  "saveError": "Could not save preference. Please try again.",
+  "categories": {
+    "new_resource_added": "New resources added nearby",
+    "new_need_added": "New needs added nearby",
+    "unread_notifications": "Unread notifications",
+    "new_chat_message_received": "New chat messages"
+  },
+  "strategy": {
+    "label": "Delivery channel",
+    "realtime_push": "Real-time push notification",
+    "email_summary": "Email summary"
+  },
+  "frequency": {
+    "label": "Summary frequency",
+    "1": "Daily",
+    "3": "Every 3 days",
+    "7": "Weekly",
+    "30": "Monthly"
+  },
+  "inAppNote": "In-app alerts are always active and are not affected by these settings.",
+  "activityNote": "Out-of-app delivery is paused while you have an active browser or mobile session."
+}

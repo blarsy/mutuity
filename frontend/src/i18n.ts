@@ -13,6 +13,7 @@ import enBids from "./locales/en/bids.json";
 import enCampaigns from "./locales/en/campaigns.json";
 import enProfile from "./locales/en/profile.json";
 import enNotifications from "./locales/en/notifications.json";
+import enPreferences from "./locales/en/preferences.json";
 
 import frCommon from "./locales/fr/common.json";
 import frLayout from "./locales/fr/layout.json";
@@ -26,6 +27,7 @@ import frBids from "./locales/fr/bids.json";
 import frCampaigns from "./locales/fr/campaigns.json";
 import frProfile from "./locales/fr/profile.json";
 import frNotifications from "./locales/fr/notifications.json";
+import frPreferences from "./locales/fr/preferences.json";
 
 void i18n
   .use(initReactI18next)
@@ -43,7 +45,8 @@ void i18n
         bids: enBids,
         campaigns: enCampaigns,
         profile: enProfile,
-        notifications: enNotifications
+        notifications: enNotifications,
+        preferences: enPreferences
       },
       fr: {
         common: frCommon,
@@ -57,7 +60,8 @@ void i18n
         bids: frBids,
         campaigns: frCampaigns,
         profile: frProfile,
-        notifications: frNotifications
+        notifications: frNotifications,
+        preferences: frPreferences
       }
     },
     lng: "fr",

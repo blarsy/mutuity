@@ -74,6 +74,8 @@ export type AcceptCampaignNeedPayloadCampaignNeedEdgeArgs = {
 
 export type Account = Node & {
   __typename: 'Account';
+  /** Reads and enables pagination through a set of `AccountDeliveryPreference`. */
+  accountDeliveryPreferencesByAccountId: AccountDeliveryPreferencesConnection;
   /** Reads and enables pagination through a set of `AccountNotification`. */
   accountNotificationsByRecipientAccountId: AccountNotificationsConnection;
   avatarUrl: Maybe<Scalars['String']['output']>;
@@ -129,6 +131,17 @@ export type Account = Node & {
   /** Reads and enables pagination through a set of `TokenMovement`. */
   tokenMovementsByCounterpartyAccountId: TokenMovementsConnection;
   updatedAt: Scalars['Datetime']['output'];
+};
+
+
+export type AccountAccountDeliveryPreferencesByAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<AccountDeliveryPreferenceCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
 };
 
 
@@ -358,6 +371,90 @@ export type AccountCondition = {
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
 };
+
+/** Per-account delivery preferences for out-of-app notifications by managed event category. */
+export type AccountDeliveryPreference = Node & {
+  __typename: 'AccountDeliveryPreference';
+  /** Reads a single `Account` that is related to this `AccountDeliveryPreference`. */
+  accountByAccountId: Maybe<Account>;
+  accountId: Scalars['UUID']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  /** Out-of-app delivery strategy per category: realtime_push or email_summary. */
+  deliveryStrategy: Scalars['String']['output'];
+  /** Managed event category key: new_resource_added, new_need_added, unread_notifications, new_chat_message_received. */
+  eventCategory: Scalars['String']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  /** Digest cadence in days for email_summary strategy. Allowed values: 1, 3, 7, 30. */
+  summaryFrequencyDays: Scalars['Int']['output'];
+  updatedAt: Scalars['Datetime']['output'];
+};
+
+/**
+ * A condition to be used against `AccountDeliveryPreference` object types. All
+ * fields are tested for equality and combined with a logical ‘and.’
+ */
+export type AccountDeliveryPreferenceCondition = {
+  /** Checks for equality with the object’s `accountId` field. */
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `AccountDeliveryPreference` */
+export type AccountDeliveryPreferenceInput = {
+  accountId: Scalars['UUID']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Out-of-app delivery strategy per category: realtime_push or email_summary. */
+  deliveryStrategy?: InputMaybe<Scalars['String']['input']>;
+  /** Managed event category key: new_resource_added, new_need_added, unread_notifications, new_chat_message_received. */
+  eventCategory: Scalars['String']['input'];
+  /** Digest cadence in days for email_summary strategy. Allowed values: 1, 3, 7, 30. */
+  summaryFrequencyDays?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** Represents an update to a `AccountDeliveryPreference`. Fields that are set will be updated. */
+export type AccountDeliveryPreferencePatch = {
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Out-of-app delivery strategy per category: realtime_push or email_summary. */
+  deliveryStrategy?: InputMaybe<Scalars['String']['input']>;
+  /** Managed event category key: new_resource_added, new_need_added, unread_notifications, new_chat_message_received. */
+  eventCategory?: InputMaybe<Scalars['String']['input']>;
+  /** Digest cadence in days for email_summary strategy. Allowed values: 1, 3, 7, 30. */
+  summaryFrequencyDays?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** A connection to a list of `AccountDeliveryPreference` values. */
+export type AccountDeliveryPreferencesConnection = {
+  __typename: 'AccountDeliveryPreferencesConnection';
+  /** A list of edges which contains the `AccountDeliveryPreference` and cursor to aid in pagination. */
+  edges: Array<AccountDeliveryPreferencesEdge>;
+  /** A list of `AccountDeliveryPreference` objects. */
+  nodes: Array<AccountDeliveryPreference>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `AccountDeliveryPreference` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `AccountDeliveryPreference` edge in the connection. */
+export type AccountDeliveryPreferencesEdge = {
+  __typename: 'AccountDeliveryPreferencesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AccountDeliveryPreference` at the end of the edge. */
+  node: AccountDeliveryPreference;
+};
+
+/** Methods to use when ordering `AccountDeliveryPreference`. */
+export enum AccountDeliveryPreferencesOrderBy {
+  AccountIdAsc = 'ACCOUNT_ID_ASC',
+  AccountIdDesc = 'ACCOUNT_ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
 
 /** An input for mutations affecting `Account` */
 export type AccountInput = {
@@ -1452,6 +1549,41 @@ export type ConfirmPasswordResetWithPasswordPayload = {
   query: Maybe<Query>;
 };
 
+/** All input for the create `AccountDeliveryPreference` mutation. */
+export type CreateAccountDeliveryPreferenceInput = {
+  /** The `AccountDeliveryPreference` to be created by this mutation. */
+  accountDeliveryPreference: AccountDeliveryPreferenceInput;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our create `AccountDeliveryPreference` mutation. */
+export type CreateAccountDeliveryPreferencePayload = {
+  __typename: 'CreateAccountDeliveryPreferencePayload';
+  /** Reads a single `Account` that is related to this `AccountDeliveryPreference`. */
+  accountByAccountId: Maybe<Account>;
+  /** The `AccountDeliveryPreference` that was created by this mutation. */
+  accountDeliveryPreference: Maybe<AccountDeliveryPreference>;
+  /** An edge for our `AccountDeliveryPreference`. May be used by Relay 1. */
+  accountDeliveryPreferenceEdge: Maybe<AccountDeliveryPreferencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `AccountDeliveryPreference` mutation. */
+export type CreateAccountDeliveryPreferencePayloadAccountDeliveryPreferenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
+};
+
 /** All input for the create `Account` mutation. */
 export type CreateAccountInput = {
   /** The `Account` to be created by this mutation. */
@@ -2189,6 +2321,54 @@ export type DeleteAccountByIdInput = {
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteAccountDeliveryPreferenceByAccountIdAndEventCategory` mutation. */
+export type DeleteAccountDeliveryPreferenceByAccountIdAndEventCategoryInput = {
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** Managed event category key: new_resource_added, new_need_added, unread_notifications, new_chat_message_received. */
+  eventCategory: Scalars['String']['input'];
+};
+
+/** All input for the `deleteAccountDeliveryPreference` mutation. */
+export type DeleteAccountDeliveryPreferenceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `AccountDeliveryPreference` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `AccountDeliveryPreference` mutation. */
+export type DeleteAccountDeliveryPreferencePayload = {
+  __typename: 'DeleteAccountDeliveryPreferencePayload';
+  /** Reads a single `Account` that is related to this `AccountDeliveryPreference`. */
+  accountByAccountId: Maybe<Account>;
+  /** The `AccountDeliveryPreference` that was deleted by this mutation. */
+  accountDeliveryPreference: Maybe<AccountDeliveryPreference>;
+  /** An edge for our `AccountDeliveryPreference`. May be used by Relay 1. */
+  accountDeliveryPreferenceEdge: Maybe<AccountDeliveryPreferencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedAccountDeliveryPreferenceId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `AccountDeliveryPreference` mutation. */
+export type DeleteAccountDeliveryPreferencePayloadAccountDeliveryPreferenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
 };
 
 /** All input for the `deleteAccount` mutation. */
@@ -3156,6 +3336,36 @@ export type DeleteTokenMovementPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
 };
 
+/** All input for the `getAccountDeliveryPreferences` mutation. */
+export type GetAccountDeliveryPreferencesInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `getAccountDeliveryPreferences` mutation. */
+export type GetAccountDeliveryPreferencesPayload = {
+  __typename: 'GetAccountDeliveryPreferencesPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<GetAccountDeliveryPreferencesRecord>>>;
+};
+
+/** The return type of our `getAccountDeliveryPreferences` mutation. */
+export type GetAccountDeliveryPreferencesRecord = {
+  __typename: 'GetAccountDeliveryPreferencesRecord';
+  deliveryStrategy: Maybe<Scalars['String']['output']>;
+  eventCategory: Maybe<Scalars['String']['output']>;
+  summaryFrequencyDays: Maybe<Scalars['Int']['output']>;
+};
+
 /** All input for the `giftTokens` mutation. */
 export type GiftTokensInput = {
   amount?: InputMaybe<Scalars['Int']['input']>;
@@ -3387,6 +3597,8 @@ export type Mutation = {
   confirmPasswordResetWithPassword: Maybe<ConfirmPasswordResetWithPasswordPayload>;
   /** Creates a single `Account`. */
   createAccount: Maybe<CreateAccountPayload>;
+  /** Creates a single `AccountDeliveryPreference`. */
+  createAccountDeliveryPreference: Maybe<CreateAccountDeliveryPreferencePayload>;
   /** Creates a single `AccountNotification`. */
   createAccountNotification: Maybe<CreateAccountNotificationPayload>;
   createCampaign: Maybe<CreateCampaignPayload>;
@@ -3427,6 +3639,10 @@ export type Mutation = {
   deleteAccountByExternalSubject: Maybe<DeleteAccountPayload>;
   /** Deletes a single `Account` using a unique key. */
   deleteAccountById: Maybe<DeleteAccountPayload>;
+  /** Deletes a single `AccountDeliveryPreference` using its globally unique id. */
+  deleteAccountDeliveryPreference: Maybe<DeleteAccountDeliveryPreferencePayload>;
+  /** Deletes a single `AccountDeliveryPreference` using a unique key. */
+  deleteAccountDeliveryPreferenceByAccountIdAndEventCategory: Maybe<DeleteAccountDeliveryPreferencePayload>;
   /** Deletes a single `AccountNotification` using its globally unique id. */
   deleteAccountNotification: Maybe<DeleteAccountNotificationPayload>;
   /** Deletes a single `AccountNotification` using a unique key. */
@@ -3511,6 +3727,7 @@ export type Mutation = {
   deleteTokenMovementById: Maybe<DeleteTokenMovementPayload>;
   /** Deletes a single `TokenMovement` using a unique key. */
   deleteTokenMovementByIdempotencyKey: Maybe<DeleteTokenMovementPayload>;
+  getAccountDeliveryPreferences: Maybe<GetAccountDeliveryPreferencesPayload>;
   giftTokens: Maybe<GiftTokensPayload>;
   markAccountNotificationRead: Maybe<MarkAccountNotificationReadPayload>;
   markAllNotificationsRead: Maybe<MarkAllNotificationsReadPayload>;
@@ -3525,6 +3742,7 @@ export type Mutation = {
   requestPasswordReset: Maybe<RequestPasswordResetPayload>;
   respondToResourceBid: Maybe<RespondToResourceBidPayload>;
   sendClaimMessage: Maybe<SendClaimMessagePayload>;
+  setAccountDeliveryPreference: Maybe<SetAccountDeliveryPreferencePayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
@@ -3533,6 +3751,10 @@ export type Mutation = {
   updateAccountByExternalSubject: Maybe<UpdateAccountPayload>;
   /** Updates a single `Account` using a unique key and a patch. */
   updateAccountById: Maybe<UpdateAccountPayload>;
+  /** Updates a single `AccountDeliveryPreference` using its globally unique id and a patch. */
+  updateAccountDeliveryPreference: Maybe<UpdateAccountDeliveryPreferencePayload>;
+  /** Updates a single `AccountDeliveryPreference` using a unique key and a patch. */
+  updateAccountDeliveryPreferenceByAccountIdAndEventCategory: Maybe<UpdateAccountDeliveryPreferencePayload>;
   /** Updates a single `AccountNotification` using its globally unique id and a patch. */
   updateAccountNotification: Maybe<UpdateAccountNotificationPayload>;
   /** Updates a single `AccountNotification` using a unique key and a patch. */
@@ -3693,6 +3915,12 @@ export type MutationCreateAccountArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateAccountDeliveryPreferenceArgs = {
+  input: CreateAccountDeliveryPreferenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateAccountNotificationArgs = {
   input: CreateAccountNotificationInput;
 };
@@ -3815,6 +4043,18 @@ export type MutationDeleteAccountByExternalSubjectArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteAccountByIdArgs = {
   input: DeleteAccountByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteAccountDeliveryPreferenceArgs = {
+  input: DeleteAccountDeliveryPreferenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteAccountDeliveryPreferenceByAccountIdAndEventCategoryArgs = {
+  input: DeleteAccountDeliveryPreferenceByAccountIdAndEventCategoryInput;
 };
 
 
@@ -4071,6 +4311,12 @@ export type MutationDeleteTokenMovementByIdempotencyKeyArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationGetAccountDeliveryPreferencesArgs = {
+  input: GetAccountDeliveryPreferencesInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationGiftTokensArgs = {
   input: GiftTokensInput;
 };
@@ -4155,6 +4401,12 @@ export type MutationSendClaimMessageArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationSetAccountDeliveryPreferenceArgs = {
+  input: SetAccountDeliveryPreferenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationSettleNeedClaimArgs = {
   input: SettleNeedClaimInput;
 };
@@ -4181,6 +4433,18 @@ export type MutationUpdateAccountByExternalSubjectArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateAccountByIdArgs = {
   input: UpdateAccountByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateAccountDeliveryPreferenceArgs = {
+  input: UpdateAccountDeliveryPreferenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateAccountDeliveryPreferenceByAccountIdAndEventCategoryArgs = {
+  input: UpdateAccountDeliveryPreferenceByAccountIdAndEventCategoryInput;
 };
 
 
@@ -5019,9 +5283,14 @@ export type Query = Node & {
   account: Maybe<Account>;
   accountByExternalSubject: Maybe<Account>;
   accountById: Maybe<Account>;
+  /** Reads a single `AccountDeliveryPreference` using its globally unique `ID`. */
+  accountDeliveryPreference: Maybe<AccountDeliveryPreference>;
+  accountDeliveryPreferenceByAccountIdAndEventCategory: Maybe<AccountDeliveryPreference>;
   /** Reads a single `AccountNotification` using its globally unique `ID`. */
   accountNotification: Maybe<AccountNotification>;
   accountNotificationById: Maybe<AccountNotification>;
+  /** Reads and enables pagination through a set of `AccountDeliveryPreference`. */
+  allAccountDeliveryPreferences: Maybe<AccountDeliveryPreferencesConnection>;
   /** Reads and enables pagination through a set of `AccountNotification`. */
   allAccountNotifications: Maybe<AccountNotificationsConnection>;
   /** Reads and enables pagination through a set of `Account`. */
@@ -5153,6 +5422,19 @@ export type QueryAccountByIdArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryAccountDeliveryPreferenceArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAccountDeliveryPreferenceByAccountIdAndEventCategoryArgs = {
+  accountId: Scalars['UUID']['input'];
+  eventCategory: Scalars['String']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryAccountNotificationArgs = {
   nodeId: Scalars['ID']['input'];
 };
@@ -5161,6 +5443,18 @@ export type QueryAccountNotificationArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryAccountNotificationByIdArgs = {
   id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllAccountDeliveryPreferencesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<AccountDeliveryPreferenceCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
 };
 
 
@@ -6564,6 +6858,41 @@ export type SendClaimMessagePayloadClaimMessageEdgeArgs = {
   orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
 };
 
+/** All input for the `setAccountDeliveryPreference` mutation. */
+export type SetAccountDeliveryPreferenceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pDeliveryStrategy?: InputMaybe<Scalars['String']['input']>;
+  pEventCategory?: InputMaybe<Scalars['String']['input']>;
+  pSummaryFrequencyDays?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** The output of our `setAccountDeliveryPreference` mutation. */
+export type SetAccountDeliveryPreferencePayload = {
+  __typename: 'SetAccountDeliveryPreferencePayload';
+  /** Reads a single `Account` that is related to this `AccountDeliveryPreference`. */
+  accountByAccountId: Maybe<Account>;
+  accountDeliveryPreference: Maybe<AccountDeliveryPreference>;
+  /** An edge for our `AccountDeliveryPreference`. May be used by Relay 1. */
+  accountDeliveryPreferenceEdge: Maybe<AccountDeliveryPreferencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `setAccountDeliveryPreference` mutation. */
+export type SetAccountDeliveryPreferencePayloadAccountDeliveryPreferenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
+};
+
 /** All input for the `settleNeedClaim` mutation. */
 export type SettleNeedClaimInput = {
   /**
@@ -6773,6 +7102,57 @@ export type UpdateAccountByIdInput = {
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateAccountDeliveryPreferenceByAccountIdAndEventCategory` mutation. */
+export type UpdateAccountDeliveryPreferenceByAccountIdAndEventCategoryInput = {
+  /** An object where the defined keys will be set on the `AccountDeliveryPreference` being updated. */
+  accountDeliveryPreferencePatch: AccountDeliveryPreferencePatch;
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** Managed event category key: new_resource_added, new_need_added, unread_notifications, new_chat_message_received. */
+  eventCategory: Scalars['String']['input'];
+};
+
+/** All input for the `updateAccountDeliveryPreference` mutation. */
+export type UpdateAccountDeliveryPreferenceInput = {
+  /** An object where the defined keys will be set on the `AccountDeliveryPreference` being updated. */
+  accountDeliveryPreferencePatch: AccountDeliveryPreferencePatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `AccountDeliveryPreference` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `AccountDeliveryPreference` mutation. */
+export type UpdateAccountDeliveryPreferencePayload = {
+  __typename: 'UpdateAccountDeliveryPreferencePayload';
+  /** Reads a single `Account` that is related to this `AccountDeliveryPreference`. */
+  accountByAccountId: Maybe<Account>;
+  /** The `AccountDeliveryPreference` that was updated by this mutation. */
+  accountDeliveryPreference: Maybe<AccountDeliveryPreference>;
+  /** An edge for our `AccountDeliveryPreference`. May be used by Relay 1. */
+  accountDeliveryPreferenceEdge: Maybe<AccountDeliveryPreferencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `AccountDeliveryPreference` mutation. */
+export type UpdateAccountDeliveryPreferencePayloadAccountDeliveryPreferenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
 };
 
 /** All input for the `updateAccount` mutation. */
@@ -8151,6 +8531,20 @@ export type MarkAllNotificationsReadMutationVariables = Exact<{
 
 export type MarkAllNotificationsReadMutation = { __typename: 'Mutation', markAllNotificationsRead: { __typename: 'MarkAllNotificationsReadPayload', integer: number | null } | null };
 
+export type GetDeliveryPreferencesMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetDeliveryPreferencesMutation = { __typename: 'Mutation', getAccountDeliveryPreferences: { __typename: 'GetAccountDeliveryPreferencesPayload', results: Array<{ __typename: 'GetAccountDeliveryPreferencesRecord', eventCategory: string | null, deliveryStrategy: string | null, summaryFrequencyDays: number | null } | null> | null } | null };
+
+export type SetDeliveryPreferenceMutationVariables = Exact<{
+  eventCategory: Scalars['String']['input'];
+  deliveryStrategy: Scalars['String']['input'];
+  summaryFrequencyDays?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type SetDeliveryPreferenceMutation = { __typename: 'Mutation', setAccountDeliveryPreference: { __typename: 'SetAccountDeliveryPreferencePayload', accountDeliveryPreference: { __typename: 'AccountDeliveryPreference', eventCategory: string, deliveryStrategy: string, summaryFrequencyDays: number } | null } | null };
+
 export type AccountProfileQueryVariables = Exact<{
   accountId: Scalars['UUID']['input'];
 }>;
@@ -8301,6 +8695,8 @@ export const MarkNeedClaimNotificationReadDocument = {"kind":"Document","definit
 export const MarkResourceBidNotificationReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkResourceBidNotificationRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkResourceBidNotificationReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markResourceBidNotificationRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceBidNotification"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}}]}}]}}]}}]} as unknown as DocumentNode<MarkResourceBidNotificationReadMutation, MarkResourceBidNotificationReadMutationVariables>;
 export const MarkAccountNotificationReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkAccountNotificationRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkAccountNotificationReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markAccountNotificationRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accountNotification"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}}]}}]}}]}}]} as unknown as DocumentNode<MarkAccountNotificationReadMutation, MarkAccountNotificationReadMutationVariables>;
 export const MarkAllNotificationsReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkAllNotificationsRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkAllNotificationsReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markAllNotificationsRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"integer"}}]}}]}}]} as unknown as DocumentNode<MarkAllNotificationsReadMutation, MarkAllNotificationsReadMutationVariables>;
+export const GetDeliveryPreferencesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GetDeliveryPreferences"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAccountDeliveryPreferences"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"results"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventCategory"}},{"kind":"Field","name":{"kind":"Name","value":"deliveryStrategy"}},{"kind":"Field","name":{"kind":"Name","value":"summaryFrequencyDays"}}]}}]}}]}}]} as unknown as DocumentNode<GetDeliveryPreferencesMutation, GetDeliveryPreferencesMutationVariables>;
+export const SetDeliveryPreferenceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetDeliveryPreference"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventCategory"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deliveryStrategy"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"summaryFrequencyDays"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAccountDeliveryPreference"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pEventCategory"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventCategory"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pDeliveryStrategy"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deliveryStrategy"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pSummaryFrequencyDays"},"value":{"kind":"Variable","name":{"kind":"Name","value":"summaryFrequencyDays"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accountDeliveryPreference"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventCategory"}},{"kind":"Field","name":{"kind":"Name","value":"deliveryStrategy"}},{"kind":"Field","name":{"kind":"Name","value":"summaryFrequencyDays"}}]}}]}}]}}]} as unknown as DocumentNode<SetDeliveryPreferenceMutation, SetDeliveryPreferenceMutationVariables>;
 export const AccountProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AccountProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accountById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"bio"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"preferredLanguage"}},{"kind":"Field","name":{"kind":"Name","value":"profileLinks"}}]}}]}}]} as unknown as DocumentNode<AccountProfileQuery, AccountProfileQueryVariables>;
 export const UpdateAccountProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateAccountProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"patch"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AccountPatch"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateAccountById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"accountPatch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"patch"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"bio"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"preferredLanguage"}},{"kind":"Field","name":{"kind":"Name","value":"profileLinks"}}]}}]}}]}}]} as unknown as DocumentNode<UpdateAccountProfileMutation, UpdateAccountProfileMutationVariables>;
 export const PublishResourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PublishResource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"title"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"description"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"location"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"latitude"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BigFloat"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"longitude"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BigFloat"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"intensity"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"NeedIntensity"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"defaultTokenAmount"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"categoryCodes"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"imageUrls"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isProduct"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isService"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"canBeGiven"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"canBeExchanged"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"canBeTakenAway"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"canBeDelivered"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"expiresAt"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishResource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"title"},"value":{"kind":"Variable","name":{"kind":"Name","value":"title"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"description"},"value":{"kind":"Variable","name":{"kind":"Name","value":"description"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"location"},"value":{"kind":"Variable","name":{"kind":"Name","value":"location"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"latitude"},"value":{"kind":"Variable","name":{"kind":"Name","value":"latitude"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"longitude"},"value":{"kind":"Variable","name":{"kind":"Name","value":"longitude"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"intensity"},"value":{"kind":"Variable","name":{"kind":"Name","value":"intensity"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"defaultTokenAmount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"defaultTokenAmount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"categoryCodes"},"value":{"kind":"Variable","name":{"kind":"Name","value":"categoryCodes"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"imageUrls"},"value":{"kind":"Variable","name":{"kind":"Name","value":"imageUrls"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"isProduct"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isProduct"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"isService"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isService"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"canBeGiven"},"value":{"kind":"Variable","name":{"kind":"Name","value":"canBeGiven"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"canBeExchanged"},"value":{"kind":"Variable","name":{"kind":"Name","value":"canBeExchanged"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"canBeTakenAway"},"value":{"kind":"Variable","name":{"kind":"Name","value":"canBeTakenAway"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"canBeDelivered"},"value":{"kind":"Variable","name":{"kind":"Name","value":"canBeDelivered"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"expiresAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"expiresAt"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"defaultTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"categoryLabels"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}}]}}]}}]}}]} as unknown as DocumentNode<PublishResourceMutation, PublishResourceMutationVariables>;

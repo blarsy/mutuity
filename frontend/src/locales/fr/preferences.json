@@ -1,0 +1,26 @@
+{
+  "title": "Préférences",
+  "subtitle": "Configurez comment et à quelle fréquence vous recevez des informations hors de l'application pour chaque catégorie d'événement.",
+  "loading": "Chargement de vos préférences…",
+  "saveError": "Impossible de sauvegarder la préférence. Veuillez réessayer.",
+  "categories": {
+    "new_resource_added": "Nouvelles ressources à proximité",
+    "new_need_added": "Nouveaux besoins à proximité",
+    "unread_notifications": "Notifications non lues",
+    "new_chat_message_received": "Nouveaux messages de chat"
+  },
+  "strategy": {
+    "label": "Canal de livraison",
+    "realtime_push": "Notification push en temps réel",
+    "email_summary": "Résumé par e-mail"
+  },
+  "frequency": {
+    "label": "Fréquence du résumé",
+    "1": "Quotidien",
+    "3": "Tous les 3 jours",
+    "7": "Hebdomadaire",
+    "30": "Mensuel"
+  },
+  "inAppNote": "Les alertes dans l'application sont toujours actives et ne sont pas affectées par ces paramètres.",
+  "activityNote": "La livraison hors application est suspendue lorsque vous avez une session navigateur ou mobile active."
+}
