@@ -32,6 +32,13 @@ function formatErrorMessage(baseMessage: string, error: unknown) {
   return `${baseMessage}: ${String(error)}`;
 }
 
+function emitFallbackDiagnostic(input: LogInput, error: unknown) {
+  console.error("[operational-log] frontend fallback", {
+    input,
+    error: serializeError(error)
+  });
+}
+
 async function writeBackofficeLog(input: LogInput) {
   try {
     await apolloClient.mutate({
@@ -45,8 +52,9 @@ async function writeBackofficeLog(input: LogInput) {
         metadata: input.metadata ?? {}
       }
     });
-  } catch {
+  } catch (error) {
     // Logging failure must never block UX flows.
+    emitFallbackDiagnostic(input, error);
   }
 }
 
