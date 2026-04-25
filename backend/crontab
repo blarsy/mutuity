@@ -33,3 +33,7 @@
 # deliver_push_notification_outbox: process queued realtime push notifications.
 # Runs every minute to avoid noticeable delays in push delivery.
 * * * * * deliver_push_notification_outbox
+
+# cleanup_operational_logs: delete unified operational logs older than the configured retention window.
+# Runs once per day at 02:30 server time.
+30 2 * * * cleanup_operational_logs

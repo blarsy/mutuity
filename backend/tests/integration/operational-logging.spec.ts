@@ -8,6 +8,7 @@ import {
   logWebApiInfo,
   logWorkerError
 } from "../../src/logging/operationalLogger";
+import { cleanupOperationalLogsTask } from "../../src/worker/tasks/cleanup-operational-logs";
 import { TEST_DATABASE_URL, seedDemoAccount } from "./auth-test-helpers";
 
 type OperationalLogRow = {
@@ -72,6 +73,48 @@ async function searchOperationalLogs(filters: {
 
     return result.rows;
   });
+}
+
+async function setOperationalLogRetentionDays(days: number) {
+  await withDbClient(client => client.query(
+    `
+      insert into app_public.system_setting (key, value_text)
+      values ('operational_log_retention_days', $1::text)
+      on conflict (key)
+      do update set
+        value_text = excluded.value_text,
+        updated_at = now()
+    `,
+    [String(days)]
+  ));
+}
+
+async function insertAgedOperationalLog(input: {
+  component: string;
+  context: string;
+  createdAtIso: string;
+}) {
+  await withDbClient(client => client.query(
+    `
+      insert into app_public.operational_log (
+        level,
+        component,
+        message,
+        context,
+        created_at,
+        metadata
+      )
+      values (
+        'info',
+        $1::text,
+        $2::text,
+        $3::text,
+        $4::timestamptz,
+        '{}'::jsonb
+      )
+    `,
+    [input.component, `${input.component} log`, input.context, input.createdAtIso]
+  ));
 }
 
 async function collectSourceFiles(rootDir: string): Promise<string[]> {
@@ -188,5 +231,40 @@ describe("unified operational logging coverage", () => {
 
     expect(foundUnifiedWritePath).toBe(true);
     expect(violations).toEqual([]);
+  });
+
+  it("deletes logs older than the configured retention window during scheduled cleanup", async () => {
+    const context = `t065-retention-${Date.now()}`;
+    const now = new Date("2026-04-25T12:00:00.000Z");
+
+    await deleteLogsByContext(context);
+    await setOperationalLogRetentionDays(7);
+    await insertAgedOperationalLog({
+      component: "web_api",
+      context,
+      createdAtIso: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString()
+    });
+    await insertAgedOperationalLog({
+      component: "worker_job",
+      context,
+      createdAtIso: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString()
+    });
+
+    await cleanupOperationalLogsTask({ nowIso: now.toISOString() }, {} as never);
+
+    const remainingAfterDefaultCleanup = await searchOperationalLogs({ context });
+
+    expect(remainingAfterDefaultCleanup).toHaveLength(1);
+    expect(remainingAfterDefaultCleanup[0].component).toBe("worker_job");
+
+    await setOperationalLogRetentionDays(1);
+    await cleanupOperationalLogsTask({ nowIso: now.toISOString() }, {} as never);
+
+    const remainingAfterOverrideCleanup = await searchOperationalLogs({ context });
+
+    expect(remainingAfterOverrideCleanup).toEqual([]);
+
+    await deleteLogsByContext(context);
+    await setOperationalLogRetentionDays(7);
   });
 });

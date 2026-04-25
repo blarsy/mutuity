@@ -1,4 +1,5 @@
 import type { TaskList } from "graphile-worker";
+import { cleanupOperationalLogsTask } from "./tasks/cleanup-operational-logs.js";
 import { deliverAuthEmailsTask } from "./tasks/deliver-auth-emails.js";
 import { deliverPushNotificationsTask } from "./tasks/deliver-push-notifications.js";
 import { expireNeedsTask } from "./tasks/expire-needs.js";
@@ -9,6 +10,7 @@ import { issueNotificationDigestsTask } from "./tasks/issue-notification-digests
 import { processResourceBidNotificationsTask } from "./tasks/process-resource-bid-notifications.js";
 
 export const taskList: TaskList = {
+  cleanup_operational_logs: cleanupOperationalLogsTask,
   deliver_mail_outbox: deliverAuthEmailsTask,
   deliver_push_notification_outbox: deliverPushNotificationsTask,
   expire_needs: expireNeedsTask,
