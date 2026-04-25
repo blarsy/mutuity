@@ -1,6 +1,8 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
+import { logWorkerInfo } from "../../logging/operationalLogger.js";
+
 type IssueCampaignAirdropPayoutsPayload = {
   nowIso?: string;
 };
@@ -36,8 +38,14 @@ export const issueCampaignAirdropPayoutsTask: Task = async payload => {
       notification_count: 0
     };
 
-    console.log(
-      `[worker] issue_campaign_airdrop_payouts tick at ${now.toISOString()} (campaigns=${counts.campaign_count}, payouts=${counts.payout_count}, notifications=${counts.notification_count})`
+    await logWorkerInfo(
+      `[worker] issue_campaign_airdrop_payouts tick at ${now.toISOString()} (campaigns=${counts.campaign_count}, payouts=${counts.payout_count}, notifications=${counts.notification_count})`,
+      {
+        task: "issue_campaign_airdrop_payouts",
+        campaigns: counts.campaign_count,
+        payouts: counts.payout_count,
+        notifications: counts.notification_count
+      }
     );
   } finally {
     await client.end();

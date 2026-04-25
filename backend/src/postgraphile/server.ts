@@ -8,6 +8,7 @@ import { Pool } from "pg";
 import { postgraphile } from "postgraphile";
 
 import { createAuthSessionMiddleware } from "../auth/session.js";
+import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
 
 const app = express();
@@ -279,6 +280,11 @@ app.use(
     handleErrors: errors => {
       for (const error of errors) {
         console.error("[postgraphile] GraphQL request failed", toLoggedError(error));
+        void logWebApiError("GraphQL request failed", error, {
+          path: error.path,
+          extensions: error.extensions,
+          originalError: toLoggedError(error).originalError
+        });
       }
 
       return errors.map(sanitizeGraphQLError);
@@ -328,4 +334,9 @@ app.get("/health", (_req, res) => {
 app.listen(port, () => {
   // Keep logs concise for local bootstrap.
   console.log(`PostGraphile server listening on http://localhost:${port}/graphiql`);
+  void logWebApiInfo("PostGraphile server listening", {
+    port,
+    graphiql: allowGraphiql,
+    watchPg
+  });
 });

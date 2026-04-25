@@ -1,6 +1,8 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
+import { logWorkerInfo } from "../../logging/operationalLogger.js";
+
 type ProcessResourceBidNotificationsPayload = {
   nowIso?: string;
 };
@@ -41,8 +43,16 @@ export const processResourceBidNotificationsTask: Task = async payload => {
       notification_count: 0
     };
 
-    console.log(
-      `[worker] process_resource_bid_notifications tick at ${now.toISOString()} (expiringSoon=${counts.expiring_soon_count}, expired=${counts.expired_bid_count}, cancelled=${counts.cancelled_bid_count}, refunds=${counts.refund_count}, notifications=${counts.notification_count})`
+    await logWorkerInfo(
+      `[worker] process_resource_bid_notifications tick at ${now.toISOString()} (expiringSoon=${counts.expiring_soon_count}, expired=${counts.expired_bid_count}, cancelled=${counts.cancelled_bid_count}, refunds=${counts.refund_count}, notifications=${counts.notification_count})`,
+      {
+        task: "process_resource_bid_notifications",
+        expiringSoon: counts.expiring_soon_count,
+        expired: counts.expired_bid_count,
+        cancelled: counts.cancelled_bid_count,
+        refunds: counts.refund_count,
+        notifications: counts.notification_count
+      }
     );
   } finally {
     await client.end();

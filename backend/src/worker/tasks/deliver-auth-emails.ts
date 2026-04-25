@@ -1,6 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
+import { logWorkerInfo } from "../../logging/operationalLogger.js";
 import { isMailDeliveryEnabled, sendViaMailgun } from "../../mailing/index.js";
 
 type DeliverAuthEmailsPayload = {
@@ -283,8 +284,15 @@ export const deliverAuthEmailsTask: Task = async payload => {
       }
     }
 
-    console.log(
-      `[worker] deliver_mail_outbox processed=${emails.length} sent=${sentCount} skipped=${skippedCount} failed=${failedCount}`
+    await logWorkerInfo(
+      `[worker] deliver_mail_outbox processed=${emails.length} sent=${sentCount} skipped=${skippedCount} failed=${failedCount}`,
+      {
+      task: "deliver_mail_outbox",
+      processed: emails.length,
+      sent: sentCount,
+      skipped: skippedCount,
+      failed: failedCount
+      }
     );
   } finally {
     await client.end();

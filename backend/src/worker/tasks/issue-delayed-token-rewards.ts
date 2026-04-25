@@ -1,6 +1,8 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
+import { logWorkerInfo } from "../../logging/operationalLogger.js";
+
 type IssueDelayedTokenRewardsPayload = {
   nowIso?: string;
 };
@@ -36,8 +38,14 @@ export const issueDelayedTokenRewardsTask: Task = async payload => {
       total_reward_count: 0
     };
 
-    console.log(
-      `[worker] issue_delayed_token_rewards tick at ${now.toISOString()} (resources=${counts.resource_reward_count}, claims=${counts.claim_reward_count}, total=${counts.total_reward_count})`
+    await logWorkerInfo(
+      `[worker] issue_delayed_token_rewards tick at ${now.toISOString()} (resources=${counts.resource_reward_count}, claims=${counts.claim_reward_count}, total=${counts.total_reward_count})`,
+      {
+        task: "issue_delayed_token_rewards",
+        resourceRewards: counts.resource_reward_count,
+        claimRewards: counts.claim_reward_count,
+        totalRewards: counts.total_reward_count
+      }
     );
   } finally {
     await client.end();

@@ -1,6 +1,8 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
+import { logWorkerInfo } from "../../logging/operationalLogger.js";
+
 type IssueNotificationDigestsPayload = {
   nowIso?: string;
 };
@@ -214,8 +216,14 @@ export const issueNotificationDigestsTask: Task = async payload => {
       queuedCount += 1;
     }
 
-    console.log(
-      `[worker] issue_notification_digests tick at ${now.toISOString()} (accounts=${result.rows.length}, queued=${queuedCount}, skipped=${skippedCount})`
+    await logWorkerInfo(
+      `[worker] issue_notification_digests tick at ${now.toISOString()} (accounts=${result.rows.length}, queued=${queuedCount}, skipped=${skippedCount})`,
+      {
+        task: "issue_notification_digests",
+        accounts: result.rows.length,
+        queued: queuedCount,
+        skipped: skippedCount
+      }
     );
   } finally {
     await client.end();

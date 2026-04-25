@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import fs from "node:fs";
 import { run } from "graphile-worker";
+import { logWorkerError, logWorkerInfo } from "../logging/operationalLogger.js";
 import { taskList } from "./taskList.js";
 
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -23,6 +24,11 @@ async function main() {
   });
 
   console.log("Graphile Worker started.");
+  await logWorkerInfo("Graphile Worker started.", {
+    concurrency: Number(process.env.WORKER_CONCURRENCY ?? 5),
+    pollInterval: Number(process.env.WORKER_POLL_INTERVAL ?? 2000),
+    crontabFile: crontabFile ?? null
+  });
 
   const shutdown = async () => {
     await runner.stop();
@@ -35,5 +41,6 @@ async function main() {
 
 main().catch((error) => {
   console.error(error);
+  void logWorkerError("Graphile Worker bootstrap failed", error);
   process.exit(1);
 });

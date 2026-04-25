@@ -1,6 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
+import { logWorkerInfo } from "../../logging/operationalLogger.js";
 import { isPushDeliveryEnabled, sendLivePushNotification } from "../../push/index.js";
 
 type DeliverPushNotificationsPayload = {
@@ -115,8 +116,15 @@ export const deliverPushNotificationsTask: Task = async payload => {
       }
     }
 
-    console.log(
-      `[worker] deliver_push_notification_outbox processed=${notifications.length} sent=${sentCount} skipped=${skippedCount} failed=${failedCount}`
+    await logWorkerInfo(
+      `[worker] deliver_push_notification_outbox processed=${notifications.length} sent=${sentCount} skipped=${skippedCount} failed=${failedCount}`,
+      {
+        task: "deliver_push_notification_outbox",
+        processed: notifications.length,
+        sent: sentCount,
+        skipped: skippedCount,
+        failed: failedCount
+      }
     );
   } finally {
     await client.end();
