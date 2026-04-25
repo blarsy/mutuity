@@ -19,6 +19,15 @@ type PendingAuthEmail = {
   locale: string | null;
 };
 
+type RenderedMailRow = {
+  subject: string | null;
+  text_body: string | null;
+  html_body: string | null;
+  metadata: {
+    digest_item_ids?: string[] | string;
+  } | null;
+};
+
 type EmailStrings = {
   subject: string;
   text: string;
@@ -65,6 +74,15 @@ const MARK_SKIPPED_SQL =
 
 const MARK_FAILED_SQL =
   "select app_private.mark_mail_outbox_failed($1::uuid, $2::text, $3::text, $4::text, $5::text);";
+
+const GET_RENDERED_MAIL_SQL = `
+  select subject, text_body, html_body, metadata
+  from app_private.mail_outbox
+  where id = $1::uuid
+`;
+
+const MARK_DIGEST_ITEMS_BROADCASTED_SQL =
+  "select app_private.mark_delivery_digest_items_broadcasted($1::uuid[], $2::uuid);";
 
 function getFromAddress() {
   return process.env.MAIL_FROM_ADDRESS ?? "Mutuity <noreply@mutuity.local>";
@@ -122,6 +140,50 @@ async function lockPendingEmails(client: Client, payload: DeliverAuthEmailsPaylo
   return result.rows;
 }
 
+function normalizeUuidArray(value: string[] | string | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  const trimmed = value.trim();
+
+  if (trimmed.length < 2 || trimmed[0] !== "{" || trimmed[trimmed.length - 1] !== "}") {
+    return [];
+  }
+
+  return trimmed.slice(1, -1).split(",").map(entry => entry.replace(/^"|"$/g, "")).filter(Boolean);
+}
+
+async function getRenderedMailContent(client: Client, emailId: string) {
+  const result = await client.query<RenderedMailRow>(GET_RENDERED_MAIL_SQL, [emailId]);
+  const row = result.rows[0];
+
+  if (!row?.subject?.trim() || !row?.text_body?.trim() || !row?.html_body?.trim()) {
+    throw new Error(`Missing rendered mail body for outbox message ${emailId}`);
+  }
+
+  return {
+    subject: row.subject,
+    text: row.text_body,
+    html: row.html_body,
+    metadata: row.metadata ?? null
+  };
+}
+
+async function markDigestItemsBroadcasted(client: Client, emailId: string, metadata: RenderedMailRow["metadata"]) {
+  const itemIds = normalizeUuidArray(metadata?.digest_item_ids);
+
+  if (itemIds.length === 0) {
+    return;
+  }
+
+  await client.query(MARK_DIGEST_ITEMS_BROADCASTED_SQL, [itemIds, emailId]);
+}
+
 export const deliverAuthEmailsTask: Task = async payload => {
   const typedPayload = (payload ?? {}) as DeliverAuthEmailsPayload;
   const connectionString = process.env.DATABASE_URL;
@@ -147,9 +209,14 @@ export const deliverAuthEmailsTask: Task = async payload => {
 
     for (const email of emails) {
       let content: ReturnType<typeof buildAuthEmailContent> | null = null;
+      let renderedMetadata: RenderedMailRow["metadata"] = null;
 
       try {
-        if (email.mail_kind !== "auth_email_verification" && email.mail_kind !== "auth_password_reset") {
+        if (
+          email.mail_kind !== "auth_email_verification"
+          && email.mail_kind !== "auth_password_reset"
+          && email.mail_kind !== "notification_digest"
+        ) {
           await client.query(MARK_FAILED_SQL, [
             email.id,
             null,
@@ -161,10 +228,25 @@ export const deliverAuthEmailsTask: Task = async payload => {
           continue;
         }
 
-        content = buildAuthEmailContent(email);
+        if (email.mail_kind === "notification_digest") {
+          const renderedMail = await getRenderedMailContent(client, email.id);
+          renderedMetadata = renderedMail.metadata;
+          content = {
+            from: getFromAddress(),
+            to: email.recipient_email,
+            subject: renderedMail.subject,
+            text: renderedMail.text,
+            html: renderedMail.html
+          };
+        } else {
+          content = buildAuthEmailContent(email);
+        }
 
         if (!deliveryEnabled) {
           await client.query(MARK_SKIPPED_SQL, [email.id, content.subject, content.text, content.html]);
+          if (email.mail_kind === "notification_digest") {
+            await markDigestItemsBroadcasted(client, email.id, renderedMetadata);
+          }
           skippedCount += 1;
           continue;
         }
@@ -185,6 +267,9 @@ export const deliverAuthEmailsTask: Task = async payload => {
           content.html,
           providerMessageId
         ]);
+        if (email.mail_kind === "notification_digest") {
+          await markDigestItemsBroadcasted(client, email.id, renderedMetadata);
+        }
         sentCount += 1;
       } catch (error) {
         await client.query(MARK_FAILED_SQL, [

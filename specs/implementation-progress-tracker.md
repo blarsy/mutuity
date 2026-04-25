@@ -31,7 +31,7 @@ Cadence: update at least once per workday
 | P4 | Resource loop MVP | 005 (Slices 1-4) | IN PROGRESS | 92% | TBD |
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
-| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 50% | TBD |
+| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 70% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | NOT STARTED | 0% | TBD |
 
 ## Phase Details And Checkpoints
@@ -181,14 +181,14 @@ Definition of Done:
 
 ### P7 - Engagement And Delivery Controls (005 extended)
 
-Status: NOT STARTED
+Status: IN PROGRESS
 Goal: deploy preference-managed out-of-app delivery and digest behavior.
 
 Checkpoints:
 
 - [ ] Preferences page and backend persistence complete.
-- [ ] Activity-gated push/email behavior enforced.
-- [ ] 08:00 digest run implemented with idempotent marking.
+- [x] Activity-gated push/email behavior enforced.
+- [x] 08:00 digest run implemented with idempotent marking.
 - [ ] Frequency cadence and no-duplicate guarantees tested.
 
 Definition of Done:
@@ -268,6 +268,7 @@ This week priorities:
 | 2026-04-24 | P7 execution | Completed T044 and T045 by documenting Preferences IA (channels, managed categories, strategy matrix, activity-gating) and implementing SQL-owned per-account delivery preference persistence/retrieval with validated frequency constraints and defaults. | specs/005-resource-discovery-and-publishing/spec.md; specs/005-resource-discovery-and-publishing/plan.md; database/migrations/048_account_delivery_preferences.sql; database/functions/notification/set_account_delivery_preference.sql; database/functions/notification/get_account_delivery_preferences.sql; database/functions/notification/get_account_delivery_preferences_for_account.sql; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T046 ranked targeting SQL helpers for `new_need_added` parity and align `new_resource_added` targeting behavior. |
 | 2026-04-24 | P7 execution | Completed T046 by adding SQL-owned ranked targeting helpers for both `new_resource_added` and `new_need_added`, combining proximity, campaign-overlap, and inferred intent scoring with threshold + capped recipient selection. | database/migrations/049_notification_targeting_helpers.sql; database/functions/notification/get_accounts_to_notify_of_new_resource.sql; database/functions/notification/get_accounts_to_notify_of_new_need.sql; specs/005-resource-discovery-and-publishing/tasks.md; docker compose -f docker-compose.yml run --rm migrate | None | Implement T047 out-of-app dispatch gating based on active web/mobile session presence. |
 | 2026-04-24 | P7 execution | Completed T047 by adding SQL-owned activity-gate helpers (`account_has_active_session`, `can_emit_out_of_app_delivery`) and strategy-aware out-of-app decision helpers for push/email dispatch in preference-managed categories. | database/migrations/050_out_of_app_delivery_activity_gate.sql; database/functions/notification/out_of_app_delivery_gate.sql; specs/005-resource-discovery-and-publishing/tasks.md; docker compose -f docker-compose.yml run --rm migrate | None | Implement T048 pending-event persistence and daily 08:00 digest worker with idempotent mark-as-broadcasted semantics. |
+| 2026-04-25 | P7 execution | Completed T048 by adding SQL-owned digest-item persistence, push notification outbox persistence, new-resource out-of-app dispatch wiring, daily 08:00 digest queueing, push/digest worker tasks, and focused integration coverage for 3-day summary cadence, realtime push on resource creation, and mixed-category digest content. | database/migrations/051_preference_managed_delivery_outbox.sql; database/functions/notification/preference_managed_delivery.sql; backend/src/push/index.ts; backend/src/worker/tasks/issue-notification-digests.ts; backend/src/worker/tasks/deliver-push-notifications.ts; backend/src/worker/tasks/deliver-auth-emails.ts; backend/src/worker/taskList.ts; backend/crontab; backend/tests/integration/out-of-app-delivery.spec.ts; docker compose -f docker-compose.yml run --rm migrate; npm -C backend test -- --runInBand tests/integration/out-of-app-delivery.spec.ts; npm -C backend run typecheck | T050 remains open because the broader no-duplicate/full-category matrix is not yet fully covered end-to-end. | Implement T049 preferences backend API and frontend editing UI. |
 
 ## Decisions Log
 

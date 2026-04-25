@@ -22,6 +22,14 @@
 # Runs once per hour at minute 20.
 20 * * * * issue_campaign_airdrop_payouts
 
+# issue_notification_digests: queue the daily out-of-app digest email for accounts with due summary items.
+# Runs once per day at 08:00 server time.
+0 8 * * * issue_notification_digests
+
 # deliver_mail_outbox: process queued emails from the unified mail outbox.
 # Runs every minute to avoid noticeable delays in auth flows.
 * * * * * deliver_mail_outbox
+
+# deliver_push_notification_outbox: process queued realtime push notifications.
+# Runs every minute to avoid noticeable delays in push delivery.
+* * * * * deliver_push_notification_outbox
