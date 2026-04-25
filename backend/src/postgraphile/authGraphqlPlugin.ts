@@ -4,6 +4,7 @@ import { gql, makeExtendSchemaPlugin } from "graphile-utils";
 import type { Pool } from "pg";
 
 import { hashPassword, verifyPassword } from "../auth/credentials.js";
+import { logWebApiError } from "../logging/operationalLogger.js";
 import {
   createSessionForAccount,
   getSessionCookieOptions,
@@ -283,6 +284,12 @@ export function createAuthGraphqlPlugin(pool: Pool) {
             }
 
             console.error("[auth] GraphQL login failed", { identifier, error });
+            await logWebApiError("[auth] GraphQL login failed", error, {
+              context: "auth_graphql_login",
+              metadata: {
+                identifier
+              }
+            });
             throw new GraphQLError(
               GENERIC_ERROR_MESSAGE,
               undefined,
@@ -305,6 +312,9 @@ export function createAuthGraphqlPlugin(pool: Pool) {
             }
           } catch (error) {
             console.error("[auth] GraphQL logout failed", error);
+            await logWebApiError("[auth] GraphQL logout failed", error, {
+              context: "auth_graphql_logout"
+            });
           }
 
           req.authSession = null;
@@ -385,6 +395,10 @@ export function createAuthGraphqlPlugin(pool: Pool) {
             }
 
             console.error("[auth] GraphQL password change failed", error);
+            await logWebApiError("[auth] GraphQL password change failed", error, {
+              context: "auth_graphql_change_password",
+              accountId: session.accountId
+            });
             throw new GraphQLError(
               GENERIC_ERROR_MESSAGE,
               undefined,

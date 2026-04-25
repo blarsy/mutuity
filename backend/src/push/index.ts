@@ -1,3 +1,5 @@
+import { logWorkerError } from "../logging/operationalLogger.js";
+
 export type OutboundPushNotification = {
   to: string;
   eventCategory: string;
@@ -51,18 +53,32 @@ export async function sendLivePushNotification(notification: OutboundPushNotific
     }
   ];
 
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(messages)
-  });
+  let response: Response;
 
-  if (!response.ok) {
-    throw new Error(`Push delivery failed with status ${response.status}`);
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(messages)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Push delivery failed with status ${response.status}`);
+    }
+  } catch (error) {
+    await logWorkerError("[worker] expo push provider request failed", error, {
+      task: "deliver_push_notification_outbox",
+      context: "expo_push_provider",
+      metadata: {
+        endpoint,
+        eventCategory: notification.eventCategory
+      }
+    });
+    throw error;
   }
 
   return response.json() as Promise<{ id?: string }>;

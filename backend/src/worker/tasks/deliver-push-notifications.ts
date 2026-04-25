@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 import { isPushDeliveryEnabled, sendLivePushNotification } from "../../push/index.js";
 
 type DeliverPushNotificationsPayload = {
@@ -112,6 +112,14 @@ export const deliverPushNotificationsTask: Task = async payload => {
         sentCount += 1;
       } catch (error) {
         await client.query(MARK_PUSH_FAILED_SQL, [notification.id, toErrorMessage(error)]);
+        await logWorkerError("[worker] push notification delivery failed", error, {
+          task: "deliver_push_notification_outbox",
+          metadata: {
+            notificationId: notification.id,
+            accountId: notification.account_id,
+            eventCategory: notification.event_category
+          }
+        });
         failedCount += 1;
       }
     }
@@ -126,6 +134,11 @@ export const deliverPushNotificationsTask: Task = async payload => {
         failed: failedCount
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] deliver_push_notification_outbox task failed", error, {
+      task: "deliver_push_notification_outbox"
+    });
+    throw error;
   } finally {
     await client.end();
   }

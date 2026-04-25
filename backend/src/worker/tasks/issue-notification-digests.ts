@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 
 type IssueNotificationDigestsPayload = {
   nowIso?: string;
@@ -225,6 +225,11 @@ export const issueNotificationDigestsTask: Task = async payload => {
         skipped: skippedCount
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] issue_notification_digests task failed", error, {
+      task: "issue_notification_digests"
+    });
+    throw error;
   } finally {
     await client.end();
   }

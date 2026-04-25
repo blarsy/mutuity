@@ -3,6 +3,8 @@ import { createHash, randomBytes } from "node:crypto";
 import type { CookieOptions, RequestHandler } from "express";
 import type { Pool } from "pg";
 
+import { logWebApiError } from "../logging/operationalLogger.js";
+
 export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME ?? "mutuity_session";
 const SESSION_TTL_HOURS = Number(process.env.SESSION_TTL_HOURS ?? 168);
 const FIND_ACCOUNT_SESSION_SQL = "select * from app_private.find_account_session($1);";
@@ -128,6 +130,9 @@ export function createAuthSessionMiddleware(pool: Pool): RequestHandler {
       req.authSession = sessionToken ? await getSessionFromToken(pool, sessionToken) : null;
     } catch (error) {
       console.error("[auth] Failed to resolve request session", error);
+      void logWebApiError("[auth] Failed to resolve request session", error, {
+        context: "auth_session_middleware"
+      });
       req.authSession = null;
     }
 

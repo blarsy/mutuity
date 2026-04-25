@@ -1,6 +1,8 @@
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
 
+import { logWorkerError } from "../logging/operationalLogger.js";
+
 export type OutboundMail = {
   from: string;
   to: string;
@@ -52,11 +54,24 @@ export async function sendViaMailgun(mail: OutboundMail) {
     url: config.apiUrl
   });
 
-  return client.messages.create(config.domain, {
-    from: mail.from,
-    to: [mail.to],
-    subject: mail.subject,
-    text: mail.text,
-    html: mail.html
-  });
+  try {
+    return await client.messages.create(config.domain, {
+      from: mail.from,
+      to: [mail.to],
+      subject: mail.subject,
+      text: mail.text,
+      html: mail.html
+    });
+  } catch (error) {
+    await logWorkerError("[worker] mailgun provider request failed", error, {
+      task: "deliver_mail_outbox",
+      context: "mailgun_provider",
+      metadata: {
+        domain: config.domain,
+        recipientEmail: mail.to,
+        subject: mail.subject
+      }
+    });
+    throw error;
+  }
 }

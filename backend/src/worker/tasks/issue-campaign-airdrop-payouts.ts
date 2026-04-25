@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 
 type IssueCampaignAirdropPayoutsPayload = {
   nowIso?: string;
@@ -47,6 +47,11 @@ export const issueCampaignAirdropPayoutsTask: Task = async payload => {
         notifications: counts.notification_count
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] issue_campaign_airdrop_payouts task failed", error, {
+      task: "issue_campaign_airdrop_payouts"
+    });
+    throw error;
   } finally {
     await client.end();
   }

@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 
 type IssueDelayedTokenRewardsPayload = {
   nowIso?: string;
@@ -47,6 +47,11 @@ export const issueDelayedTokenRewardsTask: Task = async payload => {
         totalRewards: counts.total_reward_count
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] issue_delayed_token_rewards task failed", error, {
+      task: "issue_delayed_token_rewards"
+    });
+    throw error;
   } finally {
     await client.end();
   }

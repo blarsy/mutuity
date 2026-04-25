@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 
 type ExpireNeedsPayload = {
   nowIso?: string;
@@ -42,6 +42,11 @@ export const expireNeedsTask: Task = async payload => {
         expiredClaims: counts.expired_claim_count
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] expire_needs task failed", error, {
+      task: "expire_needs"
+    });
+    throw error;
   } finally {
     await client.end();
   }

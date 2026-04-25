@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 import { isMailDeliveryEnabled, sendViaMailgun } from "../../mailing/index.js";
 
 type DeliverAuthEmailsPayload = {
@@ -280,6 +280,14 @@ export const deliverAuthEmailsTask: Task = async payload => {
           content?.html ?? null,
           toErrorMessage(error)
         ]);
+        await logWorkerError("[worker] mail outbox delivery failed", error, {
+          task: "deliver_mail_outbox",
+          metadata: {
+            emailId: email.id,
+            recipientEmail: email.recipient_email,
+            mailKind: email.mail_kind
+          }
+        });
         failedCount += 1;
       }
     }
@@ -294,6 +302,11 @@ export const deliverAuthEmailsTask: Task = async payload => {
       failed: failedCount
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] deliver_mail_outbox task failed", error, {
+      task: "deliver_mail_outbox"
+    });
+    throw error;
   } finally {
     await client.end();
   }

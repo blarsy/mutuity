@@ -1,7 +1,7 @@
 import type { Task } from "graphile-worker";
 import { Client } from "pg";
 
-import { logWorkerInfo } from "../../logging/operationalLogger.js";
+import { logWorkerError, logWorkerInfo } from "../../logging/operationalLogger.js";
 
 type ProcessResourceBidNotificationsPayload = {
   nowIso?: string;
@@ -54,6 +54,11 @@ export const processResourceBidNotificationsTask: Task = async payload => {
         notifications: counts.notification_count
       }
     );
+  } catch (error) {
+    await logWorkerError("[worker] process_resource_bid_notifications task failed", error, {
+      task: "process_resource_bid_notifications"
+    });
+    throw error;
   } finally {
     await client.end();
   }
