@@ -785,4 +785,153 @@ describe("auth graphql operations", () => {
     expect(expiredResetAttempt.response.status).toBe(200);
     expect(expiredResetAttempt.payload.errors).toBeDefined();
   });
+
+  it("enforces external-identity link safety and blocks duplicate local registration on verified provider email", async () => {
+    const primaryAccount = await seedDemoAccount({
+      identifier: `graphql-social-primary-${Date.now()}@example.com`
+    });
+    const secondaryAccount = await seedDemoAccount({
+      identifier: `graphql-social-secondary-${Date.now()}@example.com`
+    });
+    const sharedProviderEmail = `graphql-social-shared-${Date.now()}@example.com`;
+    const linkedProviderSubject = `google-sub-${Date.now()}`;
+
+    const primaryLogin = await graphQLRequest<{
+      authLogin: {
+        authSession: {
+          authenticated: boolean;
+        };
+      };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          authSession {
+            authenticated
+          }
+        }
+      }`,
+      {
+        identifier: primaryAccount.identifier,
+        password: primaryAccount.password
+      }
+    );
+
+    expect(primaryLogin.payload.errors).toBeUndefined();
+    expect(primaryLogin.payload.data?.authLogin.authSession.authenticated).toBe(true);
+    const primaryCookie = getSessionCookie(primaryLogin.response);
+
+    const linkPrimaryIdentity = await graphQLRequest<{
+      linkAccountExternalIdentity: {
+        string: string;
+      };
+    }>(
+      `mutation LinkAccountExternalIdentity(
+        $provider: String!
+        $providerSubject: String!
+        $providerEmail: String!
+        $providerEmailVerified: Boolean!
+      ) {
+        linkAccountExternalIdentity(
+          input: {
+            pProvider: $provider
+            pProviderSubject: $providerSubject
+            pProviderEmail: $providerEmail
+            pProviderEmailVerified: $providerEmailVerified
+          }
+        ) {
+          string
+        }
+      }`,
+      {
+        provider: "google",
+        providerSubject: linkedProviderSubject,
+        providerEmail: sharedProviderEmail,
+        providerEmailVerified: true
+      },
+      primaryCookie
+    );
+
+    expect(linkPrimaryIdentity.response.status).toBe(200);
+    expect(linkPrimaryIdentity.payload.errors).toBeUndefined();
+    expect(linkPrimaryIdentity.payload.data?.linkAccountExternalIdentity.string).toBe("linked");
+
+    const secondaryLogin = await graphQLRequest<{
+      authLogin: {
+        authSession: {
+          authenticated: boolean;
+        };
+      };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          authSession {
+            authenticated
+          }
+        }
+      }`,
+      {
+        identifier: secondaryAccount.identifier,
+        password: secondaryAccount.password
+      }
+    );
+
+    expect(secondaryLogin.payload.errors).toBeUndefined();
+    expect(secondaryLogin.payload.data?.authLogin.authSession.authenticated).toBe(true);
+    const secondaryCookie = getSessionCookie(secondaryLogin.response);
+
+    const duplicateSubjectLink = await graphQLRequest(
+      `mutation LinkAccountExternalIdentity(
+        $provider: String!
+        $providerSubject: String!
+        $providerEmail: String!
+        $providerEmailVerified: Boolean!
+      ) {
+        linkAccountExternalIdentity(
+          input: {
+            pProvider: $provider
+            pProviderSubject: $providerSubject
+            pProviderEmail: $providerEmail
+            pProviderEmailVerified: $providerEmailVerified
+          }
+        ) {
+          string
+        }
+      }`,
+      {
+        provider: "google",
+        providerSubject: linkedProviderSubject,
+        providerEmail: sharedProviderEmail,
+        providerEmailVerified: true
+      },
+      secondaryCookie
+    );
+
+    expect(duplicateSubjectLink.response.status).toBe(200);
+    expect(duplicateSubjectLink.payload.errors).toBeDefined();
+
+    const duplicateLocalRegistration = await graphQLRequest(
+      `mutation RegisterLocalAccountWithPassword($identifier: String!, $displayName: String!, $password: String!) {
+        registerLocalAccountWithPassword(
+          input: {
+            identifier: $identifier
+            displayName: $displayName
+            password: $password
+          }
+        ) {
+          boolean
+        }
+      }`,
+      {
+        identifier: sharedProviderEmail,
+        displayName: "Duplicate Identity Blocked",
+        password: "duplicate-password123"
+      }
+    );
+
+    expect(duplicateLocalRegistration.response.status).toBe(200);
+    expect(duplicateLocalRegistration.payload.errors).toBeDefined();
+    expect(duplicateLocalRegistration.payload.errors?.[0]?.message).toBe(
+      "Something went wrong. Please try again."
+    );
+  });
 });

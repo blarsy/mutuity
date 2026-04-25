@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { ParsedUrlQuery } from "querystring";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
@@ -7,6 +8,21 @@ import { useTranslation } from "react-i18next";
 import { registerLocalAccount } from "../features/auth/auth.api";
 import { useAuth } from "../features/auth/AuthProvider";
 import { SocialAuthButtons } from "../features/auth/SocialAuthButtons";
+
+export function resolveSocialPrefill(query: ParsedUrlQuery) {
+  const suggestedName =
+    typeof query.suggestedName === "string"
+      ? query.suggestedName
+      : typeof query.name === "string"
+        ? query.name
+        : "";
+
+  return {
+    suggestedName,
+    suggestedEmail: typeof query.email === "string" ? query.email : "",
+    provider: typeof query.provider === "string" ? query.provider.toLowerCase() : ""
+  };
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,14 +34,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const suggestedName =
-    typeof router.query.suggestedName === "string"
-      ? router.query.suggestedName
-      : typeof router.query.name === "string"
-        ? router.query.name
-        : "";
-  const suggestedEmail = typeof router.query.email === "string" ? router.query.email : "";
-  const provider = typeof router.query.provider === "string" ? router.query.provider.toLowerCase() : "";
+  const { suggestedName, suggestedEmail, provider } = resolveSocialPrefill(router.query);
 
   useEffect(() => {
     if (suggestedName && displayName.trim().length === 0) {
