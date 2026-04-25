@@ -85,7 +85,7 @@
 - [x] T046 Implement SQL-owned ranked targeting helper(s) for `new need added` equivalent to Tope-la `get_accounts_to_notify_of_new_resource`, and align `new resource added` targeting behavior with the reverse-engineered rules
 - [x] T047 Implement out-of-app dispatch gating so push/email for preference-managed categories is emitted only when the target account has no active web/mobile session
 - [x] T048 Implement event-pending persistence and a daily `08:00` digest worker that sends at most one email per account with one section per pending category and idempotent mark-as-broadcasted updates
-- [ ] T049 Implement backend API + frontend `Preferences` page UI for editing per-category delivery strategy and email summary frequency, including safe defaults and validation
+- [x] T049 Implement backend API + frontend `Preferences` page UI for editing per-category delivery strategy and email summary frequency, including safe defaults and validation
 - [x] T050 Add end-to-end verification for realtime push vs digest behavior across all four categories, including digest frequency cadence and no-duplicate-send guarantees
 
 ## Phase 10: Authentication Parity With Tope-la
