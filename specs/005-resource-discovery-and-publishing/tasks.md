@@ -96,7 +96,8 @@
 - [x] T054 Implement forgot-password lifecycle (request reset email, token validation, password update, single-use token invalidation)
 - [x] T055 Implement authenticated change-password flow with current-password validation and post-change session hardening behavior
 - [x] T056 Implement frontend auth surfaces and routing updates for social sign-in buttons (`Google`, `Apple`) including editable suggested-name prefill from provider profile data, verification completion, forgot/reset password, and change-password UI
-- [ ] T057 Add end-to-end verification for all auth entry/recovery paths, including signup/login parity across local+social identities and token expiry/reuse protections
+- [x] T057a Add end-to-end verification for local auth entry/recovery paths, including signup/login/verify/reset/change-password and token expiry/reuse protections
+- [ ] T057b Add end-to-end verification for social auth parity paths (Google/Apple callback/login crossover) once backend callback handlers are implemented
 
 ## Phase 11: Unified Cross-Component Logging
 
