@@ -77,6 +77,82 @@ async function dispatchPreferenceManagedEvent(
   ));
 }
 
+async function createActiveSession(accountId: string, roleName = "identified_account") {
+  await withDbClient(client => client.query(
+    `
+      insert into app_private.account_session (
+        account_id,
+        role_name,
+        session_token_hash,
+        expires_at
+      )
+      values (
+        $1::uuid,
+        $2::text,
+        $3::text,
+        now() + interval '1 day'
+      )
+    `,
+    [accountId, roleName, `test-session-${accountId}-${Date.now()}-${Math.random().toString(16).slice(2)}`]
+  ));
+}
+
+async function getDigestMailCount(accountId: string) {
+  return withDbClient(async client => {
+    const result = await client.query<{ count: string }>(
+      `
+        select count(*)::text as count
+        from app_private.mail_outbox
+        where account_id = $1::uuid
+          and mail_kind = 'notification_digest'
+      `,
+      [accountId]
+    );
+
+    return Number(result.rows[0]?.count ?? "0");
+  });
+}
+
+async function getDeliveryCounts(accountId: string, eventCategory: string) {
+  return withDbClient(async client => {
+    const result = await client.query<{
+      push_count: string;
+      digest_count: string;
+      unbroadcasted_digest_count: string;
+    }>(
+      `
+        select
+          (
+            select count(*)::text
+            from app_private.push_notification_outbox
+            where account_id = $1::uuid
+              and event_category = $2::text
+          ) as push_count,
+          (
+            select count(*)::text
+            from app_private.delivery_digest_item
+            where account_id = $1::uuid
+              and event_category = $2::text
+          ) as digest_count,
+          (
+            select count(*)::text
+            from app_private.delivery_digest_item
+            where account_id = $1::uuid
+              and event_category = $2::text
+              and broadcasted_at is null
+          ) as unbroadcasted_digest_count
+      `,
+      [accountId, eventCategory]
+    );
+
+    return {
+      pushCount: Number(result.rows[0]?.push_count ?? "0"),
+      digestCount: Number(result.rows[0]?.digest_count ?? "0"),
+      unbroadcastedDigestCount: Number(result.rows[0]?.unbroadcasted_digest_count ?? "0")
+    };
+  });
+}
+
 describe("out-of-app delivery integration", () => {
   const originalDatabaseUrl = process.env.DATABASE_URL;
   const originalMailEnabled = process.env.MAIL_DELIVERY_ENABLED;
@@ -116,19 +192,7 @@ describe("out-of-app delivery integration", () => {
 
     await issueNotificationDigestsTask({ nowIso: new Date(stamp + 2 * 24 * 60 * 60 * 1000).toISOString() }, {} as never);
 
-    const beforeDueCount = await withDbClient(async client => {
-      const result = await client.query<{ count: string }>(
-        `
-          select count(*)::text as count
-          from app_private.mail_outbox
-          where account_id = $1::uuid
-            and mail_kind = 'notification_digest'
-        `,
-        [recipient.accountId]
-      );
-
-      return Number(result.rows[0]?.count ?? "0");
-    });
+    const beforeDueCount = await getDigestMailCount(recipient.accountId);
 
     expect(beforeDueCount).toBe(0);
 
@@ -156,6 +220,121 @@ describe("out-of-app delivery integration", () => {
 
     expect(digestMail?.status).toBe("skipped");
     expect(digestMail?.text_body).toContain(`New need ${stamp}`);
+
+    await issueNotificationDigestsTask({ nowIso: new Date(stamp + 6 * 24 * 60 * 60 * 1000).toISOString() }, {} as never);
+
+    const afterBroadcastDigestCount = await getDigestMailCount(recipient.accountId);
+    const postBroadcastDeliveryCounts = await getDeliveryCounts(recipient.accountId, "new_need_added");
+
+    expect(afterBroadcastDigestCount).toBe(1);
+    expect(postBroadcastDeliveryCounts.unbroadcastedDigestCount).toBe(0);
+  });
+
+  it.each([
+    [1, 12 * 60 * 60 * 1000, 2 * 24 * 60 * 60 * 1000],
+    [7, 6 * 24 * 60 * 60 * 1000, 8 * 24 * 60 * 60 * 1000],
+    [30, 29 * 24 * 60 * 60 * 1000, 31 * 24 * 60 * 60 * 1000]
+  ])("respects the %i-day digest cadence window", async (summaryFrequencyDays, beforeOffsetMs, afterOffsetMs) => {
+    const stamp = Date.now();
+    const recipient = await seedDemoAccount({
+      identifier: `digest-${summaryFrequencyDays}day-${stamp}@example.com`,
+      displayName: `Digest ${summaryFrequencyDays}-day Recipient`
+    });
+    await setPreferredLanguage(recipient.accountId, "en");
+
+    await setDeliveryPreference(recipient.accountId, "unread_notifications", "email_summary", summaryFrequencyDays as 1 | 3 | 7 | 30);
+    await dispatchPreferenceManagedEvent(
+      recipient.accountId,
+      "unread_notifications",
+      `Digest notification ${summaryFrequencyDays}-${stamp}`,
+      "A queued unread notification is awaiting the next cadence window.",
+      { stamp, summaryFrequencyDays }
+    );
+
+    await issueNotificationDigestsTask({ nowIso: new Date(stamp + beforeOffsetMs).toISOString() }, {} as never);
+    expect(await getDigestMailCount(recipient.accountId)).toBe(0);
+
+    await issueNotificationDigestsTask({ nowIso: new Date(stamp + afterOffsetMs).toISOString() }, {} as never);
+    expect(await getDigestMailCount(recipient.accountId)).toBe(1);
+  });
+
+  it("routes each managed category to exactly one out-of-app path and suppresses both paths when an account is active", async () => {
+    const stamp = Date.now();
+    const managedCategories = [
+      "new_resource_added",
+      "new_need_added",
+      "unread_notifications",
+      "new_chat_message_received"
+    ] as const;
+
+    const realtimeRecipient = await seedDemoAccount({
+      identifier: `realtime-matrix-${stamp}@example.com`,
+      displayName: "Realtime Matrix Recipient"
+    });
+    await setPreferredLanguage(realtimeRecipient.accountId, "en");
+
+    for (const category of managedCategories) {
+      await setDeliveryPreference(realtimeRecipient.accountId, category, "realtime_push", 1);
+      await dispatchPreferenceManagedEvent(
+        realtimeRecipient.accountId,
+        category,
+        `${category}-push-${stamp}`,
+        `Push body for ${category}`,
+        { stamp, category, strategy: "realtime_push" }
+      );
+
+      const counts = await getDeliveryCounts(realtimeRecipient.accountId, category);
+      expect(counts.pushCount).toBe(1);
+      expect(counts.digestCount).toBe(0);
+    }
+
+    const digestRecipient = await seedDemoAccount({
+      identifier: `digest-matrix-${stamp}@example.com`,
+      displayName: "Digest Matrix Recipient"
+    });
+    await setPreferredLanguage(digestRecipient.accountId, "en");
+
+    for (const category of managedCategories) {
+      await setDeliveryPreference(digestRecipient.accountId, category, "email_summary", 1);
+      await dispatchPreferenceManagedEvent(
+        digestRecipient.accountId,
+        category,
+        `${category}-digest-${stamp}`,
+        `Digest body for ${category}`,
+        { stamp, category, strategy: "email_summary" }
+      );
+
+      const counts = await getDeliveryCounts(digestRecipient.accountId, category);
+      expect(counts.pushCount).toBe(0);
+      expect(counts.digestCount).toBe(1);
+    }
+
+    const activeRecipient = await seedDemoAccount({
+      identifier: `active-gate-${stamp}@example.com`,
+      displayName: "Active Gate Recipient"
+    });
+    await setPreferredLanguage(activeRecipient.accountId, "en");
+    await createActiveSession(activeRecipient.accountId);
+
+    for (const [index, category] of managedCategories.entries()) {
+      await setDeliveryPreference(
+        activeRecipient.accountId,
+        category,
+        index % 2 === 0 ? "realtime_push" : "email_summary",
+        1
+      );
+      await dispatchPreferenceManagedEvent(
+        activeRecipient.accountId,
+        category,
+        `${category}-active-${stamp}`,
+        `Suppressed body for ${category}`,
+        { stamp, category, strategy: index % 2 === 0 ? "realtime_push" : "email_summary" }
+      );
+
+      const counts = await getDeliveryCounts(activeRecipient.accountId, category);
+      expect(counts.pushCount).toBe(0);
+      expect(counts.digestCount).toBe(0);
+    }
   });
 
   it("queues and processes a push notification when a new resource is created for a realtime-push recipient", async () => {
