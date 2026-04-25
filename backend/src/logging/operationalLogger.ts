@@ -202,3 +202,14 @@ export async function logWorkerError(message: string, error: unknown, options?: 
     }
   });
 }
+
+export async function closeOperationalLogPool() {
+  if (!operationalLogPool) {
+    fallbackFileReady = false;
+    return;
+  }
+
+  await operationalLogPool.end();
+  operationalLogPool = null;
+  fallbackFileReady = false;
+}
