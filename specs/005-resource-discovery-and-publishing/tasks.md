@@ -115,9 +115,9 @@
 - [x] T066 Document grants behavior in `spec.md` and `plan.md`: admin-only creation, criteria conjunction, claim route UX, and denial reason categories
 - [x] T067 Implement SQL-owned grant schema and helpers for grant definitions, targeted accounts/emails, campaign-link criterion, max-claim count, expiration datetime, and per-account claim records
 - [x] T068 Implement admin-only API/mutations for creating and managing grants and their criteria
-- [ ] T069 Implement SQL-owned atomic claim function that evaluates all criteria, enforces max-claims/per-account idempotency, issues token award on success, and returns a safe claim outcome code
+- [x] T069 Implement SQL-owned atomic claim function that evaluates all criteria, enforces max-claims/per-account idempotency, issues token award on success, and returns a safe claim outcome code
 - [ ] T070 Implement authenticated grant claim page (`/grants/[id]`) that loads grant title/description and executes claim with success/error messaging
-- [ ] T071 Integrate successful grant claims into token movement ledger with grant linkage for auditability
+- [x] T071 Integrate successful grant claims into token movement ledger with grant linkage for auditability
 - [ ] T072 Add backend tests for eligibility combinations (accounts, emails, future users, campaign criterion, max-claim cap, expiration, already-claimed) and concurrency safety
 - [ ] T073 Add end-to-end verification for grant route behavior and claim outcomes, including user-safe denial messages
 
