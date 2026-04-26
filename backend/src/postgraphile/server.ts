@@ -62,7 +62,14 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Campaign need can only be triaged from pending status", "BAD_USER_INPUT"],
   ["Recipient account not found", "NOT_FOUND"],
   ["Gift amount must be greater than zero", "BAD_USER_INPUT"],
-  ["You cannot gift tokens to your own account", "BAD_USER_INPUT"]
+  ["You cannot gift tokens to your own account", "BAD_USER_INPUT"],
+  ["Only administrators can create or modify grants", "FORBIDDEN"],
+  ["Only administrators can modify grant targets", "FORBIDDEN"],
+  ["Administrator account context is required", "UNAUTHENTICATED"],
+  ["Grant title is required", "BAD_USER_INPUT"],
+  ["Grant awarded token amount must be a positive integer", "BAD_USER_INPUT"],
+  ["Grant max successful claim count must be positive", "BAD_USER_INPUT"],
+  ["Grant not found", "NOT_FOUND"]
 ]);
 const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
   pattern: RegExp;
