@@ -97,6 +97,10 @@ export type Account = Node & {
   createdAt: Scalars['Datetime']['output'];
   displayName: Maybe<Scalars['String']['output']>;
   externalSubject: Scalars['String']['output'];
+  /** Reads and enables pagination through a set of `GrantClaim`. */
+  grantClaimsByAccountId: GrantClaimsConnection;
+  /** Reads and enables pagination through a set of `GrantTargetAccount`. */
+  grantTargetAccountsByAccountId: GrantTargetAccountsConnection;
   id: Scalars['UUID']['output'];
   latitude: Maybe<Scalars['BigFloat']['output']>;
   location: Maybe<Scalars['String']['output']>;
@@ -233,6 +237,28 @@ export type AccountClaimMessagesBySenderAccountIdArgs = {
 };
 
 
+export type AccountGrantClaimsByAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantClaimCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+
+export type AccountGrantTargetAccountsByAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantTargetAccountCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantTargetAccountsOrderBy>>;
+};
+
+
 export type AccountNeedClaimNotificationsByRecipientAccountIdArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -366,6 +392,8 @@ export type AccountTokenMovementsByCounterpartyAccountIdArgs = {
 
 /** A condition to be used against `Account` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type AccountCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `externalSubject` field. */
   externalSubject?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
@@ -493,6 +521,8 @@ export type AccountNotification = Node & {
  * are tested for equality and combined with a logical ‘and.’
  */
 export type AccountNotificationCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `recipientAccountId` field. */
@@ -543,6 +573,8 @@ export type AccountNotificationsEdge = {
 
 /** Methods to use when ordering `AccountNotification`. */
 export enum AccountNotificationsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
@@ -593,6 +625,8 @@ export type AccountsEdge = {
 
 /** Methods to use when ordering `Account`. */
 export enum AccountsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
   ExternalSubjectAsc = 'EXTERNAL_SUBJECT_ASC',
   ExternalSubjectDesc = 'EXTERNAL_SUBJECT_DESC',
   IdAsc = 'ID_ASC',
@@ -638,6 +672,302 @@ export type AddCampaignModerationNotePayloadCampaignModerationNoteEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignModerationNotesOrderBy>>;
 };
 
+/** All input for the `adminListAccounts` mutation. */
+export type AdminListAccountsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListAccounts` mutation. */
+export type AdminListAccountsPayload = {
+  __typename: 'AdminListAccountsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListAccountsRecord>>>;
+};
+
+/** The return type of our `adminListAccounts` mutation. */
+export type AdminListAccountsRecord = {
+  __typename: 'AdminListAccountsRecord';
+  address: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  email: Maybe<Scalars['String']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  language: Maybe<Scalars['String']['output']>;
+  name: Maybe<Scalars['String']['output']>;
+  tokenAmount: Maybe<Scalars['Int']['output']>;
+};
+
+/** All input for the `adminListBids` mutation. */
+export type AdminListBidsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListBids` mutation. */
+export type AdminListBidsPayload = {
+  __typename: 'AdminListBidsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListBidsRecord>>>;
+};
+
+/** The return type of our `adminListBids` mutation. */
+export type AdminListBidsRecord = {
+  __typename: 'AdminListBidsRecord';
+  bidderName: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  expirationDatetime: Maybe<Scalars['Datetime']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  intensity: Maybe<NeedIntensity>;
+  receiverName: Maybe<Scalars['String']['output']>;
+  resourceTitle: Maybe<Scalars['String']['output']>;
+  status: Maybe<ResourceBidStatus>;
+  tokenAmount: Maybe<Scalars['Int']['output']>;
+};
+
+/** All input for the `adminListCampaigns` mutation. */
+export type AdminListCampaignsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListCampaigns` mutation. */
+export type AdminListCampaignsPayload = {
+  __typename: 'AdminListCampaignsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListCampaignsRecord>>>;
+};
+
+/** The return type of our `adminListCampaigns` mutation. */
+export type AdminListCampaignsRecord = {
+  __typename: 'AdminListCampaignsRecord';
+  airdropDatetime: Maybe<Scalars['Datetime']['output']>;
+  airdropTokenAmount: Maybe<Scalars['Int']['output']>;
+  beginDatetime: Maybe<Scalars['Datetime']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  creatorName: Maybe<Scalars['String']['output']>;
+  description: Maybe<Scalars['String']['output']>;
+  endDatetime: Maybe<Scalars['Datetime']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  resourceRewardsMultiplier: Maybe<Scalars['Int']['output']>;
+  summary: Maybe<Scalars['String']['output']>;
+};
+
+/** All input for the `adminListGrants` mutation. */
+export type AdminListGrantsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListGrants` mutation. */
+export type AdminListGrantsPayload = {
+  __typename: 'AdminListGrantsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListGrantsRecord>>>;
+};
+
+/** The return type of our `adminListGrants` mutation. */
+export type AdminListGrantsRecord = {
+  __typename: 'AdminListGrantsRecord';
+  amountGranted: Maybe<Scalars['Int']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  description: Maybe<Scalars['String']['output']>;
+  expirationDatetime: Maybe<Scalars['Datetime']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  title: Maybe<Scalars['String']['output']>;
+};
+
+/** All input for the `adminListLogs` mutation. */
+export type AdminListLogsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListLogs` mutation. */
+export type AdminListLogsPayload = {
+  __typename: 'AdminListLogsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListLogsRecord>>>;
+};
+
+/** The return type of our `adminListLogs` mutation. */
+export type AdminListLogsRecord = {
+  __typename: 'AdminListLogsRecord';
+  component: Maybe<Scalars['String']['output']>;
+  context: Maybe<Scalars['String']['output']>;
+  message: Maybe<Scalars['String']['output']>;
+  severity: Maybe<Scalars['String']['output']>;
+  timestamp: Maybe<Scalars['Datetime']['output']>;
+};
+
+/** All input for the `adminListMails` mutation. */
+export type AdminListMailsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListMails` mutation. */
+export type AdminListMailsPayload = {
+  __typename: 'AdminListMailsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListMailsRecord>>>;
+};
+
+/** The return type of our `adminListMails` mutation. */
+export type AdminListMailsRecord = {
+  __typename: 'AdminListMailsRecord';
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  email: Maybe<Scalars['String']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  recipientAccountName: Maybe<Scalars['String']['output']>;
+  subject: Maybe<Scalars['String']['output']>;
+};
+
+/** All input for the `adminListNotifications` mutation. */
+export type AdminListNotificationsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListNotifications` mutation. */
+export type AdminListNotificationsPayload = {
+  __typename: 'AdminListNotificationsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListNotificationsRecord>>>;
+};
+
+/** The return type of our `adminListNotifications` mutation. */
+export type AdminListNotificationsRecord = {
+  __typename: 'AdminListNotificationsRecord';
+  accountName: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  data: Maybe<Scalars['JSON']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  readAt: Maybe<Scalars['Datetime']['output']>;
+};
+
+/** All input for the `adminListResources` mutation. */
+export type AdminListResourcesInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `adminListResources` mutation. */
+export type AdminListResourcesPayload = {
+  __typename: 'AdminListResourcesPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  results: Maybe<Array<Maybe<AdminListResourcesRecord>>>;
+};
+
+/** The return type of our `adminListResources` mutation. */
+export type AdminListResourcesRecord = {
+  __typename: 'AdminListResourcesRecord';
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  creatorName: Maybe<Scalars['String']['output']>;
+  expirationDatetime: Maybe<Scalars['Datetime']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  imageCount: Maybe<Scalars['Int']['output']>;
+  intensity: Maybe<NeedIntensity>;
+  location: Maybe<Scalars['String']['output']>;
+  title: Maybe<Scalars['String']['output']>;
+  tokenAmount: Maybe<Scalars['Int']['output']>;
+};
+
 /** All input for the `approveCampaign` mutation. */
 export type ApproveCampaignInput = {
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
@@ -669,6 +999,37 @@ export type ApproveCampaignPayload = {
 /** The output of our `approveCampaign` mutation. */
 export type ApproveCampaignPayloadCampaignEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignsOrderBy>>;
+};
+
+/** All input for the `archiveGrant` mutation. */
+export type ArchiveGrantInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pGrantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `archiveGrant` mutation. */
+export type ArchiveGrantPayload = {
+  __typename: 'ArchiveGrantPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  grantDefinition: Maybe<GrantDefinition>;
+  /** An edge for our `GrantDefinition`. May be used by Relay 1. */
+  grantDefinitionEdge: Maybe<GrantDefinitionsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `archiveGrant` mutation. */
+export type ArchiveGrantPayloadGrantDefinitionEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
 };
 
 export type AuthChangePasswordInput = {
@@ -1244,6 +1605,29 @@ export enum ClaimConversationsOrderBy {
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
 }
 
+/** All input for the `claimGrant` mutation. */
+export type ClaimGrantInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pGrantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `claimGrant` mutation. */
+export type ClaimGrantPayload = {
+  __typename: 'ClaimGrantPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  grantClaimResult: Maybe<GrantClaimResult>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** Participant messages inside a claim conversation. */
 export type ClaimMessage = Node & {
   __typename: 'ClaimMessage';
@@ -1454,6 +1838,29 @@ export type ClaimNeedPayload = {
 /** The output of our `claimNeed` mutation. */
 export type ClaimNeedPayloadNeedClaimEdgeArgs = {
   orderBy?: InputMaybe<Array<NeedClaimsOrderBy>>;
+};
+
+/** All input for the `cleanupOperationalLogs` mutation. */
+export type CleanupOperationalLogsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pNow?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** The output of our `cleanupOperationalLogs` mutation. */
+export type CleanupOperationalLogsPayload = {
+  __typename: 'CleanupOperationalLogsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  integer: Maybe<Scalars['Int']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
 };
 
 /** All input for the `cleanupReadNotifications` mutation. */
@@ -1920,6 +2327,148 @@ export type CreateClaimMessagePayloadClaimMessageEdgeArgs = {
   orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
 };
 
+/** All input for the create `GrantClaim` mutation. */
+export type CreateGrantClaimInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `GrantClaim` to be created by this mutation. */
+  grantClaim: GrantClaimInput;
+};
+
+/** The output of our create `GrantClaim` mutation. */
+export type CreateGrantClaimPayload = {
+  __typename: 'CreateGrantClaimPayload';
+  /** Reads a single `Account` that is related to this `GrantClaim`. */
+  accountByAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** The `GrantClaim` that was created by this mutation. */
+  grantClaim: Maybe<GrantClaim>;
+  /** An edge for our `GrantClaim`. May be used by Relay 1. */
+  grantClaimEdge: Maybe<GrantClaimsEdge>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantClaim`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `GrantClaim` mutation. */
+export type CreateGrantClaimPayloadGrantClaimEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+/** All input for the create `GrantDefinition` mutation. */
+export type CreateGrantDefinitionInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `GrantDefinition` to be created by this mutation. */
+  grantDefinition: GrantDefinitionInput;
+};
+
+/** The output of our create `GrantDefinition` mutation. */
+export type CreateGrantDefinitionPayload = {
+  __typename: 'CreateGrantDefinitionPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** The `GrantDefinition` that was created by this mutation. */
+  grantDefinition: Maybe<GrantDefinition>;
+  /** An edge for our `GrantDefinition`. May be used by Relay 1. */
+  grantDefinitionEdge: Maybe<GrantDefinitionsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `GrantDefinition` mutation. */
+export type CreateGrantDefinitionPayloadGrantDefinitionEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
+};
+
+/** All input for the create `GrantTargetAccount` mutation. */
+export type CreateGrantTargetAccountInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `GrantTargetAccount` to be created by this mutation. */
+  grantTargetAccount: GrantTargetAccountInput;
+};
+
+/** The output of our create `GrantTargetAccount` mutation. */
+export type CreateGrantTargetAccountPayload = {
+  __typename: 'CreateGrantTargetAccountPayload';
+  /** Reads a single `Account` that is related to this `GrantTargetAccount`. */
+  accountByAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** The `GrantTargetAccount` that was created by this mutation. */
+  grantTargetAccount: Maybe<GrantTargetAccount>;
+  /** An edge for our `GrantTargetAccount`. May be used by Relay 1. */
+  grantTargetAccountEdge: Maybe<GrantTargetAccountsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `GrantTargetAccount` mutation. */
+export type CreateGrantTargetAccountPayloadGrantTargetAccountEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantTargetAccountsOrderBy>>;
+};
+
+/** All input for the create `GrantTargetEmail` mutation. */
+export type CreateGrantTargetEmailInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `GrantTargetEmail` to be created by this mutation. */
+  grantTargetEmail: GrantTargetEmailInput;
+};
+
+/** The output of our create `GrantTargetEmail` mutation. */
+export type CreateGrantTargetEmailPayload = {
+  __typename: 'CreateGrantTargetEmailPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** The `GrantTargetEmail` that was created by this mutation. */
+  grantTargetEmail: Maybe<GrantTargetEmail>;
+  /** An edge for our `GrantTargetEmail`. May be used by Relay 1. */
+  grantTargetEmailEdge: Maybe<GrantTargetEmailsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `GrantTargetEmail` mutation. */
+export type CreateGrantTargetEmailPayloadGrantTargetEmailEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantTargetEmailsOrderBy>>;
+};
+
 /** All input for the create `NeedClaim` mutation. */
 export type CreateNeedClaimInput = {
   /**
@@ -2297,6 +2846,39 @@ export type CreateResourcePayload = {
 /** The output of our create `Resource` mutation. */
 export type CreateResourcePayloadResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourcesOrderBy>>;
+};
+
+/** All input for the create `SystemSetting` mutation. */
+export type CreateSystemSettingInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `SystemSetting` to be created by this mutation. */
+  systemSetting: SystemSettingInput;
+};
+
+/** The output of our create `SystemSetting` mutation. */
+export type CreateSystemSettingPayload = {
+  __typename: 'CreateSystemSettingPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** The `SystemSetting` that was created by this mutation. */
+  systemSetting: Maybe<SystemSetting>;
+  /** An edge for our `SystemSetting`. May be used by Relay 1. */
+  systemSettingEdge: Maybe<SystemSettingsEdge>;
+};
+
+
+/** The output of our create `SystemSetting` mutation. */
+export type CreateSystemSettingPayloadSystemSettingEdgeArgs = {
+  orderBy?: InputMaybe<Array<SystemSettingsOrderBy>>;
 };
 
 /** All input for the create `TokenMovement` mutation. */
@@ -2836,6 +3418,205 @@ export type DeleteClaimMessagePayloadClaimMessageEdgeArgs = {
   orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
 };
 
+/** All input for the `deleteGrantClaimByGrantIdAndAccountId` mutation. */
+export type DeleteGrantClaimByGrantIdAndAccountIdInput = {
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  grantId: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteGrantClaimById` mutation. */
+export type DeleteGrantClaimByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteGrantClaim` mutation. */
+export type DeleteGrantClaimInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `GrantClaim` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `GrantClaim` mutation. */
+export type DeleteGrantClaimPayload = {
+  __typename: 'DeleteGrantClaimPayload';
+  /** Reads a single `Account` that is related to this `GrantClaim`. */
+  accountByAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedGrantClaimId: Maybe<Scalars['ID']['output']>;
+  /** The `GrantClaim` that was deleted by this mutation. */
+  grantClaim: Maybe<GrantClaim>;
+  /** An edge for our `GrantClaim`. May be used by Relay 1. */
+  grantClaimEdge: Maybe<GrantClaimsEdge>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantClaim`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `GrantClaim` mutation. */
+export type DeleteGrantClaimPayloadGrantClaimEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+/** All input for the `deleteGrantDefinitionById` mutation. */
+export type DeleteGrantDefinitionByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteGrantDefinition` mutation. */
+export type DeleteGrantDefinitionInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `GrantDefinition` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `GrantDefinition` mutation. */
+export type DeleteGrantDefinitionPayload = {
+  __typename: 'DeleteGrantDefinitionPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedGrantDefinitionId: Maybe<Scalars['ID']['output']>;
+  /** The `GrantDefinition` that was deleted by this mutation. */
+  grantDefinition: Maybe<GrantDefinition>;
+  /** An edge for our `GrantDefinition`. May be used by Relay 1. */
+  grantDefinitionEdge: Maybe<GrantDefinitionsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `GrantDefinition` mutation. */
+export type DeleteGrantDefinitionPayloadGrantDefinitionEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
+};
+
+/** All input for the `deleteGrantTargetAccountByGrantIdAndAccountId` mutation. */
+export type DeleteGrantTargetAccountByGrantIdAndAccountIdInput = {
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  grantId: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteGrantTargetAccount` mutation. */
+export type DeleteGrantTargetAccountInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `GrantTargetAccount` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `GrantTargetAccount` mutation. */
+export type DeleteGrantTargetAccountPayload = {
+  __typename: 'DeleteGrantTargetAccountPayload';
+  /** Reads a single `Account` that is related to this `GrantTargetAccount`. */
+  accountByAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedGrantTargetAccountId: Maybe<Scalars['ID']['output']>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** The `GrantTargetAccount` that was deleted by this mutation. */
+  grantTargetAccount: Maybe<GrantTargetAccount>;
+  /** An edge for our `GrantTargetAccount`. May be used by Relay 1. */
+  grantTargetAccountEdge: Maybe<GrantTargetAccountsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `GrantTargetAccount` mutation. */
+export type DeleteGrantTargetAccountPayloadGrantTargetAccountEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantTargetAccountsOrderBy>>;
+};
+
+/** All input for the `deleteGrantTargetEmailByGrantIdAndTargetEmailNormalized` mutation. */
+export type DeleteGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  grantId: Scalars['UUID']['input'];
+  targetEmailNormalized: Scalars['String']['input'];
+};
+
+/** All input for the `deleteGrantTargetEmail` mutation. */
+export type DeleteGrantTargetEmailInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `GrantTargetEmail` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `GrantTargetEmail` mutation. */
+export type DeleteGrantTargetEmailPayload = {
+  __typename: 'DeleteGrantTargetEmailPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedGrantTargetEmailId: Maybe<Scalars['ID']['output']>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** The `GrantTargetEmail` that was deleted by this mutation. */
+  grantTargetEmail: Maybe<GrantTargetEmail>;
+  /** An edge for our `GrantTargetEmail`. May be used by Relay 1. */
+  grantTargetEmailEdge: Maybe<GrantTargetEmailsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `GrantTargetEmail` mutation. */
+export type DeleteGrantTargetEmailPayloadGrantTargetEmailEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantTargetEmailsOrderBy>>;
+};
+
 /** All input for the `deleteNeedById` mutation. */
 export type DeleteNeedByIdInput = {
   /**
@@ -3355,6 +4136,50 @@ export type DeleteResourcePayloadResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourcesOrderBy>>;
 };
 
+/** All input for the `deleteSystemSettingByKey` mutation. */
+export type DeleteSystemSettingByKeyInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  key: Scalars['String']['input'];
+};
+
+/** All input for the `deleteSystemSetting` mutation. */
+export type DeleteSystemSettingInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `SystemSetting` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `SystemSetting` mutation. */
+export type DeleteSystemSettingPayload = {
+  __typename: 'DeleteSystemSettingPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedSystemSettingId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** The `SystemSetting` that was deleted by this mutation. */
+  systemSetting: Maybe<SystemSetting>;
+  /** An edge for our `SystemSetting`. May be used by Relay 1. */
+  systemSettingEdge: Maybe<SystemSettingsEdge>;
+};
+
+
+/** The output of our delete `SystemSetting` mutation. */
+export type DeleteSystemSettingPayloadSystemSettingEdgeArgs = {
+  orderBy?: InputMaybe<Array<SystemSettingsOrderBy>>;
+};
+
 /** All input for the `deleteTokenMovementById` mutation. */
 export type DeleteTokenMovementByIdInput = {
   /**
@@ -3443,6 +4268,38 @@ export type GetAccountDeliveryPreferencesRecord = {
   summaryFrequencyDays: Maybe<Scalars['Int']['output']>;
 };
 
+/** A connection to a list of `GetGrantForClaimRecord` values. */
+export type GetGrantForClaimConnection = {
+  __typename: 'GetGrantForClaimConnection';
+  /** A list of edges which contains the `GetGrantForClaimRecord` and cursor to aid in pagination. */
+  edges: Array<GetGrantForClaimEdge>;
+  /** A list of `GetGrantForClaimRecord` objects. */
+  nodes: Array<GetGrantForClaimRecord>;
+  /** The count of *all* `GetGrantForClaimRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `GetGrantForClaimRecord` edge in the connection. */
+export type GetGrantForClaimEdge = {
+  __typename: 'GetGrantForClaimEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `GetGrantForClaimRecord` at the end of the edge. */
+  node: GetGrantForClaimRecord;
+};
+
+/** The return type of our `getGrantForClaim` query. */
+export type GetGrantForClaimRecord = {
+  __typename: 'GetGrantForClaimRecord';
+  awardedTokenAmount: Maybe<Scalars['Int']['output']>;
+  description: Maybe<Scalars['String']['output']>;
+  expiresAt: Maybe<Scalars['Datetime']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  linkedCampaignId: Maybe<Scalars['UUID']['output']>;
+  maxSuccessfulClaimCount: Maybe<Scalars['Int']['output']>;
+  title: Maybe<Scalars['String']['output']>;
+};
+
 /** All input for the `giftTokens` mutation. */
 export type GiftTokensInput = {
   amount?: InputMaybe<Scalars['Int']['input']>;
@@ -3479,6 +4336,381 @@ export type GiftTokensPayload = {
 export type GiftTokensPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
 };
+
+/** Per-account successful claim records for grants, enforcing one successful award per grant/account. */
+export type GrantClaim = Node & {
+  __typename: 'GrantClaim';
+  /** Reads a single `Account` that is related to this `GrantClaim`. */
+  accountByAccountId: Maybe<Account>;
+  accountId: Scalars['UUID']['output'];
+  awardedAt: Scalars['Datetime']['output'];
+  awardedTokenAmount: Scalars['Int']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  /** Reads a single `GrantDefinition` that is related to this `GrantClaim`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  grantId: Scalars['UUID']['output'];
+  id: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  tokenMovementId: Maybe<Scalars['UUID']['output']>;
+};
+
+/**
+ * A condition to be used against `GrantClaim` object types. All fields are tested
+ * for equality and combined with a logical ‘and.’
+ */
+export type GrantClaimCondition = {
+  /** Checks for equality with the object’s `accountId` field. */
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `grantId` field. */
+  grantId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `GrantClaim` */
+export type GrantClaimInput = {
+  accountId: Scalars['UUID']['input'];
+  awardedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  awardedTokenAmount: Scalars['Int']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  grantId: Scalars['UUID']['input'];
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  tokenMovementId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** Represents an update to a `GrantClaim`. Fields that are set will be updated. */
+export type GrantClaimPatch = {
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  awardedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  awardedTokenAmount?: InputMaybe<Scalars['Int']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  grantId?: InputMaybe<Scalars['UUID']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  tokenMovementId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** Result of an atomic grant claim attempt: outcome_code plus awarded amount and claim id on success. */
+export type GrantClaimResult = {
+  __typename: 'GrantClaimResult';
+  claimedAmount: Maybe<Scalars['Int']['output']>;
+  grantClaimId: Maybe<Scalars['UUID']['output']>;
+  outcomeCode: Maybe<Scalars['String']['output']>;
+};
+
+/** A connection to a list of `GrantClaim` values. */
+export type GrantClaimsConnection = {
+  __typename: 'GrantClaimsConnection';
+  /** A list of edges which contains the `GrantClaim` and cursor to aid in pagination. */
+  edges: Array<GrantClaimsEdge>;
+  /** A list of `GrantClaim` objects. */
+  nodes: Array<GrantClaim>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `GrantClaim` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `GrantClaim` edge in the connection. */
+export type GrantClaimsEdge = {
+  __typename: 'GrantClaimsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `GrantClaim` at the end of the edge. */
+  node: GrantClaim;
+};
+
+/** Methods to use when ordering `GrantClaim`. */
+export enum GrantClaimsOrderBy {
+  AccountIdAsc = 'ACCOUNT_ID_ASC',
+  AccountIdDesc = 'ACCOUNT_ID_DESC',
+  GrantIdAsc = 'GRANT_ID_ASC',
+  GrantIdDesc = 'GRANT_ID_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/** Administrator-defined token seeding grants with optional targeting and campaign criteria. */
+export type GrantDefinition = Node & {
+  __typename: 'GrantDefinition';
+  archivedAt: Maybe<Scalars['Datetime']['output']>;
+  awardedTokenAmount: Scalars['Int']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  createdByAccountId: Scalars['UUID']['output'];
+  description: Scalars['String']['output'];
+  expiresAt: Maybe<Scalars['Datetime']['output']>;
+  /** Reads and enables pagination through a set of `GrantClaim`. */
+  grantClaimsByGrantId: GrantClaimsConnection;
+  /** Reads and enables pagination through a set of `GrantTargetAccount`. */
+  grantTargetAccountsByGrantId: GrantTargetAccountsConnection;
+  /** Reads and enables pagination through a set of `GrantTargetEmail`. */
+  grantTargetEmailsByGrantId: GrantTargetEmailsConnection;
+  id: Scalars['UUID']['output'];
+  linkedCampaignId: Maybe<Scalars['UUID']['output']>;
+  maxSuccessfulClaimCount: Maybe<Scalars['Int']['output']>;
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['Datetime']['output'];
+};
+
+
+/** Administrator-defined token seeding grants with optional targeting and campaign criteria. */
+export type GrantDefinitionGrantClaimsByGrantIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantClaimCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+
+/** Administrator-defined token seeding grants with optional targeting and campaign criteria. */
+export type GrantDefinitionGrantTargetAccountsByGrantIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantTargetAccountCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantTargetAccountsOrderBy>>;
+};
+
+
+/** Administrator-defined token seeding grants with optional targeting and campaign criteria. */
+export type GrantDefinitionGrantTargetEmailsByGrantIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantTargetEmailCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantTargetEmailsOrderBy>>;
+};
+
+/**
+ * A condition to be used against `GrantDefinition` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type GrantDefinitionCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `GrantDefinition` */
+export type GrantDefinitionInput = {
+  archivedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  awardedTokenAmount: Scalars['Int']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdByAccountId: Scalars['UUID']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  expiresAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  linkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  maxSuccessfulClaimCount?: InputMaybe<Scalars['Int']['input']>;
+  title: Scalars['String']['input'];
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** Represents an update to a `GrantDefinition`. Fields that are set will be updated. */
+export type GrantDefinitionPatch = {
+  archivedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  awardedTokenAmount?: InputMaybe<Scalars['Int']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdByAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  expiresAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  linkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  maxSuccessfulClaimCount?: InputMaybe<Scalars['Int']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** A connection to a list of `GrantDefinition` values. */
+export type GrantDefinitionsConnection = {
+  __typename: 'GrantDefinitionsConnection';
+  /** A list of edges which contains the `GrantDefinition` and cursor to aid in pagination. */
+  edges: Array<GrantDefinitionsEdge>;
+  /** A list of `GrantDefinition` objects. */
+  nodes: Array<GrantDefinition>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `GrantDefinition` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `GrantDefinition` edge in the connection. */
+export type GrantDefinitionsEdge = {
+  __typename: 'GrantDefinitionsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `GrantDefinition` at the end of the edge. */
+  node: GrantDefinition;
+};
+
+/** Methods to use when ordering `GrantDefinition`. */
+export enum GrantDefinitionsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/** Per-grant account-id targeting criteria. Empty set means no account-id restriction. */
+export type GrantTargetAccount = Node & {
+  __typename: 'GrantTargetAccount';
+  /** Reads a single `Account` that is related to this `GrantTargetAccount`. */
+  accountByAccountId: Maybe<Account>;
+  accountId: Scalars['UUID']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  grantId: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+};
+
+/**
+ * A condition to be used against `GrantTargetAccount` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type GrantTargetAccountCondition = {
+  /** Checks for equality with the object’s `accountId` field. */
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `grantId` field. */
+  grantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `GrantTargetAccount` */
+export type GrantTargetAccountInput = {
+  accountId: Scalars['UUID']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  grantId: Scalars['UUID']['input'];
+};
+
+/** Represents an update to a `GrantTargetAccount`. Fields that are set will be updated. */
+export type GrantTargetAccountPatch = {
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  grantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** A connection to a list of `GrantTargetAccount` values. */
+export type GrantTargetAccountsConnection = {
+  __typename: 'GrantTargetAccountsConnection';
+  /** A list of edges which contains the `GrantTargetAccount` and cursor to aid in pagination. */
+  edges: Array<GrantTargetAccountsEdge>;
+  /** A list of `GrantTargetAccount` objects. */
+  nodes: Array<GrantTargetAccount>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `GrantTargetAccount` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `GrantTargetAccount` edge in the connection. */
+export type GrantTargetAccountsEdge = {
+  __typename: 'GrantTargetAccountsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `GrantTargetAccount` at the end of the edge. */
+  node: GrantTargetAccount;
+};
+
+/** Methods to use when ordering `GrantTargetAccount`. */
+export enum GrantTargetAccountsOrderBy {
+  AccountIdAsc = 'ACCOUNT_ID_ASC',
+  AccountIdDesc = 'ACCOUNT_ID_DESC',
+  GrantIdAsc = 'GRANT_ID_ASC',
+  GrantIdDesc = 'GRANT_ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/** Per-grant email targeting criteria using canonical lower-trimmed email values. */
+export type GrantTargetEmail = Node & {
+  __typename: 'GrantTargetEmail';
+  createdAt: Scalars['Datetime']['output'];
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  grantId: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  targetEmail: Scalars['String']['output'];
+  targetEmailNormalized: Scalars['String']['output'];
+};
+
+/**
+ * A condition to be used against `GrantTargetEmail` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type GrantTargetEmailCondition = {
+  /** Checks for equality with the object’s `grantId` field. */
+  grantId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `targetEmailNormalized` field. */
+  targetEmailNormalized?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** An input for mutations affecting `GrantTargetEmail` */
+export type GrantTargetEmailInput = {
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  grantId: Scalars['UUID']['input'];
+  targetEmail: Scalars['String']['input'];
+  targetEmailNormalized: Scalars['String']['input'];
+};
+
+/** Represents an update to a `GrantTargetEmail`. Fields that are set will be updated. */
+export type GrantTargetEmailPatch = {
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  grantId?: InputMaybe<Scalars['UUID']['input']>;
+  targetEmail?: InputMaybe<Scalars['String']['input']>;
+  targetEmailNormalized?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** A connection to a list of `GrantTargetEmail` values. */
+export type GrantTargetEmailsConnection = {
+  __typename: 'GrantTargetEmailsConnection';
+  /** A list of edges which contains the `GrantTargetEmail` and cursor to aid in pagination. */
+  edges: Array<GrantTargetEmailsEdge>;
+  /** A list of `GrantTargetEmail` objects. */
+  nodes: Array<GrantTargetEmail>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `GrantTargetEmail` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `GrantTargetEmail` edge in the connection. */
+export type GrantTargetEmailsEdge = {
+  __typename: 'GrantTargetEmailsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `GrantTargetEmail` at the end of the edge. */
+  node: GrantTargetEmail;
+};
+
+/** Methods to use when ordering `GrantTargetEmail`. */
+export enum GrantTargetEmailsOrderBy {
+  GrantIdAsc = 'GRANT_ID_ASC',
+  GrantIdDesc = 'GRANT_ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  TargetEmailNormalizedAsc = 'TARGET_EMAIL_NORMALIZED_ASC',
+  TargetEmailNormalizedDesc = 'TARGET_EMAIL_NORMALIZED_DESC'
+}
 
 /** All input for the `linkAccountExternalIdentity` mutation. */
 export type LinkAccountExternalIdentityInput = {
@@ -3690,11 +4922,29 @@ export type Mutation = {
   __typename: 'Mutation';
   acceptCampaignNeed: Maybe<AcceptCampaignNeedPayload>;
   addCampaignModerationNote: Maybe<AddCampaignModerationNotePayload>;
+  adminListAccounts: Maybe<AdminListAccountsPayload>;
+  adminListBids: Maybe<AdminListBidsPayload>;
+  adminListCampaigns: Maybe<AdminListCampaignsPayload>;
+  adminListGrants: Maybe<AdminListGrantsPayload>;
+  adminListLogs: Maybe<AdminListLogsPayload>;
+  adminListMails: Maybe<AdminListMailsPayload>;
+  adminListNotifications: Maybe<AdminListNotificationsPayload>;
+  adminListResources: Maybe<AdminListResourcesPayload>;
   approveCampaign: Maybe<ApproveCampaignPayload>;
+  /** Archives a grant definition so it no longer appears in the claim flow. Admin only. */
+  archiveGrant: Maybe<ArchiveGrantPayload>;
   authChangePassword: Maybe<AuthChangePasswordPayload>;
   authLogin: Maybe<AuthLoginPayload>;
   authLogout: Maybe<AuthLogoutPayload>;
+  /**
+   * Atomically evaluates all grant criteria for the authenticated account and, if satisfied,
+   * issues a token award and returns outcome_code = 'success'. On failure returns a safe denial
+   * reason code: not_authenticated | grant_unavailable | expired | already_claimed | cap_reached |
+   * not_targeted | campaign_criterion_not_satisfied.
+   */
+  claimGrant: Maybe<ClaimGrantPayload>;
   claimNeed: Maybe<ClaimNeedPayload>;
+  cleanupOperationalLogs: Maybe<CleanupOperationalLogsPayload>;
   cleanupReadNotifications: Maybe<CleanupReadNotificationsPayload>;
   confirmEmailVerification: Maybe<ConfirmEmailVerificationPayload>;
   confirmPasswordReset: Maybe<ConfirmPasswordResetPayload>;
@@ -3718,6 +4968,14 @@ export type Mutation = {
   createClaimMessage: Maybe<CreateClaimMessagePayload>;
   /** Creates a single `ClaimMessageImage`. */
   createClaimMessageImage: Maybe<CreateClaimMessageImagePayload>;
+  /** Creates a single `GrantClaim`. */
+  createGrantClaim: Maybe<CreateGrantClaimPayload>;
+  /** Creates a single `GrantDefinition`. */
+  createGrantDefinition: Maybe<CreateGrantDefinitionPayload>;
+  /** Creates a single `GrantTargetAccount`. */
+  createGrantTargetAccount: Maybe<CreateGrantTargetAccountPayload>;
+  /** Creates a single `GrantTargetEmail`. */
+  createGrantTargetEmail: Maybe<CreateGrantTargetEmailPayload>;
   createNeed: Maybe<CreateNeedPayload>;
   /** Creates a single `NeedClaim`. */
   createNeedClaim: Maybe<CreateNeedClaimPayload>;
@@ -3737,6 +4995,8 @@ export type Mutation = {
   createResourceCategory: Maybe<CreateResourceCategoryPayload>;
   /** Creates a single `ResourceCategoryAssignment`. */
   createResourceCategoryAssignment: Maybe<CreateResourceCategoryAssignmentPayload>;
+  /** Creates a single `SystemSetting`. */
+  createSystemSetting: Maybe<CreateSystemSettingPayload>;
   /** Creates a single `TokenMovement`. */
   createTokenMovement: Maybe<CreateTokenMovementPayload>;
   /** Deletes a single `Account` using its globally unique id. */
@@ -3783,6 +5043,24 @@ export type Mutation = {
   deleteClaimMessageImage: Maybe<DeleteClaimMessageImagePayload>;
   /** Deletes a single `ClaimMessageImage` using a unique key. */
   deleteClaimMessageImageById: Maybe<DeleteClaimMessageImagePayload>;
+  /** Deletes a single `GrantClaim` using its globally unique id. */
+  deleteGrantClaim: Maybe<DeleteGrantClaimPayload>;
+  /** Deletes a single `GrantClaim` using a unique key. */
+  deleteGrantClaimByGrantIdAndAccountId: Maybe<DeleteGrantClaimPayload>;
+  /** Deletes a single `GrantClaim` using a unique key. */
+  deleteGrantClaimById: Maybe<DeleteGrantClaimPayload>;
+  /** Deletes a single `GrantDefinition` using its globally unique id. */
+  deleteGrantDefinition: Maybe<DeleteGrantDefinitionPayload>;
+  /** Deletes a single `GrantDefinition` using a unique key. */
+  deleteGrantDefinitionById: Maybe<DeleteGrantDefinitionPayload>;
+  /** Deletes a single `GrantTargetAccount` using its globally unique id. */
+  deleteGrantTargetAccount: Maybe<DeleteGrantTargetAccountPayload>;
+  /** Deletes a single `GrantTargetAccount` using a unique key. */
+  deleteGrantTargetAccountByGrantIdAndAccountId: Maybe<DeleteGrantTargetAccountPayload>;
+  /** Deletes a single `GrantTargetEmail` using its globally unique id. */
+  deleteGrantTargetEmail: Maybe<DeleteGrantTargetEmailPayload>;
+  /** Deletes a single `GrantTargetEmail` using a unique key. */
+  deleteGrantTargetEmailByGrantIdAndTargetEmailNormalized: Maybe<DeleteGrantTargetEmailPayload>;
   /** Deletes a single `Need` using its globally unique id. */
   deleteNeed: Maybe<DeleteNeedPayload>;
   /** Deletes a single `Need` using a unique key. */
@@ -3831,6 +5109,10 @@ export type Mutation = {
   deleteResourceCategoryByCode: Maybe<DeleteResourceCategoryPayload>;
   /** Deletes a single `ResourceCategory` using a unique key. */
   deleteResourceCategoryBySlug: Maybe<DeleteResourceCategoryPayload>;
+  /** Deletes a single `SystemSetting` using its globally unique id. */
+  deleteSystemSetting: Maybe<DeleteSystemSettingPayload>;
+  /** Deletes a single `SystemSetting` using a unique key. */
+  deleteSystemSettingByKey: Maybe<DeleteSystemSettingPayload>;
   /** Deletes a single `TokenMovement` using its globally unique id. */
   deleteTokenMovement: Maybe<DeleteTokenMovementPayload>;
   /** Deletes a single `TokenMovement` using a unique key. */
@@ -3855,6 +5137,10 @@ export type Mutation = {
   searchOperationalLogs: Maybe<SearchOperationalLogsPayload>;
   sendClaimMessage: Maybe<SendClaimMessagePayload>;
   setAccountDeliveryPreference: Maybe<SetAccountDeliveryPreferencePayload>;
+  /** Replaces the full set of account-id targeting criteria for a grant. Admin only. */
+  setGrantTargetAccounts: Maybe<SetGrantTargetAccountsPayload>;
+  /** Replaces the full set of email targeting criteria for a grant using normalized matching. Admin only. */
+  setGrantTargetEmails: Maybe<SetGrantTargetEmailsPayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
@@ -3901,6 +5187,24 @@ export type Mutation = {
   updateClaimMessageImage: Maybe<UpdateClaimMessageImagePayload>;
   /** Updates a single `ClaimMessageImage` using a unique key and a patch. */
   updateClaimMessageImageById: Maybe<UpdateClaimMessageImagePayload>;
+  /** Updates a single `GrantClaim` using its globally unique id and a patch. */
+  updateGrantClaim: Maybe<UpdateGrantClaimPayload>;
+  /** Updates a single `GrantClaim` using a unique key and a patch. */
+  updateGrantClaimByGrantIdAndAccountId: Maybe<UpdateGrantClaimPayload>;
+  /** Updates a single `GrantClaim` using a unique key and a patch. */
+  updateGrantClaimById: Maybe<UpdateGrantClaimPayload>;
+  /** Updates a single `GrantDefinition` using its globally unique id and a patch. */
+  updateGrantDefinition: Maybe<UpdateGrantDefinitionPayload>;
+  /** Updates a single `GrantDefinition` using a unique key and a patch. */
+  updateGrantDefinitionById: Maybe<UpdateGrantDefinitionPayload>;
+  /** Updates a single `GrantTargetAccount` using its globally unique id and a patch. */
+  updateGrantTargetAccount: Maybe<UpdateGrantTargetAccountPayload>;
+  /** Updates a single `GrantTargetAccount` using a unique key and a patch. */
+  updateGrantTargetAccountByGrantIdAndAccountId: Maybe<UpdateGrantTargetAccountPayload>;
+  /** Updates a single `GrantTargetEmail` using its globally unique id and a patch. */
+  updateGrantTargetEmail: Maybe<UpdateGrantTargetEmailPayload>;
+  /** Updates a single `GrantTargetEmail` using a unique key and a patch. */
+  updateGrantTargetEmailByGrantIdAndTargetEmailNormalized: Maybe<UpdateGrantTargetEmailPayload>;
   /** Updates a single `Need` using its globally unique id and a patch. */
   updateNeed: Maybe<UpdateNeedPayload>;
   /** Updates a single `Need` using a unique key and a patch. */
@@ -3949,12 +5253,18 @@ export type Mutation = {
   updateResourceCategoryByCode: Maybe<UpdateResourceCategoryPayload>;
   /** Updates a single `ResourceCategory` using a unique key and a patch. */
   updateResourceCategoryBySlug: Maybe<UpdateResourceCategoryPayload>;
+  /** Updates a single `SystemSetting` using its globally unique id and a patch. */
+  updateSystemSetting: Maybe<UpdateSystemSettingPayload>;
+  /** Updates a single `SystemSetting` using a unique key and a patch. */
+  updateSystemSettingByKey: Maybe<UpdateSystemSettingPayload>;
   /** Updates a single `TokenMovement` using its globally unique id and a patch. */
   updateTokenMovement: Maybe<UpdateTokenMovementPayload>;
   /** Updates a single `TokenMovement` using a unique key and a patch. */
   updateTokenMovementById: Maybe<UpdateTokenMovementPayload>;
   /** Updates a single `TokenMovement` using a unique key and a patch. */
   updateTokenMovementByIdempotencyKey: Maybe<UpdateTokenMovementPayload>;
+  /** Creates a new grant definition when p_grant_id is null, or updates an existing one. Admin only. */
+  upsertGrant: Maybe<UpsertGrantPayload>;
   writeOperationalLog: Maybe<WriteOperationalLogPayload>;
 };
 
@@ -3972,8 +5282,62 @@ export type MutationAddCampaignModerationNoteArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListAccountsArgs = {
+  input: AdminListAccountsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListBidsArgs = {
+  input: AdminListBidsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListCampaignsArgs = {
+  input: AdminListCampaignsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListGrantsArgs = {
+  input: AdminListGrantsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListLogsArgs = {
+  input: AdminListLogsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListMailsArgs = {
+  input: AdminListMailsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListNotificationsArgs = {
+  input: AdminListNotificationsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminListResourcesArgs = {
+  input: AdminListResourcesInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationApproveCampaignArgs = {
   input: ApproveCampaignInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationArchiveGrantArgs = {
+  input: ArchiveGrantInput;
 };
 
 
@@ -3996,8 +5360,20 @@ export type MutationAuthLogoutArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationClaimGrantArgs = {
+  input: ClaimGrantInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationClaimNeedArgs = {
   input: ClaimNeedInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCleanupOperationalLogsArgs = {
+  input: CleanupOperationalLogsInput;
 };
 
 
@@ -4086,6 +5462,30 @@ export type MutationCreateClaimMessageImageArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateGrantClaimArgs = {
+  input: CreateGrantClaimInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateGrantDefinitionArgs = {
+  input: CreateGrantDefinitionInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateGrantTargetAccountArgs = {
+  input: CreateGrantTargetAccountInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateGrantTargetEmailArgs = {
+  input: CreateGrantTargetEmailInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateNeedArgs = {
   input: CreateNeedInput;
 };
@@ -4142,6 +5542,12 @@ export type MutationCreateResourceCategoryArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateResourceCategoryAssignmentArgs = {
   input: CreateResourceCategoryAssignmentInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateSystemSettingArgs = {
+  input: CreateSystemSettingInput;
 };
 
 
@@ -4280,6 +5686,60 @@ export type MutationDeleteClaimMessageImageArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteClaimMessageImageByIdArgs = {
   input: DeleteClaimMessageImageByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantClaimArgs = {
+  input: DeleteGrantClaimInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantClaimByGrantIdAndAccountIdArgs = {
+  input: DeleteGrantClaimByGrantIdAndAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantClaimByIdArgs = {
+  input: DeleteGrantClaimByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantDefinitionArgs = {
+  input: DeleteGrantDefinitionInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantDefinitionByIdArgs = {
+  input: DeleteGrantDefinitionByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantTargetAccountArgs = {
+  input: DeleteGrantTargetAccountInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantTargetAccountByGrantIdAndAccountIdArgs = {
+  input: DeleteGrantTargetAccountByGrantIdAndAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantTargetEmailArgs = {
+  input: DeleteGrantTargetEmailInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteGrantTargetEmailByGrantIdAndTargetEmailNormalizedArgs = {
+  input: DeleteGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput;
 };
 
 
@@ -4428,6 +5888,18 @@ export type MutationDeleteResourceCategoryBySlugArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteSystemSettingArgs = {
+  input: DeleteSystemSettingInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteSystemSettingByKeyArgs = {
+  input: DeleteSystemSettingByKeyInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteTokenMovementArgs = {
   input: DeleteTokenMovementInput;
 };
@@ -4550,6 +6022,18 @@ export type MutationSendClaimMessageArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSetAccountDeliveryPreferenceArgs = {
   input: SetAccountDeliveryPreferenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSetGrantTargetAccountsArgs = {
+  input: SetGrantTargetAccountsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSetGrantTargetEmailsArgs = {
+  input: SetGrantTargetEmailsInput;
 };
 
 
@@ -4698,6 +6182,60 @@ export type MutationUpdateClaimMessageImageByIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantClaimArgs = {
+  input: UpdateGrantClaimInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantClaimByGrantIdAndAccountIdArgs = {
+  input: UpdateGrantClaimByGrantIdAndAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantClaimByIdArgs = {
+  input: UpdateGrantClaimByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantDefinitionArgs = {
+  input: UpdateGrantDefinitionInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantDefinitionByIdArgs = {
+  input: UpdateGrantDefinitionByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantTargetAccountArgs = {
+  input: UpdateGrantTargetAccountInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantTargetAccountByGrantIdAndAccountIdArgs = {
+  input: UpdateGrantTargetAccountByGrantIdAndAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantTargetEmailArgs = {
+  input: UpdateGrantTargetEmailInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateGrantTargetEmailByGrantIdAndTargetEmailNormalizedArgs = {
+  input: UpdateGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateNeedArgs = {
   input: UpdateNeedInput;
 };
@@ -4842,6 +6380,18 @@ export type MutationUpdateResourceCategoryBySlugArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateSystemSettingArgs = {
+  input: UpdateSystemSettingInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateSystemSettingByKeyArgs = {
+  input: UpdateSystemSettingByKeyInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateTokenMovementArgs = {
   input: UpdateTokenMovementInput;
 };
@@ -4856,6 +6406,12 @@ export type MutationUpdateTokenMovementByIdArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateTokenMovementByIdempotencyKeyArgs = {
   input: UpdateTokenMovementByIdempotencyKeyInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpsertGrantArgs = {
+  input: UpsertGrantInput;
 };
 
 
@@ -5565,6 +7121,14 @@ export type Query = Node & {
   allClaimMessageImages: Maybe<ClaimMessageImagesConnection>;
   /** Reads and enables pagination through a set of `ClaimMessage`. */
   allClaimMessages: Maybe<ClaimMessagesConnection>;
+  /** Reads and enables pagination through a set of `GrantClaim`. */
+  allGrantClaims: Maybe<GrantClaimsConnection>;
+  /** Reads and enables pagination through a set of `GrantDefinition`. */
+  allGrantDefinitions: Maybe<GrantDefinitionsConnection>;
+  /** Reads and enables pagination through a set of `GrantTargetAccount`. */
+  allGrantTargetAccounts: Maybe<GrantTargetAccountsConnection>;
+  /** Reads and enables pagination through a set of `GrantTargetEmail`. */
+  allGrantTargetEmails: Maybe<GrantTargetEmailsConnection>;
   /** Reads and enables pagination through a set of `NeedClaimNotification`. */
   allNeedClaimNotifications: Maybe<NeedClaimNotificationsConnection>;
   /** Reads and enables pagination through a set of `NeedClaimSettlementEvent`. */
@@ -5585,6 +7149,8 @@ export type Query = Node & {
   allResourceCategoryAssignments: Maybe<ResourceCategoryAssignmentsConnection>;
   /** Reads and enables pagination through a set of `Resource`. */
   allResources: Maybe<ResourcesConnection>;
+  /** Reads and enables pagination through a set of `SystemSetting`. */
+  allSystemSettings: Maybe<SystemSettingsConnection>;
   /** Reads and enables pagination through a set of `TokenMovement`. */
   allTokenMovements: Maybe<TokenMovementsConnection>;
   authSession: AuthSessionPayload;
@@ -5611,6 +7177,21 @@ export type Query = Node & {
   claimMessageImage: Maybe<ClaimMessageImage>;
   claimMessageImageById: Maybe<ClaimMessageImage>;
   currentTokenBalance: Maybe<Scalars['Int']['output']>;
+  getGrantForClaim: Maybe<GetGrantForClaimConnection>;
+  getOperationalLogRetentionDays: Maybe<Scalars['Int']['output']>;
+  /** Reads a single `GrantClaim` using its globally unique `ID`. */
+  grantClaim: Maybe<GrantClaim>;
+  grantClaimByGrantIdAndAccountId: Maybe<GrantClaim>;
+  grantClaimById: Maybe<GrantClaim>;
+  /** Reads a single `GrantDefinition` using its globally unique `ID`. */
+  grantDefinition: Maybe<GrantDefinition>;
+  grantDefinitionById: Maybe<GrantDefinition>;
+  /** Reads a single `GrantTargetAccount` using its globally unique `ID`. */
+  grantTargetAccount: Maybe<GrantTargetAccount>;
+  grantTargetAccountByGrantIdAndAccountId: Maybe<GrantTargetAccount>;
+  /** Reads a single `GrantTargetEmail` using its globally unique `ID`. */
+  grantTargetEmail: Maybe<GrantTargetEmail>;
+  grantTargetEmailByGrantIdAndTargetEmailNormalized: Maybe<GrantTargetEmail>;
   listResourceCategories: Maybe<ListResourceCategoriesConnection>;
   /** Reads a single `Need` using its globally unique `ID`. */
   need: Maybe<Need>;
@@ -5657,6 +7238,9 @@ export type Query = Node & {
   resourceCategoryBySlug: Maybe<ResourceCategory>;
   searchNeeds: Maybe<SearchNeedsConnection>;
   searchResources: Maybe<SearchResourcesConnection>;
+  /** Reads a single `SystemSetting` using its globally unique `ID`. */
+  systemSetting: Maybe<SystemSetting>;
+  systemSettingByKey: Maybe<SystemSetting>;
   /** Reads a single `TokenMovement` using its globally unique `ID`. */
   tokenMovement: Maybe<TokenMovement>;
   tokenMovementById: Maybe<TokenMovement>;
@@ -5828,6 +7412,54 @@ export type QueryAllClaimMessagesArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryAllGrantClaimsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantClaimCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllGrantDefinitionsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantDefinitionCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllGrantTargetAccountsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantTargetAccountCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantTargetAccountsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllGrantTargetEmailsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantTargetEmailCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantTargetEmailsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryAllNeedClaimNotificationsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -5948,6 +7580,18 @@ export type QueryAllResourcesArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryAllSystemSettingsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<SystemSettingCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<SystemSettingsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryAllTokenMovementsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -6048,6 +7692,74 @@ export type QueryClaimMessageImageArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryClaimMessageImageByIdArgs = {
   id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGetGrantForClaimArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pGrantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantClaimArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantClaimByGrantIdAndAccountIdArgs = {
+  accountId: Scalars['UUID']['input'];
+  grantId: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantClaimByIdArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantDefinitionArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantDefinitionByIdArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantTargetAccountArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantTargetAccountByGrantIdAndAccountIdArgs = {
+  accountId: Scalars['UUID']['input'];
+  grantId: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantTargetEmailArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryGrantTargetEmailByGrantIdAndTargetEmailNormalizedArgs = {
+  grantId: Scalars['UUID']['input'];
+  targetEmailNormalized: Scalars['String']['input'];
 };
 
 
@@ -6254,6 +7966,18 @@ export type QuerySearchResourcesArgs = {
   longitude?: InputMaybe<Scalars['BigFloat']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   searchText?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QuerySystemSettingArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QuerySystemSettingByKeyArgs = {
+  key: Scalars['String']['input'];
 };
 
 
@@ -7219,6 +8943,54 @@ export type SetAccountDeliveryPreferencePayloadAccountDeliveryPreferenceEdgeArgs
   orderBy?: InputMaybe<Array<AccountDeliveryPreferencesOrderBy>>;
 };
 
+/** All input for the `setGrantTargetAccounts` mutation. */
+export type SetGrantTargetAccountsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pAccountIds?: InputMaybe<Array<InputMaybe<Scalars['UUID']['input']>>>;
+  pGrantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `setGrantTargetAccounts` mutation. */
+export type SetGrantTargetAccountsPayload = {
+  __typename: 'SetGrantTargetAccountsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  integer: Maybe<Scalars['Int']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+/** All input for the `setGrantTargetEmails` mutation. */
+export type SetGrantTargetEmailsInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pEmails?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pGrantId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `setGrantTargetEmails` mutation. */
+export type SetGrantTargetEmailsPayload = {
+  __typename: 'SetGrantTargetEmailsPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  integer: Maybe<Scalars['Int']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** All input for the `settleNeedClaim` mutation. */
 export type SettleNeedClaimInput = {
   /**
@@ -7294,6 +9066,73 @@ export type SubmitResourceBidPayload = {
 export type SubmitResourceBidPayloadResourceBidEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceBidsOrderBy>>;
 };
+
+/** SQL-owned system configuration values used for operational controls such as retention windows. */
+export type SystemSetting = Node & {
+  __typename: 'SystemSetting';
+  createdAt: Scalars['Datetime']['output'];
+  key: Scalars['String']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  updatedAt: Scalars['Datetime']['output'];
+  valueText: Scalars['String']['output'];
+};
+
+/**
+ * A condition to be used against `SystemSetting` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type SystemSettingCondition = {
+  /** Checks for equality with the object’s `key` field. */
+  key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** An input for mutations affecting `SystemSetting` */
+export type SystemSettingInput = {
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  key: Scalars['String']['input'];
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  valueText: Scalars['String']['input'];
+};
+
+/** Represents an update to a `SystemSetting`. Fields that are set will be updated. */
+export type SystemSettingPatch = {
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  key?: InputMaybe<Scalars['String']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  valueText?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** A connection to a list of `SystemSetting` values. */
+export type SystemSettingsConnection = {
+  __typename: 'SystemSettingsConnection';
+  /** A list of edges which contains the `SystemSetting` and cursor to aid in pagination. */
+  edges: Array<SystemSettingsEdge>;
+  /** A list of `SystemSetting` objects. */
+  nodes: Array<SystemSetting>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `SystemSetting` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `SystemSetting` edge in the connection. */
+export type SystemSettingsEdge = {
+  __typename: 'SystemSettingsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `SystemSetting` at the end of the edge. */
+  node: SystemSetting;
+};
+
+/** Methods to use when ordering `SystemSetting`. */
+export enum SystemSettingsOrderBy {
+  KeyAsc = 'KEY_ASC',
+  KeyDesc = 'KEY_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
 
 /** Auditable Topes ledger entries for all positive and negative account movements. */
 export type TokenMovement = Node & {
@@ -7940,6 +9779,219 @@ export type UpdateClaimMessagePayloadClaimMessageEdgeArgs = {
   orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
 };
 
+/** All input for the `updateGrantClaimByGrantIdAndAccountId` mutation. */
+export type UpdateGrantClaimByGrantIdAndAccountIdInput = {
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantClaim` being updated. */
+  grantClaimPatch: GrantClaimPatch;
+  grantId: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateGrantClaimById` mutation. */
+export type UpdateGrantClaimByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantClaim` being updated. */
+  grantClaimPatch: GrantClaimPatch;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateGrantClaim` mutation. */
+export type UpdateGrantClaimInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantClaim` being updated. */
+  grantClaimPatch: GrantClaimPatch;
+  /** The globally unique `ID` which will identify a single `GrantClaim` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `GrantClaim` mutation. */
+export type UpdateGrantClaimPayload = {
+  __typename: 'UpdateGrantClaimPayload';
+  /** Reads a single `Account` that is related to this `GrantClaim`. */
+  accountByAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** The `GrantClaim` that was updated by this mutation. */
+  grantClaim: Maybe<GrantClaim>;
+  /** An edge for our `GrantClaim`. May be used by Relay 1. */
+  grantClaimEdge: Maybe<GrantClaimsEdge>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantClaim`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `GrantClaim` mutation. */
+export type UpdateGrantClaimPayloadGrantClaimEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+/** All input for the `updateGrantDefinitionById` mutation. */
+export type UpdateGrantDefinitionByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantDefinition` being updated. */
+  grantDefinitionPatch: GrantDefinitionPatch;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateGrantDefinition` mutation. */
+export type UpdateGrantDefinitionInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantDefinition` being updated. */
+  grantDefinitionPatch: GrantDefinitionPatch;
+  /** The globally unique `ID` which will identify a single `GrantDefinition` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `GrantDefinition` mutation. */
+export type UpdateGrantDefinitionPayload = {
+  __typename: 'UpdateGrantDefinitionPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** The `GrantDefinition` that was updated by this mutation. */
+  grantDefinition: Maybe<GrantDefinition>;
+  /** An edge for our `GrantDefinition`. May be used by Relay 1. */
+  grantDefinitionEdge: Maybe<GrantDefinitionsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `GrantDefinition` mutation. */
+export type UpdateGrantDefinitionPayloadGrantDefinitionEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
+};
+
+/** All input for the `updateGrantTargetAccountByGrantIdAndAccountId` mutation. */
+export type UpdateGrantTargetAccountByGrantIdAndAccountIdInput = {
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  grantId: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `GrantTargetAccount` being updated. */
+  grantTargetAccountPatch: GrantTargetAccountPatch;
+};
+
+/** All input for the `updateGrantTargetAccount` mutation. */
+export type UpdateGrantTargetAccountInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantTargetAccount` being updated. */
+  grantTargetAccountPatch: GrantTargetAccountPatch;
+  /** The globally unique `ID` which will identify a single `GrantTargetAccount` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `GrantTargetAccount` mutation. */
+export type UpdateGrantTargetAccountPayload = {
+  __typename: 'UpdateGrantTargetAccountPayload';
+  /** Reads a single `Account` that is related to this `GrantTargetAccount`. */
+  accountByAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** The `GrantTargetAccount` that was updated by this mutation. */
+  grantTargetAccount: Maybe<GrantTargetAccount>;
+  /** An edge for our `GrantTargetAccount`. May be used by Relay 1. */
+  grantTargetAccountEdge: Maybe<GrantTargetAccountsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `GrantTargetAccount` mutation. */
+export type UpdateGrantTargetAccountPayloadGrantTargetAccountEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantTargetAccountsOrderBy>>;
+};
+
+/** All input for the `updateGrantTargetEmailByGrantIdAndTargetEmailNormalized` mutation. */
+export type UpdateGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  grantId: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `GrantTargetEmail` being updated. */
+  grantTargetEmailPatch: GrantTargetEmailPatch;
+  targetEmailNormalized: Scalars['String']['input'];
+};
+
+/** All input for the `updateGrantTargetEmail` mutation. */
+export type UpdateGrantTargetEmailInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `GrantTargetEmail` being updated. */
+  grantTargetEmailPatch: GrantTargetEmailPatch;
+  /** The globally unique `ID` which will identify a single `GrantTargetEmail` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `GrantTargetEmail` mutation. */
+export type UpdateGrantTargetEmailPayload = {
+  __typename: 'UpdateGrantTargetEmailPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`. */
+  grantDefinitionByGrantId: Maybe<GrantDefinition>;
+  /** The `GrantTargetEmail` that was updated by this mutation. */
+  grantTargetEmail: Maybe<GrantTargetEmail>;
+  /** An edge for our `GrantTargetEmail`. May be used by Relay 1. */
+  grantTargetEmailEdge: Maybe<GrantTargetEmailsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `GrantTargetEmail` mutation. */
+export type UpdateGrantTargetEmailPayloadGrantTargetEmailEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantTargetEmailsOrderBy>>;
+};
+
 /** All input for the `updateNeedById` mutation. */
 export type UpdateNeedByIdInput = {
   /**
@@ -8497,6 +10549,53 @@ export type UpdateResourcePayloadResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourcesOrderBy>>;
 };
 
+/** All input for the `updateSystemSettingByKey` mutation. */
+export type UpdateSystemSettingByKeyInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  key: Scalars['String']['input'];
+  /** An object where the defined keys will be set on the `SystemSetting` being updated. */
+  systemSettingPatch: SystemSettingPatch;
+};
+
+/** All input for the `updateSystemSetting` mutation. */
+export type UpdateSystemSettingInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `SystemSetting` to be updated. */
+  nodeId: Scalars['ID']['input'];
+  /** An object where the defined keys will be set on the `SystemSetting` being updated. */
+  systemSettingPatch: SystemSettingPatch;
+};
+
+/** The output of our update `SystemSetting` mutation. */
+export type UpdateSystemSettingPayload = {
+  __typename: 'UpdateSystemSettingPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** The `SystemSetting` that was updated by this mutation. */
+  systemSetting: Maybe<SystemSetting>;
+  /** An edge for our `SystemSetting`. May be used by Relay 1. */
+  systemSettingEdge: Maybe<SystemSettingsEdge>;
+};
+
+
+/** The output of our update `SystemSetting` mutation. */
+export type UpdateSystemSettingPayloadSystemSettingEdgeArgs = {
+  orderBy?: InputMaybe<Array<SystemSettingsOrderBy>>;
+};
+
 /** All input for the `updateTokenMovementById` mutation. */
 export type UpdateTokenMovementByIdInput = {
   /**
@@ -8558,6 +10657,44 @@ export type UpdateTokenMovementPayload = {
 /** The output of our update `TokenMovement` mutation. */
 export type UpdateTokenMovementPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
+};
+
+/** All input for the `upsertGrant` mutation. */
+export type UpsertGrantInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pArchivedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  pAwardedTokenAmount?: InputMaybe<Scalars['Int']['input']>;
+  pDescription?: InputMaybe<Scalars['String']['input']>;
+  pExpiresAt?: InputMaybe<Scalars['Datetime']['input']>;
+  pGrantId?: InputMaybe<Scalars['UUID']['input']>;
+  pLinkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pMaxSuccessfulClaimCount?: InputMaybe<Scalars['Int']['input']>;
+  pTitle?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `upsertGrant` mutation. */
+export type UpsertGrantPayload = {
+  __typename: 'UpsertGrantPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  grantDefinition: Maybe<GrantDefinition>;
+  /** An edge for our `GrantDefinition`. May be used by Relay 1. */
+  grantDefinitionEdge: Maybe<GrantDefinitionsEdge>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `upsertGrant` mutation. */
+export type UpsertGrantPayloadGrantDefinitionEdgeArgs = {
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
 };
 
 /** All input for the `writeOperationalLog` mutation. */
@@ -8765,6 +10902,20 @@ export type GiftTokensMutationVariables = Exact<{
 
 
 export type GiftTokensMutation = { __typename: 'Mutation', giftTokens: { __typename: 'GiftTokensPayload', tokenMovement: { __typename: 'TokenMovement', id: any, eventType: string, amountDelta: number, referenceType: string | null, referenceId: any | null, createdAt: any } | null } | null };
+
+export type GetGrantForClaimQueryVariables = Exact<{
+  grantId: Scalars['UUID']['input'];
+}>;
+
+
+export type GetGrantForClaimQuery = { __typename: 'Query', getGrantForClaim: { __typename: 'GetGrantForClaimConnection', nodes: Array<{ __typename: 'GetGrantForClaimRecord', id: any | null, title: string | null, description: string | null, awardedTokenAmount: number | null, maxSuccessfulClaimCount: number | null, expiresAt: any | null }> } | null };
+
+export type ClaimGrantMutationVariables = Exact<{
+  grantId: Scalars['UUID']['input'];
+}>;
+
+
+export type ClaimGrantMutation = { __typename: 'Mutation', claimGrant: { __typename: 'ClaimGrantPayload', grantClaimResult: { __typename: 'GrantClaimResult', outcomeCode: string | null, claimedAmount: number | null, grantClaimId: any | null } | null } | null };
 
 export type WriteOperationalLogMutationVariables = Exact<{
   level: Scalars['String']['input'];
@@ -9089,6 +11240,8 @@ export const InspirationCampaignsDocument = {"kind":"Document","definitions":[{"
 export const TokenBalanceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TokenBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTokenBalance"}}]}}]} as unknown as DocumentNode<TokenBalanceQuery, TokenBalanceQueryVariables>;
 export const ContributionOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ContributionOverview"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"10"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Cursor"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTokenBalance"}},{"kind":"Field","name":{"kind":"Name","value":"allTokenMovements"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"amountDelta"}},{"kind":"Field","name":{"kind":"Name","value":"referenceType"}},{"kind":"Field","name":{"kind":"Name","value":"referenceId"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]} as unknown as DocumentNode<ContributionOverviewQuery, ContributionOverviewQueryVariables>;
 export const GiftTokensDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GiftTokens"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GiftTokensInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"giftTokens"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tokenMovement"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"amountDelta"}},{"kind":"Field","name":{"kind":"Name","value":"referenceType"}},{"kind":"Field","name":{"kind":"Name","value":"referenceId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<GiftTokensMutation, GiftTokensMutationVariables>;
+export const GetGrantForClaimDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGrantForClaim"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getGrantForClaim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pGrantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"awardedTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"maxSuccessfulClaimCount"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<GetGrantForClaimQuery, GetGrantForClaimQueryVariables>;
+export const ClaimGrantDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimGrant"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimGrant"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pGrantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"grantClaimResult"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"outcomeCode"}},{"kind":"Field","name":{"kind":"Name","value":"claimedAmount"}},{"kind":"Field","name":{"kind":"Name","value":"grantClaimId"}}]}}]}}]}}]} as unknown as DocumentNode<ClaimGrantMutation, ClaimGrantMutationVariables>;
 export const WriteOperationalLogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"WriteOperationalLog"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"level"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"component"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"message"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"context"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"writeOperationalLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pLevel"},"value":{"kind":"Variable","name":{"kind":"Name","value":"level"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pComponent"},"value":{"kind":"Variable","name":{"kind":"Name","value":"component"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"message"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pContext"},"value":{"kind":"Variable","name":{"kind":"Name","value":"context"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMetadata"},"value":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"uuid"}}]}}]}}]} as unknown as DocumentNode<WriteOperationalLogMutation, WriteOperationalLogMutationVariables>;
 export const ClaimConversationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ClaimConversation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaimById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"claimConversationByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessagesByConversationId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ClaimConversationQuery, ClaimConversationQueryVariables>;
 export const SendClaimMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendClaimMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendClaimMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendClaimMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SendClaimMessageMutation, SendClaimMessageMutationVariables>;

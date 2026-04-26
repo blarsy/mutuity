@@ -223,6 +223,46 @@ type Account implements Node {
   createdAt: Datetime!
   displayName: String
   externalSubject: String!
+  """Reads and enables pagination through a set of `GrantClaim`."""
+  grantClaimsByAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantClaimCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsConnection!
+  """Reads and enables pagination through a set of `GrantTargetAccount`."""
+  grantTargetAccountsByAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantTargetAccountCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantTargetAccount`."""
+    orderBy: [GrantTargetAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetAccountsConnection!
   id: UUID!
   latitude: BigFloat
   location: String
@@ -477,6 +517,8 @@ type Account implements Node {
 
 """A condition to be used against `Account` object types. All fields are tested for equality and combined with a logical ‘and.’"""
 input AccountCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
   """Checks for equality with the object’s `externalSubject` field."""
   externalSubject: String
   """Checks for equality with the object’s `id` field."""
@@ -600,6 +642,8 @@ A condition to be used against `AccountNotification` object types. All fields
 are tested for equality and combined with a logical ‘and.’
 """
 input AccountNotificationCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
   """Checks for equality with the object’s `id` field."""
   id: UUID
   """Checks for equality with the object’s `recipientAccountId` field."""
@@ -648,6 +692,8 @@ type AccountNotificationsEdge {
 
 """Methods to use when ordering `AccountNotification`."""
 enum AccountNotificationsOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
   ID_ASC
   ID_DESC
   NATURAL
@@ -696,6 +742,8 @@ type AccountsEdge {
 
 """Methods to use when ordering `Account`."""
 enum AccountsOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
   EXTERNAL_SUBJECT_ASC
   EXTERNAL_SUBJECT_DESC
   ID_ASC
@@ -737,6 +785,286 @@ type AddCampaignModerationNotePayload {
   query: Query
 }
 
+"""All input for the `adminListAccounts` mutation."""
+input AdminListAccountsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListAccounts` mutation."""
+type AdminListAccountsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListAccountsRecord]
+}
+
+"""The return type of our `adminListAccounts` mutation."""
+type AdminListAccountsRecord {
+  address: String
+  createdAt: Datetime
+  email: String
+  id: UUID
+  language: String
+  name: String
+  tokenAmount: Int
+}
+
+"""All input for the `adminListBids` mutation."""
+input AdminListBidsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListBids` mutation."""
+type AdminListBidsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListBidsRecord]
+}
+
+"""The return type of our `adminListBids` mutation."""
+type AdminListBidsRecord {
+  bidderName: String
+  createdAt: Datetime
+  expirationDatetime: Datetime
+  id: UUID
+  intensity: NeedIntensity
+  receiverName: String
+  resourceTitle: String
+  status: ResourceBidStatus
+  tokenAmount: Int
+}
+
+"""All input for the `adminListCampaigns` mutation."""
+input AdminListCampaignsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListCampaigns` mutation."""
+type AdminListCampaignsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListCampaignsRecord]
+}
+
+"""The return type of our `adminListCampaigns` mutation."""
+type AdminListCampaignsRecord {
+  airdropDatetime: Datetime
+  airdropTokenAmount: Int
+  beginDatetime: Datetime
+  createdAt: Datetime
+  creatorName: String
+  description: String
+  endDatetime: Datetime
+  id: UUID
+  resourceRewardsMultiplier: Int
+  summary: String
+}
+
+"""All input for the `adminListGrants` mutation."""
+input AdminListGrantsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListGrants` mutation."""
+type AdminListGrantsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListGrantsRecord]
+}
+
+"""The return type of our `adminListGrants` mutation."""
+type AdminListGrantsRecord {
+  amountGranted: Int
+  createdAt: Datetime
+  description: String
+  expirationDatetime: Datetime
+  id: UUID
+  title: String
+}
+
+"""All input for the `adminListLogs` mutation."""
+input AdminListLogsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListLogs` mutation."""
+type AdminListLogsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListLogsRecord]
+}
+
+"""The return type of our `adminListLogs` mutation."""
+type AdminListLogsRecord {
+  component: String
+  context: String
+  message: String
+  severity: String
+  timestamp: Datetime
+}
+
+"""All input for the `adminListMails` mutation."""
+input AdminListMailsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListMails` mutation."""
+type AdminListMailsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListMailsRecord]
+}
+
+"""The return type of our `adminListMails` mutation."""
+type AdminListMailsRecord {
+  createdAt: Datetime
+  email: String
+  id: UUID
+  recipientAccountName: String
+  subject: String
+}
+
+"""All input for the `adminListNotifications` mutation."""
+input AdminListNotificationsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListNotifications` mutation."""
+type AdminListNotificationsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListNotificationsRecord]
+}
+
+"""The return type of our `adminListNotifications` mutation."""
+type AdminListNotificationsRecord {
+  accountName: String
+  createdAt: Datetime
+  data: JSON
+  id: UUID
+  readAt: Datetime
+}
+
+"""All input for the `adminListResources` mutation."""
+input AdminListResourcesInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pLimit: Int
+  pOffset: Int
+  pSearch: String
+}
+
+"""The output of our `adminListResources` mutation."""
+type AdminListResourcesPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  results: [AdminListResourcesRecord]
+}
+
+"""The return type of our `adminListResources` mutation."""
+type AdminListResourcesRecord {
+  createdAt: Datetime
+  creatorName: String
+  expirationDatetime: Datetime
+  id: UUID
+  imageCount: Int
+  intensity: NeedIntensity
+  location: String
+  title: String
+  tokenAmount: Int
+}
+
 """All input for the `approveCampaign` mutation."""
 input ApproveCampaignInput {
   campaignId: UUID
@@ -762,6 +1090,33 @@ type ApproveCampaignPayload {
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `archiveGrant` mutation."""
+input ArchiveGrantInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pGrantId: UUID
+}
+
+"""The output of our `archiveGrant` mutation."""
+type ArchiveGrantPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  grantDefinition: GrantDefinition
+  """An edge for our `GrantDefinition`. May be used by Relay 1."""
+  grantDefinitionEdge(
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsEdge
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
 }
@@ -1353,6 +1708,28 @@ enum ClaimConversationsOrderBy {
   PRIMARY_KEY_DESC
 }
 
+"""All input for the `claimGrant` mutation."""
+input ClaimGrantInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pGrantId: UUID
+}
+
+"""The output of our `claimGrant` mutation."""
+type ClaimGrantPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  grantClaimResult: GrantClaimResult
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """Participant messages inside a claim conversation."""
 type ClaimMessage implements Node {
   """Reads a single `Account` that is related to this `ClaimMessage`."""
@@ -1557,6 +1934,28 @@ type ClaimNeedPayload {
     """The method to use when ordering `NeedClaim`."""
     orderBy: [NeedClaimsOrderBy!] = [PRIMARY_KEY_ASC]
   ): NeedClaimsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `cleanupOperationalLogs` mutation."""
+input CleanupOperationalLogsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pNow: Datetime
+}
+
+"""The output of our `cleanupOperationalLogs` mutation."""
+type CleanupOperationalLogsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  integer: Int
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
 }
@@ -1981,6 +2380,132 @@ type CreateClaimMessagePayload {
   query: Query
 }
 
+"""All input for the create `GrantClaim` mutation."""
+input CreateGrantClaimInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `GrantClaim` to be created by this mutation."""
+  grantClaim: GrantClaimInput!
+}
+
+"""The output of our create `GrantClaim` mutation."""
+type CreateGrantClaimPayload {
+  """Reads a single `Account` that is related to this `GrantClaim`."""
+  accountByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """The `GrantClaim` that was created by this mutation."""
+  grantClaim: GrantClaim
+  """An edge for our `GrantClaim`. May be used by Relay 1."""
+  grantClaimEdge(
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsEdge
+  """Reads a single `GrantDefinition` that is related to this `GrantClaim`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the create `GrantDefinition` mutation."""
+input CreateGrantDefinitionInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `GrantDefinition` to be created by this mutation."""
+  grantDefinition: GrantDefinitionInput!
+}
+
+"""The output of our create `GrantDefinition` mutation."""
+type CreateGrantDefinitionPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """The `GrantDefinition` that was created by this mutation."""
+  grantDefinition: GrantDefinition
+  """An edge for our `GrantDefinition`. May be used by Relay 1."""
+  grantDefinitionEdge(
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the create `GrantTargetAccount` mutation."""
+input CreateGrantTargetAccountInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `GrantTargetAccount` to be created by this mutation."""
+  grantTargetAccount: GrantTargetAccountInput!
+}
+
+"""The output of our create `GrantTargetAccount` mutation."""
+type CreateGrantTargetAccountPayload {
+  """Reads a single `Account` that is related to this `GrantTargetAccount`."""
+  accountByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """The `GrantTargetAccount` that was created by this mutation."""
+  grantTargetAccount: GrantTargetAccount
+  """An edge for our `GrantTargetAccount`. May be used by Relay 1."""
+  grantTargetAccountEdge(
+    """The method to use when ordering `GrantTargetAccount`."""
+    orderBy: [GrantTargetAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetAccountsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the create `GrantTargetEmail` mutation."""
+input CreateGrantTargetEmailInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `GrantTargetEmail` to be created by this mutation."""
+  grantTargetEmail: GrantTargetEmailInput!
+}
+
+"""The output of our create `GrantTargetEmail` mutation."""
+type CreateGrantTargetEmailPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """The `GrantTargetEmail` that was created by this mutation."""
+  grantTargetEmail: GrantTargetEmail
+  """An edge for our `GrantTargetEmail`. May be used by Relay 1."""
+  grantTargetEmailEdge(
+    """The method to use when ordering `GrantTargetEmail`."""
+    orderBy: [GrantTargetEmailsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetEmailsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the create `NeedClaim` mutation."""
 input CreateNeedClaimInput {
   """
@@ -2318,6 +2843,35 @@ type CreateResourcePayload {
     """The method to use when ordering `Resource`."""
     orderBy: [ResourcesOrderBy!] = [PRIMARY_KEY_ASC]
   ): ResourcesEdge
+}
+
+"""All input for the create `SystemSetting` mutation."""
+input CreateSystemSettingInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `SystemSetting` to be created by this mutation."""
+  systemSetting: SystemSettingInput!
+}
+
+"""The output of our create `SystemSetting` mutation."""
+type CreateSystemSettingPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """The `SystemSetting` that was created by this mutation."""
+  systemSetting: SystemSetting
+  """An edge for our `SystemSetting`. May be used by Relay 1."""
+  systemSettingEdge(
+    """The method to use when ordering `SystemSetting`."""
+    orderBy: [SystemSettingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): SystemSettingsEdge
 }
 
 """All input for the create `TokenMovement` mutation."""
@@ -2822,6 +3376,189 @@ type DeleteClaimMessagePayload {
   query: Query
 }
 
+"""All input for the `deleteGrantClaimByGrantIdAndAccountId` mutation."""
+input DeleteGrantClaimByGrantIdAndAccountIdInput {
+  accountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  grantId: UUID!
+}
+
+"""All input for the `deleteGrantClaimById` mutation."""
+input DeleteGrantClaimByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteGrantClaim` mutation."""
+input DeleteGrantClaimInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `GrantClaim` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `GrantClaim` mutation."""
+type DeleteGrantClaimPayload {
+  """Reads a single `Account` that is related to this `GrantClaim`."""
+  accountByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedGrantClaimId: ID
+  """The `GrantClaim` that was deleted by this mutation."""
+  grantClaim: GrantClaim
+  """An edge for our `GrantClaim`. May be used by Relay 1."""
+  grantClaimEdge(
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsEdge
+  """Reads a single `GrantDefinition` that is related to this `GrantClaim`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `deleteGrantDefinitionById` mutation."""
+input DeleteGrantDefinitionByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteGrantDefinition` mutation."""
+input DeleteGrantDefinitionInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `GrantDefinition` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `GrantDefinition` mutation."""
+type DeleteGrantDefinitionPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedGrantDefinitionId: ID
+  """The `GrantDefinition` that was deleted by this mutation."""
+  grantDefinition: GrantDefinition
+  """An edge for our `GrantDefinition`. May be used by Relay 1."""
+  grantDefinitionEdge(
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `deleteGrantTargetAccountByGrantIdAndAccountId` mutation."""
+input DeleteGrantTargetAccountByGrantIdAndAccountIdInput {
+  accountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  grantId: UUID!
+}
+
+"""All input for the `deleteGrantTargetAccount` mutation."""
+input DeleteGrantTargetAccountInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `GrantTargetAccount` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `GrantTargetAccount` mutation."""
+type DeleteGrantTargetAccountPayload {
+  """Reads a single `Account` that is related to this `GrantTargetAccount`."""
+  accountByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedGrantTargetAccountId: ID
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """The `GrantTargetAccount` that was deleted by this mutation."""
+  grantTargetAccount: GrantTargetAccount
+  """An edge for our `GrantTargetAccount`. May be used by Relay 1."""
+  grantTargetAccountEdge(
+    """The method to use when ordering `GrantTargetAccount`."""
+    orderBy: [GrantTargetAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetAccountsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `deleteGrantTargetEmailByGrantIdAndTargetEmailNormalized` mutation."""
+input DeleteGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  grantId: UUID!
+  targetEmailNormalized: String!
+}
+
+"""All input for the `deleteGrantTargetEmail` mutation."""
+input DeleteGrantTargetEmailInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `GrantTargetEmail` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `GrantTargetEmail` mutation."""
+type DeleteGrantTargetEmailPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedGrantTargetEmailId: ID
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """The `GrantTargetEmail` that was deleted by this mutation."""
+  grantTargetEmail: GrantTargetEmail
+  """An edge for our `GrantTargetEmail`. May be used by Relay 1."""
+  grantTargetEmailEdge(
+    """The method to use when ordering `GrantTargetEmail`."""
+    orderBy: [GrantTargetEmailsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetEmailsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `deleteNeedById` mutation."""
 input DeleteNeedByIdInput {
   """
@@ -3301,6 +4038,46 @@ type DeleteResourcePayload {
   ): ResourcesEdge
 }
 
+"""All input for the `deleteSystemSettingByKey` mutation."""
+input DeleteSystemSettingByKeyInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  key: String!
+}
+
+"""All input for the `deleteSystemSetting` mutation."""
+input DeleteSystemSettingInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `SystemSetting` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `SystemSetting` mutation."""
+type DeleteSystemSettingPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedSystemSettingId: ID
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """The `SystemSetting` that was deleted by this mutation."""
+  systemSetting: SystemSetting
+  """An edge for our `SystemSetting`. May be used by Relay 1."""
+  systemSettingEdge(
+    """The method to use when ordering `SystemSetting`."""
+    orderBy: [SystemSettingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): SystemSettingsEdge
+}
+
 """All input for the `deleteTokenMovementById` mutation."""
 input DeleteTokenMovementByIdInput {
   """
@@ -3383,6 +4160,35 @@ type GetAccountDeliveryPreferencesRecord {
   summaryFrequencyDays: Int
 }
 
+"""A connection to a list of `GetGrantForClaimRecord` values."""
+type GetGrantForClaimConnection {
+  """A list of edges which contains the `GetGrantForClaimRecord` and cursor to aid in pagination."""
+  edges: [GetGrantForClaimEdge!]!
+  """A list of `GetGrantForClaimRecord` objects."""
+  nodes: [GetGrantForClaimRecord!]!
+  """The count of *all* `GetGrantForClaimRecord` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `GetGrantForClaimRecord` edge in the connection."""
+type GetGrantForClaimEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `GetGrantForClaimRecord` at the end of the edge."""
+  node: GetGrantForClaimRecord!
+}
+
+"""The return type of our `getGrantForClaim` query."""
+type GetGrantForClaimRecord {
+  awardedTokenAmount: Int
+  description: String
+  expiresAt: Datetime
+  id: UUID
+  linkedCampaignId: UUID
+  maxSuccessfulClaimCount: Int
+  title: String
+}
+
 """All input for the `giftTokens` mutation."""
 input GiftTokensInput {
   amount: Int
@@ -3414,6 +4220,386 @@ type GiftTokensPayload {
     """The method to use when ordering `TokenMovement`."""
     orderBy: [TokenMovementsOrderBy!] = [PRIMARY_KEY_ASC]
   ): TokenMovementsEdge
+}
+
+"""Per-account successful claim records for grants, enforcing one successful award per grant/account."""
+type GrantClaim implements Node {
+  """Reads a single `Account` that is related to this `GrantClaim`."""
+  accountByAccountId: Account
+  accountId: UUID!
+  awardedAt: Datetime!
+  awardedTokenAmount: Int!
+  createdAt: Datetime!
+  """Reads a single `GrantDefinition` that is related to this `GrantClaim`."""
+  grantDefinitionByGrantId: GrantDefinition
+  grantId: UUID!
+  id: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  tokenMovementId: UUID
+}
+
+"""
+A condition to be used against `GrantClaim` object types. All fields are tested
+for equality and combined with a logical ‘and.’
+"""
+input GrantClaimCondition {
+  """Checks for equality with the object’s `accountId` field."""
+  accountId: UUID
+  """Checks for equality with the object’s `grantId` field."""
+  grantId: UUID
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+}
+
+"""An input for mutations affecting `GrantClaim`"""
+input GrantClaimInput {
+  accountId: UUID!
+  awardedAt: Datetime
+  awardedTokenAmount: Int!
+  createdAt: Datetime
+  grantId: UUID!
+  id: UUID
+  tokenMovementId: UUID
+}
+
+"""Represents an update to a `GrantClaim`. Fields that are set will be updated."""
+input GrantClaimPatch {
+  accountId: UUID
+  awardedAt: Datetime
+  awardedTokenAmount: Int
+  createdAt: Datetime
+  grantId: UUID
+  id: UUID
+  tokenMovementId: UUID
+}
+
+"""Result of an atomic grant claim attempt: outcome_code plus awarded amount and claim id on success."""
+type GrantClaimResult {
+  claimedAmount: Int
+  grantClaimId: UUID
+  outcomeCode: String
+}
+
+"""A connection to a list of `GrantClaim` values."""
+type GrantClaimsConnection {
+  """A list of edges which contains the `GrantClaim` and cursor to aid in pagination."""
+  edges: [GrantClaimsEdge!]!
+  """A list of `GrantClaim` objects."""
+  nodes: [GrantClaim!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `GrantClaim` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `GrantClaim` edge in the connection."""
+type GrantClaimsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `GrantClaim` at the end of the edge."""
+  node: GrantClaim!
+}
+
+"""Methods to use when ordering `GrantClaim`."""
+enum GrantClaimsOrderBy {
+  ACCOUNT_ID_ASC
+  ACCOUNT_ID_DESC
+  GRANT_ID_ASC
+  GRANT_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""Administrator-defined token seeding grants with optional targeting and campaign criteria."""
+type GrantDefinition implements Node {
+  archivedAt: Datetime
+  awardedTokenAmount: Int!
+  createdAt: Datetime!
+  createdByAccountId: UUID!
+  description: String!
+  expiresAt: Datetime
+  """Reads and enables pagination through a set of `GrantClaim`."""
+  grantClaimsByGrantId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantClaimCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsConnection!
+  """Reads and enables pagination through a set of `GrantTargetAccount`."""
+  grantTargetAccountsByGrantId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantTargetAccountCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantTargetAccount`."""
+    orderBy: [GrantTargetAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetAccountsConnection!
+  """Reads and enables pagination through a set of `GrantTargetEmail`."""
+  grantTargetEmailsByGrantId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantTargetEmailCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantTargetEmail`."""
+    orderBy: [GrantTargetEmailsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetEmailsConnection!
+  id: UUID!
+  linkedCampaignId: UUID
+  maxSuccessfulClaimCount: Int
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  title: String!
+  updatedAt: Datetime!
+}
+
+"""
+A condition to be used against `GrantDefinition` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input GrantDefinitionCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+}
+
+"""An input for mutations affecting `GrantDefinition`"""
+input GrantDefinitionInput {
+  archivedAt: Datetime
+  awardedTokenAmount: Int!
+  createdAt: Datetime
+  createdByAccountId: UUID!
+  description: String
+  expiresAt: Datetime
+  id: UUID
+  linkedCampaignId: UUID
+  maxSuccessfulClaimCount: Int
+  title: String!
+  updatedAt: Datetime
+}
+
+"""Represents an update to a `GrantDefinition`. Fields that are set will be updated."""
+input GrantDefinitionPatch {
+  archivedAt: Datetime
+  awardedTokenAmount: Int
+  createdAt: Datetime
+  createdByAccountId: UUID
+  description: String
+  expiresAt: Datetime
+  id: UUID
+  linkedCampaignId: UUID
+  maxSuccessfulClaimCount: Int
+  title: String
+  updatedAt: Datetime
+}
+
+"""A connection to a list of `GrantDefinition` values."""
+type GrantDefinitionsConnection {
+  """A list of edges which contains the `GrantDefinition` and cursor to aid in pagination."""
+  edges: [GrantDefinitionsEdge!]!
+  """A list of `GrantDefinition` objects."""
+  nodes: [GrantDefinition!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `GrantDefinition` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `GrantDefinition` edge in the connection."""
+type GrantDefinitionsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `GrantDefinition` at the end of the edge."""
+  node: GrantDefinition!
+}
+
+"""Methods to use when ordering `GrantDefinition`."""
+enum GrantDefinitionsOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""Per-grant account-id targeting criteria. Empty set means no account-id restriction."""
+type GrantTargetAccount implements Node {
+  """Reads a single `Account` that is related to this `GrantTargetAccount`."""
+  accountByAccountId: Account
+  accountId: UUID!
+  createdAt: Datetime!
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`."""
+  grantDefinitionByGrantId: GrantDefinition
+  grantId: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+}
+
+"""
+A condition to be used against `GrantTargetAccount` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input GrantTargetAccountCondition {
+  """Checks for equality with the object’s `accountId` field."""
+  accountId: UUID
+  """Checks for equality with the object’s `grantId` field."""
+  grantId: UUID
+}
+
+"""An input for mutations affecting `GrantTargetAccount`"""
+input GrantTargetAccountInput {
+  accountId: UUID!
+  createdAt: Datetime
+  grantId: UUID!
+}
+
+"""Represents an update to a `GrantTargetAccount`. Fields that are set will be updated."""
+input GrantTargetAccountPatch {
+  accountId: UUID
+  createdAt: Datetime
+  grantId: UUID
+}
+
+"""A connection to a list of `GrantTargetAccount` values."""
+type GrantTargetAccountsConnection {
+  """A list of edges which contains the `GrantTargetAccount` and cursor to aid in pagination."""
+  edges: [GrantTargetAccountsEdge!]!
+  """A list of `GrantTargetAccount` objects."""
+  nodes: [GrantTargetAccount!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `GrantTargetAccount` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `GrantTargetAccount` edge in the connection."""
+type GrantTargetAccountsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `GrantTargetAccount` at the end of the edge."""
+  node: GrantTargetAccount!
+}
+
+"""Methods to use when ordering `GrantTargetAccount`."""
+enum GrantTargetAccountsOrderBy {
+  ACCOUNT_ID_ASC
+  ACCOUNT_ID_DESC
+  GRANT_ID_ASC
+  GRANT_ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""Per-grant email targeting criteria using canonical lower-trimmed email values."""
+type GrantTargetEmail implements Node {
+  createdAt: Datetime!
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`."""
+  grantDefinitionByGrantId: GrantDefinition
+  grantId: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  targetEmail: String!
+  targetEmailNormalized: String!
+}
+
+"""
+A condition to be used against `GrantTargetEmail` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input GrantTargetEmailCondition {
+  """Checks for equality with the object’s `grantId` field."""
+  grantId: UUID
+  """Checks for equality with the object’s `targetEmailNormalized` field."""
+  targetEmailNormalized: String
+}
+
+"""An input for mutations affecting `GrantTargetEmail`"""
+input GrantTargetEmailInput {
+  createdAt: Datetime
+  grantId: UUID!
+  targetEmail: String!
+  targetEmailNormalized: String!
+}
+
+"""Represents an update to a `GrantTargetEmail`. Fields that are set will be updated."""
+input GrantTargetEmailPatch {
+  createdAt: Datetime
+  grantId: UUID
+  targetEmail: String
+  targetEmailNormalized: String
+}
+
+"""A connection to a list of `GrantTargetEmail` values."""
+type GrantTargetEmailsConnection {
+  """A list of edges which contains the `GrantTargetEmail` and cursor to aid in pagination."""
+  edges: [GrantTargetEmailsEdge!]!
+  """A list of `GrantTargetEmail` objects."""
+  nodes: [GrantTargetEmail!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `GrantTargetEmail` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `GrantTargetEmail` edge in the connection."""
+type GrantTargetEmailsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `GrantTargetEmail` at the end of the edge."""
+  node: GrantTargetEmail!
+}
+
+"""Methods to use when ordering `GrantTargetEmail`."""
+enum GrantTargetEmailsOrderBy {
+  GRANT_ID_ASC
+  GRANT_ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  TARGET_EMAIL_NORMALIZED_ASC
+  TARGET_EMAIL_NORMALIZED_DESC
 }
 
 """The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."""
@@ -3616,10 +4802,47 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AddCampaignModerationNoteInput!
   ): AddCampaignModerationNotePayload
+  adminListAccounts(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListAccountsInput!
+  ): AdminListAccountsPayload
+  adminListBids(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListBidsInput!
+  ): AdminListBidsPayload
+  adminListCampaigns(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListCampaignsInput!
+  ): AdminListCampaignsPayload
+  adminListGrants(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListGrantsInput!
+  ): AdminListGrantsPayload
+  adminListLogs(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListLogsInput!
+  ): AdminListLogsPayload
+  adminListMails(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListMailsInput!
+  ): AdminListMailsPayload
+  adminListNotifications(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListNotificationsInput!
+  ): AdminListNotificationsPayload
+  adminListResources(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminListResourcesInput!
+  ): AdminListResourcesPayload
   approveCampaign(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: ApproveCampaignInput!
   ): ApproveCampaignPayload
+  """Archives a grant definition so it no longer appears in the claim flow. Admin only."""
+  archiveGrant(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: ArchiveGrantInput!
+  ): ArchiveGrantPayload
   authChangePassword(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AuthChangePasswordInput!
@@ -3632,10 +4855,24 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AuthLogoutInput!
   ): AuthLogoutPayload
+  """
+  Atomically evaluates all grant criteria for the authenticated account and, if satisfied,
+  issues a token award and returns outcome_code = 'success'. On failure returns a safe denial
+  reason code: not_authenticated | grant_unavailable | expired | already_claimed | cap_reached |
+  not_targeted | campaign_criterion_not_satisfied.
+  """
+  claimGrant(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: ClaimGrantInput!
+  ): ClaimGrantPayload
   claimNeed(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: ClaimNeedInput!
   ): ClaimNeedPayload
+  cleanupOperationalLogs(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CleanupOperationalLogsInput!
+  ): CleanupOperationalLogsPayload
   cleanupReadNotifications(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CleanupReadNotificationsInput!
@@ -3701,6 +4938,26 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateClaimMessageImageInput!
   ): CreateClaimMessageImagePayload
+  """Creates a single `GrantClaim`."""
+  createGrantClaim(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateGrantClaimInput!
+  ): CreateGrantClaimPayload
+  """Creates a single `GrantDefinition`."""
+  createGrantDefinition(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateGrantDefinitionInput!
+  ): CreateGrantDefinitionPayload
+  """Creates a single `GrantTargetAccount`."""
+  createGrantTargetAccount(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateGrantTargetAccountInput!
+  ): CreateGrantTargetAccountPayload
+  """Creates a single `GrantTargetEmail`."""
+  createGrantTargetEmail(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateGrantTargetEmailInput!
+  ): CreateGrantTargetEmailPayload
   createNeed(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateNeedInput!
@@ -3750,6 +5007,11 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateResourceCategoryAssignmentInput!
   ): CreateResourceCategoryAssignmentPayload
+  """Creates a single `SystemSetting`."""
+  createSystemSetting(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateSystemSettingInput!
+  ): CreateSystemSettingPayload
   """Creates a single `TokenMovement`."""
   createTokenMovement(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -3865,6 +5127,51 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: DeleteClaimMessageImageByIdInput!
   ): DeleteClaimMessageImagePayload
+  """Deletes a single `GrantClaim` using its globally unique id."""
+  deleteGrantClaim(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantClaimInput!
+  ): DeleteGrantClaimPayload
+  """Deletes a single `GrantClaim` using a unique key."""
+  deleteGrantClaimByGrantIdAndAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantClaimByGrantIdAndAccountIdInput!
+  ): DeleteGrantClaimPayload
+  """Deletes a single `GrantClaim` using a unique key."""
+  deleteGrantClaimById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantClaimByIdInput!
+  ): DeleteGrantClaimPayload
+  """Deletes a single `GrantDefinition` using its globally unique id."""
+  deleteGrantDefinition(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantDefinitionInput!
+  ): DeleteGrantDefinitionPayload
+  """Deletes a single `GrantDefinition` using a unique key."""
+  deleteGrantDefinitionById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantDefinitionByIdInput!
+  ): DeleteGrantDefinitionPayload
+  """Deletes a single `GrantTargetAccount` using its globally unique id."""
+  deleteGrantTargetAccount(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantTargetAccountInput!
+  ): DeleteGrantTargetAccountPayload
+  """Deletes a single `GrantTargetAccount` using a unique key."""
+  deleteGrantTargetAccountByGrantIdAndAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantTargetAccountByGrantIdAndAccountIdInput!
+  ): DeleteGrantTargetAccountPayload
+  """Deletes a single `GrantTargetEmail` using its globally unique id."""
+  deleteGrantTargetEmail(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantTargetEmailInput!
+  ): DeleteGrantTargetEmailPayload
+  """Deletes a single `GrantTargetEmail` using a unique key."""
+  deleteGrantTargetEmailByGrantIdAndTargetEmailNormalized(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput!
+  ): DeleteGrantTargetEmailPayload
   """Deletes a single `Need` using its globally unique id."""
   deleteNeed(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -3985,6 +5292,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: DeleteResourceCategoryBySlugInput!
   ): DeleteResourceCategoryPayload
+  """Deletes a single `SystemSetting` using its globally unique id."""
+  deleteSystemSetting(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteSystemSettingInput!
+  ): DeleteSystemSettingPayload
+  """Deletes a single `SystemSetting` using a unique key."""
+  deleteSystemSettingByKey(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteSystemSettingByKeyInput!
+  ): DeleteSystemSettingPayload
   """Deletes a single `TokenMovement` using its globally unique id."""
   deleteTokenMovement(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -4072,6 +5389,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SetAccountDeliveryPreferenceInput!
   ): SetAccountDeliveryPreferencePayload
+  """Replaces the full set of account-id targeting criteria for a grant. Admin only."""
+  setGrantTargetAccounts(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: SetGrantTargetAccountsInput!
+  ): SetGrantTargetAccountsPayload
+  """Replaces the full set of email targeting criteria for a grant using normalized matching. Admin only."""
+  setGrantTargetEmails(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: SetGrantTargetEmailsInput!
+  ): SetGrantTargetEmailsPayload
   settleNeedClaim(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SettleNeedClaimInput!
@@ -4190,6 +5517,51 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateClaimMessageImageByIdInput!
   ): UpdateClaimMessageImagePayload
+  """Updates a single `GrantClaim` using its globally unique id and a patch."""
+  updateGrantClaim(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantClaimInput!
+  ): UpdateGrantClaimPayload
+  """Updates a single `GrantClaim` using a unique key and a patch."""
+  updateGrantClaimByGrantIdAndAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantClaimByGrantIdAndAccountIdInput!
+  ): UpdateGrantClaimPayload
+  """Updates a single `GrantClaim` using a unique key and a patch."""
+  updateGrantClaimById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantClaimByIdInput!
+  ): UpdateGrantClaimPayload
+  """Updates a single `GrantDefinition` using its globally unique id and a patch."""
+  updateGrantDefinition(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantDefinitionInput!
+  ): UpdateGrantDefinitionPayload
+  """Updates a single `GrantDefinition` using a unique key and a patch."""
+  updateGrantDefinitionById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantDefinitionByIdInput!
+  ): UpdateGrantDefinitionPayload
+  """Updates a single `GrantTargetAccount` using its globally unique id and a patch."""
+  updateGrantTargetAccount(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantTargetAccountInput!
+  ): UpdateGrantTargetAccountPayload
+  """Updates a single `GrantTargetAccount` using a unique key and a patch."""
+  updateGrantTargetAccountByGrantIdAndAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantTargetAccountByGrantIdAndAccountIdInput!
+  ): UpdateGrantTargetAccountPayload
+  """Updates a single `GrantTargetEmail` using its globally unique id and a patch."""
+  updateGrantTargetEmail(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantTargetEmailInput!
+  ): UpdateGrantTargetEmailPayload
+  """Updates a single `GrantTargetEmail` using a unique key and a patch."""
+  updateGrantTargetEmailByGrantIdAndTargetEmailNormalized(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput!
+  ): UpdateGrantTargetEmailPayload
   """Updates a single `Need` using its globally unique id and a patch."""
   updateNeed(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -4310,6 +5682,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateResourceCategoryBySlugInput!
   ): UpdateResourceCategoryPayload
+  """Updates a single `SystemSetting` using its globally unique id and a patch."""
+  updateSystemSetting(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateSystemSettingInput!
+  ): UpdateSystemSettingPayload
+  """Updates a single `SystemSetting` using a unique key and a patch."""
+  updateSystemSettingByKey(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateSystemSettingByKeyInput!
+  ): UpdateSystemSettingPayload
   """Updates a single `TokenMovement` using its globally unique id and a patch."""
   updateTokenMovement(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -4325,6 +5707,11 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateTokenMovementByIdempotencyKeyInput!
   ): UpdateTokenMovementPayload
+  """Creates a new grant definition when p_grant_id is null, or updates an existing one. Admin only."""
+  upsertGrant(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpsertGrantInput!
+  ): UpsertGrantPayload
   writeOperationalLog(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: WriteOperationalLogInput!
@@ -5236,6 +6623,86 @@ type Query implements Node {
     """The method to use when ordering `ClaimMessage`."""
     orderBy: [ClaimMessagesOrderBy!] = [PRIMARY_KEY_ASC]
   ): ClaimMessagesConnection
+  """Reads and enables pagination through a set of `GrantClaim`."""
+  allGrantClaims(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantClaimCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsConnection
+  """Reads and enables pagination through a set of `GrantDefinition`."""
+  allGrantDefinitions(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantDefinitionCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsConnection
+  """Reads and enables pagination through a set of `GrantTargetAccount`."""
+  allGrantTargetAccounts(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantTargetAccountCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantTargetAccount`."""
+    orderBy: [GrantTargetAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetAccountsConnection
+  """Reads and enables pagination through a set of `GrantTargetEmail`."""
+  allGrantTargetEmails(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantTargetEmailCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantTargetEmail`."""
+    orderBy: [GrantTargetEmailsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetEmailsConnection
   """Reads and enables pagination through a set of `NeedClaimNotification`."""
   allNeedClaimNotifications(
     """Read all values in the set after (below) this cursor."""
@@ -5436,6 +6903,26 @@ type Query implements Node {
     """The method to use when ordering `Resource`."""
     orderBy: [ResourcesOrderBy!] = [PRIMARY_KEY_ASC]
   ): ResourcesConnection
+  """Reads and enables pagination through a set of `SystemSetting`."""
+  allSystemSettings(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: SystemSettingCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `SystemSetting`."""
+    orderBy: [SystemSettingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): SystemSettingsConnection
   """Reads and enables pagination through a set of `TokenMovement`."""
   allTokenMovements(
     """Read all values in the set after (below) this cursor."""
@@ -5501,6 +6988,48 @@ type Query implements Node {
   ): ClaimMessageImage
   claimMessageImageById(id: UUID!): ClaimMessageImage
   currentTokenBalance: Int
+  getGrantForClaim(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pGrantId: UUID
+  ): GetGrantForClaimConnection
+  getOperationalLogRetentionDays: Int
+  """Reads a single `GrantClaim` using its globally unique `ID`."""
+  grantClaim(
+    """The globally unique `ID` to be used in selecting a single `GrantClaim`."""
+    nodeId: ID!
+  ): GrantClaim
+  grantClaimByGrantIdAndAccountId(accountId: UUID!, grantId: UUID!): GrantClaim
+  grantClaimById(id: UUID!): GrantClaim
+  """Reads a single `GrantDefinition` using its globally unique `ID`."""
+  grantDefinition(
+    """The globally unique `ID` to be used in selecting a single `GrantDefinition`."""
+    nodeId: ID!
+  ): GrantDefinition
+  grantDefinitionById(id: UUID!): GrantDefinition
+  """Reads a single `GrantTargetAccount` using its globally unique `ID`."""
+  grantTargetAccount(
+    """The globally unique `ID` to be used in selecting a single `GrantTargetAccount`."""
+    nodeId: ID!
+  ): GrantTargetAccount
+  grantTargetAccountByGrantIdAndAccountId(accountId: UUID!, grantId: UUID!): GrantTargetAccount
+  """Reads a single `GrantTargetEmail` using its globally unique `ID`."""
+  grantTargetEmail(
+    """The globally unique `ID` to be used in selecting a single `GrantTargetEmail`."""
+    nodeId: ID!
+  ): GrantTargetEmail
+  grantTargetEmailByGrantIdAndTargetEmailNormalized(grantId: UUID!, targetEmailNormalized: String!): GrantTargetEmail
   listResourceCategories(
     """Read all values in the set after (below) this cursor."""
     after: Cursor
@@ -5645,6 +7174,12 @@ type Query implements Node {
     offset: Int
     searchText: String
   ): SearchResourcesConnection
+  """Reads a single `SystemSetting` using its globally unique `ID`."""
+  systemSetting(
+    """The globally unique `ID` to be used in selecting a single `SystemSetting`."""
+    nodeId: ID!
+  ): SystemSetting
+  systemSettingByKey(key: String!): SystemSetting
   """Reads a single `TokenMovement` using its globally unique `ID`."""
   tokenMovement(
     """The globally unique `ID` to be used in selecting a single `TokenMovement`."""
@@ -6590,6 +8125,52 @@ type SetAccountDeliveryPreferencePayload {
   query: Query
 }
 
+"""All input for the `setGrantTargetAccounts` mutation."""
+input SetGrantTargetAccountsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pAccountIds: [UUID]
+  pGrantId: UUID
+}
+
+"""The output of our `setGrantTargetAccounts` mutation."""
+type SetGrantTargetAccountsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  integer: Int
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `setGrantTargetEmails` mutation."""
+input SetGrantTargetEmailsInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pEmails: [String]
+  pGrantId: UUID
+}
+
+"""The output of our `setGrantTargetEmails` mutation."""
+type SetGrantTargetEmailsPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  integer: Int
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `settleNeedClaim` mutation."""
 input SettleNeedClaimInput {
   """
@@ -6656,6 +8237,70 @@ type SubmitResourceBidPayload {
   ): ResourceBidsEdge
   """Reads a single `Resource` that is related to this `ResourceBid`."""
   resourceByResourceId: Resource
+}
+
+"""SQL-owned system configuration values used for operational controls such as retention windows."""
+type SystemSetting implements Node {
+  createdAt: Datetime!
+  key: String!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  updatedAt: Datetime!
+  valueText: String!
+}
+
+"""
+A condition to be used against `SystemSetting` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input SystemSettingCondition {
+  """Checks for equality with the object’s `key` field."""
+  key: String
+}
+
+"""An input for mutations affecting `SystemSetting`"""
+input SystemSettingInput {
+  createdAt: Datetime
+  key: String!
+  updatedAt: Datetime
+  valueText: String!
+}
+
+"""Represents an update to a `SystemSetting`. Fields that are set will be updated."""
+input SystemSettingPatch {
+  createdAt: Datetime
+  key: String
+  updatedAt: Datetime
+  valueText: String
+}
+
+"""A connection to a list of `SystemSetting` values."""
+type SystemSettingsConnection {
+  """A list of edges which contains the `SystemSetting` and cursor to aid in pagination."""
+  edges: [SystemSettingsEdge!]!
+  """A list of `SystemSetting` objects."""
+  nodes: [SystemSetting!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `SystemSetting` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `SystemSetting` edge in the connection."""
+type SystemSettingsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `SystemSetting` at the end of the edge."""
+  node: SystemSetting!
+}
+
+"""Methods to use when ordering `SystemSetting`."""
+enum SystemSettingsOrderBy {
+  KEY_ASC
+  KEY_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
 }
 
 """Auditable Topes ledger entries for all positive and negative account movements."""
@@ -7263,6 +8908,203 @@ type UpdateClaimMessagePayload {
   query: Query
 }
 
+"""All input for the `updateGrantClaimByGrantIdAndAccountId` mutation."""
+input UpdateGrantClaimByGrantIdAndAccountIdInput {
+  accountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantClaim` being updated."""
+  grantClaimPatch: GrantClaimPatch!
+  grantId: UUID!
+}
+
+"""All input for the `updateGrantClaimById` mutation."""
+input UpdateGrantClaimByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantClaim` being updated."""
+  grantClaimPatch: GrantClaimPatch!
+  id: UUID!
+}
+
+"""All input for the `updateGrantClaim` mutation."""
+input UpdateGrantClaimInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantClaim` being updated."""
+  grantClaimPatch: GrantClaimPatch!
+  """The globally unique `ID` which will identify a single `GrantClaim` to be updated."""
+  nodeId: ID!
+}
+
+"""The output of our update `GrantClaim` mutation."""
+type UpdateGrantClaimPayload {
+  """Reads a single `Account` that is related to this `GrantClaim`."""
+  accountByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """The `GrantClaim` that was updated by this mutation."""
+  grantClaim: GrantClaim
+  """An edge for our `GrantClaim`. May be used by Relay 1."""
+  grantClaimEdge(
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsEdge
+  """Reads a single `GrantDefinition` that is related to this `GrantClaim`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `updateGrantDefinitionById` mutation."""
+input UpdateGrantDefinitionByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantDefinition` being updated."""
+  grantDefinitionPatch: GrantDefinitionPatch!
+  id: UUID!
+}
+
+"""All input for the `updateGrantDefinition` mutation."""
+input UpdateGrantDefinitionInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantDefinition` being updated."""
+  grantDefinitionPatch: GrantDefinitionPatch!
+  """The globally unique `ID` which will identify a single `GrantDefinition` to be updated."""
+  nodeId: ID!
+}
+
+"""The output of our update `GrantDefinition` mutation."""
+type UpdateGrantDefinitionPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """The `GrantDefinition` that was updated by this mutation."""
+  grantDefinition: GrantDefinition
+  """An edge for our `GrantDefinition`. May be used by Relay 1."""
+  grantDefinitionEdge(
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `updateGrantTargetAccountByGrantIdAndAccountId` mutation."""
+input UpdateGrantTargetAccountByGrantIdAndAccountIdInput {
+  accountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  grantId: UUID!
+  """An object where the defined keys will be set on the `GrantTargetAccount` being updated."""
+  grantTargetAccountPatch: GrantTargetAccountPatch!
+}
+
+"""All input for the `updateGrantTargetAccount` mutation."""
+input UpdateGrantTargetAccountInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantTargetAccount` being updated."""
+  grantTargetAccountPatch: GrantTargetAccountPatch!
+  """The globally unique `ID` which will identify a single `GrantTargetAccount` to be updated."""
+  nodeId: ID!
+}
+
+"""The output of our update `GrantTargetAccount` mutation."""
+type UpdateGrantTargetAccountPayload {
+  """Reads a single `Account` that is related to this `GrantTargetAccount`."""
+  accountByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetAccount`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """The `GrantTargetAccount` that was updated by this mutation."""
+  grantTargetAccount: GrantTargetAccount
+  """An edge for our `GrantTargetAccount`. May be used by Relay 1."""
+  grantTargetAccountEdge(
+    """The method to use when ordering `GrantTargetAccount`."""
+    orderBy: [GrantTargetAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetAccountsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `updateGrantTargetEmailByGrantIdAndTargetEmailNormalized` mutation."""
+input UpdateGrantTargetEmailByGrantIdAndTargetEmailNormalizedInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  grantId: UUID!
+  """An object where the defined keys will be set on the `GrantTargetEmail` being updated."""
+  grantTargetEmailPatch: GrantTargetEmailPatch!
+  targetEmailNormalized: String!
+}
+
+"""All input for the `updateGrantTargetEmail` mutation."""
+input UpdateGrantTargetEmailInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """An object where the defined keys will be set on the `GrantTargetEmail` being updated."""
+  grantTargetEmailPatch: GrantTargetEmailPatch!
+  """The globally unique `ID` which will identify a single `GrantTargetEmail` to be updated."""
+  nodeId: ID!
+}
+
+"""The output of our update `GrantTargetEmail` mutation."""
+type UpdateGrantTargetEmailPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `GrantDefinition` that is related to this `GrantTargetEmail`."""
+  grantDefinitionByGrantId: GrantDefinition
+  """The `GrantTargetEmail` that was updated by this mutation."""
+  grantTargetEmail: GrantTargetEmail
+  """An edge for our `GrantTargetEmail`. May be used by Relay 1."""
+  grantTargetEmailEdge(
+    """The method to use when ordering `GrantTargetEmail`."""
+    orderBy: [GrantTargetEmailsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantTargetEmailsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `updateNeedById` mutation."""
 input UpdateNeedByIdInput {
   """
@@ -7780,6 +9622,49 @@ type UpdateResourcePayload {
   ): ResourcesEdge
 }
 
+"""All input for the `updateSystemSettingByKey` mutation."""
+input UpdateSystemSettingByKeyInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  key: String!
+  """An object where the defined keys will be set on the `SystemSetting` being updated."""
+  systemSettingPatch: SystemSettingPatch!
+}
+
+"""All input for the `updateSystemSetting` mutation."""
+input UpdateSystemSettingInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `SystemSetting` to be updated."""
+  nodeId: ID!
+  """An object where the defined keys will be set on the `SystemSetting` being updated."""
+  systemSettingPatch: SystemSettingPatch!
+}
+
+"""The output of our update `SystemSetting` mutation."""
+type UpdateSystemSettingPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """The `SystemSetting` that was updated by this mutation."""
+  systemSetting: SystemSetting
+  """An edge for our `SystemSetting`. May be used by Relay 1."""
+  systemSettingEdge(
+    """The method to use when ordering `SystemSetting`."""
+    orderBy: [SystemSettingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): SystemSettingsEdge
+}
+
 """All input for the `updateTokenMovementById` mutation."""
 input UpdateTokenMovementByIdInput {
   """
@@ -7837,6 +9722,40 @@ type UpdateTokenMovementPayload {
     """The method to use when ordering `TokenMovement`."""
     orderBy: [TokenMovementsOrderBy!] = [PRIMARY_KEY_ASC]
   ): TokenMovementsEdge
+}
+
+"""All input for the `upsertGrant` mutation."""
+input UpsertGrantInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pArchivedAt: Datetime
+  pAwardedTokenAmount: Int
+  pDescription: String
+  pExpiresAt: Datetime
+  pGrantId: UUID
+  pLinkedCampaignId: UUID
+  pMaxSuccessfulClaimCount: Int
+  pTitle: String
+}
+
+"""The output of our `upsertGrant` mutation."""
+type UpsertGrantPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  grantDefinition: GrantDefinition
+  """An edge for our `GrantDefinition`. May be used by Relay 1."""
+  grantDefinitionEdge(
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
 }
 
 """All input for the `writeOperationalLog` mutation."""

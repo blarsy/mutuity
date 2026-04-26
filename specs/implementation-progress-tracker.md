@@ -32,7 +32,7 @@ Cadence: update at least once per workday
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 70% | TBD |
-| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | IN PROGRESS | 20% | TBD |
+| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | IN PROGRESS | 35% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -292,6 +292,7 @@ This week priorities:
 | 2026-04-26 | P12 execution | Completed T073 by adding contract-level end-to-end verification for `getGrantForClaim` and `claimGrant`, including success payload shape and user-safe denial outcome codes (`not_authenticated`, `grant_unavailable`, `expired`, `already_claimed`, `cap_reached`). | backend/tests/contract/grant-claim.contract.spec.ts; npm -C backend run typecheck | None | Start Phase 13 with T074 admin support matrix documentation. |
 | 2026-04-26 | P8 execution | Completed T074 by documenting an explicit admin support page matrix in both feature spec and implementation plan, including per-page field projection, search fields, newest-first ordering, and action buttons/dialog expectations. | specs/005-resource-discovery-and-publishing/spec.md; specs/005-resource-discovery-and-publishing/plan.md; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T075 admin-only backend list/search helpers with pagination for all admin support pages. |
 | 2026-04-26 | P8 execution | Completed T075 by adding SQL-owned, admin-only paginated list/search helpers for accounts, bids, resources, notifications, mails, campaigns, grants, and logs, each with newest-first ordering and scoped case-insensitive search fields, plus supporting timestamp indexes. Migration `059` applied successfully and backend typecheck passed. | database/migrations/059_admin_support_list_search_helpers.sql; docker compose run --rm migrate; npm -C backend run typecheck; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T076 admin access guard and role enforcement for admin routes and side-effect actions. |
+| 2026-04-26 | P8 execution | Completed T076 by adding a reusable frontend admin-route guard hook (`useRequireAdmin`) and extending backend safe GraphQL error mapping for admin-support access denials, keeping role enforcement user-safe and consistent for admin-only operations. Frontend GraphQL schema/codegen artifacts were refreshed after the new admin helper functions became available. | frontend/src/features/auth/requireAdmin.ts; backend/src/postgraphile/server.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C backend run typecheck; npm -C frontend run typecheck; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T077 admin pages with shared table/search scaffolding for all admin support entities. |
 
 ## Decisions Log
 

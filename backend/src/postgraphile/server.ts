@@ -65,6 +65,7 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["You cannot gift tokens to your own account", "BAD_USER_INPUT"],
   ["Only administrators can create or modify grants", "FORBIDDEN"],
   ["Only administrators can modify grant targets", "FORBIDDEN"],
+  ["Only administrators can access admin support data", "FORBIDDEN"],
   ["Administrator account context is required", "UNAUTHENTICATED"],
   ["Grant title is required", "BAD_USER_INPUT"],
   ["Grant awarded token amount must be a positive integer", "BAD_USER_INPUT"],
