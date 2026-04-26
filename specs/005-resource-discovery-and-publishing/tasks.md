@@ -120,6 +120,7 @@
 - [x] T071 Integrate successful grant claims into token movement ledger with grant linkage for auditability
 - [x] T072 Add backend tests for eligibility combinations (accounts, emails, future users, campaign criterion, max-claim cap, expiration, already-claimed) and concurrency safety
 - [ ] T073 Add end-to-end verification for grant route behavior and claim outcomes, including user-safe denial messages
+- [x] T073 Add end-to-end verification for grant route behavior and claim outcomes, including user-safe denial messages
 
 ## Phase 13: Admin Support And Troubleshooting Pages
 
