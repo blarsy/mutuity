@@ -243,6 +243,19 @@ Unified logging contract implementation shape (T058):
 - `send again` should recompute recipients and template context from current account data at resend time.
 - Datetime values should be stored with time zone and rendered in the current user's session locale/time-zone representation.
 
+Admin support page implementation matrix:
+
+| Page | Backend projection target | Sort order | Searchable fields | Primary actions |
+|---|---|---|---|---|
+| Accounts | account profile + current token balance projection | newest accounts first (`created_at DESC`) | account email, account name | none |
+| Bids | bid + bidder/receiver/resource projection | newest bids first (`created_at DESC`) | bidder name, receiver name, resource title | none |
+| Resources | resource + creator projection | newest resources first (`created_at DESC`) | resource title, resource description, creator name | none |
+| Notifications | account notification + account projection | newest notifications first (`created_at DESC`) | account name, notification data | none |
+| Mails | mail delivery/event projection | newest mails first (`created_at DESC`) | recipient email, recipient account name, subject | `View content` (fullscreen), `Send again` |
+| Campaigns | campaign + creator projection | newest campaigns first (`created_at DESC`) | campaign summary, campaign description, creator name | `View description` (fullscreen), `Moderate` |
+| Grants | grant definition projection | newest grants first (`created_at DESC`) | grant title, grant description | `Create` (dialog) |
+| Logs | unified operational log projection | newest logs first (`created_at DESC`) | component, message, context | `View message` (fullscreen wrapping text) |
+
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
 - One-time rewards for avatar upload, first bio, first address, first added profile link, first resource image, first default Topes amount, `resource age >= 24h`, and `claim age >= 24h` must be idempotent and guarded against duplicate issuance.

@@ -32,7 +32,7 @@ Cadence: update at least once per workday
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 70% | TBD |
-| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | NOT STARTED | 0% | TBD |
+| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | IN PROGRESS | 20% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -197,7 +197,7 @@ Definition of Done:
 
 ### P8 - Admin And Ops Hardening (005 extended)
 
-Status: NOT STARTED
+Status: IN PROGRESS
 Goal: operational support surfaces, grants, and logging hardening ready for production.
 
 Checkpoints:
@@ -214,13 +214,13 @@ Definition of Done:
 ## Active Work Queue
 
 Current phase: P4
-Current milestone: P4-M1 - Resource discovery baseline kickoff
+Current milestone: P8-M1 - Admin support and troubleshooting docs and backend foundation
 
 This week priorities:
 
-1. Start P4 Slice 1 with active resource discovery baseline (visibility, expiration, location sort, tie-break).
-2. Implement and validate tri-state modality filter behavior end-to-end (`neutral` / `yes` / `no`).
-3. Add focused backend/frontend verification for browse correctness before moving to publish/bid surfaces.
+1. Complete admin support matrix documentation and lock the projection/search/action contract per admin page.
+2. Implement SQL-owned/admin-only list and search surfaces with newest-first ordering and pagination.
+3. Add role guard and side-effect authorization coverage before building admin pages.
 
 ## Session Log
 
@@ -287,6 +287,10 @@ This week priorities:
 | 2026-04-26 | P12 execution | Completed T067 by implementing the full SQL-owned grant schema (grant_definition, grant_target_account, grant_target_email, grant_claim) with RLS policies, 6 helper functions (upsert_grant_definition, replace_grant_target_accounts, replace_grant_target_emails, is_grant_campaign_criterion_satisfied, record_grant_claim_award, get_grant_for_claim), indexes, grants, and comments; migration 056 applied successfully and backend typecheck passed. | database/migrations/056_grants_schema_and_helpers.sql; docker compose -f docker-compose.yml run --rm migrate; npm -C backend run typecheck | None | Implement T068 admin-only API/mutations for creating and managing grants and their criteria. |
 | 2026-04-26 | P12 execution | Completed T068 by creating app_public wrapper mutations (upsertGrant, setGrantTargetAccounts, setGrantTargetEmails, archiveGrant) that delegate to the security-definer private helpers, exposing them as PostGraphile GraphQL mutations with admin-only grants and PostGraphile @name smart comments; registered grant-related error messages in server.ts and applied migration 057. | database/migrations/057_grant_admin_mutations.sql; backend/src/postgraphile/server.ts; docker compose -f docker-compose.yml run --rm migrate; npm -C backend run typecheck | None | Implement T069 SQL-owned atomic claim function with criteria evaluation, idempotency, and outcome codes. |
 | 2026-04-26 | P12 execution | Completed T069 and T071 by creating the app_public.claim_grant security-definer function that atomically evaluates all criteria (auth, availability, expiry, already-claimed, cap, account/email targeting, campaign criterion), issues a token movement on success, records grant_claim with token_movement linkage, and returns a safe grant_claim_result composite with outcome_code + claimed_amount + grant_claim_id; migration 058 applied and typecheck passed. | database/migrations/058_grant_atomic_claim.sql; docker compose -f docker-compose.yml run --rm migrate; npm -C backend run typecheck | None | Implement T070 authenticated grant claim page (/grants/[id]). |
+| 2026-04-26 | P12 execution | Completed T070 by implementing the authenticated `/grants/[id]` claim page with login gating, grant detail fetch, claim mutation trigger, and localized success/denial outcome rendering using the grants namespace. | frontend/src/pages/grants/[id].tsx; frontend/src/features/grants/grants.queries.ts; frontend/src/locales/en/grants.json; frontend/src/locales/fr/grants.json; frontend/src/i18n.ts; npm -C frontend run typecheck | None | Implement T072 backend eligibility and concurrency coverage for grants. |
+| 2026-04-26 | P12 execution | Completed T072 by adding grant integration coverage for eligibility combinations and concurrency safety, including account targeting, email targeting, campaign criterion, expiration, cap, already-claimed, archived/unavailable, anonymous, and race behavior under capped claims. | backend/tests/integration/grants.spec.ts; npm -C backend run typecheck | None | Implement T073 end-to-end verification for grant route outcomes and user-safe denial categories. |
+| 2026-04-26 | P12 execution | Completed T073 by adding contract-level end-to-end verification for `getGrantForClaim` and `claimGrant`, including success payload shape and user-safe denial outcome codes (`not_authenticated`, `grant_unavailable`, `expired`, `already_claimed`, `cap_reached`). | backend/tests/contract/grant-claim.contract.spec.ts; npm -C backend run typecheck | None | Start Phase 13 with T074 admin support matrix documentation. |
+| 2026-04-26 | P8 execution | Completed T074 by documenting an explicit admin support page matrix in both feature spec and implementation plan, including per-page field projection, search fields, newest-first ordering, and action buttons/dialog expectations. | specs/005-resource-discovery-and-publishing/spec.md; specs/005-resource-discovery-and-publishing/plan.md; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T075 admin-only backend list/search helpers with pagination for all admin support pages. |
 
 ## Decisions Log
 
@@ -306,7 +310,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 complete, P3 complete; P4 in progress through resources workspace and T035 kickoff for needs workspace.
+- Overall progress: P1 complete, P2 complete, P3 complete; P4/P7 largely advanced; P8 in progress with grants completed and admin support phase started.
 - Current health: GREEN
-- Main risk: P4 scope can expand too quickly unless discovery baseline (filters/sorting/expiration invariants) is validated before publish/bid UI growth.
-- Requested supervisor input: confirm whether P4 should prioritize public discovery-only completion before any resource publish UX expansion.
+- Main risk: Admin support pages span multiple operational entities; consistency of projection/search/pagination contracts can drift without shared helpers.
+- Requested supervisor input: none.

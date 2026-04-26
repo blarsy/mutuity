@@ -271,6 +271,19 @@ As a system administrator, I can access focused admin-only data pages with fast 
 16. **Given** the `Grants` page, **When** `Create` is clicked, **Then** a dialog opens with the grant creation form.
 17. **Given** a row in `Logs`, **When** `View message` is clicked, **Then** a fullscreen dialog opens showing the full log message in a wrapping text block.
 
+**Admin Support Page Matrix**
+
+| Data Item | Default Ordering | Field Projection (table columns) | Search Fields (case-insensitive contains) | Action Buttons |
+|---|---|---|---|---|
+| Accounts | `created_at DESC` | id, name, email, language, amount of tokens, creation datetime, address | email, name | none |
+| Bids | `created_at DESC` | id, bidder name, receiver name, resource title, intensity, amount of tokens, status, creation datetime, expiration datetime | bidder name, receiver name, resource title | none |
+| Resources | `created_at DESC` | id, title, creator name, intensity, amount of tokens, number of images, location, creation datetime, expiration datetime | title, description, creator name | none |
+| Notifications | `created_at DESC` | id, account name, data (JSON), creation datetime, read datetime | account name, data | none |
+| Mails | `created_at DESC` | id, email, subject, recipient account name, creation datetime | email, recipient account name, subject | `View content`, `Send again` |
+| Campaigns | `created_at DESC` | id, creator name, summary, airdrop datetime, airdrop amount of tokens, begin datetime, end datetime, resource rewards multiplier, creation datetime | summary, creator name, description | `View description`, `Moderate` |
+| Grants | `created_at DESC` | id, title, description, expiration datetime, amount granted, creation datetime | title, description | `Create` |
+| Logs | `created_at DESC` | component, timestamp, severity, message, context | component, message, context | `View message` |
+
 ### Edge Cases
 
 - A resource can represent a gift, loan, exchange, or competence offer, and not all form fields apply equally to each subtype.
