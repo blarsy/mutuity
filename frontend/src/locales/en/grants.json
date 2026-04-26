@@ -1,0 +1,22 @@
+{
+  "pageTitle": "Grant",
+  "loading": "Loading grant…",
+  "unavailable": "This grant is not available.",
+  "unavailableDescription": "The grant you are looking for does not exist or is no longer available.",
+  "awardedAmount": "Reward: {{amount}} Topes",
+  "expiresAt": "Expires: {{date}}",
+  "maxClaims": "Limited to {{count}} claim",
+  "maxClaims_plural": "Limited to {{count}} claims",
+  "claimButton": "Claim {{amount}} Topes",
+  "claiming": "Claiming…",
+  "outcome": {
+    "success": "You received {{amount}} Topes!",
+    "not_authenticated": "You must be signed in to claim this grant.",
+    "grant_unavailable": "This grant is no longer available.",
+    "expired": "This grant has expired.",
+    "already_claimed": "You have already claimed this grant.",
+    "cap_reached": "This grant has reached its maximum number of claims.",
+    "not_targeted": "You are not eligible for this grant.",
+    "campaign_criterion_not_satisfied": "You do not meet the campaign participation criteria for this grant."
+  }
+}

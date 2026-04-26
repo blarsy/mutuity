@@ -1,0 +1,22 @@
+{
+  "pageTitle": "Subvention",
+  "loading": "Chargement de la subvention…",
+  "unavailable": "Cette subvention n'est pas disponible.",
+  "unavailableDescription": "La subvention que vous recherchez n'existe pas ou n'est plus disponible.",
+  "awardedAmount": "Récompense : {{amount}} Topes",
+  "expiresAt": "Expire le : {{date}}",
+  "maxClaims": "Limitée à {{count}} réclamation",
+  "maxClaims_plural": "Limitée à {{count}} réclamations",
+  "claimButton": "Recevoir {{amount}} Topes",
+  "claiming": "Réclamation en cours…",
+  "outcome": {
+    "success": "Vous avez reçu {{amount}} Topes !",
+    "not_authenticated": "Vous devez être connecté(e) pour réclamer cette subvention.",
+    "grant_unavailable": "Cette subvention n'est plus disponible.",
+    "expired": "Cette subvention a expiré.",
+    "already_claimed": "Vous avez déjà réclamé cette subvention.",
+    "cap_reached": "Cette subvention a atteint son nombre maximum de réclamations.",
+    "not_targeted": "Vous n'êtes pas éligible à cette subvention.",
+    "campaign_criterion_not_satisfied": "Vous ne remplissez pas les critères de participation à la campagne associée à cette subvention."
+  }
+}

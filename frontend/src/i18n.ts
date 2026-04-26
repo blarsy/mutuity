@@ -14,6 +14,7 @@ import enCampaigns from "./locales/en/campaigns.json";
 import enProfile from "./locales/en/profile.json";
 import enNotifications from "./locales/en/notifications.json";
 import enPreferences from "./locales/en/preferences.json";
+import enGrants from "./locales/en/grants.json";
 
 import frCommon from "./locales/fr/common.json";
 import frLayout from "./locales/fr/layout.json";
@@ -28,6 +29,7 @@ import frCampaigns from "./locales/fr/campaigns.json";
 import frProfile from "./locales/fr/profile.json";
 import frNotifications from "./locales/fr/notifications.json";
 import frPreferences from "./locales/fr/preferences.json";
+import frGrants from "./locales/fr/grants.json";
 
 void i18n
   .use(initReactI18next)
@@ -46,7 +48,8 @@ void i18n
         campaigns: enCampaigns,
         profile: enProfile,
         notifications: enNotifications,
-        preferences: enPreferences
+        preferences: enPreferences,
+        grants: enGrants
       },
       fr: {
         common: frCommon,
@@ -61,7 +64,8 @@ void i18n
         campaigns: frCampaigns,
         profile: frProfile,
         notifications: frNotifications,
-        preferences: frPreferences
+        preferences: frPreferences,
+        grants: frGrants
       }
     },
     lng: "fr",
