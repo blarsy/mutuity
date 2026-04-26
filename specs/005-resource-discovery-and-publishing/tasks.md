@@ -124,7 +124,7 @@
 ## Phase 13: Admin Support And Troubleshooting Pages
 
 - [x] T074 Document the admin support page matrix in `spec.md` and `plan.md`, including field projections, search fields, ordering, and action buttons per data item
-- [ ] T075 Implement admin-only backend list/search endpoints or SQL helpers for accounts, bids, resources, notifications, mails, campaigns, grants, and logs with most-recent-first ordering and pagination
+- [x] T075 Implement admin-only backend list/search endpoints or SQL helpers for accounts, bids, resources, notifications, mails, campaigns, grants, and logs with most-recent-first ordering and pagination
 - [ ] T076 Implement admin access guard and role enforcement for all admin support routes and side-effect actions
 - [ ] T077 Build admin pages for accounts, bids, resources, notifications, mails, campaigns, grants, and logs with shared table/search scaffolding
 - [ ] T078 Implement mail actions: fullscreen HTML content viewer and `send again` action using the same routine as mailing jobs
