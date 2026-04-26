@@ -672,32 +672,27 @@ export type AddCampaignModerationNotePayloadCampaignModerationNoteEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignModerationNotesOrderBy>>;
 };
 
-/** All input for the `adminListAccounts` mutation. */
-export type AdminListAccountsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListAccountsRecord` edge in the connection. */
+export type AdminListAccountEdge = {
+  __typename: 'AdminListAccountEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListAccountsRecord` at the end of the edge. */
+  node: AdminListAccountsRecord;
 };
 
-/** The output of our `adminListAccounts` mutation. */
-export type AdminListAccountsPayload = {
-  __typename: 'AdminListAccountsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListAccountsRecord>>>;
+/** A connection to a list of `AdminListAccountsRecord` values. */
+export type AdminListAccountsConnection = {
+  __typename: 'AdminListAccountsConnection';
+  /** A list of edges which contains the `AdminListAccountsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListAccountEdge>;
+  /** A list of `AdminListAccountsRecord` objects. */
+  nodes: Array<AdminListAccountsRecord>;
+  /** The count of *all* `AdminListAccountsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListAccounts` mutation. */
+/** The return type of our `adminListAccounts` query. */
 export type AdminListAccountsRecord = {
   __typename: 'AdminListAccountsRecord';
   address: Maybe<Scalars['String']['output']>;
@@ -709,32 +704,27 @@ export type AdminListAccountsRecord = {
   tokenAmount: Maybe<Scalars['Int']['output']>;
 };
 
-/** All input for the `adminListBids` mutation. */
-export type AdminListBidsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListBidsRecord` edge in the connection. */
+export type AdminListBidEdge = {
+  __typename: 'AdminListBidEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListBidsRecord` at the end of the edge. */
+  node: AdminListBidsRecord;
 };
 
-/** The output of our `adminListBids` mutation. */
-export type AdminListBidsPayload = {
-  __typename: 'AdminListBidsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListBidsRecord>>>;
+/** A connection to a list of `AdminListBidsRecord` values. */
+export type AdminListBidsConnection = {
+  __typename: 'AdminListBidsConnection';
+  /** A list of edges which contains the `AdminListBidsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListBidEdge>;
+  /** A list of `AdminListBidsRecord` objects. */
+  nodes: Array<AdminListBidsRecord>;
+  /** The count of *all* `AdminListBidsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListBids` mutation. */
+/** The return type of our `adminListBids` query. */
 export type AdminListBidsRecord = {
   __typename: 'AdminListBidsRecord';
   bidderName: Maybe<Scalars['String']['output']>;
@@ -748,32 +738,27 @@ export type AdminListBidsRecord = {
   tokenAmount: Maybe<Scalars['Int']['output']>;
 };
 
-/** All input for the `adminListCampaigns` mutation. */
-export type AdminListCampaignsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListCampaignsRecord` edge in the connection. */
+export type AdminListCampaignEdge = {
+  __typename: 'AdminListCampaignEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListCampaignsRecord` at the end of the edge. */
+  node: AdminListCampaignsRecord;
 };
 
-/** The output of our `adminListCampaigns` mutation. */
-export type AdminListCampaignsPayload = {
-  __typename: 'AdminListCampaignsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListCampaignsRecord>>>;
+/** A connection to a list of `AdminListCampaignsRecord` values. */
+export type AdminListCampaignsConnection = {
+  __typename: 'AdminListCampaignsConnection';
+  /** A list of edges which contains the `AdminListCampaignsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListCampaignEdge>;
+  /** A list of `AdminListCampaignsRecord` objects. */
+  nodes: Array<AdminListCampaignsRecord>;
+  /** The count of *all* `AdminListCampaignsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListCampaigns` mutation. */
+/** The return type of our `adminListCampaigns` query. */
 export type AdminListCampaignsRecord = {
   __typename: 'AdminListCampaignsRecord';
   airdropDatetime: Maybe<Scalars['Datetime']['output']>;
@@ -788,32 +773,27 @@ export type AdminListCampaignsRecord = {
   summary: Maybe<Scalars['String']['output']>;
 };
 
-/** All input for the `adminListGrants` mutation. */
-export type AdminListGrantsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListGrantsRecord` edge in the connection. */
+export type AdminListGrantEdge = {
+  __typename: 'AdminListGrantEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListGrantsRecord` at the end of the edge. */
+  node: AdminListGrantsRecord;
 };
 
-/** The output of our `adminListGrants` mutation. */
-export type AdminListGrantsPayload = {
-  __typename: 'AdminListGrantsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListGrantsRecord>>>;
+/** A connection to a list of `AdminListGrantsRecord` values. */
+export type AdminListGrantsConnection = {
+  __typename: 'AdminListGrantsConnection';
+  /** A list of edges which contains the `AdminListGrantsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListGrantEdge>;
+  /** A list of `AdminListGrantsRecord` objects. */
+  nodes: Array<AdminListGrantsRecord>;
+  /** The count of *all* `AdminListGrantsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListGrants` mutation. */
+/** The return type of our `adminListGrants` query. */
 export type AdminListGrantsRecord = {
   __typename: 'AdminListGrantsRecord';
   amountGranted: Maybe<Scalars['Int']['output']>;
@@ -824,32 +804,27 @@ export type AdminListGrantsRecord = {
   title: Maybe<Scalars['String']['output']>;
 };
 
-/** All input for the `adminListLogs` mutation. */
-export type AdminListLogsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListLogsRecord` edge in the connection. */
+export type AdminListLogEdge = {
+  __typename: 'AdminListLogEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListLogsRecord` at the end of the edge. */
+  node: AdminListLogsRecord;
 };
 
-/** The output of our `adminListLogs` mutation. */
-export type AdminListLogsPayload = {
-  __typename: 'AdminListLogsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListLogsRecord>>>;
+/** A connection to a list of `AdminListLogsRecord` values. */
+export type AdminListLogsConnection = {
+  __typename: 'AdminListLogsConnection';
+  /** A list of edges which contains the `AdminListLogsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListLogEdge>;
+  /** A list of `AdminListLogsRecord` objects. */
+  nodes: Array<AdminListLogsRecord>;
+  /** The count of *all* `AdminListLogsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListLogs` mutation. */
+/** The return type of our `adminListLogs` query. */
 export type AdminListLogsRecord = {
   __typename: 'AdminListLogsRecord';
   component: Maybe<Scalars['String']['output']>;
@@ -859,32 +834,27 @@ export type AdminListLogsRecord = {
   timestamp: Maybe<Scalars['Datetime']['output']>;
 };
 
-/** All input for the `adminListMails` mutation. */
-export type AdminListMailsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListMailsRecord` edge in the connection. */
+export type AdminListMailEdge = {
+  __typename: 'AdminListMailEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListMailsRecord` at the end of the edge. */
+  node: AdminListMailsRecord;
 };
 
-/** The output of our `adminListMails` mutation. */
-export type AdminListMailsPayload = {
-  __typename: 'AdminListMailsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListMailsRecord>>>;
+/** A connection to a list of `AdminListMailsRecord` values. */
+export type AdminListMailsConnection = {
+  __typename: 'AdminListMailsConnection';
+  /** A list of edges which contains the `AdminListMailsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListMailEdge>;
+  /** A list of `AdminListMailsRecord` objects. */
+  nodes: Array<AdminListMailsRecord>;
+  /** The count of *all* `AdminListMailsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListMails` mutation. */
+/** The return type of our `adminListMails` query. */
 export type AdminListMailsRecord = {
   __typename: 'AdminListMailsRecord';
   createdAt: Maybe<Scalars['Datetime']['output']>;
@@ -894,32 +864,27 @@ export type AdminListMailsRecord = {
   subject: Maybe<Scalars['String']['output']>;
 };
 
-/** All input for the `adminListNotifications` mutation. */
-export type AdminListNotificationsInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListNotificationsRecord` edge in the connection. */
+export type AdminListNotificationEdge = {
+  __typename: 'AdminListNotificationEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListNotificationsRecord` at the end of the edge. */
+  node: AdminListNotificationsRecord;
 };
 
-/** The output of our `adminListNotifications` mutation. */
-export type AdminListNotificationsPayload = {
-  __typename: 'AdminListNotificationsPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListNotificationsRecord>>>;
+/** A connection to a list of `AdminListNotificationsRecord` values. */
+export type AdminListNotificationsConnection = {
+  __typename: 'AdminListNotificationsConnection';
+  /** A list of edges which contains the `AdminListNotificationsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListNotificationEdge>;
+  /** A list of `AdminListNotificationsRecord` objects. */
+  nodes: Array<AdminListNotificationsRecord>;
+  /** The count of *all* `AdminListNotificationsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListNotifications` mutation. */
+/** The return type of our `adminListNotifications` query. */
 export type AdminListNotificationsRecord = {
   __typename: 'AdminListNotificationsRecord';
   accountName: Maybe<Scalars['String']['output']>;
@@ -929,32 +894,27 @@ export type AdminListNotificationsRecord = {
   readAt: Maybe<Scalars['Datetime']['output']>;
 };
 
-/** All input for the `adminListResources` mutation. */
-export type AdminListResourcesInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pLimit?: InputMaybe<Scalars['Int']['input']>;
-  pOffset?: InputMaybe<Scalars['Int']['input']>;
-  pSearch?: InputMaybe<Scalars['String']['input']>;
+/** A `AdminListResourcesRecord` edge in the connection. */
+export type AdminListResourceEdge = {
+  __typename: 'AdminListResourceEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListResourcesRecord` at the end of the edge. */
+  node: AdminListResourcesRecord;
 };
 
-/** The output of our `adminListResources` mutation. */
-export type AdminListResourcesPayload = {
-  __typename: 'AdminListResourcesPayload';
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-  results: Maybe<Array<Maybe<AdminListResourcesRecord>>>;
+/** A connection to a list of `AdminListResourcesRecord` values. */
+export type AdminListResourcesConnection = {
+  __typename: 'AdminListResourcesConnection';
+  /** A list of edges which contains the `AdminListResourcesRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListResourceEdge>;
+  /** A list of `AdminListResourcesRecord` objects. */
+  nodes: Array<AdminListResourcesRecord>;
+  /** The count of *all* `AdminListResourcesRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
 };
 
-/** The return type of our `adminListResources` mutation. */
+/** The return type of our `adminListResources` query. */
 export type AdminListResourcesRecord = {
   __typename: 'AdminListResourcesRecord';
   createdAt: Maybe<Scalars['Datetime']['output']>;
@@ -4922,14 +4882,6 @@ export type Mutation = {
   __typename: 'Mutation';
   acceptCampaignNeed: Maybe<AcceptCampaignNeedPayload>;
   addCampaignModerationNote: Maybe<AddCampaignModerationNotePayload>;
-  adminListAccounts: Maybe<AdminListAccountsPayload>;
-  adminListBids: Maybe<AdminListBidsPayload>;
-  adminListCampaigns: Maybe<AdminListCampaignsPayload>;
-  adminListGrants: Maybe<AdminListGrantsPayload>;
-  adminListLogs: Maybe<AdminListLogsPayload>;
-  adminListMails: Maybe<AdminListMailsPayload>;
-  adminListNotifications: Maybe<AdminListNotificationsPayload>;
-  adminListResources: Maybe<AdminListResourcesPayload>;
   approveCampaign: Maybe<ApproveCampaignPayload>;
   /** Archives a grant definition so it no longer appears in the claim flow. Admin only. */
   archiveGrant: Maybe<ArchiveGrantPayload>;
@@ -5278,54 +5230,6 @@ export type MutationAcceptCampaignNeedArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationAddCampaignModerationNoteArgs = {
   input: AddCampaignModerationNoteInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListAccountsArgs = {
-  input: AdminListAccountsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListBidsArgs = {
-  input: AdminListBidsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListCampaignsArgs = {
-  input: AdminListCampaignsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListGrantsArgs = {
-  input: AdminListGrantsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListLogsArgs = {
-  input: AdminListLogsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListMailsArgs = {
-  input: AdminListMailsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListNotificationsArgs = {
-  input: AdminListNotificationsInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
-export type MutationAdminListResourcesArgs = {
-  input: AdminListResourcesInput;
 };
 
 
@@ -7101,6 +7005,14 @@ export type Query = Node & {
   /** Reads a single `AccountNotification` using its globally unique `ID`. */
   accountNotification: Maybe<AccountNotification>;
   accountNotificationById: Maybe<AccountNotification>;
+  adminListAccounts: Maybe<AdminListAccountsConnection>;
+  adminListBids: Maybe<AdminListBidsConnection>;
+  adminListCampaigns: Maybe<AdminListCampaignsConnection>;
+  adminListGrants: Maybe<AdminListGrantsConnection>;
+  adminListLogs: Maybe<AdminListLogsConnection>;
+  adminListMails: Maybe<AdminListMailsConnection>;
+  adminListNotifications: Maybe<AdminListNotificationsConnection>;
+  adminListResources: Maybe<AdminListResourcesConnection>;
   /** Reads and enables pagination through a set of `AccountDeliveryPreference`. */
   allAccountDeliveryPreferences: Maybe<AccountDeliveryPreferencesConnection>;
   /** Reads and enables pagination through a set of `AccountNotification`. */
@@ -7288,6 +7200,110 @@ export type QueryAccountNotificationArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryAccountNotificationByIdArgs = {
   id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListAccountsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListBidsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListCampaignsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListGrantsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListLogsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListMailsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListNotificationsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListResourcesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
 };
 
 

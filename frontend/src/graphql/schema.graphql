@@ -785,31 +785,25 @@ type AddCampaignModerationNotePayload {
   query: Query
 }
 
-"""All input for the `adminListAccounts` mutation."""
-input AdminListAccountsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListAccountsRecord` edge in the connection."""
+type AdminListAccountEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListAccountsRecord` at the end of the edge."""
+  node: AdminListAccountsRecord!
 }
 
-"""The output of our `adminListAccounts` mutation."""
-type AdminListAccountsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListAccountsRecord]
+"""A connection to a list of `AdminListAccountsRecord` values."""
+type AdminListAccountsConnection {
+  """A list of edges which contains the `AdminListAccountsRecord` and cursor to aid in pagination."""
+  edges: [AdminListAccountEdge!]!
+  """A list of `AdminListAccountsRecord` objects."""
+  nodes: [AdminListAccountsRecord!]!
+  """The count of *all* `AdminListAccountsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListAccounts` mutation."""
+"""The return type of our `adminListAccounts` query."""
 type AdminListAccountsRecord {
   address: String
   createdAt: Datetime
@@ -820,31 +814,25 @@ type AdminListAccountsRecord {
   tokenAmount: Int
 }
 
-"""All input for the `adminListBids` mutation."""
-input AdminListBidsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListBidsRecord` edge in the connection."""
+type AdminListBidEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListBidsRecord` at the end of the edge."""
+  node: AdminListBidsRecord!
 }
 
-"""The output of our `adminListBids` mutation."""
-type AdminListBidsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListBidsRecord]
+"""A connection to a list of `AdminListBidsRecord` values."""
+type AdminListBidsConnection {
+  """A list of edges which contains the `AdminListBidsRecord` and cursor to aid in pagination."""
+  edges: [AdminListBidEdge!]!
+  """A list of `AdminListBidsRecord` objects."""
+  nodes: [AdminListBidsRecord!]!
+  """The count of *all* `AdminListBidsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListBids` mutation."""
+"""The return type of our `adminListBids` query."""
 type AdminListBidsRecord {
   bidderName: String
   createdAt: Datetime
@@ -857,31 +845,25 @@ type AdminListBidsRecord {
   tokenAmount: Int
 }
 
-"""All input for the `adminListCampaigns` mutation."""
-input AdminListCampaignsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListCampaignsRecord` edge in the connection."""
+type AdminListCampaignEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListCampaignsRecord` at the end of the edge."""
+  node: AdminListCampaignsRecord!
 }
 
-"""The output of our `adminListCampaigns` mutation."""
-type AdminListCampaignsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListCampaignsRecord]
+"""A connection to a list of `AdminListCampaignsRecord` values."""
+type AdminListCampaignsConnection {
+  """A list of edges which contains the `AdminListCampaignsRecord` and cursor to aid in pagination."""
+  edges: [AdminListCampaignEdge!]!
+  """A list of `AdminListCampaignsRecord` objects."""
+  nodes: [AdminListCampaignsRecord!]!
+  """The count of *all* `AdminListCampaignsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListCampaigns` mutation."""
+"""The return type of our `adminListCampaigns` query."""
 type AdminListCampaignsRecord {
   airdropDatetime: Datetime
   airdropTokenAmount: Int
@@ -895,31 +877,25 @@ type AdminListCampaignsRecord {
   summary: String
 }
 
-"""All input for the `adminListGrants` mutation."""
-input AdminListGrantsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListGrantsRecord` edge in the connection."""
+type AdminListGrantEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListGrantsRecord` at the end of the edge."""
+  node: AdminListGrantsRecord!
 }
 
-"""The output of our `adminListGrants` mutation."""
-type AdminListGrantsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListGrantsRecord]
+"""A connection to a list of `AdminListGrantsRecord` values."""
+type AdminListGrantsConnection {
+  """A list of edges which contains the `AdminListGrantsRecord` and cursor to aid in pagination."""
+  edges: [AdminListGrantEdge!]!
+  """A list of `AdminListGrantsRecord` objects."""
+  nodes: [AdminListGrantsRecord!]!
+  """The count of *all* `AdminListGrantsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListGrants` mutation."""
+"""The return type of our `adminListGrants` query."""
 type AdminListGrantsRecord {
   amountGranted: Int
   createdAt: Datetime
@@ -929,31 +905,25 @@ type AdminListGrantsRecord {
   title: String
 }
 
-"""All input for the `adminListLogs` mutation."""
-input AdminListLogsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListLogsRecord` edge in the connection."""
+type AdminListLogEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListLogsRecord` at the end of the edge."""
+  node: AdminListLogsRecord!
 }
 
-"""The output of our `adminListLogs` mutation."""
-type AdminListLogsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListLogsRecord]
+"""A connection to a list of `AdminListLogsRecord` values."""
+type AdminListLogsConnection {
+  """A list of edges which contains the `AdminListLogsRecord` and cursor to aid in pagination."""
+  edges: [AdminListLogEdge!]!
+  """A list of `AdminListLogsRecord` objects."""
+  nodes: [AdminListLogsRecord!]!
+  """The count of *all* `AdminListLogsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListLogs` mutation."""
+"""The return type of our `adminListLogs` query."""
 type AdminListLogsRecord {
   component: String
   context: String
@@ -962,31 +932,25 @@ type AdminListLogsRecord {
   timestamp: Datetime
 }
 
-"""All input for the `adminListMails` mutation."""
-input AdminListMailsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListMailsRecord` edge in the connection."""
+type AdminListMailEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListMailsRecord` at the end of the edge."""
+  node: AdminListMailsRecord!
 }
 
-"""The output of our `adminListMails` mutation."""
-type AdminListMailsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListMailsRecord]
+"""A connection to a list of `AdminListMailsRecord` values."""
+type AdminListMailsConnection {
+  """A list of edges which contains the `AdminListMailsRecord` and cursor to aid in pagination."""
+  edges: [AdminListMailEdge!]!
+  """A list of `AdminListMailsRecord` objects."""
+  nodes: [AdminListMailsRecord!]!
+  """The count of *all* `AdminListMailsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListMails` mutation."""
+"""The return type of our `adminListMails` query."""
 type AdminListMailsRecord {
   createdAt: Datetime
   email: String
@@ -995,31 +959,25 @@ type AdminListMailsRecord {
   subject: String
 }
 
-"""All input for the `adminListNotifications` mutation."""
-input AdminListNotificationsInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListNotificationsRecord` edge in the connection."""
+type AdminListNotificationEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListNotificationsRecord` at the end of the edge."""
+  node: AdminListNotificationsRecord!
 }
 
-"""The output of our `adminListNotifications` mutation."""
-type AdminListNotificationsPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListNotificationsRecord]
+"""A connection to a list of `AdminListNotificationsRecord` values."""
+type AdminListNotificationsConnection {
+  """A list of edges which contains the `AdminListNotificationsRecord` and cursor to aid in pagination."""
+  edges: [AdminListNotificationEdge!]!
+  """A list of `AdminListNotificationsRecord` objects."""
+  nodes: [AdminListNotificationsRecord!]!
+  """The count of *all* `AdminListNotificationsRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListNotifications` mutation."""
+"""The return type of our `adminListNotifications` query."""
 type AdminListNotificationsRecord {
   accountName: String
   createdAt: Datetime
@@ -1028,31 +986,25 @@ type AdminListNotificationsRecord {
   readAt: Datetime
 }
 
-"""All input for the `adminListResources` mutation."""
-input AdminListResourcesInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pLimit: Int
-  pOffset: Int
-  pSearch: String
+"""A `AdminListResourcesRecord` edge in the connection."""
+type AdminListResourceEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListResourcesRecord` at the end of the edge."""
+  node: AdminListResourcesRecord!
 }
 
-"""The output of our `adminListResources` mutation."""
-type AdminListResourcesPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  results: [AdminListResourcesRecord]
+"""A connection to a list of `AdminListResourcesRecord` values."""
+type AdminListResourcesConnection {
+  """A list of edges which contains the `AdminListResourcesRecord` and cursor to aid in pagination."""
+  edges: [AdminListResourceEdge!]!
+  """A list of `AdminListResourcesRecord` objects."""
+  nodes: [AdminListResourcesRecord!]!
+  """The count of *all* `AdminListResourcesRecord` you could get from the connection."""
+  totalCount: Int!
 }
 
-"""The return type of our `adminListResources` mutation."""
+"""The return type of our `adminListResources` query."""
 type AdminListResourcesRecord {
   createdAt: Datetime
   creatorName: String
@@ -4802,38 +4754,6 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AddCampaignModerationNoteInput!
   ): AddCampaignModerationNotePayload
-  adminListAccounts(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListAccountsInput!
-  ): AdminListAccountsPayload
-  adminListBids(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListBidsInput!
-  ): AdminListBidsPayload
-  adminListCampaigns(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListCampaignsInput!
-  ): AdminListCampaignsPayload
-  adminListGrants(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListGrantsInput!
-  ): AdminListGrantsPayload
-  adminListLogs(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListLogsInput!
-  ): AdminListLogsPayload
-  adminListMails(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListMailsInput!
-  ): AdminListMailsPayload
-  adminListNotifications(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListNotificationsInput!
-  ): AdminListNotificationsPayload
-  adminListResources(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: AdminListResourcesInput!
-  ): AdminListResourcesPayload
   approveCampaign(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: ApproveCampaignInput!
@@ -6423,6 +6343,150 @@ type Query implements Node {
     nodeId: ID!
   ): AccountNotification
   accountNotificationById(id: UUID!): AccountNotification
+  adminListAccounts(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListAccountsConnection
+  adminListBids(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListBidsConnection
+  adminListCampaigns(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListCampaignsConnection
+  adminListGrants(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListGrantsConnection
+  adminListLogs(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListLogsConnection
+  adminListMails(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListMailsConnection
+  adminListNotifications(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListNotificationsConnection
+  adminListResources(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListResourcesConnection
   """Reads and enables pagination through a set of `AccountDeliveryPreference`."""
   allAccountDeliveryPreferences(
     """Read all values in the set after (below) this cursor."""
