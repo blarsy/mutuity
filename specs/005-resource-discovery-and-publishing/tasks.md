@@ -112,7 +112,7 @@
 
 ## Phase 12: Grants Seeding And Claim Flow
 
-- [ ] T066 Document grants behavior in `spec.md` and `plan.md`: admin-only creation, criteria conjunction, claim route UX, and denial reason categories
+- [x] T066 Document grants behavior in `spec.md` and `plan.md`: admin-only creation, criteria conjunction, claim route UX, and denial reason categories
 - [ ] T067 Implement SQL-owned grant schema and helpers for grant definitions, targeted accounts/emails, campaign-link criterion, max-claim count, expiration datetime, and per-account claim records
 - [ ] T068 Implement admin-only API/mutations for creating and managing grants and their criteria
 - [ ] T069 Implement SQL-owned atomic claim function that evaluates all criteria, enforces max-claims/per-account idempotency, issues token award on success, and returns a safe claim outcome code

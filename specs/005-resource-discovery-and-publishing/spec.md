@@ -229,6 +229,18 @@ As an account holder, I can open a specific grant route and claim a grant when I
 8. **Given** an unauthenticated user opening the claim route with a grant id, **When** the grant page loads, **Then** it shows the login form, and after successful authentication the route continues in the current session context and displays grant title and description before showing a success or error message after claim evaluation.
 9. **Given** an account that already claimed a grant, **When** it attempts to claim the same grant again, **Then** no second token award is issued.
 
+**Grant Claim Denial Categories (user-safe):**
+
+- `not_authenticated`: user must sign in to claim.
+- `not_targeted`: account does not match targeted account/email criteria.
+- `expired`: grant expiration datetime has passed.
+- `cap_reached`: max successful-claim count is already reached.
+- `already_claimed`: account has already received this grant once.
+- `campaign_criterion_not_satisfied`: required campaign participation criterion is not met.
+- `grant_unavailable`: grant id is unknown, archived, or otherwise unavailable for claim.
+
+Each category should map to user-safe copy on the claim page and avoid exposing internal SQL/system details.
+
 ---
 
 ### User Story 11 - Administrator Inspects System Data For Support And Troubleshooting (Priority: P1)

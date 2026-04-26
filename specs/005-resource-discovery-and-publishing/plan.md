@@ -112,12 +112,14 @@ Preferences IA matrix and control rules:
 
 ### Slice 9 — Grants seeding and claim flow (P1)
 - support administrator-created grants without requiring full campaign creation
+- require administrator authorization for all create/update/archive grant-definition operations
 - allow optional criteria per grant: account targets, email targets (including future users), max claim count, expiration datetime, and optional linked-campaign participation
 - enforce conjunction semantics: all configured criteria must pass for a claim to succeed
 - provide grant claim route by grant id that renders login when no session is active, then continues in current session context to show title/description and claim outcome message
 - use a fixed awarded token amount per grant definition (not varying per claim)
 - enforce per-account per-grant single-award behavior with atomic idempotent issuance
 - record successful claims in token movement ledger with grant linkage
+- standardize user-safe denial outcomes to these categories: `not_authenticated`, `not_targeted`, `expired`, `cap_reached`, `already_claimed`, `campaign_criterion_not_satisfied`, `grant_unavailable`
 
 ### Slice 10 — Admin support and troubleshooting pages (P1)
 - provide admin-only pages for accounts, bids, resources, notifications, mails, campaigns, grants, and logs
@@ -230,6 +232,7 @@ Unified logging contract implementation shape (T058):
 - Campaign criterion should pass when account owns at least one approved linked need or one approved linked resource in the specified campaign.
 - Max-claims and per-account claim rules must be concurrency-safe so retries or races cannot over-award tokens.
 - Claim responses should expose user-safe denial reasons while keeping internal implementation details private.
+- Denial reason categories for API/UI contract should be fixed to: `not_authenticated`, `not_targeted`, `expired`, `cap_reached`, `already_claimed`, `campaign_criterion_not_satisfied`, `grant_unavailable`.
 - Email-target criteria should use stored lower-cased and trimmed emails; plus-addressed emails should remain distinct identifiers.
 
 ### Admin support model and operational rules
