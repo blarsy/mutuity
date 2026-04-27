@@ -149,3 +149,29 @@ export const ADMIN_RESEND_MAIL_MUTATION = gql`
     }
   }
 `;
+
+export const ADMIN_CREATE_GRANT_MUTATION = gql`
+  mutation AdminCreateGrant(
+    $pTitle: String!
+    $pDescription: String
+    $pAwardedTokenAmount: Int!
+    $pMaxSuccessfulClaimCount: Int
+    $pExpiresAt: Datetime
+  ) {
+    upsertGrant(
+      input: {
+        pTitle: $pTitle
+        pDescription: $pDescription
+        pAwardedTokenAmount: $pAwardedTokenAmount
+        pMaxSuccessfulClaimCount: $pMaxSuccessfulClaimCount
+        pExpiresAt: $pExpiresAt
+      }
+    ) {
+      grantDefinition {
+        id
+        title
+        createdAt
+      }
+    }
+  }
+`;

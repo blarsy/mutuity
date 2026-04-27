@@ -33,6 +33,7 @@ import {
 } from "../campaigns/campaigns.queries";
 import { ADD_CAMPAIGN_MODERATION_NOTE_MUTATION } from "../campaigns/campaignModeration.queries";
 import {
+  ADMIN_CREATE_GRANT_MUTATION,
   ADMIN_GET_MAIL_CONTENT_QUERY,
   ADMIN_LIST_ACCOUNTS_QUERY,
   ADMIN_LIST_BIDS_QUERY,
@@ -89,6 +90,7 @@ type AdminSectionConfig = {
   query: AdminQueryDocument;
   columns: AdminColumn[];
   actions?: (row: AdminRecord) => ReactNode;
+  pageActions?: () => ReactNode;
 };
 
 function asString(value: unknown) {
@@ -329,6 +331,152 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
   );
 }
 
+function GrantCreatePageAction() {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [tokenAmount, setTokenAmount] = useState("");
+  const [maxClaims, setMaxClaims] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const [createGrant, { loading, error }] = useMutation(ADMIN_CREATE_GRANT_MUTATION);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error);
+
+  function handleClose() {
+    setOpen(false);
+    setSuccess(false);
+    setTitle("");
+    setDescription("");
+    setTokenAmount("");
+    setMaxClaims("");
+    setExpiresAt("");
+  }
+
+  async function handleCreate() {
+    setSuccess(false);
+    const amount = parseInt(tokenAmount, 10);
+
+    if (!title.trim() || isNaN(amount) || amount <= 0) return;
+
+    try {
+      await createGrant({
+        variables: {
+          pTitle: title.trim(),
+          pDescription: description.trim() || null,
+          pAwardedTokenAmount: amount,
+          pMaxSuccessfulClaimCount: maxClaims.trim() ? parseInt(maxClaims, 10) : null,
+          pExpiresAt: expiresAt.trim() || null
+        }
+      });
+      setSuccess(true);
+      setTitle("");
+      setDescription("");
+      setTokenAmount("");
+      setMaxClaims("");
+      setExpiresAt("");
+    } catch {
+      // error surfaced via errorMessage
+    }
+  }
+
+  return (
+    <>
+      <Button size="small" variant="contained" onClick={() => { setOpen(true); }}>
+        Create grant
+      </Button>
+
+      <Dialog fullWidth maxWidth="sm" open={open} onClose={handleClose}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          Create grant
+          <IconButton aria-label="close" onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
+            {success ? <Alert severity="success">Grant created successfully.</Alert> : null}
+            <TextField
+              fullWidth
+              required
+              label="Title"
+              value={title}
+              onChange={event => { setTitle(event.target.value); }}
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              multiline
+              minRows={2}
+              value={description}
+              onChange={event => { setDescription(event.target.value); }}
+            />
+            <TextField
+              fullWidth
+              required
+              label="Awarded token amount"
+              type="number"
+              inputProps={{ min: 1 }}
+              value={tokenAmount}
+              onChange={event => { setTokenAmount(event.target.value); }}
+            />
+            <TextField
+              fullWidth
+              label="Max successful claims (optional)"
+              type="number"
+              inputProps={{ min: 1 }}
+              value={maxClaims}
+              onChange={event => { setMaxClaims(event.target.value); }}
+            />
+            <TextField
+              fullWidth
+              label="Expires at (optional, ISO datetime)"
+              placeholder="e.g. 2026-12-31T23:59:59Z"
+              value={expiresAt}
+              onChange={event => { setExpiresAt(event.target.value); }}
+            />
+            <Button
+              disabled={loading || !title.trim() || !tokenAmount.trim()}
+              variant="contained"
+              onClick={() => { void handleCreate(); }}
+            >
+              {loading ? <CircularProgress size={14} /> : "Create"}
+            </Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function LogRowActions({ row }: { row: AdminRecord }) {
+  const message = asString(row.message);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button size="small" variant="outlined" onClick={() => { setOpen(true); }}>
+        View message
+      </Button>
+
+      <Dialog fullScreen open={open} onClose={() => { setOpen(false); }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          Log message
+          <IconButton aria-label="close" onClick={() => { setOpen(false); }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "monospace" }}>
+            {message || "(empty)"}
+          </Typography>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 const ADMIN_SECTION_ORDER: AdminSectionKey[] = [
   "accounts",
   "bids",
@@ -474,7 +622,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "expirationDatetime", label: "Expires", render: row => renderDate(row.expirationDatetime) },
       { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) }
     ],
-    actions: () => <Button disabled size="small" variant="outlined">Create</Button>
+    pageActions: () => <GrantCreatePageAction />
   },
   logs: {
     key: "logs",
@@ -490,7 +638,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "message", label: "Message", render: row => asString(row.message) || "-" },
       { key: "context", label: "Context", render: row => asString(row.context) || "-" }
     ],
-    actions: () => <Button disabled size="small" variant="outlined">View message</Button>
+    actions: (row) => <LogRowActions row={row} />
   }
 };
 
@@ -584,9 +732,12 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
           })}
         </Stack>
 
-        <Typography component="h1" variant="h4" sx={{ mb: 2 }}>
-          {config.title}
-        </Typography>
+        <Stack alignItems="center" direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Typography component="h1" variant="h4">
+            {config.title}
+          </Typography>
+          {config.pageActions ? config.pageActions() : null}
+        </Stack>
 
         <Paper sx={{ p: 2, mb: 2 }} variant="outlined">
           <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
