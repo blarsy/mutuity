@@ -29,6 +29,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useRequireAdmin } from "../auth/requireAdmin";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
+  APPROVE_CAMPAIGN_MUTATION,
+} from "../campaigns/campaigns.queries";
+import { ADD_CAMPAIGN_MODERATION_NOTE_MUTATION } from "../campaigns/campaignModeration.queries";
+import {
   ADMIN_GET_MAIL_CONTENT_QUERY,
   ADMIN_LIST_ACCOUNTS_QUERY,
   ADMIN_LIST_BIDS_QUERY,
@@ -204,6 +208,127 @@ function MailRowActions({ row }: { row: AdminRecord }) {
   );
 }
 
+function CampaignRowActions({ row }: { row: AdminRecord }) {
+  const campaignId = asString(row.id);
+  const description = asString(row.description);
+  const summary = asString(row.summary);
+
+  const [descOpen, setDescOpen] = useState(false);
+  const [moderateOpen, setModerateOpen] = useState(false);
+  const [noteBody, setNoteBody] = useState("");
+  const [approveSuccess, setApproveSuccess] = useState(false);
+  const [noteSent, setNoteSent] = useState(false);
+
+  const [addNote, { loading: noteLoading, error: noteError }] = useMutation(
+    ADD_CAMPAIGN_MODERATION_NOTE_MUTATION
+  );
+  const [approveCampaign, { loading: approveLoading, error: approveError }] = useMutation(
+    APPROVE_CAMPAIGN_MUTATION
+  );
+
+  const noteErrorMessage = getUserFacingGraphQLErrorMessage(noteError);
+  const approveErrorMessage = getUserFacingGraphQLErrorMessage(approveError);
+
+  async function handleSendNote() {
+    if (!noteBody.trim()) return;
+    setNoteSent(false);
+    try {
+      await addNote({ variables: { campaignId, body: noteBody.trim() } });
+      setNoteBody("");
+      setNoteSent(true);
+    } catch {
+      // error surfaced via noteError
+    }
+  }
+
+  async function handleApprove() {
+    setApproveSuccess(false);
+    try {
+      await approveCampaign({ variables: { campaignId } });
+      setApproveSuccess(true);
+    } catch {
+      // error surfaced via approveError
+    }
+  }
+
+  return (
+    <>
+      <Stack direction="row" spacing={1}>
+        <Button size="small" variant="outlined" onClick={() => { setDescOpen(true); }}>
+          View description
+        </Button>
+        <Button size="small" variant="outlined" onClick={() => { setModerateOpen(true); }}>
+          Moderate
+        </Button>
+      </Stack>
+
+      {/* Fullscreen description dialog */}
+      <Dialog fullScreen open={descOpen} onClose={() => { setDescOpen(false); }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          Campaign description — {summary || campaignId}
+          <IconButton aria-label="close" onClick={() => { setDescOpen(false); }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {description || "No description stored."}
+          </Typography>
+        </DialogContent>
+      </Dialog>
+
+      {/* Moderation dialog */}
+      <Dialog fullWidth maxWidth="sm" open={moderateOpen} onClose={() => { setModerateOpen(false); }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          Moderate campaign — {summary || campaignId}
+          <IconButton aria-label="close" onClick={() => { setModerateOpen(false); }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            {noteErrorMessage ? <Alert severity="error">{noteErrorMessage}</Alert> : null}
+            {noteSent && !noteLoading ? (
+              <Alert severity="success">Moderation note sent.</Alert>
+            ) : null}
+            <TextField
+              fullWidth
+              label="Moderation note"
+              multiline
+              minRows={3}
+              placeholder="Enter note for campaign creator..."
+              value={noteBody}
+              onChange={event => { setNoteBody(event.target.value); }}
+            />
+            <Button
+              disabled={noteLoading || !noteBody.trim()}
+              variant="outlined"
+              onClick={() => { void handleSendNote(); }}
+            >
+              {noteLoading ? <CircularProgress size={14} /> : "Send note"}
+            </Button>
+
+            <Box sx={{ borderTop: 1, borderColor: "divider", pt: 2, mt: 1 }}>
+              {approveErrorMessage ? <Alert severity="error" sx={{ mb: 1 }}>{approveErrorMessage}</Alert> : null}
+              {approveSuccess && !approveLoading ? (
+                <Alert severity="success" sx={{ mb: 1 }}>Campaign approved.</Alert>
+              ) : null}
+              <Button
+                color="success"
+                disabled={approveLoading}
+                variant="contained"
+                onClick={() => { void handleApprove(); }}
+              >
+                {approveLoading ? <CircularProgress size={14} /> : "Approve campaign"}
+              </Button>
+            </Box>
+          </Stack>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 const ADMIN_SECTION_ORDER: AdminSectionKey[] = [
   "accounts",
   "bids",
@@ -332,12 +457,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       },
       { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) }
     ],
-    actions: () => (
-      <Stack direction="row" spacing={1}>
-        <Button disabled size="small" variant="outlined">View description</Button>
-        <Button disabled size="small" variant="outlined">Moderate</Button>
-      </Stack>
-    )
+    actions: (row) => <CampaignRowActions row={row} />
   },
   grants: {
     key: "grants",
