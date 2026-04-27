@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
 import { useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@apollo/client/react";
 import type { TypedDocumentNode } from "@apollo/client";
 import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   Paper,
   Stack,
   Table,
@@ -19,10 +24,12 @@ import {
   TextField,
   Typography
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { useRequireAdmin } from "../auth/requireAdmin";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
+  ADMIN_GET_MAIL_CONTENT_QUERY,
   ADMIN_LIST_ACCOUNTS_QUERY,
   ADMIN_LIST_BIDS_QUERY,
   ADMIN_LIST_CAMPAIGNS_QUERY,
@@ -30,7 +37,8 @@ import {
   ADMIN_LIST_LOGS_QUERY,
   ADMIN_LIST_MAILS_QUERY,
   ADMIN_LIST_NOTIFICATIONS_QUERY,
-  ADMIN_LIST_RESOURCES_QUERY
+  ADMIN_LIST_RESOURCES_QUERY,
+  ADMIN_RESEND_MAIL_MUTATION
 } from "./adminSupport.queries";
 
 const PAGE_SIZE = 25;
@@ -115,6 +123,85 @@ function renderJson(value: unknown) {
   } catch {
     return String(value);
   }
+}
+
+function MailRowActions({ row }: { row: AdminRecord }) {
+  const mailId = asString(row.id);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState(false);
+
+  const [getMailContent, { loading: contentLoading, data: contentData, error: contentError }] =
+    useLazyQuery<{ adminGetMailContent: string | null }>(ADMIN_GET_MAIL_CONTENT_QUERY);
+
+  const [resendMail, { loading: resendLoading, error: resendError }] =
+    useMutation(ADMIN_RESEND_MAIL_MUTATION);
+
+  function handleViewContent() {
+    setDialogOpen(true);
+    void getMailContent({ variables: { pMailId: mailId } });
+  }
+
+  async function handleSendAgain() {
+    setSendSuccess(false);
+
+    try {
+      await resendMail({ variables: { pMailId: mailId } });
+      setSendSuccess(true);
+    } catch {
+      // error surfaced via resendError
+    }
+  }
+
+  const htmlContent = contentData?.adminGetMailContent ?? null;
+  const contentErrorMessage = getUserFacingGraphQLErrorMessage(contentError);
+  const resendErrorMessage = getUserFacingGraphQLErrorMessage(resendError);
+
+  return (
+    <>
+      <Stack direction="row" spacing={1}>
+        <Button size="small" variant="outlined" onClick={handleViewContent}>View content</Button>
+        <Button
+          disabled={resendLoading}
+          size="small"
+          variant="outlined"
+          onClick={() => { void handleSendAgain(); }}
+        >
+          {resendLoading ? <CircularProgress size={14} /> : "Send again"}
+        </Button>
+      </Stack>
+
+      {resendErrorMessage ? (
+        <Typography color="error" variant="caption">{resendErrorMessage}</Typography>
+      ) : null}
+      {sendSuccess && !resendLoading ? (
+        <Typography color="success.main" variant="caption">Queued for delivery</Typography>
+      ) : null}
+
+      <Dialog fullScreen open={dialogOpen} onClose={() => { setDialogOpen(false); }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          Mail content
+          <IconButton aria-label="close" onClick={() => { setDialogOpen(false); }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {contentLoading ? <CircularProgress /> : null}
+          {contentErrorMessage ? <Alert severity="error">{contentErrorMessage}</Alert> : null}
+          {!contentLoading && !contentErrorMessage && htmlContent ? (
+            <iframe
+              sandbox="allow-same-origin"
+              srcDoc={htmlContent}
+              style={{ width: "100%", height: "100%", border: "none", minHeight: "70vh" }}
+              title="Mail HTML content"
+            />
+          ) : null}
+          {!contentLoading && !contentErrorMessage && !htmlContent ? (
+            <Alert severity="info">No HTML content stored for this mail.</Alert>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 const ADMIN_SECTION_ORDER: AdminSectionKey[] = [
@@ -217,12 +304,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       },
       { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) }
     ],
-    actions: () => (
-      <Stack direction="row" spacing={1}>
-        <Button disabled size="small" variant="outlined">View content</Button>
-        <Button disabled size="small" variant="outlined">Send again</Button>
-      </Stack>
-    )
+    actions: (row) => <MailRowActions row={row} />
   },
   campaigns: {
     key: "campaigns",

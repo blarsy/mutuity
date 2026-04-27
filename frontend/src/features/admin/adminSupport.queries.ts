@@ -135,3 +135,17 @@ export const ADMIN_LIST_LOGS_QUERY = gql`
     }
   }
 `;
+
+export const ADMIN_GET_MAIL_CONTENT_QUERY = gql`
+  query AdminGetMailContent($pMailId: UUID!) {
+    adminGetMailContent(pMailId: $pMailId)
+  }
+`;
+
+export const ADMIN_RESEND_MAIL_MUTATION = gql`
+  mutation AdminResendMail($pMailId: UUID!) {
+    adminResendMail(input: { pMailId: $pMailId }) {
+      clientMutationId
+    }
+  }
+`;
