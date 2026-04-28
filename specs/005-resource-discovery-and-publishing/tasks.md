@@ -134,7 +134,7 @@
 
 ## Phase 14: Role Consolidation (Manager -> Admin)
 
-- [ ] T082 Update SQL role model to remove manager-specific grants/guards and enforce a single administrator role in `database/migrations/`
+- [x] T082 Update SQL role model to remove manager-specific grants/guards and enforce a single administrator role in `database/migrations/`
 - [ ] T083 Refactor backend role checks and PostGraphile auth helpers from manager/admin split to admin-only semantics in `backend/src/`
 - [ ] T084 Refactor frontend role-gated surfaces and labels from manager/admin split to admin-only semantics in `frontend/src/`
 - [ ] T085 Align all feature specs/tasks/docs with the consolidated administrator role model in `specs/`
