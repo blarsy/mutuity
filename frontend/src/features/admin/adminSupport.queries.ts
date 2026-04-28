@@ -156,7 +156,9 @@ export const ADMIN_CREATE_GRANT_MUTATION = gql`
     $pDescription: String
     $pAwardedTokenAmount: Int!
     $pMaxSuccessfulClaimCount: Int
-    $pExpiresAt: Datetime
+    $pExpiresAt: Datetime!
+    $pLinkedCampaignId: UUID
+    $pTargetEmails: [String!]
   ) {
     upsertGrant(
       input: {
@@ -165,6 +167,8 @@ export const ADMIN_CREATE_GRANT_MUTATION = gql`
         pAwardedTokenAmount: $pAwardedTokenAmount
         pMaxSuccessfulClaimCount: $pMaxSuccessfulClaimCount
         pExpiresAt: $pExpiresAt
+        pLinkedCampaignId: $pLinkedCampaignId
+        pTargetEmails: $pTargetEmails
       }
     ) {
       grantDefinition {

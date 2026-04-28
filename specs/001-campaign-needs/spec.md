@@ -25,34 +25,34 @@ As any authenticated account, I can create a campaign with required scheduling a
 
 ---
 
-### User Story 2 - Manager Moderates With Note (Priority: P1)
+### User Story 2 - Administrator Moderates With Note (Priority: P1)
 
-As the Mutuity manager, I can send a moderation note to the campaign creator so the creator knows what is missing before approval.
+As the Mutuity administrator, I can send a moderation note to the campaign creator so the creator knows what is missing before approval.
 
 **Why this priority**: Moderation feedback is required to make approval actionable and transparent.
 
-**Independent Test**: Manager submits a moderation note for a pending campaign and creator can view it in campaign moderation history.
+**Independent Test**: Administrator submits a moderation note for a pending campaign and creator can view it in campaign moderation history.
 
 **Acceptance Scenarios**:
 
-1. **Given** a pending campaign, **When** the manager sends a moderation note, **Then** the note is attached to the campaign and visible to the campaign creator.
-2. **Given** a pending campaign, **When** a non-manager tries to send a moderation note, **Then** the system denies the action.
-3. **Given** a pending campaign with existing notes, **When** the manager sends a new note, **Then** previous notes remain accessible in chronological order.
+1. **Given** a pending campaign, **When** the administrator sends a moderation note, **Then** the note is attached to the campaign and visible to the campaign creator.
+2. **Given** a pending campaign, **When** a non-admin account tries to send a moderation note, **Then** the system denies the action.
+3. **Given** a pending campaign with existing notes, **When** the administrator sends a new note, **Then** previous notes remain accessible in chronological order.
 
 ---
 
-### User Story 3 - Manager Approves Campaign (Priority: P1)
+### User Story 3 - Administrator Approves Campaign (Priority: P1)
 
-As the Mutuity manager, I can approve a campaign so it becomes visible on the platform public interface.
+As the Mutuity administrator, I can approve a campaign so it becomes visible on the platform public interface.
 
 **Why this priority**: Approval is the publication gate that protects trust and public quality.
 
-**Independent Test**: Manager approves a pending campaign and it appears in the public campaign listing.
+**Independent Test**: Administrator approves a pending campaign and it appears in the public campaign listing.
 
 **Acceptance Scenarios**:
 
-1. **Given** a pending campaign, **When** the manager approves it, **Then** campaign status becomes approved and it becomes publicly viewable.
-2. **Given** a pending campaign, **When** a non-manager attempts approval, **Then** the system denies the action.
+1. **Given** a pending campaign, **When** the administrator approves it, **Then** campaign status becomes approved and it becomes publicly viewable.
+2. **Given** a pending campaign, **When** a non-admin account attempts approval, **Then** the system denies the action.
 3. **Given** a campaign already approved, **When** public users browse campaigns, **Then** they can view approved campaign summary fields.
 
 ---
@@ -95,7 +95,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - Campaign submission where airdrop datetime is earlier than start datetime => the system should prevent campaign creation with a validation error
 - Campaign submission where airdrop datetime is later than end datetime => the system should prevent campaign creation with a validation error
 - Need creation linked to a campaign that is deleted or not accessible => the UI should not provide the option to link a need to such a campaign. Furthermore, the system should reject this linking operation with a 'unsuitable campaign' error
-- Duplicate moderation notes submitted quickly by manager due to retries => the system accepts duplicate notes and stores them as separate entries
+- Duplicate moderation notes submitted quickly by an administrator due to retries => the system accepts duplicate notes and stores them as separate entries
 - Campaign creator attempts to triage need that is not joined to that creator campaign => The triage UI only shows needs that are joined to the currently looked at campaign. Furthermore, the 'accept' and 'reject' operations on needs joined to campaigns check the caller is the campaign's creator, and fails if not.
 - Need linked to an unapproved campaign and visibility behavior on public interfaces => Only approved and active (current time is within its lifetime) campaigns are shown in any UI allowing to join a need. Furthermore, the joining operation checks that the campaign is approved, and that the current time is within its lifetime, and fails if not.
 
@@ -112,17 +112,17 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 - **FR-001**: System MUST allow any authenticated account to create a campaign. Unauthenticated requests MUST be rejected (see SR-001, SR-002).
 - **FR-002**: Campaign creation MUST require theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, and title.
-- **FR-003**: Campaign creation MUST allow an optional textual note for Mutuity manager.
+- **FR-003**: Campaign creation MUST allow an optional textual note for Mutuity administrator.
 - **FR-004**: Rewards multiplier MUST be validated as an integer from 5 to 10 inclusive.
 - **FR-005**: Airdrop amount MUST be validated as an integer from 3000 to 8000 inclusive.
 - **FR-006**: Campaign datetime validation MUST enforce start datetime earlier than end datetime.
 - **FR-007**: Campaign datetime validation MUST enforce airdrop datetime between start and end datetimes inclusive.
 - **FR-008**: Newly created campaigns MUST default to pending moderation status.
 - **FR-009**: Pending campaigns MUST NOT be visible on public campaign interfaces.
-- **FR-010**: System MUST allow only Mutuity manager role to approve a campaign.
+- **FR-010**: System MUST allow only Mutuity administrator role to approve a campaign.
 - **FR-011**: Approval MUST transition campaign status to approved.
 - **FR-012**: Approved campaigns MUST become visible on public campaign interfaces.
-- **FR-013**: System MUST allow only Mutuity manager role to send moderation notes on campaigns.
+- **FR-013**: System MUST allow only Mutuity administrator role to send moderation notes on campaigns.
 - **FR-014**: Moderation notes MUST be visible to the campaign creator.
 - **FR-015**: System MUST persist moderation notes as a history attached to the campaign.
 - **FR-016**: System MUST allow any authenticated account to create a need.
@@ -139,8 +139,8 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 ### Key Entities *(include if feature involves data)*
 
-- **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional manager note from creator, creator account id, and moderation status.
-- **CampaignModerationNote**: Manager-authored note attached to a campaign, with campaign id, manager account id, note body, and created datetime.
+- **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional administrator note from creator, creator account id, and moderation status.
+- **CampaignModerationNote**: Administrator-authored note attached to a campaign, with campaign id, admin account id, note body, and created datetime.
 - **Need**: User-created need with title, description, nature, intensity, location, optional proposed Topes amount, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
 
 ### Intensity To Topes Reference
@@ -154,7 +154,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "100 Topes represents a meaningful gesture of sharing." This preserves non-fiat social value framing.
 - **CampaignNeedTriage**: Relation state for a need joined to a campaign, with campaign id, need id, triage status, actor account id, and action datetime.
-- **AccountRole**: Role classification for permissions, including Mutuity manager and standard account.
+- **AccountRole**: Role classification for permissions, including Mutuity administrator and standard account.
 
 ## Success Criteria *(mandatory)*
 
@@ -162,7 +162,7 @@ Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "
 
 - **SC-001**: 95 percent of valid campaign submissions are created successfully on first attempt during acceptance testing.
 - **SC-002**: 100 percent of out-of-range rewards multiplier and airdrop amount submissions are blocked with explicit validation messages.
-- **SC-003**: 100 percent of non-manager attempts to approve campaigns or send moderation notes are denied.
+- **SC-003**: 100 percent of non-admin attempts to approve campaigns or send moderation notes are denied.
 - **SC-004**: 100 percent of approved campaigns become visible on the public interface within one minute of approval.
 - **SC-005**: 100 percent of non-owner attempts to accept or reject joined needs are denied.
 - **SC-006**: 100 percent of moderation notes and need triage actions are present in audit history during verification.

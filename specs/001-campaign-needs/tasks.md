@@ -48,11 +48,11 @@
 - [x] T020 [US1] Add frontend validation schema for campaign creation in `frontend/src/features/campaigns/createCampaign.validation.ts`
 - [x] T021 [US1] Add pending-status handling in campaign list GraphQL queries from frontend in `frontend/src/features/campaigns/campaigns.queries.ts`
 
-## Phase 4: User Story 2 - Manager Moderates With Note (Priority: P1)
+## Phase 4: User Story 2 - Administrator Moderates With Note (Priority: P1)
 
-**Goal**: Manager can add moderation notes that creators can view in history.
+**Goal**: Administrator can add moderation notes that creators can view in history.
 
-**Independent Test**: Manager creates notes, non-manager denied, creator sees chronological notes.
+**Independent Test**: Administrator creates notes, non-admin denied, creator sees chronological notes.
 
 ### Tests (US2)
 
@@ -65,14 +65,14 @@
 - [x] T025 [US2] Implement SQL function `add_campaign_moderation_note` in `database/functions/campaign/add_campaign_moderation_note.sql`
 - [x] T026 [US2] Expose moderation-note mutation through PostGraphile in `backend/src/postgraphile/server.ts`
 - [x] T027 [US2] Add campaign moderation history GraphQL query in frontend data layer `frontend/src/features/campaigns/campaignModeration.queries.ts`
-- [x] T028 [US2] Build manager moderation notes panel UI in `frontend/src/features/campaigns/ModerationNotesPanel.tsx`
+- [x] T028 [US2] Build administrator moderation notes panel UI in `frontend/src/features/campaigns/ModerationNotesPanel.tsx`
 - [x] T029 [US2] Build creator-facing moderation history UI in `frontend/src/features/campaigns/CampaignModerationHistory.tsx`
 
-## Phase 5: User Story 3 - Manager Approves Campaign (Priority: P1)
+## Phase 5: User Story 3 - Administrator Approves Campaign (Priority: P1)
 
-**Goal**: Manager can approve campaign and make it visible publicly.
+**Goal**: Administrator can approve campaign and make it visible publicly.
 
-**Independent Test**: Manager approval updates status and public listing visibility.
+**Independent Test**: Administrator approval updates status and public listing visibility.
 
 ### Tests (US3)
 
@@ -84,7 +84,7 @@
 - [x] T032 [US3] Implement SQL function `approve_campaign` in `database/functions/campaign/approve_campaign.sql`
 - [x] T033 [US3] Expose approval mutation through PostGraphile in `backend/src/postgraphile/server.ts`
 - [x] T034 [US3] Update public campaign query for approved + active windows in `frontend/src/features/campaigns/campaigns.queries.ts`
-- [x] T035 [US3] Build manager approval action in `frontend/src/features/campaigns/PendingCampaignsPage.tsx`
+- [x] T035 [US3] Build administrator approval action in `frontend/src/features/campaigns/PendingCampaignsPage.tsx`
 - [x] T036 [US3] Add public campaigns page in `frontend/src/features/campaigns/PublicCampaignsPage.tsx`
 
 ## Phase 6: User Story 4 - Account Creates Need (Priority: P1)

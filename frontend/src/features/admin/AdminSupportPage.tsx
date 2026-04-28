@@ -337,7 +337,10 @@ function GrantCreatePageAction() {
   const [description, setDescription] = useState("");
   const [tokenAmount, setTokenAmount] = useState("");
   const [maxClaims, setMaxClaims] = useState("");
+  const [linkedCampaignId, setLinkedCampaignId] = useState("");
+  const [targetEmails, setTargetEmails] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const [createGrant, { loading, error }] = useMutation(ADMIN_CREATE_GRANT_MUTATION);
@@ -346,18 +349,47 @@ function GrantCreatePageAction() {
   function handleClose() {
     setOpen(false);
     setSuccess(false);
+    setValidationError(null);
     setTitle("");
     setDescription("");
     setTokenAmount("");
     setMaxClaims("");
+    setLinkedCampaignId("");
+    setTargetEmails("");
     setExpiresAt("");
   }
 
   async function handleCreate() {
     setSuccess(false);
+    setValidationError(null);
     const amount = parseInt(tokenAmount, 10);
+    const maxClaimsValue = maxClaims.trim() ? parseInt(maxClaims, 10) : null;
+    const targetEmailList = targetEmails
+      .split(/[\n,;]/)
+      .map(value => value.trim())
+      .filter(Boolean);
+    const expiresAtDate = new Date(expiresAt);
+    const hasConstraint =
+      (maxClaimsValue !== null && !isNaN(maxClaimsValue) && maxClaimsValue > 0)
+      || linkedCampaignId.trim().length > 0
+      || targetEmailList.length > 0;
+
+    if (!expiresAt || isNaN(expiresAtDate.getTime())) {
+      setValidationError("Expiration datetime is required.");
+      return;
+    }
 
     if (!title.trim() || isNaN(amount) || amount <= 0) return;
+    if (maxClaimsValue !== null && (isNaN(maxClaimsValue) || maxClaimsValue <= 0)) {
+      setValidationError("Max successful claims must be a positive integer when provided.");
+      return;
+    }
+    if (!hasConstraint) {
+      setValidationError(
+        "At least one constraint is required: max successful claims, linked campaign id, or target email whitelist."
+      );
+      return;
+    }
 
     try {
       await createGrant({
@@ -365,15 +397,20 @@ function GrantCreatePageAction() {
           pTitle: title.trim(),
           pDescription: description.trim() || null,
           pAwardedTokenAmount: amount,
-          pMaxSuccessfulClaimCount: maxClaims.trim() ? parseInt(maxClaims, 10) : null,
-          pExpiresAt: expiresAt.trim() || null
+          pMaxSuccessfulClaimCount: maxClaimsValue,
+          pExpiresAt: expiresAtDate.toISOString(),
+          pLinkedCampaignId: linkedCampaignId.trim() || null,
+          pTargetEmails: targetEmailList.length > 0 ? targetEmailList : null
         }
       });
       setSuccess(true);
+      setValidationError(null);
       setTitle("");
       setDescription("");
       setTokenAmount("");
       setMaxClaims("");
+      setLinkedCampaignId("");
+      setTargetEmails("");
       setExpiresAt("");
     } catch {
       // error surfaced via errorMessage
@@ -395,6 +432,7 @@ function GrantCreatePageAction() {
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
+            {validationError ? <Alert severity="warning">{validationError}</Alert> : null}
             {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
             {success ? <Alert severity="success">Grant created successfully.</Alert> : null}
             <TextField
@@ -431,13 +469,31 @@ function GrantCreatePageAction() {
             />
             <TextField
               fullWidth
-              label="Expires at (optional, ISO datetime)"
-              placeholder="e.g. 2026-12-31T23:59:59Z"
+              label="Linked campaign ID (optional)"
+              placeholder="Campaign UUID"
+              value={linkedCampaignId}
+              onChange={event => { setLinkedCampaignId(event.target.value); }}
+            />
+            <TextField
+              fullWidth
+              label="Target email whitelist (optional)"
+              helperText="One email per line (or comma-separated)."
+              multiline
+              minRows={2}
+              value={targetEmails}
+              onChange={event => { setTargetEmails(event.target.value); }}
+            />
+            <TextField
+              fullWidth
+              required
+              label="Expires at"
+              type="datetime-local"
               value={expiresAt}
               onChange={event => { setExpiresAt(event.target.value); }}
+              InputLabelProps={{ shrink: true }}
             />
             <Button
-              disabled={loading || !title.trim() || !tokenAmount.trim()}
+              disabled={loading || !title.trim() || !tokenAmount.trim() || !expiresAt.trim()}
               variant="contained"
               onClick={() => { void handleCreate(); }}
             >

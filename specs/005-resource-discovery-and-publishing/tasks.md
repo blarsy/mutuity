@@ -131,3 +131,11 @@
 - [x] T079 Implement campaign actions: fullscreen description viewer and moderation handoff that exposes feature `001-campaign-needs` admin moderation-note flow
 - [x] T080 Implement grant/log actions: create-grant dialog from admin grants page and fullscreen wrapping message viewer from admin logs page
 - [x] T081 Add end-to-end verification for admin search/filter behavior, action outcomes, authorization restrictions, and audit-log emission for side-effect actions
+
+## Phase 14: Role Consolidation (Manager -> Admin)
+
+- [ ] T082 Update SQL role model to remove manager-specific grants/guards and enforce a single administrator role in `database/migrations/`
+- [ ] T083 Refactor backend role checks and PostGraphile auth helpers from manager/admin split to admin-only semantics in `backend/src/`
+- [ ] T084 Refactor frontend role-gated surfaces and labels from manager/admin split to admin-only semantics in `frontend/src/`
+- [ ] T085 Align all feature specs/tasks/docs with the consolidated administrator role model in `specs/`
+- [ ] T086 Add end-to-end verification for consolidated admin-only authorization behavior across campaign moderation, approval, grants, and admin support pages

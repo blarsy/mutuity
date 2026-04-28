@@ -19,7 +19,7 @@ As an account holder, I can sign in securely so I can create campaigns, create n
 
 1. **Given** a registered account, **When** the user submits valid credentials, **Then** the system creates an authenticated session and shows the authenticated experience.
 2. **Given** an invalid email/password combination, **When** the user attempts to sign in, **Then** the system rejects the request with a generic user-friendly error message and does not reveal whether the account exists.
-3. **Given** a manager account, **When** the manager signs in, **Then** the session reflects the manager role and manager-only actions remain available.
+3. **Given** an administrator account, **When** the administrator signs in, **Then** the session reflects the admin role and admin-only actions remain available.
 4. **Given** an already authenticated account, **When** the user visits the login page, **Then** the system redirects the user to the home page or intended destination.
 
 ---
@@ -74,7 +74,7 @@ As an authenticated account, I can sign out so my device no longer has access to
 - Invalid credentials repeatedly submitted => the system returns the same generic error copy and applies an MVP in-memory rate limit of 5 attempts per 5-minute window per identifier/IP pair.
 - Signed-out user deep-links directly to `/campaigns/create` or `/needs/create` => the system redirects to login and then returns to the original route after successful sign-in.
 - Session expires while a mutation is submitted => the user sees a sanitized authentication message such as "You must sign in to continue.", local auth state is cleared, and the browser redirects back to login with the original destination preserved.
-- Non-manager account signs in and navigates to moderation or approval flows => the UI hides manager-only actions and the backend still denies protected manager mutations.
+- Non-admin account signs in and navigates to moderation or approval flows => the UI hides admin-only actions and the backend still denies protected admin mutations.
 - Browser refresh after sign-in => the authenticated navigation state is restored from the server-managed session rather than client-managed role headers.
 - Local development verification uses a seeded demo account (`demo@example.com` / `password123`) to exercise the browser login flow and curl-based auth route checks.
 
@@ -99,7 +99,7 @@ As an authenticated account, I can sign out so my device no longer has access to
 - **FR-006**: After successful login, the system MUST return the user to the originally requested protected route when available.
 - **FR-007**: The system MUST provide a logout action that revokes the current session and clears authenticated UI state.
 - **FR-008**: The frontend MUST support loading the current signed-in account and role on initial page load.
-- **FR-009**: Manager and admin sessions MUST continue to map to the existing PostgreSQL role model (`manager`, `admin`) for authorization-sensitive actions.
+- **FR-009**: Administrator sessions MUST map to the PostgreSQL `admin` role for authorization-sensitive actions.
 - **FR-010**: The existing sanitized `UNAUTHENTICATED` error behavior MUST remain the backend fallback for unauthenticated GraphQL access.
 - **FR-011**: User-facing strings for login, logout, redirects, and error states MUST go through i18n.
 - **FR-012**: Development-only header-based role/account simulation MAY remain available for local manual testing, but MUST be bypassed by the browser login flow in production-like usage.
@@ -121,4 +121,4 @@ As an authenticated account, I can sign out so my device no longer has access to
 - **SC-002**: 100 percent of invalid login attempts return a generic user-facing error without exposing whether the account exists.
 - **SC-003**: 100 percent of direct visits to protected pages while signed out redirect to login and successfully return to the intended page after sign-in.
 - **SC-004**: 100 percent of sign-out actions revoke the current session and cause the next protected request to return `UNAUTHENTICATED`.
-- **SC-005**: 100 percent of manager-only actions remain unavailable to non-manager accounts even after successful sign-in.
+- **SC-005**: 100 percent of admin-only actions remain unavailable to non-admin accounts even after successful sign-in.

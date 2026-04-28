@@ -220,7 +220,7 @@ As an account holder, I can open a specific grant route and claim a grant when I
 **Acceptance Scenarios**:
 
 1. **Given** a non-admin account, **When** it attempts to create or modify a grant, **Then** the action is denied.
-2. **Given** a system administrator, **When** a grant is created, **Then** it may define one or more criteria among: allowed accounts, allowed emails (including future users), max total grants, expiration datetime, and linked campaign participation requirement.
+2. **Given** a system administrator, **When** a grant is created, **Then** an expiration datetime is required and at least one additional criterion must be defined among: allowed accounts, allowed emails (including future users), max total grants, or linked campaign participation requirement.
 3. **Given** a grant with multiple criteria, **When** an account attempts to claim it, **Then** the account must satisfy all configured criteria to receive the grant.
 4. **Given** a grant targeted by email, **When** an account with matching email claims it, **Then** the claim succeeds even if the account did not exist when the grant was created.
 5. **Given** a grant with `max amount of grants`, **When** successful claims reach that cap, **Then** further claims are denied indefinitely.
@@ -442,13 +442,13 @@ Unified logging contract (phase-ready definition):
 	- `warn`: recoverable anomaly that did not stop the primary flow.
 	- `error`: contextual statement that includes error message and stack trace when stack is available.
 - **FR-113**: A grant MUST be creatable or modifiable only by system administrators.
-- **FR-114**: A grant definition MUST support the following optional criteria: target account ids, target emails, max successful-claim count, expiration datetime, and linked campaign participation requirement.
+- **FR-114**: A grant definition MUST require an expiration datetime and MUST require at least one additional eligibility constraint among: target account ids, target emails, max successful-claim count, or linked campaign participation requirement.
 - **FR-114a**: A grant definition MUST include a fixed awarded token amount that does not vary per claim for that grant.
 - **FR-115**: Grant eligibility MUST require that an account satisfies all configured criteria on that grant.
 - **FR-116**: Grants targeted by email MUST allow future accounts to claim when their authenticated email matches a targeted email value using lower-cased and trimmed stored emails.
 - **FR-116a**: Plus-addressed emails MUST be treated as distinct email identifiers; the system MUST NOT collapse them to a base address for duplicate-account prevention.
 - **FR-117**: A grant with a max successful-claim count MUST stop awarding tokens once that count is reached, and subsequent claims MUST be denied indefinitely.
-- **FR-118**: A grant with expiration datetime MUST deny claims after expiration.
+- **FR-118**: A grant MUST deny claims after its expiration datetime.
 - **FR-119**: Campaign-participation criterion MUST be satisfied when the claiming account owns at least one approved linked need or at least one approved linked resource in the linked campaign.
 - **FR-120**: The grant claim flow MUST use a dedicated route carrying grant id; when no session is active the route MUST render a login form, and after successful login it MUST continue in the current session context and display grant title and description.
 - **FR-121**: After claim evaluation, the grant claim page MUST show either a success message (award granted) or an error message (award denied).
@@ -472,7 +472,7 @@ Unified logging contract (phase-ready definition):
 - **FR-139**: Mails page MUST provide `send again` action that triggers immediate resend through the same routine used by scheduled mailing jobs, recomputing recipients and template context from current account data.
 - **FR-140**: Campaigns page MUST provide `View description` action that opens a fullscreen dialog showing campaign description.
 - **FR-141**: Campaigns page MUST provide `moderate` action exposing the admin moderation-note flow from feature `001-campaign-needs`.
-- **FR-142**: Grants page MUST provide `Create` action opening the grant-creation form in a dialog.
+- **FR-142**: Grants page MUST provide `Create` action opening the grant-creation form in a dialog, with a required expiration datetime editor and validation that at least one additional grant constraint is configured.
 - **FR-143**: Logs page MUST provide `View message` action opening a fullscreen dialog showing the raw full message text with wrapping enabled.
 - **FR-146**: Datetime values used across admin support and grant claim surfaces MUST be stored with time zone and rendered in the current user's session locale/time-zone representation.
 - **FR-144**: Admin table queries SHOULD support pagination and indexed filtering suitable for high-cardinality datasets.

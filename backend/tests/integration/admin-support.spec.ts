@@ -78,7 +78,7 @@ async function seedCampaignForAccount(creatorAccountId: string, stamp: number): 
           airdrop_amount, rewards_multiplier
         )
         values ($1, $2, 'community', now() + interval '1 day', now() + interval '2 days',
-                now() + interval '3 days', 100, 1)
+                now() + interval '3 days', 3200, 1)
         returning id
       `,
       [creatorAccountId, `Admin test campaign ${stamp}`]
@@ -352,10 +352,12 @@ describe("admin grant creation with audit log", () => {
     const response = await postGraphql(
       {
         query: `
-          mutation($pTitle: String!, $pAwardedTokenAmount: Int!) {
+          mutation($pTitle: String!, $pAwardedTokenAmount: Int!, $pMaxSuccessfulClaimCount: Int!, $pExpiresAt: Datetime!) {
             upsertGrant(input: {
               pTitle: $pTitle
               pAwardedTokenAmount: $pAwardedTokenAmount
+              pMaxSuccessfulClaimCount: $pMaxSuccessfulClaimCount
+              pExpiresAt: $pExpiresAt
             }) {
               grantDefinition {
                 id
@@ -366,7 +368,9 @@ describe("admin grant creation with audit log", () => {
         `,
         variables: {
           pTitle: `Test grant ${stamp}`,
-          pAwardedTokenAmount: 50
+          pAwardedTokenAmount: 50,
+          pMaxSuccessfulClaimCount: 3,
+          pExpiresAt: "2032-12-31T23:59:59.000Z"
         }
       },
       cookie
@@ -381,6 +385,68 @@ describe("admin grant creation with audit log", () => {
 
     const logsAfter = await countAuditLogsForContext("upsert_grant");
     expect(logsAfter).toBe(logsBefore + 1);
+  });
+
+  it("upsertGrant requires grant expiration datetime", async () => {
+    const stamp = Date.now();
+    const admin = await seedDemoAccount({
+      identifier: `admin-grant-exp-${stamp}@example.com`,
+      role: "admin",
+      displayName: "Admin Grant Expiration Tester"
+    });
+    const cookie = await loginWithGraphqlSessionCookie(admin.identifier, admin.password);
+
+    const response = await postGraphql(
+      {
+        query: `
+          mutation {
+            upsertGrant(input: {
+              pTitle: "Grant without expiry"
+              pAwardedTokenAmount: 50
+              pMaxSuccessfulClaimCount: 1
+            }) {
+              grantDefinition { id }
+            }
+          }
+        `
+      },
+      cookie
+    );
+
+    const body = await response.json() as { errors?: { message: string }[] };
+    expect(body.errors).toBeDefined();
+    expect(body.errors?.[0]?.message).toMatch(/expiration datetime is required/i);
+  });
+
+  it("upsertGrant requires at least one claim constraint", async () => {
+    const stamp = Date.now();
+    const admin = await seedDemoAccount({
+      identifier: `admin-grant-constraint-${stamp}@example.com`,
+      role: "admin",
+      displayName: "Admin Grant Constraint Tester"
+    });
+    const cookie = await loginWithGraphqlSessionCookie(admin.identifier, admin.password);
+
+    const response = await postGraphql(
+      {
+        query: `
+          mutation {
+            upsertGrant(input: {
+              pTitle: "Grant without constraints"
+              pAwardedTokenAmount: 50
+              pExpiresAt: "2032-12-31T23:59:59.000Z"
+            }) {
+              grantDefinition { id }
+            }
+          }
+        `
+      },
+      cookie
+    );
+
+    const body = await response.json() as { errors?: { message: string }[] };
+    expect(body.errors).toBeDefined();
+    expect(body.errors?.[0]?.message).toMatch(/at least one constraint/i);
   });
 
   it("upsertGrant is denied for non-admin", async () => {
