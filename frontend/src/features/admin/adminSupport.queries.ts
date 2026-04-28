@@ -86,14 +86,15 @@ export const ADMIN_LIST_MAILS_QUERY = gql`
 `;
 
 export const ADMIN_LIST_CAMPAIGNS_QUERY = gql`
-  query AdminListCampaigns($pSearch: String, $pLimit: Int = 25, $pOffset: Int = 0) {
-    adminListCampaigns(pSearch: $pSearch, pLimit: $pLimit, pOffset: $pOffset) {
+  query AdminListCampaigns($pSearch: String, $pStatus: CampaignModerationStatus, $pLimit: Int = 25, $pOffset: Int = 0) {
+    adminListCampaigns(pSearch: $pSearch, pStatus: $pStatus, pLimit: $pLimit, pOffset: $pOffset) {
       totalCount
       nodes {
         id
         creatorName
         summary
         description
+        moderationStatus
         airdropDatetime
         airdropTokenAmount
         beginDatetime

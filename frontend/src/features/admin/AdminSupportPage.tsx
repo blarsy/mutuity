@@ -12,8 +12,12 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Table,
   TableBody,
@@ -69,9 +73,18 @@ type AdminListQueryData = Record<string, AdminConnection | undefined>;
 
 type AdminListQueryVariables = {
   pSearch?: string;
+  pStatus?: string | null;
   pLimit: number;
   pOffset: number;
 };
+
+const CAMPAIGN_MODERATION_STATUSES: { value: string; label: string }[] = [
+  { value: "PENDING", label: "Pending" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "UPCOMING", label: "Upcoming" },
+  { value: "ENDED", label: "Ended" }
+];
 
 type AdminQueryDocument = TypedDocumentNode<AdminListQueryData, AdminListQueryVariables>;
 
@@ -646,6 +659,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "id", label: "ID", render: row => asString(row.id) },
       { key: "creatorName", label: "Creator", render: row => asString(row.creatorName) || "-" },
       { key: "summary", label: "Summary", render: row => asString(row.summary) || "-" },
+      { key: "moderationStatus", label: "Status", render: row => asString(row.moderationStatus) || "-" },
       {
         key: "airdropTokenAmount",
         label: "Airdrop Tokens",
@@ -722,6 +736,7 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [searchValue, setSearchValue] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [offset, setOffset] = useState(0);
   const { isAdmin, isChecking, isRedirecting, isForbiddenRedirecting } = useRequireAdmin();
   const config = getAdminSectionConfig(section);
@@ -729,10 +744,11 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
   const variables = useMemo<AdminListQueryVariables>(
     () => ({
       pSearch: searchValue,
+      pStatus: section === "campaigns" && statusFilter !== "all" ? statusFilter : null,
       pLimit: PAGE_SIZE,
       pOffset: offset
     }),
-    [offset, searchValue]
+    [offset, searchValue, section, statusFilter]
   );
 
   const { data, loading, error } = useQuery<AdminListQueryData, AdminListQueryVariables>(config.query, {
@@ -806,6 +822,27 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
                 setSearchInput(event.target.value);
               }}
             />
+            {section === "campaigns" ? (
+              <FormControl sx={{ minWidth: 180 }}>
+                <InputLabel id="campaign-status-filter-label">Status</InputLabel>
+                <Select
+                  label="Status"
+                  labelId="campaign-status-filter-label"
+                  value={statusFilter}
+                  onChange={event => {
+                    setStatusFilter(event.target.value);
+                    setOffset(0);
+                  }}
+                >
+                  <MenuItem value="all">All statuses</MenuItem>
+                  {CAMPAIGN_MODERATION_STATUSES.map(option => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : null}
             <Stack direction="row" spacing={1}>
               <Button
                 onClick={() => {
@@ -821,6 +858,7 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
                 onClick={() => {
                   setSearchInput("");
                   setSearchValue(undefined);
+                  setStatusFilter("all");
                   setOffset(0);
                 }}
                 variant="outlined"
