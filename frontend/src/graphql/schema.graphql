@@ -243,6 +243,26 @@ type Account implements Node {
     """The method to use when ordering `GrantClaim`."""
     orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
   ): GrantClaimsConnection!
+  """Reads and enables pagination through a set of `GrantDefinition`."""
+  grantDefinitionsByCreatedByAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantDefinitionCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsConnection!
   """Reads and enables pagination through a set of `GrantTargetAccount`."""
   grantTargetAccountsByAccountId(
     """Read all values in the set after (below) this cursor."""
@@ -389,6 +409,26 @@ type Account implements Node {
   ): NeedsConnection!
   """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
   nodeId: ID!
+  """Reads and enables pagination through a set of `OperationalLog`."""
+  operationalLogsByAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: OperationalLogCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `OperationalLog`."""
+    orderBy: [OperationalLogsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OperationalLogsConnection!
   """The account owner's preferred UI and email language. Supported values: en, fr."""
   preferredLanguage: String!
   profileLinks: JSON!
@@ -785,6 +825,28 @@ type AddCampaignModerationNotePayload {
   query: Query
 }
 
+"""All input for the `adminGetMailContent` mutation."""
+input AdminGetMailContentInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pMailId: UUID
+}
+
+"""The output of our `adminGetMailContent` mutation."""
+type AdminGetMailContentPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  string: String
+}
+
 """A `AdminListAccountsRecord` edge in the connection."""
 type AdminListAccountEdge {
   """A cursor for use in pagination."""
@@ -1017,6 +1079,27 @@ type AdminListResourcesRecord {
   tokenAmount: Int
 }
 
+"""All input for the `adminResendMail` mutation."""
+input AdminResendMailInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pMailId: UUID
+}
+
+"""The output of our `adminResendMail` mutation."""
+type AdminResendMailPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `approveCampaign` mutation."""
 input ApproveCampaignInput {
   campaignId: UUID
@@ -1058,6 +1141,10 @@ input ArchiveGrantInput {
 
 """The output of our `archiveGrant` mutation."""
 type ArchiveGrantPayload {
+  """Reads a single `Account` that is related to this `GrantDefinition`."""
+  accountByCreatedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `GrantDefinition`."""
+  campaignByLinkedCampaignId: Campaign
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -1199,6 +1286,26 @@ type Campaign implements Node {
   createdAt: Datetime!
   creatorAccountId: UUID!
   endAt: Datetime!
+  """Reads and enables pagination through a set of `GrantDefinition`."""
+  grantDefinitionsByLinkedCampaignId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantDefinitionCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantDefinition`."""
+    orderBy: [GrantDefinitionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantDefinitionsConnection!
   id: UUID!
   managerNoteFromCreator: String
   moderationStatus: CampaignModerationStatus!
@@ -2363,6 +2470,8 @@ type CreateGrantClaimPayload {
   grantDefinitionByGrantId: GrantDefinition
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
+  """Reads a single `TokenMovement` that is related to this `GrantClaim`."""
+  tokenMovementByTokenMovementId: TokenMovement
 }
 
 """All input for the create `GrantDefinition` mutation."""
@@ -2378,6 +2487,10 @@ input CreateGrantDefinitionInput {
 
 """The output of our create `GrantDefinition` mutation."""
 type CreateGrantDefinitionPayload {
+  """Reads a single `Account` that is related to this `GrantDefinition`."""
+  accountByCreatedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `GrantDefinition`."""
+  campaignByLinkedCampaignId: Campaign
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -2620,6 +2733,8 @@ input CreateOperationalLogInput {
 
 """The output of our create `OperationalLog` mutation."""
 type CreateOperationalLogPayload {
+  """Reads a single `Account` that is related to this `OperationalLog`."""
+  accountByAccountId: Account
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -3381,6 +3496,8 @@ type DeleteGrantClaimPayload {
   grantDefinitionByGrantId: GrantDefinition
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
+  """Reads a single `TokenMovement` that is related to this `GrantClaim`."""
+  tokenMovementByTokenMovementId: TokenMovement
 }
 
 """All input for the `deleteGrantDefinitionById` mutation."""
@@ -3406,6 +3523,10 @@ input DeleteGrantDefinitionInput {
 
 """The output of our delete `GrantDefinition` mutation."""
 type DeleteGrantDefinitionPayload {
+  """Reads a single `Account` that is related to this `GrantDefinition`."""
+  accountByCreatedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `GrantDefinition`."""
+  campaignByLinkedCampaignId: Campaign
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -3735,6 +3856,8 @@ input DeleteOperationalLogInput {
 
 """The output of our delete `OperationalLog` mutation."""
 type DeleteOperationalLogPayload {
+  """Reads a single `Account` that is related to this `OperationalLog`."""
+  accountByAccountId: Account
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -4188,6 +4311,8 @@ type GrantClaim implements Node {
   id: UUID!
   """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
   nodeId: ID!
+  """Reads a single `TokenMovement` that is related to this `GrantClaim`."""
+  tokenMovementByTokenMovementId: TokenMovement
   tokenMovementId: UUID
 }
 
@@ -4202,6 +4327,8 @@ input GrantClaimCondition {
   grantId: UUID
   """Checks for equality with the object’s `id` field."""
   id: UUID
+  """Checks for equality with the object’s `tokenMovementId` field."""
+  tokenMovementId: UUID
 }
 
 """An input for mutations affecting `GrantClaim`"""
@@ -4264,16 +4391,22 @@ enum GrantClaimsOrderBy {
   NATURAL
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
+  TOKEN_MOVEMENT_ID_ASC
+  TOKEN_MOVEMENT_ID_DESC
 }
 
 """Administrator-defined token seeding grants with optional targeting and campaign criteria."""
 type GrantDefinition implements Node {
+  """Reads a single `Account` that is related to this `GrantDefinition`."""
+  accountByCreatedByAccountId: Account
   archivedAt: Datetime
   awardedTokenAmount: Int!
+  """Reads a single `Campaign` that is related to this `GrantDefinition`."""
+  campaignByLinkedCampaignId: Campaign
   createdAt: Datetime!
   createdByAccountId: UUID!
   description: String!
-  expiresAt: Datetime
+  expiresAt: Datetime!
   """Reads and enables pagination through a set of `GrantClaim`."""
   grantClaimsByGrantId(
     """Read all values in the set after (below) this cursor."""
@@ -4350,8 +4483,12 @@ tested for equality and combined with a logical ‘and.’
 input GrantDefinitionCondition {
   """Checks for equality with the object’s `createdAt` field."""
   createdAt: Datetime
+  """Checks for equality with the object’s `createdByAccountId` field."""
+  createdByAccountId: UUID
   """Checks for equality with the object’s `id` field."""
   id: UUID
+  """Checks for equality with the object’s `linkedCampaignId` field."""
+  linkedCampaignId: UUID
 }
 
 """An input for mutations affecting `GrantDefinition`"""
@@ -4361,7 +4498,7 @@ input GrantDefinitionInput {
   createdAt: Datetime
   createdByAccountId: UUID!
   description: String
-  expiresAt: Datetime
+  expiresAt: Datetime!
   id: UUID
   linkedCampaignId: UUID
   maxSuccessfulClaimCount: Int
@@ -4408,8 +4545,12 @@ type GrantDefinitionsEdge {
 enum GrantDefinitionsOrderBy {
   CREATED_AT_ASC
   CREATED_AT_DESC
+  CREATED_BY_ACCOUNT_ID_ASC
+  CREATED_BY_ACCOUNT_ID_DESC
   ID_ASC
   ID_DESC
+  LINKED_CAMPAIGN_ID_ASC
+  LINKED_CAMPAIGN_ID_DESC
   NATURAL
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
@@ -4754,6 +4895,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AddCampaignModerationNoteInput!
   ): AddCampaignModerationNotePayload
+  """Returns the stored HTML body of a mail outbox entry. Admin only."""
+  adminGetMailContent(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminGetMailContentInput!
+  ): AdminGetMailContentPayload
+  """Resets a mail outbox entry to pending for re-delivery via the same scheduled mailing routine. Admin only."""
+  adminResendMail(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: AdminResendMailInput!
+  ): AdminResendMailPayload
   approveCampaign(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: ApproveCampaignInput!
@@ -6179,6 +6330,8 @@ interface Node {
 
 """Unified operational log sink for mobile app, backoffice web, web API, and worker jobs."""
 type OperationalLog implements Node {
+  """Reads a single `Account` that is related to this `OperationalLog`."""
+  accountByAccountId: Account
   accountId: UUID
   component: String!
   context: String
@@ -6196,6 +6349,8 @@ A condition to be used against `OperationalLog` object types. All fields are
 tested for equality and combined with a logical ‘and.’
 """
 input OperationalLogCondition {
+  """Checks for equality with the object’s `accountId` field."""
+  accountId: UUID
   """Checks for equality with the object’s `component` field."""
   component: String
   """Checks for equality with the object’s `createdAt` field."""
@@ -6252,6 +6407,8 @@ type OperationalLogsEdge {
 
 """Methods to use when ordering `OperationalLog`."""
 enum OperationalLogsOrderBy {
+  ACCOUNT_ID_ASC
+  ACCOUNT_ID_DESC
   COMPONENT_ASC
   COMPONENT_DESC
   CREATED_AT_ASC
@@ -8378,6 +8535,26 @@ type TokenMovement implements Node {
   counterpartyAccountId: UUID
   createdAt: Datetime!
   eventType: String!
+  """Reads and enables pagination through a set of `GrantClaim`."""
+  grantClaimsByTokenMovementId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: GrantClaimCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `GrantClaim`."""
+    orderBy: [GrantClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): GrantClaimsConnection!
   id: UUID!
   idempotencyKey: String
   """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
@@ -9030,6 +9207,8 @@ type UpdateGrantClaimPayload {
   grantDefinitionByGrantId: GrantDefinition
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
+  """Reads a single `TokenMovement` that is related to this `GrantClaim`."""
+  tokenMovementByTokenMovementId: TokenMovement
 }
 
 """All input for the `updateGrantDefinitionById` mutation."""
@@ -9059,6 +9238,10 @@ input UpdateGrantDefinitionInput {
 
 """The output of our update `GrantDefinition` mutation."""
 type UpdateGrantDefinitionPayload {
+  """Reads a single `Account` that is related to this `GrantDefinition`."""
+  accountByCreatedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `GrantDefinition`."""
+  campaignByLinkedCampaignId: Campaign
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -9413,6 +9596,8 @@ input UpdateOperationalLogInput {
 
 """The output of our update `OperationalLog` mutation."""
 type UpdateOperationalLogPayload {
+  """Reads a single `Account` that is related to this `OperationalLog`."""
+  accountByAccountId: Account
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -9802,11 +9987,17 @@ input UpsertGrantInput {
   pGrantId: UUID
   pLinkedCampaignId: UUID
   pMaxSuccessfulClaimCount: Int
+  pTargetAccountIds: [UUID]
+  pTargetEmails: [String]
   pTitle: String
 }
 
 """The output of our `upsertGrant` mutation."""
 type UpsertGrantPayload {
+  """Reads a single `Account` that is related to this `GrantDefinition`."""
+  accountByCreatedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `GrantDefinition`."""
+  campaignByLinkedCampaignId: Campaign
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.

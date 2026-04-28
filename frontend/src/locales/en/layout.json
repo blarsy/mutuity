@@ -8,8 +8,7 @@
     "claims": "Claims",
     "campaigns": "Campaigns",
     "chat": "Chat",
-    "notifications": "Notifications",
-    "campaignReview": "Campaign Review"
+    "notifications": "Notifications"
   },
   "topbar": {
     "tokenBalance": "{{count}} tokens",

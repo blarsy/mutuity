@@ -8,8 +8,7 @@
     "claims": "Demandes",
     "campaigns": "Campagnes",
     "chat": "Discussion",
-    "notifications": "Notifications",
-    "campaignReview": "Révision de campagnes"
+    "notifications": "Notifications"
   },
   "topbar": {
     "tokenBalance": "{{count}} Topes",

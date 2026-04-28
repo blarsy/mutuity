@@ -65,23 +65,6 @@ export const PUBLIC_CAMPAIGNS_QUERY = gql`
   }
 `;
 
-export const PENDING_CAMPAIGNS_QUERY = gql`
-  query PendingCampaigns {
-    allCampaigns(condition: { moderationStatus: PENDING }, orderBy: CREATED_AT_DESC) {
-      nodes {
-        id
-        title
-        theme
-        moderationStatus
-        startAt
-        airdropAt
-        endAt
-        createdAt
-      }
-    }
-  }
-`;
-
 export const APPROVE_CAMPAIGN_MUTATION = gql`
   mutation ApproveCampaign($campaignId: UUID!) {
     approveCampaign(input: { campaignId: $campaignId }) {

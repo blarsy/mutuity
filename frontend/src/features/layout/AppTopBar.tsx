@@ -59,12 +59,8 @@ export function AppTopBar({
       return signedOutLinks;
     }
 
-    if (session.role === "admin") {
-      return [...signedInLinks, { labelKey: "nav.campaignReview", href: "/campaigns/pending" }];
-    }
-
     return signedInLinks;
-  }, [session.authenticated, session.role]);
+  }, [session.authenticated]);
 
   const handleLogOut = async () => {
     setMenuAnchor(null);

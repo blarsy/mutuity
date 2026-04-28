@@ -20,7 +20,7 @@
   "pending": {
     "title": "Pending campaigns",
     "subtitle": "Review pending campaigns and approve those that should be publicly listed.",
-    "onlyManagers": "Only administrator accounts can approve campaigns."
+    "onlyManagers": "Only administrator accounts can approve campaigns.",
     "loading": "Loading pending campaigns…",
     "empty": "No campaigns are waiting for approval.",
     "approveButton": "Approve campaign"
