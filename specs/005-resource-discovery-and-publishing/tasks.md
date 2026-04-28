@@ -135,7 +135,7 @@
 ## Phase 14: Role Consolidation (Manager -> Admin)
 
 - [x] T082 Update SQL role model to remove manager-specific grants/guards and enforce a single administrator role in `database/migrations/`
-- [ ] T083 Refactor backend role checks and PostGraphile auth helpers from manager/admin split to admin-only semantics in `backend/src/`
-- [ ] T084 Refactor frontend role-gated surfaces and labels from manager/admin split to admin-only semantics in `frontend/src/`
-- [ ] T085 Align all feature specs/tasks/docs with the consolidated administrator role model in `specs/`
-- [ ] T086 Add end-to-end verification for consolidated admin-only authorization behavior across campaign moderation, approval, grants, and admin support pages
+- [x] T083 Refactor backend role checks and PostGraphile auth helpers from manager/admin split to admin-only semantics in `backend/src/`
+- [x] T084 Refactor frontend role-gated surfaces and labels from manager/admin split to admin-only semantics in `frontend/src/`
+- [x] T085 Align all feature specs/tasks/docs with the consolidated administrator role model in `specs/`
+- [x] T086 Add end-to-end verification for consolidated admin-only authorization behavior across campaign moderation, approval, grants, and admin support pages

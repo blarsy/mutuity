@@ -70,7 +70,7 @@ export default function PendingCampaignsPage() {
     refetchQueries: [{ query: PENDING_CAMPAIGNS_QUERY }]
   });
 
-  const canApprove = session.role === "manager" || session.role === "admin";
+  const canApprove = session.role === "admin";
 
   const pendingCampaigns = useMemo(() => {
     return data?.allCampaigns.nodes ?? [];

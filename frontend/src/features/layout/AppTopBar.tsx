@@ -59,7 +59,7 @@ export function AppTopBar({
       return signedOutLinks;
     }
 
-    if (session.role === "manager" || session.role === "admin") {
+    if (session.role === "admin") {
       return [...signedInLinks, { labelKey: "nav.campaignReview", href: "/campaigns/pending" }];
     }
 

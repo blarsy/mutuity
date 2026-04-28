@@ -1,4 +1,4 @@
-export type AuthRole = "anonymous" | "identified_account" | "manager" | "admin" | string;
+export type AuthRole = "anonymous" | "identified_account" | "admin" | string;
 
 export type CurrentAccount = {
   id: string;

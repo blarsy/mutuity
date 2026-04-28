@@ -10,7 +10,7 @@ Validate the Feature 1 workflow end-to-end in a local development environment.
 - PostgreSQL database available with latest migrations applied
 - At least two accounts available:
   - one standard account
-  - one Mutuity manager account
+  - one Mutuity administrator account
 
 ## Runtime Notes
 - Ensure PostGraphile is connected with the same DB role and schema settings expected in development.
@@ -30,8 +30,8 @@ Validate the Feature 1 workflow end-to-end in a local development environment.
 4. Verify the campaign is created with `pending` moderation status.
 5. Verify the campaign is not visible on the public interface.
 
-## Scenario 2: Manager Moderates And Approves Campaign
-1. Sign in as Mutuity manager.
+## Scenario 2: Administrator Moderates And Approves Campaign
+1. Sign in as Mutuity administrator.
 2. Open pending campaigns.
 3. Add a moderation note to the created campaign.
 4. Verify the campaign creator can see the note.
@@ -63,7 +63,7 @@ Validate the Feature 1 workflow end-to-end in a local development environment.
 - Invalid airdrop amount is rejected.
 - Invalid datetime ordering is rejected.
 - Invalid Topes amount for selected intensity is rejected.
-- Non-manager cannot approve campaign or create moderation note.
+- Non-administrator cannot approve campaign or create moderation note.
 - Non-creator cannot triage campaign-linked needs.
 
 ## Error Handling Validation

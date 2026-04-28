@@ -20,7 +20,7 @@
   "pending": {
     "title": "Campagnes en attente",
     "subtitle": "Examinez les campagnes en attente et approuvez celles qui doivent être publiées.",
-    "onlyManagers": "Seuls les comptes manager peuvent approuver les campagnes.",
+    "onlyManagers": "Seuls les comptes administrateur peuvent approuver les campagnes.",
     "loading": "Chargement des campagnes en attente…",
     "empty": "Aucune campagne en attente d'approbation.",
     "approveButton": "Approuver la campagne"
@@ -33,7 +33,7 @@
     "fields": {
       "title": "Titre de la campagne",
       "theme": "Thème",
-      "noteForManager": "Note pour le manager",
+      "noteForManager": "Note pour l'administrateur",
       "rewardsMultiplier": "Multiplicateur de récompense",
       "airdropAmount": "Montant de l'airdrop",
       "startDatetime": "Date/heure de début",
@@ -47,7 +47,7 @@
     "notePlaceholder": "Expliquez ce qui doit être mis à jour avant approbation",
     "sendButton": "Envoyer la note",
     "empty": "Aucune note de modération pour le moment.",
-    "noteMeta": "Manager {{managerAccountId}} • {{createdAt}}"
+    "noteMeta": "Administrateur {{managerAccountId}} • {{createdAt}}"
   },
   "triage": {
     "title": "Triage des besoins de campagne",

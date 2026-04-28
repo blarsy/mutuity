@@ -12,7 +12,7 @@ import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
 
 const app = express();
-const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "manager", "admin"]);
+const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "admin"]);
 const AUTHENTICATION_ERROR_MESSAGE = "You must sign in to continue.";
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
@@ -126,6 +126,11 @@ const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
     pattern: /campaign need can only be triaged from pending status/i,
     message: "Campaign need can only be triaged from pending status",
     code: "BAD_USER_INPUT"
+  },
+  {
+    pattern: /only managers can/i,
+    message: "Only administrators can perform this action",
+    code: "FORBIDDEN"
   }
 ];
 const AUTHENTICATION_ERROR_PATTERNS = [

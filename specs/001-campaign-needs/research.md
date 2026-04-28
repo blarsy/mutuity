@@ -5,7 +5,7 @@
 ### 1. Authorization model
 - Enforce authorization at the backend and database layers.
 - Frontend should hide unavailable actions, but backend/API remains authoritative.
-- Campaign approval and moderation-note creation are restricted to the `admin` / Mutuity manager role.
+- Campaign approval and moderation-note creation are restricted to the Mutuity administrator role (`admin`).
 - Campaign need triage is restricted to the creator of the target campaign.
 
 ### 2. Visibility model

@@ -20,7 +20,7 @@
   "pending": {
     "title": "Pending campaigns",
     "subtitle": "Review pending campaigns and approve those that should be publicly listed.",
-    "onlyManagers": "Only manager accounts can approve campaigns.",
+    "onlyManagers": "Only administrator accounts can approve campaigns."
     "loading": "Loading pending campaigns…",
     "empty": "No campaigns are waiting for approval.",
     "approveButton": "Approve campaign"
@@ -33,7 +33,7 @@
     "fields": {
       "title": "Campaign title",
       "theme": "Theme",
-      "noteForManager": "Note for manager",
+      "noteForManager": "Note for administrator",
       "rewardsMultiplier": "Rewards multiplier",
       "airdropAmount": "Airdrop amount",
       "startDatetime": "Start datetime",
@@ -47,7 +47,7 @@
     "notePlaceholder": "Explain what should be updated before approval",
     "sendButton": "Send Note",
     "empty": "No moderation notes yet.",
-    "noteMeta": "Manager {{managerAccountId}} • {{createdAt}}"
+    "noteMeta": "Administrator {{managerAccountId}} • {{createdAt}}"
   },
   "triage": {
     "title": "Campaign need triage",
