@@ -27,6 +27,7 @@ import {
   MARK_RESOURCE_BID_NOTIFICATION_READ_MUTATION,
   NOTIFICATIONS_OVERVIEW_QUERY
 } from "../features/notifications/notifications.queries";
+import { notificationUrlForEvent } from "../features/notifications/notificationRouting";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 type NeedClaimNotificationNode = {
@@ -168,41 +169,7 @@ function notificationMessage(notification: UnifiedNotification, t: TranslateFn) 
 }
 
 function notificationUrl(notification: UnifiedNotification) {
-  const campaignId = asText(notification.payload.campaignId);
-  const creatorName = asText(notification.payload.creatorName);
-
-  switch (notification.eventType) {
-    case "claim_created":
-    case "claim_settled":
-      return "/claims";
-    case "resource_bid_created":
-    case "resource_bid_expiring_soon":
-    case "resource_bid_accepted":
-    case "resource_bid_declined":
-    case "resource_bid_cancelled":
-    case "resource_bid_expired":
-      return "/bids";
-    case "campaign_airdrop_done":
-    case "gift_tokens_received":
-      return "/contribution";
-    case "campaign_airdrop_coming_soon": {
-      const campaignUrl = asText(notification.payload.url);
-      return campaignUrl ?? "/";
-    }
-    case "welcome_profile_reward":
-      return "/profile";
-    case "campaign_moderation_note_received":
-    case "campaign_approved":
-      return campaignId ? `/campaigns/${campaignId}/moderation` : "/campaigns";
-    case "campaign_creator_adaptation_submitted":
-      return creatorName
-        ? `/admin/campaigns?search=${encodeURIComponent(creatorName)}&status=AWAITING_ADAPTATION`
-        : "/admin/campaigns?status=AWAITING_ADAPTATION";
-    default: {
-      const fallbackUrl = asText(notification.payload.url);
-      return fallbackUrl ?? "/notifications";
-    }
-  }
+  return notificationUrlForEvent(notification.eventType, notification.payload);
 }
 
 export default function NotificationsPage() {

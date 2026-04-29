@@ -144,7 +144,7 @@
 
 - [x] T087 Extend the notification catalog, payload rules, and route mapping for campaign moderation note received, campaign approved, and creator adaptation submitted in `specs/005-resource-discovery-and-publishing/spec.md` and implementation surfaces
 - [x] T088 Extend the admin campaigns page to support moderation-status filtering including `awaiting adaptation` and notification-driven prefilled filter state in `frontend/src/features/admin/` and related GraphQL/database helpers
-- [ ] T089 Add end-to-end verification for campaign moderation notification routing into creator moderation and filtered admin campaigns destinations
+- [x] T089 Add end-to-end verification for campaign moderation notification routing into creator moderation and filtered admin campaigns destinations
 
 ## Phase 16: Rich Text Authoring Follow-Up
 

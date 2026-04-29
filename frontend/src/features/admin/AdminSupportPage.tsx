@@ -54,6 +54,7 @@ import {
   ADMIN_LIST_RESOURCES_QUERY,
   ADMIN_RESEND_MAIL_MUTATION
 } from "./adminSupport.queries";
+import { resolveCampaignModerationPrefill } from "./adminCampaignFilters";
 
 const PAGE_SIZE = 25;
 
@@ -782,8 +783,10 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
       return;
     }
 
-    const prefilledSearch = typeof router.query.search === "string" ? router.query.search.trim() : "";
-    const prefilledStatus = typeof router.query.status === "string" ? router.query.status.toUpperCase() : "";
+    const { prefilledSearch, prefilledStatus } = resolveCampaignModerationPrefill({
+      search: router.query.search,
+      status: router.query.status
+    });
 
     if (prefilledSearch) {
       setSearchInput(prefilledSearch);
@@ -791,7 +794,7 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
       setOffset(0);
     }
 
-    if (CAMPAIGN_MODERATION_STATUSES.some(status => status.value === prefilledStatus)) {
+    if (prefilledStatus) {
       setStatusFilter(prefilledStatus);
       setOffset(0);
     }
