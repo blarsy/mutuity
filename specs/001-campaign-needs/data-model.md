@@ -18,7 +18,7 @@
 - `start_at`: timestamptz, required
 - `airdrop_at`: timestamptz, required
 - `end_at`: timestamptz, required
-- `moderation_status`: enum(`pending`, `approved`), required, default `pending`
+- `moderation_status`: enum(`pending`, `awaiting_adaptation`, `approved`), required, default `pending`
 - `created_at`: timestamptz, required
 - `updated_at`: timestamptz, required
 
@@ -26,6 +26,9 @@
 - `start_at < end_at`
 - `start_at <= airdrop_at <= end_at`
 - Public visibility requires `moderation_status = approved` and current time within campaign lifetime.
+- Sending an administrator moderation note transitions `moderation_status` to `awaiting_adaptation`.
+- Creator edits are allowed only while `moderation_status` is `pending` or `awaiting_adaptation`.
+- Once `moderation_status` becomes `approved`, the creator moderation surface becomes read-only and no new moderation events are appended.
 
 ### PostGraphile Functions
 - `approve_campaign(campaign_id uuid)` -> campaign
@@ -41,6 +44,20 @@
 ### Rules
 - Notes are append-only history.
 - Duplicate note bodies are allowed.
+
+## CampaignModerationEvent (Read Model Or Backed Table)
+- `campaign_id`: UUID, foreign key to campaigns
+- `event_type`: enum/text with values at least `campaign_created`, `moderation_note_received`, `campaign_modified_by_creator`
+- `actor_account_id`: UUID, nullable, foreign key to accounts
+- `body`: text, nullable
+- `created_at`: timestamptz, required
+
+### Rules
+- Creator-facing moderation history is ordered by `created_at DESC`.
+- The initial campaign creation MUST appear as the oldest synthetic or persisted moderation event.
+- Administrator moderation notes appear as `moderation_note_received` events.
+- Creator edits while the campaign is awaiting adaptation appear as `campaign_modified_by_creator` events.
+- Campaign approval does not append a new moderation event; approval is communicated through status and notifications.
 
 ### PostGraphile Functions
 - `add_campaign_moderation_note(campaign_id uuid, body text)` -> campaign_moderation_note
@@ -117,5 +134,6 @@ Visibility:
 Includes:
 - campaign core fields
 - moderation status
-- ordered moderation notes
+- ordered moderation events (most recent first)
+- editability flag derived from moderation status (`pending` or `awaiting_adaptation` only)
 - linked needs with triage status

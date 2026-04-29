@@ -16,14 +16,73 @@ export const ADD_CAMPAIGN_MODERATION_NOTE_MUTATION = gql`
 
 export const CAMPAIGN_MODERATION_HISTORY_QUERY = gql`
   query CampaignModerationHistory($campaignId: UUID!) {
-    allCampaignModerationNotes(condition: { campaignId: $campaignId }, orderBy: CREATED_AT_ASC) {
+    campaignModerationEvents(pCampaignId: $campaignId) {
       nodes {
-        id
-        campaignId
-        managerAccountId
+        eventType
         body
+        actorAccountId
         createdAt
       }
+    }
+  }
+`;
+
+export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
+  mutation UpdateCampaignForModeration(
+    $pCampaignId: UUID!
+    $pTitle: String!
+    $pTheme: String!
+    $pManagerNoteFromCreator: String
+    $pRewardsMultiplier: Int!
+    $pAirdropAmount: Int!
+    $pStartAt: Datetime!
+    $pAirdropAt: Datetime!
+    $pEndAt: Datetime!
+  ) {
+    updateCampaignForModeration(
+      input: {
+        pCampaignId: $pCampaignId
+        pTitle: $pTitle
+        pTheme: $pTheme
+        pManagerNoteFromCreator: $pManagerNoteFromCreator
+        pRewardsMultiplier: $pRewardsMultiplier
+        pAirdropAmount: $pAirdropAmount
+        pStartAt: $pStartAt
+        pAirdropAt: $pAirdropAt
+        pEndAt: $pEndAt
+      }
+    ) {
+      campaign {
+        id
+        title
+        theme
+        managerNoteFromCreator
+        rewardsMultiplier
+        airdropAmount
+        startAt
+        airdropAt
+        endAt
+        moderationStatus
+        createdAt
+      }
+    }
+  }
+`;
+
+export const CAMPAIGN_MODERATION_DETAILS_QUERY = gql`
+  query CampaignModerationDetails($campaignId: UUID!) {
+    campaignById(id: $campaignId) {
+      id
+      title
+      theme
+      managerNoteFromCreator
+      rewardsMultiplier
+      airdropAmount
+      startAt
+      airdropAt
+      endAt
+      moderationStatus
+      createdAt
     }
   }
 `;

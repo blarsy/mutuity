@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -111,6 +112,17 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
                   <Typography variant="body2">{t("labels.airdrop")}: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
                   <Typography variant="body2">{t("labels.end")}: {new Date(campaign.endAt).toLocaleString()}</Typography>
                 </Stack>
+
+                <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                  <Button
+                    component={NextLink}
+                    href={`/campaigns/${campaign.id}/moderation`}
+                    size="small"
+                    variant="outlined"
+                  >
+                    {t("moderationNotes.openModeration")}
+                  </Button>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
@@ -121,6 +133,7 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
 }
 
 export default function CampaignsPage() {
+  const router = useRouter();
   const { t } = useTranslation("campaigns");
   const { session, status } = useAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -134,7 +147,8 @@ export default function CampaignsPage() {
     data,
     loading,
     error,
-    fetchMore
+    fetchMore,
+    refetch
   } = useQuery<MyCampaignsData, MyCampaignsVariables>(MY_CAMPAIGNS_CONNECTION_QUERY, {
     skip: !session.authenticated || !session.account?.id,
     variables: {
@@ -254,7 +268,11 @@ export default function CampaignsPage() {
               <Alert severity="info">{t("page.emptyMine")}</Alert>
             ) : null}
 
-            <CampaignCards campaigns={myCampaigns} grayEnded t={t} />
+            <CampaignCards
+              campaigns={myCampaigns}
+              grayEnded
+              t={t}
+            />
 
             {hasNextPage ? (
               <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>

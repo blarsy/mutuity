@@ -120,6 +120,7 @@ function notificationMessage(notification: UnifiedNotification, t: TranslateFn) 
   const needName = asText(notification.payload.needName) ?? asText(notification.payload.needTitle);
   const resourceName = asText(notification.payload.resourceName) ?? asText(notification.payload.resourceTitle);
   const campaignName = asText(notification.payload.campaignName);
+  const creatorName = asText(notification.payload.creatorName);
   const senderName = asText(notification.payload.senderName);
   const amount = asNumber(notification.payload.amountReceived);
   const unknownNeed = t("eventFallback.unknownNeed");
@@ -152,12 +153,24 @@ function notificationMessage(notification: UnifiedNotification, t: TranslateFn) 
       return t("events.resourceBidCancelled", { resourceName: resourceName ?? unknownResource });
     case "resource_bid_expired":
       return t("events.resourceBidExpired", { resourceName: resourceName ?? unknownResource });
+    case "campaign_moderation_note_received":
+      return t("events.campaignModerationNoteReceived", { campaignName: campaignName ?? unknownCampaign });
+    case "campaign_approved":
+      return t("events.campaignApproved", { campaignName: campaignName ?? unknownCampaign });
+    case "campaign_creator_adaptation_submitted":
+      return t("events.campaignCreatorAdaptationSubmitted", {
+        creatorName: creatorName ?? someone,
+        campaignName: campaignName ?? unknownCampaign
+      });
     default:
       return t("events.fallback", { eventType: formatEvent(notification.eventType) });
   }
 }
 
 function notificationUrl(notification: UnifiedNotification) {
+  const campaignId = asText(notification.payload.campaignId);
+  const creatorName = asText(notification.payload.creatorName);
+
   switch (notification.eventType) {
     case "claim_created":
     case "claim_settled":
@@ -178,6 +191,13 @@ function notificationUrl(notification: UnifiedNotification) {
     }
     case "welcome_profile_reward":
       return "/profile";
+    case "campaign_moderation_note_received":
+    case "campaign_approved":
+      return campaignId ? `/campaigns/${campaignId}/moderation` : "/campaigns";
+    case "campaign_creator_adaptation_submitted":
+      return creatorName
+        ? `/admin/campaigns?search=${encodeURIComponent(creatorName)}&status=AWAITING_ADAPTATION`
+        : "/admin/campaigns?status=AWAITING_ADAPTATION";
     default: {
       const fallbackUrl = asText(notification.payload.url);
       return fallbackUrl ?? "/notifications";

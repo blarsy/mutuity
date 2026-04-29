@@ -31,33 +31,56 @@ As the Mutuity administrator, I can send a moderation note to the campaign creat
 
 **Why this priority**: Moderation feedback is required to make approval actionable and transparent.
 
-**Independent Test**: Administrator submits a moderation note for a pending campaign and creator can view it in campaign moderation history.
+**Independent Test**: Administrator submits a moderation note for a pending campaign, the campaign moves to awaiting-adaptation, the creator receives a notification, and the creator can view the resulting event in campaign moderation history.
 
 **Acceptance Scenarios**:
 
-1. **Given** a pending campaign, **When** the administrator sends a moderation note, **Then** the note is attached to the campaign and visible to the campaign creator.
+1. **Given** a pending campaign, **When** the administrator sends a moderation note, **Then** the note is attached to the campaign, visible to the campaign creator, and the campaign status becomes awaiting adaptation.
 2. **Given** a pending campaign, **When** a non-admin account tries to send a moderation note, **Then** the system denies the action.
-3. **Given** a pending campaign with existing notes, **When** the administrator sends a new note, **Then** previous notes remain accessible in chronological order.
+3. **Given** a pending or awaiting-adaptation campaign with existing moderation history, **When** the administrator sends a new note, **Then** previous moderation events remain accessible in most-recent-first order.
+4. **Given** an administrator sends a moderation note, **When** the campaign creator opens the resulting notification from the notifications page, **Then** the system marks the notification as read, navigates to the campaign moderation page, and opens the relevant campaign moderation context.
 
 ---
 
-### User Story 3 - Administrator Approves Campaign (Priority: P1)
+### User Story 3 - Campaign Creator Reviews Moderation And Adapts Campaign (Priority: P1)
+
+As a campaign creator, I can review the full moderation timeline of my campaign and edit the campaign while moderation is still open so I can answer administrator feedback and resubmit a valid campaign.
+
+**Why this priority**: Moderation is only actionable if the creator can see the whole exchange, understand the latest requested changes, and safely revise the campaign without breaking validation rules.
+
+**Independent Test**: Creator opens a campaign moderation page, sees creation plus later moderation events in most-recent-first order, edits a pending or awaiting-adaptation campaign through the campaign editor, and the system records the creator modification as a new moderation event and notifies administrators when the prior status was awaiting adaptation.
+
+**Acceptance Scenarios**:
+
+1. **Given** a campaign created by the signed-in account, **When** the creator opens the moderation page, **Then** the page shows moderation events in most-recent-first order.
+2. **Given** a campaign moderation page, **When** events are shown, **Then** the event list includes at least the initial campaign creation event, administrator moderation-note events, and creator modification events.
+3. **Given** a campaign in pending or awaiting-adaptation status, **When** the creator views the moderation page, **Then** an `Edit campaign` action is enabled.
+4. **Given** a campaign in approved status, **When** the creator views the moderation page, **Then** the moderation history remains viewable but the `Edit campaign` action is disabled.
+5. **Given** the creator edits a campaign from the moderation page, **When** the update is submitted, **Then** the system applies the same validation contract used for campaign creation and rejects invalid date combinations or other invalid values.
+6. **Given** moderation has lasted long enough that the prior schedule no longer satisfies the current campaign-validation rules, **When** the creator edits the campaign, **Then** the creator must update the schedule so the saved values satisfy the same active validation rules as a newly created campaign at edit time.
+7. **Given** a campaign currently in awaiting-adaptation status, **When** the creator saves a valid modification, **Then** the system appends a creator-modified moderation event and emits an in-app notification to administrators.
+
+---
+
+### User Story 4 - Administrator Approves Campaign (Priority: P1)
 
 As the Mutuity administrator, I can approve a campaign so it becomes visible on the platform public interface.
 
 **Why this priority**: Approval is the publication gate that protects trust and public quality.
 
-**Independent Test**: Administrator approves a pending campaign and it appears in the public campaign listing.
+**Independent Test**: Administrator approves a pending or awaiting-adaptation campaign, the creator receives a notification with a deep link to the moderation page, and the campaign appears in the public campaign listing.
 
 **Acceptance Scenarios**:
 
-1. **Given** a pending campaign, **When** the administrator approves it, **Then** campaign status becomes approved and it becomes publicly viewable.
-2. **Given** a pending campaign, **When** a non-admin account attempts approval, **Then** the system denies the action.
-3. **Given** a campaign already approved, **When** public users browse campaigns, **Then** they can view approved campaign summary fields.
+1. **Given** a pending or awaiting-adaptation campaign, **When** the administrator approves it, **Then** campaign status becomes approved and it becomes publicly viewable.
+2. **Given** a pending or awaiting-adaptation campaign, **When** a non-admin account attempts approval, **Then** the system denies the action.
+3. **Given** the administrator approves a campaign, **When** the creator opens the resulting notification from the notifications page, **Then** the system marks the notification as read, navigates to the campaign moderation page, and opens the relevant campaign moderation context.
+4. **Given** a campaign already approved, **When** public users browse campaigns, **Then** they can view approved campaign summary fields.
+5. **Given** a campaign already approved, **When** the creator later opens the moderation page, **Then** the moderation history is still viewable but no new moderation events are appended and campaign editing remains unavailable.
 
 ---
 
-### User Story 4 - Authenticated Account Creates Need (Priority: P1)
+### User Story 5 - Authenticated Account Creates Need (Priority: P1)
 
 As any authenticated account, I can create a need either attached to a campaign or standalone, with type and intensity classification and optionally a proposed Topes amount.
 
@@ -75,7 +98,7 @@ As any authenticated account, I can create a need either attached to a campaign 
 
 ---
 
-### User Story 5 - Campaign Creator Accepts Or Rejects Joined Needs (Priority: P2)
+### User Story 6 - Campaign Creator Accepts Or Rejects Joined Needs (Priority: P2)
 
 As a campaign creator, I can accept or reject needs joined to my campaign so campaign scope is curated intentionally.
 
@@ -96,6 +119,9 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - Campaign submission where airdrop datetime is later than end datetime => the system should prevent campaign creation with a validation error
 - Need creation linked to a campaign that is deleted or not accessible => the UI should not provide the option to link a need to such a campaign. Furthermore, the system should reject this linking operation with a 'unsuitable campaign' error
 - Duplicate moderation notes submitted quickly by an administrator due to retries => the system accepts duplicate notes and stores them as separate entries
+- Creator opens the moderation page for an approved campaign => the system shows the full existing moderation history in read-only form and never re-enables campaign editing.
+- Administrator filters campaigns to find moderation work => the campaigns admin page supports filtering by at least `pending`, `awaiting adaptation`, and `approved`, with `awaiting adaptation` available explicitly to surface campaigns waiting on creator changes.
+- Creator receives a moderation-related notification and opens it after the campaign is already approved => the system still routes to the campaign moderation page and opens the relevant campaign context, but the page remains read-only.
 - Campaign creator attempts to triage need that is not joined to that creator campaign => The triage UI only shows needs that are joined to the currently looked at campaign. Furthermore, the 'accept' and 'reject' operations on needs joined to campaigns check the caller is the campaign's creator, and fails if not.
 - Need linked to an unapproved campaign and visibility behavior on public interfaces => Only approved and active (current time is within its lifetime) campaigns are shown in any UI allowing to join a need. Furthermore, the joining operation checks that the campaign is approved, and that the current time is within its lifetime, and fails if not.
 
@@ -124,23 +150,37 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - **FR-012**: Approved campaigns MUST become visible on public campaign interfaces.
 - **FR-013**: System MUST allow only Mutuity administrator role to send moderation notes on campaigns.
 - **FR-014**: Moderation notes MUST be visible to the campaign creator.
-- **FR-015**: System MUST persist moderation notes as a history attached to the campaign.
-- **FR-016**: System MUST allow any authenticated account to create a need.
-- **FR-017**: Need creation MUST require title, nature, intensity and location.
-- **FR-018**: Need creation MUST support optional association to a campaign.
-- **FR-019**: Need nature has one or more of these flags set: object required, competence required, tooling required, multiple people required.
-- **FR-020**: Need intensity MUST be one of: leg up, sharing, commitment, rare contribution.
-- **FR-020a**: When provided at need creation, Topes amount MUST follow the intensity range mapping: leg up (10 to 99), sharing (100 to 999), commitment (1000 to 4999), rare contribution (5000 or more).
-- **FR-020b**: Public and user-facing copy MUST avoid fiat currency equivalence wording and instead describe Topes as meaningful social gratitude.
-- **FR-021**: System MUST allow campaign creator to accept or reject needs joined to that creator campaign.
-- **FR-022**: System MUST deny accept or reject actions by non-creator accounts.
-- **FR-023**: Need-campaign relation status MUST support at least pending, accepted, and rejected states.
-- **FR-024**: System MUST keep an audit trail of campaign status transitions and joined-need triage actions.
+- **FR-015**: System MUST persist a creator-facing campaign moderation history ordered most recent first.
+- **FR-016**: Campaign moderation history MUST include at least these event types: initial campaign creation, administrator moderation note received, and creator campaign modification.
+- **FR-017**: Sending a moderation note MUST transition campaign moderation status from pending to awaiting adaptation.
+- **FR-018**: Campaign moderation status MUST support at least pending, awaiting adaptation, and approved.
+- **FR-019**: The campaign creator MUST be able to open a dedicated moderation page for the creator's own campaign.
+- **FR-020**: The campaign moderation page MUST expose an `Edit campaign` action only when the campaign status is pending or awaiting adaptation.
+- **FR-020a**: The `Edit campaign` action MUST reuse the same validation rules and form contract as campaign creation, including campaign date-order constraints and any current-time validity rules that apply at edit time.
+- **FR-020b**: Once a campaign is approved, the moderation page MUST remain viewable but MUST stay read-only and MUST NOT append further moderation events.
+- **FR-021**: When a creator modifies a campaign while it is in awaiting-adaptation status, the system MUST append a creator-modified moderation event.
+- **FR-022**: When a creator modifies a campaign while it is in awaiting-adaptation status, the system MUST emit an in-app notification to administrator accounts.
+- **FR-023**: When an administrator sends a moderation note or approves a campaign, the system MUST emit an in-app notification to the campaign creator.
+- **FR-024**: Opening a creator moderation notification from the notifications page MUST mark it as read and navigate to the campaign moderation page with the corresponding campaign context already opened.
+- **FR-025**: Opening an administrator notification for a creator adaptation from the notifications page MUST mark it as read and navigate to the admin campaigns page with the creator name prefilled in the search field and awaiting-adaptation preselected in the status filter.
+- **FR-026**: The campaigns admin page MUST display the campaign moderation status as a dedicated column and MUST allow filtering by moderation status, including awaiting adaptation.
+- **FR-027**: System MUST allow any authenticated account to create a need.
+- **FR-028**: Need creation MUST require title, nature, intensity and location.
+- **FR-029**: Need creation MUST support optional association to a campaign.
+- **FR-030**: Need nature has one or more of these flags set: object required, competence required, tooling required, multiple people required.
+- **FR-031**: Need intensity MUST be one of: leg up, sharing, commitment, rare contribution.
+- **FR-031a**: When provided at need creation, Topes amount MUST follow the intensity range mapping: leg up (10 to 99), sharing (100 to 999), commitment (1000 to 4999), rare contribution (5000 or more).
+- **FR-031b**: Public and user-facing copy MUST avoid fiat currency equivalence wording and instead describe Topes as meaningful social gratitude.
+- **FR-032**: System MUST allow campaign creator to accept or reject needs joined to that creator campaign.
+- **FR-033**: System MUST deny accept or reject actions by non-creator accounts.
+- **FR-034**: Need-campaign relation status MUST support at least pending, accepted, and rejected states.
+- **FR-035**: System MUST keep an audit trail of campaign status transitions and joined-need triage actions.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional administrator note from creator, creator account id, and moderation status.
+- **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional administrator note from creator, creator account id, and moderation status (`pending`, `awaiting adaptation`, `approved`).
 - **CampaignModerationNote**: Administrator-authored note attached to a campaign, with campaign id, admin account id, note body, and created datetime.
+- **CampaignModerationEvent**: Creator-facing moderation timeline record or read-model item for a campaign, representing one of: initial creation, administrator note received, or creator modification; each event includes campaign id, event type, actor account id when applicable, human-readable body or change summary when applicable, and created datetime.
 - **Need**: User-created need with title, description, nature, intensity, location, optional proposed Topes amount, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
 
 ### Intensity To Topes Reference
@@ -165,6 +205,7 @@ Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "
 - **SC-003**: 100 percent of non-admin attempts to approve campaigns or send moderation notes are denied.
 - **SC-004**: 100 percent of approved campaigns become visible on the public interface within one minute of approval.
 - **SC-005**: 100 percent of non-owner attempts to accept or reject joined needs are denied.
-- **SC-006**: 100 percent of moderation notes and need triage actions are present in audit history during verification.
+- **SC-006**: 100 percent of moderation notes, creator adaptation events, and need triage actions are present in history or audit verification during testing.
 - **SC-007**: 100 percent of unauthenticated mutation attempts return sanitized user-facing messages and MUST NOT expose internal schema/database details.
 - **SC-008**: 100 percent of backend-handled unexpected GraphQL errors are logged with full technical details server-side.
+- **SC-009**: 100 percent of moderation-related notifications route to the intended destination state: creator notifications open the campaign moderation context, and administrator adaptation notifications prefill the admin campaigns search and awaiting-adaptation filter.

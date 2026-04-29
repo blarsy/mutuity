@@ -138,6 +138,16 @@
 - [x] T058 Run and document quickstart validation in `specs/001-campaign-needs/quickstart.md`
 - [x] T059 Update feature documentation links and architecture notes in `specs/001-campaign-needs/research.md` if implementation diverges
 
+## Phase 9: Moderation Workflow Refinement
+
+- [ ] T062 Add backend and contract tests for `awaiting_adaptation` status transitions, creator campaign updates, moderation-event ordering, and approval terminal-state behavior in `backend/tests/integration/` and `backend/tests/contract/`
+- [ ] T063 Extend the campaign moderation data model and SQL functions for `awaiting_adaptation`, creator modification events, and creator-edit eligibility in `database/migrations/` and `database/functions/campaign/`
+- [ ] T064 Build a creator-facing campaign moderation page with most-recent-first timeline, notification-aware dialog opening, and read-only/editable state handling in `frontend/src/features/campaigns/`
+- [ ] T065 Reuse the campaign create/edit form for creator-side moderation updates, ensuring edit-time validation enforces the same rules as campaign creation in `frontend/src/features/campaigns/`
+- [ ] T066 Emit in-app notifications for administrator moderation notes, administrator approvals, and creator adaptations, with deep links to the campaign moderation page or filtered admin campaigns page as appropriate
+- [ ] T067 Update the admin campaigns workflow to filter by `awaiting adaptation`, show moderation status consistently, and support notification-driven prefilled filters in `frontend/src/features/admin/` and related GraphQL queries
+- [ ] T068 Add end-to-end verification for creator/admin notification routing into moderation surfaces and for post-approval read-only moderation history behavior
+
 ## Dependencies & Execution Order
 
 - Setup tasks (T001-T007) first.

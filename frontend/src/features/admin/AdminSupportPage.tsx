@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { TypedDocumentNode } from "@apollo/client";
 import {
   Alert,
@@ -35,7 +35,11 @@ import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMe
 import {
   APPROVE_CAMPAIGN_MUTATION,
 } from "../campaigns/campaigns.queries";
-import { ADD_CAMPAIGN_MODERATION_NOTE_MUTATION } from "../campaigns/campaignModeration.queries";
+import {
+  ADD_CAMPAIGN_MODERATION_NOTE_MUTATION,
+  CAMPAIGN_MODERATION_HISTORY_QUERY
+} from "../campaigns/campaignModeration.queries";
+import { CampaignModerationHistory } from "../campaigns/CampaignModerationHistory";
 import {
   ADMIN_CREATE_GRANT_MUTATION,
   ADMIN_GET_MAIL_CONTENT_QUERY,
@@ -80,10 +84,8 @@ type AdminListQueryVariables = {
 
 const CAMPAIGN_MODERATION_STATUSES: { value: string; label: string }[] = [
   { value: "PENDING", label: "Pending" },
+  { value: "AWAITING_ADAPTATION", label: "Awaiting adaptation" },
   { value: "APPROVED", label: "Approved" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "UPCOMING", label: "Upcoming" },
-  { value: "ENDED", label: "Ended" }
 ];
 
 type AdminQueryDocument = TypedDocumentNode<AdminListQueryData, AdminListQueryVariables>;
@@ -227,9 +229,11 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
   const campaignId = asString(row.id);
   const description = asString(row.description);
   const summary = asString(row.summary);
+  const moderationStatus = asString(row.moderationStatus);
 
   const [descOpen, setDescOpen] = useState(false);
   const [moderateOpen, setModerateOpen] = useState(false);
+  const [confirmApproveOpen, setConfirmApproveOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
   const [approveSuccess, setApproveSuccess] = useState(false);
   const [noteSent, setNoteSent] = useState(false);
@@ -243,12 +247,17 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
 
   const noteErrorMessage = getUserFacingGraphQLErrorMessage(noteError);
   const approveErrorMessage = getUserFacingGraphQLErrorMessage(approveError);
+  const isAlreadyApproved = moderationStatus === "APPROVED" || approveSuccess;
 
   async function handleSendNote() {
     if (!noteBody.trim()) return;
     setNoteSent(false);
     try {
-      await addNote({ variables: { campaignId, body: noteBody.trim() } });
+      await addNote({
+        variables: { campaignId, body: noteBody.trim() },
+        refetchQueries: [{ query: CAMPAIGN_MODERATION_HISTORY_QUERY, variables: { campaignId } }],
+        awaitRefetchQueries: true
+      });
       setNoteBody("");
       setNoteSent(true);
     } catch {
@@ -261,6 +270,7 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
     try {
       await approveCampaign({ variables: { campaignId } });
       setApproveSuccess(true);
+      setConfirmApproveOpen(false);
     } catch {
       // error surfaced via approveError
     }
@@ -293,7 +303,7 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
       </Dialog>
 
       {/* Moderation dialog */}
-      <Dialog fullWidth maxWidth="sm" open={moderateOpen} onClose={() => { setModerateOpen(false); }}>
+      <Dialog fullWidth maxWidth="xl" open={moderateOpen} onClose={() => { setModerateOpen(false); }}>
         <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           Moderate campaign — {summary || campaignId}
           <IconButton aria-label="close" onClick={() => { setModerateOpen(false); }}>
@@ -330,13 +340,40 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
               ) : null}
               <Button
                 color="success"
+                disabled={approveLoading || isAlreadyApproved}
+                variant="contained"
+                onClick={() => { setConfirmApproveOpen(true); }}
+              >
+                {approveLoading ? <CircularProgress size={14} /> : isAlreadyApproved ? "Already approved" : "Approve campaign"}
+              </Button>
+            </Box>
+
+            <Box sx={{ borderTop: 1, borderColor: "divider", pt: 2, mt: 1 }}>
+              <Typography sx={{ mb: 1 }} variant="subtitle2">Moderation history</Typography>
+              <CampaignModerationHistory campaignId={campaignId} />
+            </Box>
+          </Stack>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog fullWidth maxWidth="xs" open={confirmApproveOpen} onClose={() => { setConfirmApproveOpen(false); }}>
+        <DialogTitle>Approve campaign</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography>Are you sure you want to approve this campaign?</Typography>
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" onClick={() => { setConfirmApproveOpen(false); }}>
+                No
+              </Button>
+              <Button
+                color="success"
                 disabled={approveLoading}
                 variant="contained"
                 onClick={() => { void handleApprove(); }}
               >
-                {approveLoading ? <CircularProgress size={14} /> : "Approve campaign"}
+                {approveLoading ? <CircularProgress size={14} /> : "Yes, approve"}
               </Button>
-            </Box>
+            </Stack>
           </Stack>
         </DialogContent>
       </Dialog>
@@ -740,6 +777,26 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
   const [offset, setOffset] = useState(0);
   const { isAdmin, isChecking, isRedirecting, isForbiddenRedirecting } = useRequireAdmin();
   const config = getAdminSectionConfig(section);
+
+  useEffect(() => {
+    if (!router.isReady || section !== "campaigns") {
+      return;
+    }
+
+    const prefilledSearch = typeof router.query.search === "string" ? router.query.search.trim() : "";
+    const prefilledStatus = typeof router.query.status === "string" ? router.query.status.toUpperCase() : "";
+
+    if (prefilledSearch) {
+      setSearchInput(prefilledSearch);
+      setSearchValue(prefilledSearch);
+      setOffset(0);
+    }
+
+    if (CAMPAIGN_MODERATION_STATUSES.some(status => status.value === prefilledStatus)) {
+      setStatusFilter(prefilledStatus);
+      setOffset(0);
+    }
+  }, [router.isReady, router.query.search, router.query.status, section]);
 
   const variables = useMemo<AdminListQueryVariables>(
     () => ({

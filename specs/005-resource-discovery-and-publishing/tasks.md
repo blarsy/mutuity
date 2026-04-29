@@ -139,3 +139,9 @@
 - [x] T084 Refactor frontend role-gated surfaces and labels from manager/admin split to admin-only semantics in `frontend/src/`
 - [x] T085 Align all feature specs/tasks/docs with the consolidated administrator role model in `specs/`
 - [x] T086 Add end-to-end verification for consolidated admin-only authorization behavior across campaign moderation, approval, grants, and admin support pages
+
+## Phase 15: Campaign Moderation Notification And Admin Workflow Follow-Up
+
+- [ ] T087 Extend the notification catalog, payload rules, and route mapping for campaign moderation note received, campaign approved, and creator adaptation submitted in `specs/005-resource-discovery-and-publishing/spec.md` and implementation surfaces
+- [ ] T088 Extend the admin campaigns page to support moderation-status filtering including `awaiting adaptation` and notification-driven prefilled filter state in `frontend/src/features/admin/` and related GraphQL/database helpers
+- [ ] T089 Add end-to-end verification for campaign moderation notification routing into creator moderation and filtered admin campaigns destinations

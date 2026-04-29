@@ -43,11 +43,19 @@
   },
   "moderationNotes": {
     "title": "Ajouter une note de modération",
+    "openModeration": "Ouvrir la modération",
+    "editCampaign": "Modifier la campagne",
     "noteLabel": "Note de modération",
     "notePlaceholder": "Expliquez ce qui doit être mis à jour avant approbation",
     "sendButton": "Envoyer la note",
     "empty": "Aucune note de modération pour le moment.",
-    "noteMeta": "Administrateur {{managerAccountId}} • {{createdAt}}"
+    "campaignCreatedEvent": "Campagne créée",
+    "creatorModifiedEvent": "Campagne modifiée par le créateur",
+    "noteReceivedEvent": "Note de modération reçue",
+    "unknownEvent": "Événement de modération",
+    "eventMeta": "Compte {{actorAccountId}} • {{createdAt}}",
+    "noteMeta": "Administrateur {{managerAccountId}} • {{createdAt}}",
+    "updateSuccess": "Campagne mise à jour avec succès. Une notification a été envoyée au modérateur, et vous pouvez encore modifier la campagne ensuite si besoin."
   },
   "triage": {
     "title": "Triage des besoins de campagne",

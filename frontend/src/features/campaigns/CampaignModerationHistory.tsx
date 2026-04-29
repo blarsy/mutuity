@@ -9,11 +9,11 @@ type CampaignModerationHistoryProps = {
 };
 
 type ModerationHistoryData = {
-  allCampaignModerationNotes: {
+  campaignModerationEvents: {
     nodes: Array<{
-      id: string;
-      managerAccountId: string;
-      body: string;
+      eventType: string;
+      body: string | null;
+      actorAccountId: string | null;
       createdAt: string;
     }>;
   };
@@ -41,9 +41,9 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
     return <Alert severity="error">{errorMessage}</Alert>;
   }
 
-  const notes = data?.allCampaignModerationNotes.nodes ?? [];
+  const events = data?.campaignModerationEvents.nodes ?? [];
 
-  if (notes.length === 0) {
+  if (events.length === 0) {
     return (
       <Box sx={{ p: 2, border: "1px dashed", borderColor: "divider", borderRadius: 1 }}>
         <Typography color="text.secondary">{t("moderationNotes.empty")}</Typography>
@@ -53,14 +53,33 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
 
   return (
     <List sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
-      {notes.map(note => (
-        <ListItem key={note.id} divider>
+      {events.map((event, index) => (
+        <ListItem key={`${event.eventType}-${event.createdAt}-${index}`} divider>
           <ListItemText
-            primary={note.body}
-            secondary={t("moderationNotes.noteMeta", {
-              managerAccountId: note.managerAccountId,
-              createdAt: new Date(note.createdAt).toLocaleString()
-            })}
+            primary={
+              event.eventType === "campaign_created"
+                ? t("moderationNotes.campaignCreatedEvent")
+                : event.eventType === "moderation_note_received"
+                  ? t("moderationNotes.noteReceivedEvent")
+                  : event.eventType === "campaign_modified_by_creator"
+                    ? t("moderationNotes.creatorModifiedEvent")
+                    : t("moderationNotes.unknownEvent")
+            }
+            secondary={
+              <>
+                {event.body ? (
+                  <Typography component="div" sx={{ whiteSpace: "pre-wrap" }}>
+                    {event.body}
+                  </Typography>
+                ) : null}
+                <Typography color="text.secondary" variant="caption">
+                  {t("moderationNotes.eventMeta", {
+                    actorAccountId: event.actorAccountId ?? "-",
+                    createdAt: new Date(event.createdAt).toLocaleString()
+                  })}
+                </Typography>
+              </>
+            }
           />
         </ListItem>
       ))}

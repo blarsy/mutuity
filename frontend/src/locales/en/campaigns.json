@@ -43,11 +43,19 @@
   },
   "moderationNotes": {
     "title": "Add Moderation Note",
+    "openModeration": "Open moderation",
+    "editCampaign": "Edit campaign",
     "noteLabel": "Moderation note",
     "notePlaceholder": "Explain what should be updated before approval",
     "sendButton": "Send Note",
     "empty": "No moderation notes yet.",
-    "noteMeta": "Administrator {{managerAccountId}} • {{createdAt}}"
+    "campaignCreatedEvent": "Campaign created",
+    "creatorModifiedEvent": "Campaign modified by creator",
+    "noteReceivedEvent": "Moderation note received",
+    "unknownEvent": "Moderation event",
+    "eventMeta": "Account {{actorAccountId}} • {{createdAt}}",
+    "noteMeta": "Administrator {{managerAccountId}} • {{createdAt}}",
+    "updateSuccess": "Campaign updated successfully. A notification has been sent to the moderator, and you can still update the campaign again if needed."
   },
   "triage": {
     "title": "Campaign need triage",

@@ -239,6 +239,7 @@ Unified logging contract implementation shape (T058):
 - Admin support pages should be read-optimized views over operational entities, each with strict field projection and search scope.
 - Search behavior should follow per-page configured fields only, rather than global full-text over unrelated columns, with case-insensitive contains matching.
 - The `Campaigns` admin page should reuse the existing moderation-note workflow from feature `001-campaign-needs` for consistency.
+- The `Campaigns` admin page should also expose moderation status as table data and support an explicit status filter, including `awaiting adaptation`, so administrators can isolate creator-follow-up work quickly.
 - Side-effect actions (`send again`, `moderate`, `create grant`) should emit auditable logs and remain protected by administrator authorization checks.
 - `send again` should recompute recipients and template context from current account data at resend time.
 - Datetime values should be stored with time zone and rendered in the current user's session locale/time-zone representation.
@@ -252,7 +253,7 @@ Admin support page implementation matrix:
 | Resources | resource + creator projection | newest resources first (`created_at DESC`) | resource title, resource description, creator name | none |
 | Notifications | account notification + account projection | newest notifications first (`created_at DESC`) | account name, notification data | none |
 | Mails | mail delivery/event projection | newest mails first (`created_at DESC`) | recipient email, recipient account name, subject | `View content` (fullscreen), `Send again` |
-| Campaigns | campaign + creator projection | newest campaigns first (`created_at DESC`) | campaign summary, campaign description, creator name | `View description` (fullscreen), `Moderate` |
+| Campaigns | campaign + creator projection including moderation status | newest campaigns first (`created_at DESC`) | campaign summary, campaign description, creator name, plus explicit moderation-status filter | `View description` (fullscreen), `Moderate` |
 | Grants | grant definition projection | newest grants first (`created_at DESC`) | grant title, grant description | `Create` (dialog) |
 | Logs | unified operational log projection | newest logs first (`created_at DESC`) | component, message, context | `View message` (fullscreen wrapping text) |
 

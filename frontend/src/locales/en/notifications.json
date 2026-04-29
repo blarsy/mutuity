@@ -30,6 +30,9 @@
     "resourceBidDeclined": "Your bid on {{resourceName}} has been rejected",
     "resourceBidCancelled": "Your bid on {{resourceName}} has been cancelled",
     "resourceBidExpired": "Your bid on {{resourceName}} has expired without a response",
+    "campaignModerationNoteReceived": "You received a moderation note for campaign {{campaignName}}",
+    "campaignApproved": "Your campaign {{campaignName}} has been approved",
+    "campaignCreatorAdaptationSubmitted": "{{creatorName}} updated campaign {{campaignName}} and it now awaits review",
     "fallback": "{{eventType}}"
   }
 }
