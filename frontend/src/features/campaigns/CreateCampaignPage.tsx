@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { CREATE_CAMPAIGN_MUTATION } from "./campaigns.queries";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import {
   createCampaignInitialValues,
   createCampaignValidationSchema,
@@ -100,7 +101,7 @@ export default function CreateCampaignPage() {
             }
           }}
         >
-          {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
+          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldTouched, setFieldValue }) => (
             <Form>
               <Stack spacing={2}>
                 <TextField
@@ -113,15 +114,18 @@ export default function CreateCampaignPage() {
                   helperText={touched.title ? errors.title : ""}
                   required
                 />
-                <TextField
-                  name="theme"
-                  label={t("create.fields.theme")}
-                  value={values.theme}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                <RichTextEditor
                   error={Boolean(touched.theme && errors.theme)}
                   helperText={touched.theme ? errors.theme : ""}
-                  required
+                  label={t("create.fields.theme")}
+                  onBlur={() => {
+                    void setFieldTouched("theme", true, true);
+                  }}
+                  onChange={nextValue => {
+                    void setFieldValue("theme", nextValue, true);
+                  }}
+                  placeholder={t("create.fields.theme")}
+                  value={values.theme}
                 />
                 <TextField
                   name="managerNoteFromCreator"

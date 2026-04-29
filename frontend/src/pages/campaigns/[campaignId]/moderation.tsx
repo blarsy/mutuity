@@ -26,6 +26,7 @@ import {
   createCampaignValidationSchema,
   type CreateCampaignValues
 } from "../../../features/campaigns/createCampaign.validation";
+import { RichTextEditor } from "../../../components/richText/RichTextEditor";
 import {
   CAMPAIGN_MODERATION_DETAILS_QUERY,
   UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION
@@ -206,7 +207,7 @@ export default function CampaignModerationPage() {
                     }}
                     validationSchema={createCampaignValidationSchema}
                   >
-                    {({ values, errors, touched, handleBlur, handleChange, isSubmitting }) => (
+                    {({ values, errors, touched, handleBlur, handleChange, isSubmitting, setFieldTouched, setFieldValue }) => (
                       <Form>
                         <Stack spacing={2} sx={{ pt: 1 }}>
                           <TextField
@@ -219,14 +220,17 @@ export default function CampaignModerationPage() {
                             required
                             value={values.title}
                           />
-                          <TextField
+                          <RichTextEditor
                             error={Boolean(touched.theme && errors.theme)}
                             helperText={touched.theme ? errors.theme : ""}
                             label={t("create.fields.theme")}
-                            name="theme"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            required
+                            onBlur={() => {
+                              void setFieldTouched("theme", true, true);
+                            }}
+                            onChange={nextValue => {
+                              void setFieldValue("theme", nextValue, true);
+                            }}
+                            placeholder={t("create.fields.theme")}
                             value={values.theme}
                           />
                           <TextField

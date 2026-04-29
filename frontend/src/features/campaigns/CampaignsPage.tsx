@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
-import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -23,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { INSPIRATION_CAMPAIGNS_QUERY, MY_CAMPAIGNS_CONNECTION_QUERY } from "./campaigns.queries";
+import { RichTextContent } from "../../components/richText/RichTextContent";
 
 type CampaignNode = {
   id: string;
@@ -94,7 +94,8 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
                 <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                   <Box>
                     <Typography variant="h6">{campaign.title}</Typography>
-                    <Typography color="text.secondary">{t("labels.theme")}: {campaign.theme}</Typography>
+                    <Typography color="text.secondary" variant="caption">{t("labels.theme")}</Typography>
+                    <RichTextContent html={campaign.theme} />
                   </Box>
                   <Stack direction="row" spacing={1}>
                     <Chip
@@ -133,7 +134,6 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
 }
 
 export default function CampaignsPage() {
-  const router = useRouter();
   const { t } = useTranslation("campaigns");
   const { session, status } = useAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -147,8 +147,7 @@ export default function CampaignsPage() {
     data,
     loading,
     error,
-    fetchMore,
-    refetch
+    fetchMore
   } = useQuery<MyCampaignsData, MyCampaignsVariables>(MY_CAMPAIGNS_CONNECTION_QUERY, {
     skip: !session.authenticated || !session.account?.id,
     variables: {

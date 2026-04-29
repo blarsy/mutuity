@@ -78,6 +78,7 @@ As an authenticated user, I can view, edit, and delete my own needs from a dedic
 4. **Given** a need in the list, **When** the user clicks Edit, **Then** they are taken to the edit-need page with that need's data pre-populated in modification mode.
 5. **Given** a need in the list, **When** the user clicks Delete, **Then** a confirmation dialog is shown, and on confirmation the need is soft-deleted and removed from the list.
 6. **Given** the needs page, **When** it is open at any scroll position, **Then** the "Add need" button is always visible and navigates to the edit-need page in creation mode when clicked.
+7. **Given** a need has an optional rich-text description, **When** the user edits, saves, or browses that need, **Then** the description remains editable through the constrained rich-text editor and is rendered safely in need browsing and workspace surfaces.
 
 ---
 
@@ -290,6 +291,7 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - The modality flags `isProduct`, `isService`, `canBeGiven`, `canBeExchanged`, `canBeTakenAway`, and `canBeDelivered` are all independent booleans; any combination may be valid, including both gift and exchange options on the same resource.
 - The optional legacy/internal `price` field is not a fixed commercial price; it is a negotiated Topes reference amount and user-facing UI should avoid the label `price`.
 - A resource description may contain rich text and can be relatively long, but it must remain within the configured maximum length (currently 8000 characters).
+- A need description may contain rich text and can be relatively long, but it must remain within the configured maximum length (currently 8000 characters).
 - A resource may exist in draft, published, expired, or withdrawn states, each with different discovery and response rules.
 - A resource with no expiration datetime is considered permanent and remains eligible for browsing until it is withdrawn, closed, or otherwise deactivated.
 - Expired resources are not only hidden from browsing queries; they also reject any new bids or responses.
@@ -337,6 +339,8 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-017**: The resource modality flags MUST be stored as independent booleans; no flag implicitly enables or disables any other flag, and combinations such as both giveable and exchangeable MUST be supported.
 - **FR-018**: Resource publishing MUST support an optional rich-text `description` field for the resource detail UI.
 - **FR-019**: The resource `description` field MUST accept up to 8000 characters and be validated/sanitized safely before storage and rendering.
+- **FR-019a**: Need authoring and editing MUST support an optional rich-text `description` field with the same constrained formatting model used by campaign and resource descriptions.
+- **FR-019b**: The need `description` field MUST accept up to 8000 characters and be rendered through the same sanitized, theme-controlled rich-text display approach used by resource and campaign descriptions.
 - **FR-020**: Resource publishing MUST support optional media references and safe validation of user input.
 - **FR-021**: The domain model MUST keep `resource` distinct from `need` in the initial migration wave.
 - **FR-022**: The response flow for resources MUST keep `bid` distinct from `claim` where lifecycle or business terms differ.
@@ -347,6 +351,7 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-027**: When no account is signed in, the top bar MUST provide at least `Search` plus a compact login trigger that opens the sign-in UI in a dialog.
 - **FR-028**: Resource browse results MUST be renderable through a reusable card surface that summarizes title, creator, preview image when available, expiration, and a shortened description, while keeping creator-click and card-click behaviors independently configurable.
 - **FR-029**: Need browse results MUST be renderable through a reusable card surface that summarizes title, creator, expiration, and a shortened description, while keeping creator-click and card-click behaviors independently configurable.
+- **FR-029a**: Resource and need browse cards MAY use clipped rich-text previews for descriptions, provided rendering stays sanitized and typography remains driven by the website theme rather than user-selected inline font styling.
 - **FR-030**: The resource detail page MUST expose creator navigation, image zoom when media exists, authenticated chat initiation, and bid entry for exchangeable resources; if no account is signed in, those gated actions MUST open a contextual sign-in dialog.
 - **FR-031**: The need detail page MUST expose creator navigation, authenticated chat initiation, and claim entry; if no account is signed in, those gated actions MUST open a contextual sign-in dialog.
 - **FR-032**: The initial web information architecture MUST reserve dedicated top-level page surfaces for `Search`, `Contribute`, `Resources`, `Bids`, `Needs`, `Claims`, `Chat`, `Notifications`, `Profile`, `Preferences`, `Contribution`, and `RestoreAccess`, even when some remain unimplemented in the current MVP.

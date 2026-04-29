@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement the first concrete Tope-là-native slice in the unified platform: browsing active resources, publishing new offers, capturing the separate resource-response (`bid`) flow, and establishing the first unified notifications inbox foundation. The implementation should reuse the proven search/auth/conversation patterns from Mutuity where they fit, while respecting the fact that `resource` and `bid` are not identical to `need` and `claim`.
+Implement the first concrete Tope-là-native slice in the unified platform: browsing active resources, publishing new offers, capturing the separate resource-response (`bid`) flow, and establishing the first unified notifications inbox foundation. The implementation should reuse the proven search/auth/conversation patterns from Mutuity where they fit, while respecting the fact that `resource` and `bid` are not identical to `need` and `claim`. The current implementation also shares a constrained rich-text editor and sanitized, theme-controlled renderer across campaign, resource, and need description surfaces.
 
 ## Technical Context
 
@@ -41,7 +41,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - subtype-aware validation
 - mandatory shared `intensity` field
 - optional negotiated Topes reference amount with the same range mapping used for needs
-- optional rich-text description (max 8000 chars) on the detail view
+- optional rich-text description (max 8000 chars) on resource detail and shared need/campaign authoring/display surfaces
 - optional image/media support
 
 ### Slice 3 — Resource responses (P2)

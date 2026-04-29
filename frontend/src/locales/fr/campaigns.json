@@ -52,6 +52,7 @@
     "campaignCreatedEvent": "Campagne créée",
     "creatorModifiedEvent": "Campagne modifiée par le créateur",
     "noteReceivedEvent": "Note de modération reçue",
+    "approvedEvent": "Campagne approuvée",
     "unknownEvent": "Événement de modération",
     "eventMeta": "Compte {{actorAccountId}} • {{createdAt}}",
     "noteMeta": "Administrateur {{managerAccountId}} • {{createdAt}}",

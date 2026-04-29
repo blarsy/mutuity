@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLIC_CAMPAIGNS_QUERY } from "./campaigns.queries";
+import { RichTextContent } from "../../components/richText/RichTextContent";
 
 type CampaignNode = {
   id: string;
@@ -66,7 +67,8 @@ export default function PublicCampaignsPage() {
                   <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                     <Box>
                       <Typography variant="h6">{campaign.title}</Typography>
-                      <Typography color="text.secondary">{t("labels.theme")}: {campaign.theme}</Typography>
+                      <Typography color="text.secondary" variant="caption">{t("labels.theme")}</Typography>
+                      <RichTextContent html={campaign.theme} />
                     </Box>
                     <Chip color="success" label={t("statuses.approved")} size="small" />
                   </Stack>

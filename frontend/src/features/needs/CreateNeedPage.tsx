@@ -17,6 +17,7 @@ import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
+import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
   createNeedInitialValues,
@@ -312,7 +313,7 @@ export default function EditNeedPage() {
           }}
           validationSchema={createNeedValidationSchema}
         >
-          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldValue, submitCount }) => (
+          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldTouched, setFieldValue, submitCount }) => (
             <Form>
               <Stack spacing={2}>
                 <TextField
@@ -326,14 +327,16 @@ export default function EditNeedPage() {
                   required
                 />
 
-                <TextField
-                  name="description"
+                <RichTextEditor
                   label={t("form.descriptionLabel")}
+                  onBlur={() => {
+                    void setFieldTouched("description", true, true);
+                  }}
+                  onChange={nextValue => {
+                    void setFieldValue("description", nextValue, true);
+                  }}
+                  placeholder={t("form.descriptionLabel")}
                   value={values.description}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  multiline
-                  minRows={3}
                 />
 
                 <TextField

@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { RichTextContent } from "../../components/richText/RichTextContent";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { ResourceBidDialog } from "./ResourceBidDialog";
@@ -299,15 +300,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 {!firstImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
               </Box>
 
-              {resource.description ? (
-                <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body1">
-                  {resource.description}
-                </Typography>
-              ) : (
-                <Typography color="text.secondary" variant="body2">
-                  {t("detail.noDescription")}
-                </Typography>
-              )}
+              <RichTextContent emptyFallback={t("detail.noDescription")} html={resource.description ?? ""} />
 
               <Stack direction="row" flexWrap="wrap" gap={1}>
                 {buildResourceTags(resource, t).map(tag => (

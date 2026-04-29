@@ -2,6 +2,7 @@ import { Box, ButtonBase, Card, CardContent, Chip, Stack, Typography } from "@mu
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { RichTextContent } from "../../components/richText/RichTextContent";
 import { AvatarIconButton } from "./AvatarIconButton";
 
 type ResourceCardProps = {
@@ -19,20 +20,6 @@ type ResourceCardProps = {
   onCreatorClick?: () => void;
   onImageClick?: () => void;
 };
-
-function truncateDescription(value: string | null | undefined, noDescriptionLabel: string, maxLength = 100) {
-  if (!value) {
-    return noDescriptionLabel;
-  }
-
-  const normalized = value.trim().replace(/\s+/g, " ");
-
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-
-  return `${normalized.slice(0, maxLength).trimEnd()}…`;
-}
 
 function formatExpiry(value: string | null | undefined, noDateLabel: string) {
   if (!value) {
@@ -122,9 +109,9 @@ export function ResourceCard({
               ) : null}
             </Box>
 
-            <Typography color="text.secondary" variant="body2">
-              {truncateDescription(description, t("card.noDescriptionYet"))}
-            </Typography>
+            <Box sx={{ maxHeight: 120, overflow: "hidden" }}>
+              <RichTextContent emptyFallback={t("card.noDescriptionYet")} html={description ?? ""} />
+            </Box>
 
             {chips ? (
               <Stack direction="row" flexWrap="wrap" gap={1}>

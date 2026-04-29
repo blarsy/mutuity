@@ -32,6 +32,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import { useRequireAdmin } from "../auth/requireAdmin";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { RichTextContent } from "../../components/richText/RichTextContent";
 import {
   APPROVE_CAMPAIGN_MUTATION,
 } from "../campaigns/campaigns.queries";
@@ -296,9 +297,7 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {description || "No description stored."}
-          </Typography>
+          <RichTextContent emptyFallback="No description stored." html={description} />
         </DialogContent>
       </Dialog>
 

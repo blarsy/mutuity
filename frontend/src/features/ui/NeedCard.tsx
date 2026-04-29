@@ -1,6 +1,7 @@
 import { Box, ButtonBase, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
 
+import { RichTextContent } from "../../components/richText/RichTextContent";
 import { AvatarIconButton } from "./AvatarIconButton";
 
 type NeedCardProps = {
@@ -15,20 +16,6 @@ type NeedCardProps = {
   onClick?: () => void;
   onCreatorClick?: () => void;
 };
-
-function truncateDescription(value?: string | null, maxLength = 100) {
-  if (!value) {
-    return "No description yet.";
-  }
-
-  const normalized = value.trim().replace(/\s+/g, " ");
-
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-
-  return `${normalized.slice(0, maxLength).trimEnd()}…`;
-}
 
 function formatExpiry(value?: string | null) {
   if (!value) {
@@ -78,9 +65,9 @@ export function NeedCard({
               {title}
             </Typography>
 
-            <Typography color="text.secondary" variant="body2">
-              {truncateDescription(description)}
-            </Typography>
+            <Box sx={{ maxHeight: 120, overflow: "hidden" }}>
+              <RichTextContent emptyFallback="No description yet." html={description ?? ""} />
+            </Box>
 
             {chips ? (
               <Stack direction="row" flexWrap="wrap" gap={1}>

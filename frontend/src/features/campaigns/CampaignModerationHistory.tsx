@@ -63,6 +63,8 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
                   ? t("moderationNotes.noteReceivedEvent")
                   : event.eventType === "campaign_modified_by_creator"
                     ? t("moderationNotes.creatorModifiedEvent")
+                    : event.eventType === "campaign_approved"
+                      ? t("moderationNotes.approvedEvent")
                     : t("moderationNotes.unknownEvent")
             }
             secondary={

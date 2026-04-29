@@ -19,6 +19,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
+import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import {
@@ -317,7 +318,7 @@ export default function CreateResourcePage() {
             }
           }}
         >
-          {({ values, errors, touched, handleBlur, handleChange, isSubmitting, setFieldValue }) => (
+          {({ values, errors, touched, handleBlur, handleChange, isSubmitting, setFieldTouched, setFieldValue }) => (
             <Form>
               <Stack spacing={2}>
                 <TextField
@@ -365,16 +366,19 @@ export default function CreateResourcePage() {
                   inputProps={{ min: 1 }}
                 />
 
-                <TextField
-                  name="description"
-                  label={t("form.descriptionLabel")}
-                  value={values.description}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                <RichTextEditor
                   error={Boolean(touched.description && errors.description)}
                   helperText={touched.description ? errors.description : t("form.descriptionHelper")}
-                  multiline
-                  minRows={5}
+                  label={t("form.descriptionLabel")}
+                  minHeight={220}
+                  onBlur={() => {
+                    void setFieldTouched("description", true, true);
+                  }}
+                  onChange={nextValue => {
+                    void setFieldValue("description", nextValue, true);
+                  }}
+                  placeholder={t("form.descriptionLabel")}
+                  value={values.description}
                 />
 
                 <TextField

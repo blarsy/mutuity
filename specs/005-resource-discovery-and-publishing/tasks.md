@@ -142,6 +142,10 @@
 
 ## Phase 15: Campaign Moderation Notification And Admin Workflow Follow-Up
 
-- [ ] T087 Extend the notification catalog, payload rules, and route mapping for campaign moderation note received, campaign approved, and creator adaptation submitted in `specs/005-resource-discovery-and-publishing/spec.md` and implementation surfaces
-- [ ] T088 Extend the admin campaigns page to support moderation-status filtering including `awaiting adaptation` and notification-driven prefilled filter state in `frontend/src/features/admin/` and related GraphQL/database helpers
+- [x] T087 Extend the notification catalog, payload rules, and route mapping for campaign moderation note received, campaign approved, and creator adaptation submitted in `specs/005-resource-discovery-and-publishing/spec.md` and implementation surfaces
+- [x] T088 Extend the admin campaigns page to support moderation-status filtering including `awaiting adaptation` and notification-driven prefilled filter state in `frontend/src/features/admin/` and related GraphQL/database helpers
 - [ ] T089 Add end-to-end verification for campaign moderation notification routing into creator moderation and filtered admin campaigns destinations
+
+## Phase 16: Rich Text Authoring Follow-Up
+
+- [x] T090 Extend the existing constrained rich-text editor and sanitized renderer to campaign, need, and resource description authoring/display surfaces in `frontend/src/components/richText/`, `frontend/src/features/needs/`, `frontend/src/features/resources/`, and shared card/detail components

@@ -1,5 +1,13 @@
 import * as Yup from "yup";
 
+function plainTextFromRichText(value: string) {
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export type CreateCampaignValues = {
   title: string;
   theme: string;
@@ -24,7 +32,9 @@ export const createCampaignInitialValues: CreateCampaignValues = {
 
 export const createCampaignValidationSchema = Yup.object({
   title: Yup.string().trim().required("Title is required"),
-  theme: Yup.string().trim().required("Theme is required"),
+  theme: Yup.string()
+    .required("Theme is required")
+    .test("non-empty-rich-text", "Theme is required", value => plainTextFromRichText(value ?? "").length > 0),
   managerNoteFromCreator: Yup.string().optional(),
   rewardsMultiplier: Yup.number().integer().min(5).max(10).required(),
   airdropAmount: Yup.number().integer().min(3000).max(8000).required(),
