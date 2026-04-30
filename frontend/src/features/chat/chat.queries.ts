@@ -73,6 +73,34 @@ export const SEND_RESOURCE_MESSAGE_MUTATION = gql`
   }
 `;
 
+/**
+ * Open-contact variant: start a resource conversation without a prior bid.
+ * Used from the resource detail page.
+ */
+export const SEND_RESOURCE_MESSAGE_DIRECT_MUTATION = gql`
+  mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
+    sendResourceMessageDirect(input: $input) {
+      uuid
+    }
+  }
+`;
+
+/**
+ * Open-contact: start a need conversation without a prior claim.
+ * Used from the need detail page.
+ */
+export const SEND_NEED_MESSAGE_MUTATION = gql`
+  mutation SendNeedMessage($input: SendNeedMessageInput!) {
+    sendNeedMessage(input: $input) {
+      id
+      conversationId
+      senderAccountId
+      body
+      createdAt
+    }
+  }
+`;
+
 export const MARK_RESOURCE_MESSAGES_READ_MUTATION = gql`
   mutation MarkResourceMessagesRead($input: MarkResourceMessagesReadInput!) {
     markResourceMessagesRead(input: $input) {

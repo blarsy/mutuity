@@ -56,6 +56,8 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Only resource conversation participants can read messages", "FORBIDDEN"],
   ["Only conversation participants can update typing state", "FORBIDDEN"],
   ["Conversation can only be started by the need creator", "FORBIDDEN"],
+  ["Need creator cannot message themselves", "BAD_USER_INPUT"],
+  ["Resource owner cannot message themselves", "BAD_USER_INPUT"],
   ["Campaign not found", "NOT_FOUND"],
   ["Moderation notes are allowed only for pending campaigns", "BAD_USER_INPUT"],
   ["Moderation note body is required", "BAD_USER_INPUT"],
