@@ -3,6 +3,7 @@ create or replace function app_public.count_chat_conversations(
 )
 returns integer
 language plpgsql
+stable
 security definer
 set search_path = app_public, app_private, public
 as $$

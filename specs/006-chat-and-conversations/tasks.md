@@ -19,8 +19,8 @@
 - [x] T004 Create the database migration for unified chat listing, resource-side conversations, read-state helpers, and typing-signal support in `database/migrations/076_chat_and_conversations_foundation.sql`
 - [x] T005 [P] Add SQL helpers for listing/searching mixed conversations in `database/functions/chat/`
 - [x] T006 [P] Add SQL helpers for sending resource-side messages, marking messages read, and persisting typing activity in `database/functions/chat/` and/or `database/functions/resource/`
-- [ ] T007 Add GraphQL/backend wiring for the unified chat workspace queries and mutations in `backend/src/postgraphile/server.ts` and related SQL exposure files
-- [ ] T008 Add shared frontend chat types and query documents in `frontend/src/features/chat/`
+- [x] T007 Add GraphQL/backend wiring for the unified chat workspace queries and mutations in `backend/src/postgraphile/server.ts` and related SQL exposure files
+- [x] T008 Add shared frontend chat types and query documents in `frontend/src/features/chat/`
 
 ## Phase 3: User Story 1 - Unified Conversation List (Priority: P1)
 
