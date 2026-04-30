@@ -15,6 +15,7 @@ import enProfile from "./locales/en/profile.json";
 import enNotifications from "./locales/en/notifications.json";
 import enPreferences from "./locales/en/preferences.json";
 import enGrants from "./locales/en/grants.json";
+import enChat from "./locales/en/chat.json";
 
 import frCommon from "./locales/fr/common.json";
 import frLayout from "./locales/fr/layout.json";
@@ -30,6 +31,7 @@ import frProfile from "./locales/fr/profile.json";
 import frNotifications from "./locales/fr/notifications.json";
 import frPreferences from "./locales/fr/preferences.json";
 import frGrants from "./locales/fr/grants.json";
+import frChat from "./locales/fr/chat.json";
 
 void i18n
   .use(initReactI18next)
@@ -49,7 +51,8 @@ void i18n
         profile: enProfile,
         notifications: enNotifications,
         preferences: enPreferences,
-        grants: enGrants
+        grants: enGrants,
+        chat: enChat
       },
       fr: {
         common: frCommon,
@@ -65,7 +68,8 @@ void i18n
         profile: frProfile,
         notifications: frNotifications,
         preferences: frPreferences,
-        grants: frGrants
+        grants: frGrants,
+        chat: frChat
       }
     },
     lng: "fr",

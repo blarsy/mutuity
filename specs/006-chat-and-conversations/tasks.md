@@ -35,9 +35,9 @@
 
 ### Implementation (US1)
 
-- [ ] T011 [US1] Replace the placeholder page in `frontend/src/pages/chat.tsx` with the real authenticated chat workspace shell
-- [ ] T012 [US1] Build the mixed `ConversationListPanel` with latest-activity ordering and unread indicators in `frontend/src/features/chat/`
-- [ ] T013 [US1] Add the participant/title/message search box and empty-state handling in `frontend/src/features/chat/`
+- [x] T011 [US1] Replace the placeholder page in `frontend/src/pages/chat.tsx` with the real authenticated chat workspace shell
+- [x] T012 [US1] Build the mixed `ConversationListPanel` with latest-activity ordering and unread indicators in `frontend/src/features/chat/`
+- [x] T013 [US1] Add the participant/title/message search box and empty-state handling in `frontend/src/features/chat/`
 
 ## Phase 4: User Story 2 - Shared Live Messenger For Needs And Resources (Priority: P1)
 

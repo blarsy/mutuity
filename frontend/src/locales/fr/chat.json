@@ -1,0 +1,20 @@
+{
+  "workspaceTitle": "Chat",
+  "workspaceSubtitle": "Vos conversations actives sur les besoins et les ressources, ordonnées par activité récente.",
+  "search": {
+    "placeholder": "Rechercher des conversations…",
+    "label": "Recherche"
+  },
+  "empty": {
+    "noConversations": "Aucune conversation pour l'instant.",
+    "noConversationsHint": "Les conversations démarrent lorsque vous répondez à une demande ou échangez des messages sur une offre de ressource.",
+    "noResults": "Aucune conversation ne correspond à votre recherche."
+  },
+  "loading": "Chargement des conversations…",
+  "unread": "{{count}} non lu",
+  "kind": {
+    "need": "Besoin",
+    "resource": "Ressource"
+  },
+  "lastActivity": "Dernière activité : {{date}}"
+}
