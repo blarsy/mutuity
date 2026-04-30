@@ -30,8 +30,8 @@
 
 ### Tests (US1)
 
-- [ ] T009 [P] [US1] Add backend integration tests for mixed conversation listing and text search in `backend/tests/integration/chat-conversations.spec.ts`
-- [ ] T010 [P] [US1] Add frontend tests for `/chat` list rendering, search filtering, and discriminator icons in `frontend/tests/chat/chat-page.spec.tsx`
+- [x] T009 [P] [US1] Add backend integration tests for mixed conversation listing and text search in `backend/tests/integration/chat-conversations.spec.ts`
+- [x] T010 [P] [US1] Add frontend tests for `/chat` list rendering, search filtering, and discriminator icons in `frontend/tests/chat/chat-page.spec.tsx`
 
 ### Implementation (US1)
 
