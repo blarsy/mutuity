@@ -16,5 +16,13 @@
     "need": "Besoin",
     "resource": "Ressource"
   },
+  "composer": {
+    "startTitle": "Démarrer une conversation à propos de {{title}}",
+    "startHint": "Votre premier message créera la conversation immédiatement.",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Écrivez votre message…",
+    "sending": "Envoi…",
+    "sendAndOpen": "Envoyer et ouvrir la conversation"
+  },
   "lastActivity": "Dernière activité : {{date}}"
 }

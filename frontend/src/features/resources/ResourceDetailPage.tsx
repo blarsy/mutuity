@@ -22,6 +22,7 @@ import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMe
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
+import { StartConversationDialog } from "../chat/StartConversationDialog";
 import { ResourceBidDialog } from "./ResourceBidDialog";
 import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
@@ -351,17 +352,28 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 )}
 
                 {session.authenticated ? (
-                  <ResourceBidDialog
-                    defaultTokenAmount={resource.defaultTokenAmount}
-                    disabled={!resource.isActive || isExpired}
-                    disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingResponses") : null}
-                    existingBid={existingBid ?? undefined}
-                    resourceId={resource.id}
-                    resourceTitle={resource.title}
-                    onSubmitted={() => {
-                      void refetch();
-                    }}
-                  />
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                    <ResourceBidDialog
+                      defaultTokenAmount={resource.defaultTokenAmount}
+                      disabled={!resource.isActive || isExpired}
+                      disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingResponses") : null}
+                      existingBid={existingBid ?? undefined}
+                      resourceId={resource.id}
+                      resourceTitle={resource.title}
+                      onSubmitted={() => {
+                        void refetch();
+                      }}
+                    />
+                    <StartConversationDialog
+                      buttonLabel={t("detail.contactCreator")}
+                      creatorAccountId={resource.creatorAccountId}
+                      disabled={!resource.isActive || isExpired}
+                      disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingResponses") : null}
+                      kind="resource"
+                      resourceId={resource.id}
+                      title={resource.title}
+                    />
+                  </Stack>
                 ) : (
                   <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
                     {t("card.signInToRespond")}

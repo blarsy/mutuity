@@ -80,6 +80,26 @@ type Account implements Node {
   ): AccountNotificationsConnection!
   avatarUrl: String
   bio: String
+  """Reads and enables pagination through a set of `CampaignModerationAuditEvent`."""
+  campaignModerationAuditEventsByActorAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: CampaignModerationAuditEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignModerationAuditEvent`."""
+    orderBy: [CampaignModerationAuditEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignModerationAuditEventsConnection!
   """Reads and enables pagination through a set of `CampaignModerationNote`."""
   campaignModerationNotesByManagerAccountId(
     """Read all values in the set after (below) this cursor."""
@@ -160,6 +180,26 @@ type Account implements Node {
     """The method to use when ordering `Campaign`."""
     orderBy: [CampaignsOrderBy!] = [PRIMARY_KEY_ASC]
   ): CampaignsConnection!
+  """Reads and enables pagination through a set of `ChatTypingPresence`."""
+  chatTypingPresencesByAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ChatTypingPresenceCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ChatTypingPresence`."""
+    orderBy: [ChatTypingPresencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ChatTypingPresencesConnection!
   """Reads and enables pagination through a set of `ClaimConversation`."""
   claimConversationsByClaimerAccountId(
     """Read all values in the set after (below) this cursor."""
@@ -492,6 +532,46 @@ type Account implements Node {
     """The method to use when ordering `ResourceBid`."""
     orderBy: [ResourceBidsOrderBy!] = [PRIMARY_KEY_ASC]
   ): ResourceBidsConnection!
+  """Reads and enables pagination through a set of `ResourceConversation`."""
+  resourceConversationsByBidderAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceConversationCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsConnection!
+  """Reads and enables pagination through a set of `ResourceConversation`."""
+  resourceConversationsByOwnerAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceConversationCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsConnection!
   """Reads and enables pagination through a set of `Resource`."""
   resourcesByCreatorAccountId(
     """Read all values in the set after (below) this cursor."""
@@ -935,6 +1015,7 @@ type AdminListCampaignsRecord {
   description: String
   endDatetime: Datetime
   id: UUID
+  moderationStatus: CampaignModerationStatus
   resourceRewardsMultiplier: Int
   summary: String
 }
@@ -1223,6 +1304,26 @@ type Campaign implements Node {
   accountByCreatorAccountId: Account
   airdropAmount: Int!
   airdropAt: Datetime!
+  """Reads and enables pagination through a set of `CampaignModerationAuditEvent`."""
+  campaignModerationAuditEventsByCampaignId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: CampaignModerationAuditEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignModerationAuditEvent`."""
+    orderBy: [CampaignModerationAuditEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignModerationAuditEventsConnection!
   """Reads and enables pagination through a set of `CampaignModerationNote`."""
   campaignModerationNotesByCampaignId(
     """Read all values in the set after (below) this cursor."""
@@ -1335,6 +1436,113 @@ input CampaignCondition {
   startAt: Datetime
 }
 
+type CampaignModerationAuditEvent implements Node {
+  """Reads a single `Account` that is related to this `CampaignModerationAuditEvent`."""
+  accountByActorAccountId: Account
+  actorAccountId: UUID!
+  body: String
+  """Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`."""
+  campaignByCampaignId: Campaign
+  campaignId: UUID!
+  createdAt: Datetime!
+  eventType: String!
+  id: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+}
+
+"""
+A condition to be used against `CampaignModerationAuditEvent` object types. All
+fields are tested for equality and combined with a logical ‘and.’
+"""
+input CampaignModerationAuditEventCondition {
+  """Checks for equality with the object’s `actorAccountId` field."""
+  actorAccountId: UUID
+  """Checks for equality with the object’s `campaignId` field."""
+  campaignId: UUID
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+}
+
+"""An input for mutations affecting `CampaignModerationAuditEvent`"""
+input CampaignModerationAuditEventInput {
+  actorAccountId: UUID!
+  body: String
+  campaignId: UUID!
+  createdAt: Datetime
+  eventType: String!
+  id: UUID
+}
+
+"""Represents an update to a `CampaignModerationAuditEvent`. Fields that are set will be updated."""
+input CampaignModerationAuditEventPatch {
+  actorAccountId: UUID
+  body: String
+  campaignId: UUID
+  createdAt: Datetime
+  eventType: String
+  id: UUID
+}
+
+"""A connection to a list of `CampaignModerationAuditEvent` values."""
+type CampaignModerationAuditEventsConnection {
+  """A list of edges which contains the `CampaignModerationAuditEvent` and cursor to aid in pagination."""
+  edges: [CampaignModerationAuditEventsEdge!]!
+  """A list of `CampaignModerationAuditEvent` objects."""
+  nodes: [CampaignModerationAuditEvent!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `CampaignModerationAuditEvent` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `CampaignModerationAuditEvent` edge in the connection."""
+type CampaignModerationAuditEventsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `CampaignModerationAuditEvent` at the end of the edge."""
+  node: CampaignModerationAuditEvent!
+}
+
+"""Methods to use when ordering `CampaignModerationAuditEvent`."""
+enum CampaignModerationAuditEventsOrderBy {
+  ACTOR_ACCOUNT_ID_ASC
+  ACTOR_ACCOUNT_ID_DESC
+  CAMPAIGN_ID_ASC
+  CAMPAIGN_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""A `CampaignModerationEventsRecord` edge in the connection."""
+type CampaignModerationEventEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `CampaignModerationEventsRecord` at the end of the edge."""
+  node: CampaignModerationEventsRecord!
+}
+
+"""A connection to a list of `CampaignModerationEventsRecord` values."""
+type CampaignModerationEventsConnection {
+  """A list of edges which contains the `CampaignModerationEventsRecord` and cursor to aid in pagination."""
+  edges: [CampaignModerationEventEdge!]!
+  """A list of `CampaignModerationEventsRecord` objects."""
+  nodes: [CampaignModerationEventsRecord!]!
+  """The count of *all* `CampaignModerationEventsRecord` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""The return type of our `campaignModerationEvents` query."""
+type CampaignModerationEventsRecord {
+  actorAccountId: UUID
+  body: String
+  createdAt: Datetime
+  eventType: String
+}
+
 type CampaignModerationNote implements Node {
   """Reads a single `Account` that is related to this `CampaignModerationNote`."""
   accountByManagerAccountId: Account
@@ -1419,6 +1627,7 @@ enum CampaignModerationNotesOrderBy {
 
 enum CampaignModerationStatus {
   APPROVED
+  AWAITING_ADAPTATION
   PENDING
 }
 
@@ -1653,7 +1862,126 @@ enum CampaignsOrderBy {
   START_AT_DESC
 }
 
-"""One private conversation channel per need claim."""
+enum ChatContextKind {
+  NEED
+  RESOURCE
+}
+
+"""A connection to a list of `ChatConversationSummary` values."""
+type ChatConversationSummariesConnection {
+  """A list of edges which contains the `ChatConversationSummary` and cursor to aid in pagination."""
+  edges: [ChatConversationSummariesEdge!]!
+  """A list of `ChatConversationSummary` objects."""
+  nodes: [ChatConversationSummary!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `ChatConversationSummary` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `ChatConversationSummary` edge in the connection."""
+type ChatConversationSummariesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `ChatConversationSummary` at the end of the edge."""
+  node: ChatConversationSummary!
+}
+
+"""Methods to use when ordering `ChatConversationSummary`."""
+enum ChatConversationSummariesOrderBy {
+  NATURAL
+}
+
+"""Read model that lists both need and resource conversations per participant account."""
+type ChatConversationSummary {
+  contextId: UUID
+  contextTitle: String
+  conversationId: UUID
+  conversationKind: ChatContextKind
+  createdAt: Datetime
+  lastActivityAt: Datetime
+  lastMessagePreview: String
+  otherAccountId: UUID
+  participantAccountId: UUID
+  unreadCount: Int
+}
+
+type ChatTypingPresence implements Node {
+  """Reads a single `Account` that is related to this `ChatTypingPresence`."""
+  accountByAccountId: Account
+  accountId: UUID!
+  conversationId: UUID!
+  conversationKind: ChatContextKind!
+  createdAt: Datetime!
+  lastTypedAt: Datetime!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  updatedAt: Datetime!
+}
+
+"""
+A condition to be used against `ChatTypingPresence` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input ChatTypingPresenceCondition {
+  """Checks for equality with the object’s `accountId` field."""
+  accountId: UUID
+  """Checks for equality with the object’s `conversationKind` field."""
+  conversationKind: ChatContextKind
+}
+
+"""An input for mutations affecting `ChatTypingPresence`"""
+input ChatTypingPresenceInput {
+  accountId: UUID!
+  conversationId: UUID!
+  conversationKind: ChatContextKind!
+  createdAt: Datetime
+  lastTypedAt: Datetime
+  updatedAt: Datetime
+}
+
+"""Represents an update to a `ChatTypingPresence`. Fields that are set will be updated."""
+input ChatTypingPresencePatch {
+  accountId: UUID
+  conversationId: UUID
+  conversationKind: ChatContextKind
+  createdAt: Datetime
+  lastTypedAt: Datetime
+  updatedAt: Datetime
+}
+
+"""A connection to a list of `ChatTypingPresence` values."""
+type ChatTypingPresencesConnection {
+  """A list of edges which contains the `ChatTypingPresence` and cursor to aid in pagination."""
+  edges: [ChatTypingPresencesEdge!]!
+  """A list of `ChatTypingPresence` objects."""
+  nodes: [ChatTypingPresence!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `ChatTypingPresence` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `ChatTypingPresence` edge in the connection."""
+type ChatTypingPresencesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `ChatTypingPresence` at the end of the edge."""
+  node: ChatTypingPresence!
+}
+
+"""Methods to use when ordering `ChatTypingPresence`."""
+enum ChatTypingPresencesOrderBy {
+  ACCOUNT_ID_ASC
+  ACCOUNT_ID_DESC
+  CONVERSATION_KIND_ASC
+  CONVERSATION_KIND_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""One private conversation channel per (need, participant-pair). Attached to a need_claim once one is submitted."""
 type ClaimConversation implements Node {
   """Reads a single `Account` that is related to this `ClaimConversation`."""
   accountByClaimerAccountId: Account
@@ -1685,9 +2013,7 @@ type ClaimConversation implements Node {
   id: UUID!
   """Reads a single `Need` that is related to this `ClaimConversation`."""
   needByNeedId: Need
-  """Reads a single `NeedClaim` that is related to this `ClaimConversation`."""
-  needClaimByNeedClaimId: NeedClaim
-  needClaimId: UUID!
+  needClaimId: UUID
   needId: UUID!
   """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
   nodeId: ID!
@@ -1704,8 +2030,6 @@ input ClaimConversationCondition {
   creatorAccountId: UUID
   """Checks for equality with the object’s `id` field."""
   id: UUID
-  """Checks for equality with the object’s `needClaimId` field."""
-  needClaimId: UUID
   """Checks for equality with the object’s `needId` field."""
   needId: UUID
 }
@@ -1716,7 +2040,7 @@ input ClaimConversationInput {
   createdAt: Datetime
   creatorAccountId: UUID!
   id: UUID
-  needClaimId: UUID!
+  needClaimId: UUID
   needId: UUID!
 }
 
@@ -1759,8 +2083,6 @@ enum ClaimConversationsOrderBy {
   ID_ASC
   ID_DESC
   NATURAL
-  NEED_CLAIM_ID_ASC
-  NEED_CLAIM_ID_DESC
   NEED_ID_ASC
   NEED_ID_DESC
   PRIMARY_KEY_ASC
@@ -2216,6 +2538,39 @@ input CreateCampaignInput {
   title: String
 }
 
+"""All input for the create `CampaignModerationAuditEvent` mutation."""
+input CreateCampaignModerationAuditEventInput {
+  """The `CampaignModerationAuditEvent` to be created by this mutation."""
+  campaignModerationAuditEvent: CampaignModerationAuditEventInput!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+}
+
+"""The output of our create `CampaignModerationAuditEvent` mutation."""
+type CreateCampaignModerationAuditEventPayload {
+  """Reads a single `Account` that is related to this `CampaignModerationAuditEvent`."""
+  accountByActorAccountId: Account
+  """Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`."""
+  campaignByCampaignId: Campaign
+  """The `CampaignModerationAuditEvent` that was created by this mutation."""
+  campaignModerationAuditEvent: CampaignModerationAuditEvent
+  """An edge for our `CampaignModerationAuditEvent`. May be used by Relay 1."""
+  campaignModerationAuditEventEdge(
+    """The method to use when ordering `CampaignModerationAuditEvent`."""
+    orderBy: [CampaignModerationAuditEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignModerationAuditEventsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the create `CampaignModerationNote` mutation."""
 input CreateCampaignModerationNoteInput {
   """The `CampaignModerationNote` to be created by this mutation."""
@@ -2338,6 +2693,37 @@ type CreateCampaignResourcePayload {
   resourceByResourceId: Resource
 }
 
+"""All input for the create `ChatTypingPresence` mutation."""
+input CreateChatTypingPresenceInput {
+  """The `ChatTypingPresence` to be created by this mutation."""
+  chatTypingPresence: ChatTypingPresenceInput!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+}
+
+"""The output of our create `ChatTypingPresence` mutation."""
+type CreateChatTypingPresencePayload {
+  """Reads a single `Account` that is related to this `ChatTypingPresence`."""
+  accountByAccountId: Account
+  """The `ChatTypingPresence` that was created by this mutation."""
+  chatTypingPresence: ChatTypingPresence
+  """An edge for our `ChatTypingPresence`. May be used by Relay 1."""
+  chatTypingPresenceEdge(
+    """The method to use when ordering `ChatTypingPresence`."""
+    orderBy: [ChatTypingPresencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ChatTypingPresencesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the create `ClaimConversation` mutation."""
 input CreateClaimConversationInput {
   """The `ClaimConversation` to be created by this mutation."""
@@ -2369,8 +2755,6 @@ type CreateClaimConversationPayload {
   clientMutationId: String
   """Reads a single `Need` that is related to this `ClaimConversation`."""
   needByNeedId: Need
-  """Reads a single `NeedClaim` that is related to this `ClaimConversation`."""
-  needClaimByNeedClaimId: NeedClaim
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
 }
@@ -2881,6 +3265,41 @@ type CreateResourceCategoryPayload {
   ): ResourceCategoriesEdge
 }
 
+"""All input for the create `ResourceConversation` mutation."""
+input CreateResourceConversationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `ResourceConversation` to be created by this mutation."""
+  resourceConversation: ResourceConversationInput!
+}
+
+"""The output of our create `ResourceConversation` mutation."""
+type CreateResourceConversationPayload {
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByBidderAccountId: Account
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByOwnerAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `Resource` that is related to this `ResourceConversation`."""
+  resourceByResourceId: Resource
+  """The `ResourceConversation` that was created by this mutation."""
+  resourceConversation: ResourceConversation
+  """An edge for our `ResourceConversation`. May be used by Relay 1."""
+  resourceConversationEdge(
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsEdge
+}
+
 """All input for the create `Resource` mutation."""
 input CreateResourceInput {
   """
@@ -2890,6 +3309,68 @@ input CreateResourceInput {
   clientMutationId: String
   """The `Resource` to be created by this mutation."""
   resource: ResourceInput!
+}
+
+"""All input for the create `ResourceMessageImage` mutation."""
+input CreateResourceMessageImageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `ResourceMessageImage` to be created by this mutation."""
+  resourceMessageImage: ResourceMessageImageInput!
+}
+
+"""The output of our create `ResourceMessageImage` mutation."""
+type CreateResourceMessageImagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`."""
+  resourceMessageByMessageId: ResourceMessage
+  """The `ResourceMessageImage` that was created by this mutation."""
+  resourceMessageImage: ResourceMessageImage
+  """An edge for our `ResourceMessageImage`. May be used by Relay 1."""
+  resourceMessageImageEdge(
+    """The method to use when ordering `ResourceMessageImage`."""
+    orderBy: [ResourceMessageImagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessageImagesEdge
+}
+
+"""All input for the create `ResourceMessage` mutation."""
+input CreateResourceMessageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The `ResourceMessage` to be created by this mutation."""
+  resourceMessage: ResourceMessageInput!
+}
+
+"""The output of our create `ResourceMessage` mutation."""
+type CreateResourceMessagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceConversation` that is related to this `ResourceMessage`."""
+  resourceConversationByConversationId: ResourceConversation
+  """The `ResourceMessage` that was created by this mutation."""
+  resourceMessage: ResourceMessage
+  """An edge for our `ResourceMessage`. May be used by Relay 1."""
+  resourceMessageEdge(
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesEdge
 }
 
 """The output of our create `Resource` mutation."""
@@ -3140,6 +3621,50 @@ input DeleteCampaignInput {
   nodeId: ID!
 }
 
+"""All input for the `deleteCampaignModerationAuditEventById` mutation."""
+input DeleteCampaignModerationAuditEventByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteCampaignModerationAuditEvent` mutation."""
+input DeleteCampaignModerationAuditEventInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `CampaignModerationAuditEvent` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `CampaignModerationAuditEvent` mutation."""
+type DeleteCampaignModerationAuditEventPayload {
+  """Reads a single `Account` that is related to this `CampaignModerationAuditEvent`."""
+  accountByActorAccountId: Account
+  """Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`."""
+  campaignByCampaignId: Campaign
+  """The `CampaignModerationAuditEvent` that was deleted by this mutation."""
+  campaignModerationAuditEvent: CampaignModerationAuditEvent
+  """An edge for our `CampaignModerationAuditEvent`. May be used by Relay 1."""
+  campaignModerationAuditEventEdge(
+    """The method to use when ordering `CampaignModerationAuditEvent`."""
+    orderBy: [CampaignModerationAuditEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignModerationAuditEventsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedCampaignModerationEventId: ID
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `deleteCampaignModerationNoteById` mutation."""
 input DeleteCampaignModerationNoteByIdInput {
   """
@@ -3299,6 +3824,50 @@ type DeleteCampaignResourcePayload {
   resourceByResourceId: Resource
 }
 
+"""All input for the `deleteChatTypingPresenceByConversationKindAndConversationIdAndAccountId` mutation."""
+input DeleteChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput {
+  accountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  conversationId: UUID!
+  conversationKind: ChatContextKind!
+}
+
+"""All input for the `deleteChatTypingPresence` mutation."""
+input DeleteChatTypingPresenceInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ChatTypingPresence` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `ChatTypingPresence` mutation."""
+type DeleteChatTypingPresencePayload {
+  """Reads a single `Account` that is related to this `ChatTypingPresence`."""
+  accountByAccountId: Account
+  """The `ChatTypingPresence` that was deleted by this mutation."""
+  chatTypingPresence: ChatTypingPresence
+  """An edge for our `ChatTypingPresence`. May be used by Relay 1."""
+  chatTypingPresenceEdge(
+    """The method to use when ordering `ChatTypingPresence`."""
+    orderBy: [ChatTypingPresencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ChatTypingPresencesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedChatTypingPresenceId: ID
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `deleteClaimConversationById` mutation."""
 input DeleteClaimConversationByIdInput {
   """
@@ -3309,14 +3878,16 @@ input DeleteClaimConversationByIdInput {
   id: UUID!
 }
 
-"""All input for the `deleteClaimConversationByNeedClaimId` mutation."""
-input DeleteClaimConversationByNeedClaimIdInput {
+"""All input for the `deleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId` mutation."""
+input DeleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput {
+  claimerAccountId: UUID!
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-  needClaimId: UUID!
+  creatorAccountId: UUID!
+  needId: UUID!
 }
 
 """All input for the `deleteClaimConversation` mutation."""
@@ -3351,8 +3922,6 @@ type DeleteClaimConversationPayload {
   deletedClaimConversationId: ID
   """Reads a single `Need` that is related to this `ClaimConversation`."""
   needByNeedId: Need
-  """Reads a single `NeedClaim` that is related to this `ClaimConversation`."""
-  needClaimByNeedClaimId: NeedClaim
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
 }
@@ -4081,6 +4650,64 @@ type DeleteResourceCategoryPayload {
   ): ResourceCategoriesEdge
 }
 
+"""All input for the `deleteResourceConversationById` mutation."""
+input DeleteResourceConversationByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId` mutation."""
+input DeleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput {
+  bidderAccountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  ownerAccountId: UUID!
+  resourceId: UUID!
+}
+
+"""All input for the `deleteResourceConversation` mutation."""
+input DeleteResourceConversationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ResourceConversation` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `ResourceConversation` mutation."""
+type DeleteResourceConversationPayload {
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByBidderAccountId: Account
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByOwnerAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedResourceConversationId: ID
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `Resource` that is related to this `ResourceConversation`."""
+  resourceByResourceId: Resource
+  """The `ResourceConversation` that was deleted by this mutation."""
+  resourceConversation: ResourceConversation
+  """An edge for our `ResourceConversation`. May be used by Relay 1."""
+  resourceConversationEdge(
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsEdge
+}
+
 """All input for the `deleteResource` mutation."""
 input DeleteResourceInput {
   """
@@ -4090,6 +4717,90 @@ input DeleteResourceInput {
   clientMutationId: String
   """The globally unique `ID` which will identify a single `Resource` to be deleted."""
   nodeId: ID!
+}
+
+"""All input for the `deleteResourceMessageById` mutation."""
+input DeleteResourceMessageByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteResourceMessageImageById` mutation."""
+input DeleteResourceMessageImageByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteResourceMessageImage` mutation."""
+input DeleteResourceMessageImageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ResourceMessageImage` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `ResourceMessageImage` mutation."""
+type DeleteResourceMessageImagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedResourceMessageImageId: ID
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`."""
+  resourceMessageByMessageId: ResourceMessage
+  """The `ResourceMessageImage` that was deleted by this mutation."""
+  resourceMessageImage: ResourceMessageImage
+  """An edge for our `ResourceMessageImage`. May be used by Relay 1."""
+  resourceMessageImageEdge(
+    """The method to use when ordering `ResourceMessageImage`."""
+    orderBy: [ResourceMessageImagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessageImagesEdge
+}
+
+"""All input for the `deleteResourceMessage` mutation."""
+input DeleteResourceMessageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ResourceMessage` to be deleted."""
+  nodeId: ID!
+}
+
+"""The output of our delete `ResourceMessage` mutation."""
+type DeleteResourceMessagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedResourceMessageId: ID
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceConversation` that is related to this `ResourceMessage`."""
+  resourceConversationByConversationId: ResourceConversation
+  """The `ResourceMessage` that was deleted by this mutation."""
+  resourceMessage: ResourceMessage
+  """An edge for our `ResourceMessage`. May be used by Relay 1."""
+  resourceMessageEdge(
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesEdge
 }
 
 """The output of our delete `Resource` mutation."""
@@ -4724,6 +5435,37 @@ type LinkAccountExternalIdentityPayload {
   string: String
 }
 
+"""A `ListChatConversationsRecord` edge in the connection."""
+type ListChatConversationEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `ListChatConversationsRecord` at the end of the edge."""
+  node: ListChatConversationsRecord!
+}
+
+"""A connection to a list of `ListChatConversationsRecord` values."""
+type ListChatConversationsConnection {
+  """A list of edges which contains the `ListChatConversationsRecord` and cursor to aid in pagination."""
+  edges: [ListChatConversationEdge!]!
+  """A list of `ListChatConversationsRecord` objects."""
+  nodes: [ListChatConversationsRecord!]!
+  """The count of *all* `ListChatConversationsRecord` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""The return type of our `listChatConversations` query."""
+type ListChatConversationsRecord {
+  contextId: UUID
+  contextTitle: String
+  conversationId: UUID
+  conversationKind: ChatContextKind
+  lastActivityAt: Datetime
+  lastMessagePreview: String
+  otherAccountDisplayName: String
+  otherAccountId: UUID
+  unreadCount: Int
+}
+
 """A connection to a list of `ListResourceCategoriesRecord` values."""
 type ListResourceCategoriesConnection {
   """A list of edges which contains the `ListResourceCategoriesRecord` and cursor to aid in pagination."""
@@ -4885,6 +5627,28 @@ type MarkResourceBidNotificationReadPayload {
   ): ResourceBidNotificationsEdge
 }
 
+"""All input for the `markResourceMessagesRead` mutation."""
+input MarkResourceMessagesReadInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pConversationId: UUID
+}
+
+"""The output of our `markResourceMessagesRead` mutation."""
+type MarkResourceMessagesReadPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  integer: Int
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """The root mutation type which contains root level fields which mutate data."""
 type Mutation {
   acceptCampaignNeed(
@@ -4979,6 +5743,11 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateCampaignInput!
   ): CreateCampaignPayload
+  """Creates a single `CampaignModerationAuditEvent`."""
+  createCampaignModerationAuditEvent(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateCampaignModerationAuditEventInput!
+  ): CreateCampaignModerationAuditEventPayload
   """Creates a single `CampaignModerationNote`."""
   createCampaignModerationNote(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -4994,6 +5763,11 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateCampaignResourceInput!
   ): CreateCampaignResourcePayload
+  """Creates a single `ChatTypingPresence`."""
+  createChatTypingPresence(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateChatTypingPresenceInput!
+  ): CreateChatTypingPresencePayload
   """Creates a single `ClaimConversation`."""
   createClaimConversation(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5078,6 +5852,21 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateResourceCategoryAssignmentInput!
   ): CreateResourceCategoryAssignmentPayload
+  """Creates a single `ResourceConversation`."""
+  createResourceConversation(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateResourceConversationInput!
+  ): CreateResourceConversationPayload
+  """Creates a single `ResourceMessage`."""
+  createResourceMessage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateResourceMessageInput!
+  ): CreateResourceMessagePayload
+  """Creates a single `ResourceMessageImage`."""
+  createResourceMessageImage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CreateResourceMessageImageInput!
+  ): CreateResourceMessageImagePayload
   """Creates a single `SystemSetting`."""
   createSystemSetting(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5133,6 +5922,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: DeleteCampaignByIdInput!
   ): DeleteCampaignPayload
+  """Deletes a single `CampaignModerationAuditEvent` using its globally unique id."""
+  deleteCampaignModerationAuditEvent(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteCampaignModerationAuditEventInput!
+  ): DeleteCampaignModerationAuditEventPayload
+  """Deletes a single `CampaignModerationAuditEvent` using a unique key."""
+  deleteCampaignModerationAuditEventById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteCampaignModerationAuditEventByIdInput!
+  ): DeleteCampaignModerationAuditEventPayload
   """Deletes a single `CampaignModerationNote` using its globally unique id."""
   deleteCampaignModerationNote(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5163,6 +5962,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: DeleteCampaignResourceByCampaignIdAndResourceIdInput!
   ): DeleteCampaignResourcePayload
+  """Deletes a single `ChatTypingPresence` using its globally unique id."""
+  deleteChatTypingPresence(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteChatTypingPresenceInput!
+  ): DeleteChatTypingPresencePayload
+  """Deletes a single `ChatTypingPresence` using a unique key."""
+  deleteChatTypingPresenceByConversationKindAndConversationIdAndAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput!
+  ): DeleteChatTypingPresencePayload
   """Deletes a single `ClaimConversation` using its globally unique id."""
   deleteClaimConversation(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5174,9 +5983,9 @@ type Mutation {
     input: DeleteClaimConversationByIdInput!
   ): DeleteClaimConversationPayload
   """Deletes a single `ClaimConversation` using a unique key."""
-  deleteClaimConversationByNeedClaimId(
+  deleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: DeleteClaimConversationByNeedClaimIdInput!
+    input: DeleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput!
   ): DeleteClaimConversationPayload
   """Deletes a single `ClaimMessage` using its globally unique id."""
   deleteClaimMessage(
@@ -5363,6 +6172,41 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: DeleteResourceCategoryBySlugInput!
   ): DeleteResourceCategoryPayload
+  """Deletes a single `ResourceConversation` using its globally unique id."""
+  deleteResourceConversation(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceConversationInput!
+  ): DeleteResourceConversationPayload
+  """Deletes a single `ResourceConversation` using a unique key."""
+  deleteResourceConversationById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceConversationByIdInput!
+  ): DeleteResourceConversationPayload
+  """Deletes a single `ResourceConversation` using a unique key."""
+  deleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput!
+  ): DeleteResourceConversationPayload
+  """Deletes a single `ResourceMessage` using its globally unique id."""
+  deleteResourceMessage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceMessageInput!
+  ): DeleteResourceMessagePayload
+  """Deletes a single `ResourceMessage` using a unique key."""
+  deleteResourceMessageById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceMessageByIdInput!
+  ): DeleteResourceMessagePayload
+  """Deletes a single `ResourceMessageImage` using its globally unique id."""
+  deleteResourceMessageImage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceMessageImageInput!
+  ): DeleteResourceMessageImagePayload
+  """Deletes a single `ResourceMessageImage` using a unique key."""
+  deleteResourceMessageImageById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeleteResourceMessageImageByIdInput!
+  ): DeleteResourceMessageImagePayload
   """Deletes a single `SystemSetting` using its globally unique id."""
   deleteSystemSetting(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5420,6 +6264,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: MarkResourceBidNotificationReadInput!
   ): MarkResourceBidNotificationReadPayload
+  markResourceMessagesRead(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: MarkResourceMessagesReadInput!
+  ): MarkResourceMessagesReadPayload
   publishResource(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: PublishResourceInput!
@@ -5456,6 +6304,18 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SendClaimMessageInput!
   ): SendClaimMessagePayload
+  sendNeedMessage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: SendNeedMessageInput!
+  ): SendNeedMessagePayload
+  sendResourceMessage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: SendResourceMessageInput!
+  ): SendResourceMessagePayload
+  sendResourceMessageDirect(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: SendResourceMessageDirectInput!
+  ): SendResourceMessageDirectPayload
   setAccountDeliveryPreference(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SetAccountDeliveryPreferenceInput!
@@ -5523,6 +6383,20 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateCampaignByIdInput!
   ): UpdateCampaignPayload
+  updateCampaignForModeration(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateCampaignForModerationInput!
+  ): UpdateCampaignForModerationPayload
+  """Updates a single `CampaignModerationAuditEvent` using its globally unique id and a patch."""
+  updateCampaignModerationAuditEvent(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateCampaignModerationAuditEventInput!
+  ): UpdateCampaignModerationAuditEventPayload
+  """Updates a single `CampaignModerationAuditEvent` using a unique key and a patch."""
+  updateCampaignModerationAuditEventById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateCampaignModerationAuditEventByIdInput!
+  ): UpdateCampaignModerationAuditEventPayload
   """Updates a single `CampaignModerationNote` using its globally unique id and a patch."""
   updateCampaignModerationNote(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5553,6 +6427,16 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateCampaignResourceByCampaignIdAndResourceIdInput!
   ): UpdateCampaignResourcePayload
+  """Updates a single `ChatTypingPresence` using its globally unique id and a patch."""
+  updateChatTypingPresence(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateChatTypingPresenceInput!
+  ): UpdateChatTypingPresencePayload
+  """Updates a single `ChatTypingPresence` using a unique key and a patch."""
+  updateChatTypingPresenceByConversationKindAndConversationIdAndAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput!
+  ): UpdateChatTypingPresencePayload
   """Updates a single `ClaimConversation` using its globally unique id and a patch."""
   updateClaimConversation(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5564,9 +6448,9 @@ type Mutation {
     input: UpdateClaimConversationByIdInput!
   ): UpdateClaimConversationPayload
   """Updates a single `ClaimConversation` using a unique key and a patch."""
-  updateClaimConversationByNeedClaimId(
+  updateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: UpdateClaimConversationByNeedClaimIdInput!
+    input: UpdateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput!
   ): UpdateClaimConversationPayload
   """Updates a single `ClaimMessage` using its globally unique id and a patch."""
   updateClaimMessage(
@@ -5753,6 +6637,41 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateResourceCategoryBySlugInput!
   ): UpdateResourceCategoryPayload
+  """Updates a single `ResourceConversation` using its globally unique id and a patch."""
+  updateResourceConversation(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceConversationInput!
+  ): UpdateResourceConversationPayload
+  """Updates a single `ResourceConversation` using a unique key and a patch."""
+  updateResourceConversationById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceConversationByIdInput!
+  ): UpdateResourceConversationPayload
+  """Updates a single `ResourceConversation` using a unique key and a patch."""
+  updateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput!
+  ): UpdateResourceConversationPayload
+  """Updates a single `ResourceMessage` using its globally unique id and a patch."""
+  updateResourceMessage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceMessageInput!
+  ): UpdateResourceMessagePayload
+  """Updates a single `ResourceMessage` using a unique key and a patch."""
+  updateResourceMessageById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceMessageByIdInput!
+  ): UpdateResourceMessagePayload
+  """Updates a single `ResourceMessageImage` using its globally unique id and a patch."""
+  updateResourceMessageImage(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceMessageImageInput!
+  ): UpdateResourceMessageImagePayload
+  """Updates a single `ResourceMessageImage` using a unique key and a patch."""
+  updateResourceMessageImageById(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpdateResourceMessageImageByIdInput!
+  ): UpdateResourceMessageImagePayload
   """Updates a single `SystemSetting` using its globally unique id and a patch."""
   updateSystemSetting(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5778,6 +6697,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: UpdateTokenMovementByIdempotencyKeyInput!
   ): UpdateTokenMovementPayload
+  upsertChatTypingPresence(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UpsertChatTypingPresenceInput!
+  ): UpsertChatTypingPresencePayload
   """Creates a new grant definition when p_grant_id is null, or updates an existing one. Admin only."""
   upsertGrant(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -5903,28 +6826,6 @@ type NeedClaim implements Node {
   accountByClaimerAccountId: Account
   """Reads a single `Account` that is related to this `NeedClaim`."""
   accountBySettledByAccountId: Account
-  """Reads a single `ClaimConversation` that is related to this `NeedClaim`."""
-  claimConversationByNeedClaimId: ClaimConversation
-  """Reads and enables pagination through a set of `ClaimConversation`."""
-  claimConversationsByNeedClaimId(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-    """A condition to be used in determining which values should be returned by the collection."""
-    condition: ClaimConversationCondition
-    """Only read the first `n` values of the set."""
-    first: Int
-    """Only read the last `n` values of the set."""
-    last: Int
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-    """The method to use when ordering `ClaimConversation`."""
-    orderBy: [ClaimConversationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ClaimConversationsConnection! @deprecated(reason: "Please use claimConversationByNeedClaimId instead")
   claimerAccountId: UUID!
   createdAt: Datetime!
   id: UUID!
@@ -6553,6 +7454,7 @@ type Query implements Node {
     pLimit: Int
     pOffset: Int
     pSearch: String
+    pStatus: CampaignModerationStatus
   ): AdminListCampaignsConnection
   adminListGrants(
     """Read all values in the set after (below) this cursor."""
@@ -6704,6 +7606,26 @@ type Query implements Node {
     """The method to use when ordering `Account`."""
     orderBy: [AccountsOrderBy!] = [PRIMARY_KEY_ASC]
   ): AccountsConnection
+  """Reads and enables pagination through a set of `CampaignModerationAuditEvent`."""
+  allCampaignModerationAuditEvents(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: CampaignModerationAuditEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignModerationAuditEvent`."""
+    orderBy: [CampaignModerationAuditEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignModerationAuditEventsConnection
   """Reads and enables pagination through a set of `CampaignModerationNote`."""
   allCampaignModerationNotes(
     """Read all values in the set after (below) this cursor."""
@@ -6784,6 +7706,44 @@ type Query implements Node {
     """The method to use when ordering `Campaign`."""
     orderBy: [CampaignsOrderBy!] = [PRIMARY_KEY_ASC]
   ): CampaignsConnection
+  """Reads and enables pagination through a set of `ChatConversationSummary`."""
+  allChatConversationSummaries(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ChatConversationSummary`."""
+    orderBy: [ChatConversationSummariesOrderBy!] = [NATURAL]
+  ): ChatConversationSummariesConnection
+  """Reads and enables pagination through a set of `ChatTypingPresence`."""
+  allChatTypingPresences(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ChatTypingPresenceCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ChatTypingPresence`."""
+    orderBy: [ChatTypingPresencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ChatTypingPresencesConnection
   """Reads and enables pagination through a set of `ClaimConversation`."""
   allClaimConversations(
     """Read all values in the set after (below) this cursor."""
@@ -7104,6 +8064,66 @@ type Query implements Node {
     """The method to use when ordering `ResourceCategoryAssignment`."""
     orderBy: [ResourceCategoryAssignmentsOrderBy!] = [PRIMARY_KEY_ASC]
   ): ResourceCategoryAssignmentsConnection
+  """Reads and enables pagination through a set of `ResourceConversation`."""
+  allResourceConversations(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceConversationCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsConnection
+  """Reads and enables pagination through a set of `ResourceMessageImage`."""
+  allResourceMessageImages(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceMessageImageCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceMessageImage`."""
+    orderBy: [ResourceMessageImagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessageImagesConnection
+  """Reads and enables pagination through a set of `ResourceMessage`."""
+  allResourceMessages(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceMessageCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesConnection
   """Reads and enables pagination through a set of `Resource`."""
   allResources(
     """Read all values in the set after (below) this cursor."""
@@ -7171,6 +8191,28 @@ type Query implements Node {
     nodeId: ID!
   ): Campaign
   campaignById(id: UUID!): Campaign
+  """Reads a single `CampaignModerationAuditEvent` using its globally unique `ID`."""
+  campaignModerationAuditEvent(
+    """The globally unique `ID` to be used in selecting a single `CampaignModerationAuditEvent`."""
+    nodeId: ID!
+  ): CampaignModerationAuditEvent
+  campaignModerationAuditEventById(id: UUID!): CampaignModerationAuditEvent
+  campaignModerationEvents(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pCampaignId: UUID
+  ): CampaignModerationEventsConnection
   """Reads a single `CampaignModerationNote` using its globally unique `ID`."""
   campaignModerationNote(
     """The globally unique `ID` to be used in selecting a single `CampaignModerationNote`."""
@@ -7189,13 +8231,19 @@ type Query implements Node {
     nodeId: ID!
   ): CampaignResource
   campaignResourceByCampaignIdAndResourceId(campaignId: UUID!, resourceId: UUID!): CampaignResource
+  """Reads a single `ChatTypingPresence` using its globally unique `ID`."""
+  chatTypingPresence(
+    """The globally unique `ID` to be used in selecting a single `ChatTypingPresence`."""
+    nodeId: ID!
+  ): ChatTypingPresence
+  chatTypingPresenceByConversationKindAndConversationIdAndAccountId(accountId: UUID!, conversationId: UUID!, conversationKind: ChatContextKind!): ChatTypingPresence
   """Reads a single `ClaimConversation` using its globally unique `ID`."""
   claimConversation(
     """The globally unique `ID` to be used in selecting a single `ClaimConversation`."""
     nodeId: ID!
   ): ClaimConversation
   claimConversationById(id: UUID!): ClaimConversation
-  claimConversationByNeedClaimId(needClaimId: UUID!): ClaimConversation
+  claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId(claimerAccountId: UUID!, creatorAccountId: UUID!, needId: UUID!): ClaimConversation
   """Reads a single `ClaimMessage` using its globally unique `ID`."""
   claimMessage(
     """The globally unique `ID` to be used in selecting a single `ClaimMessage`."""
@@ -7208,6 +8256,7 @@ type Query implements Node {
     nodeId: ID!
   ): ClaimMessageImage
   claimMessageImageById(id: UUID!): ClaimMessageImage
+  countChatConversations(pSearch: String): Int
   currentTokenBalance: Int
   getGrantForClaim(
     """Read all values in the set after (below) this cursor."""
@@ -7251,6 +8300,24 @@ type Query implements Node {
     nodeId: ID!
   ): GrantTargetEmail
   grantTargetEmailByGrantIdAndTargetEmailNormalized(grantId: UUID!, targetEmailNormalized: String!): GrantTargetEmail
+  listChatConversations(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): ListChatConversationsConnection
   listResourceCategories(
     """Read all values in the set after (below) this cursor."""
     after: Cursor
@@ -7342,6 +8409,25 @@ type Query implements Node {
   resourceCategoryAssignmentByResourceIdAndCategoryCode(categoryCode: Int!, resourceId: UUID!): ResourceCategoryAssignment
   resourceCategoryByCode(code: Int!): ResourceCategory
   resourceCategoryBySlug(slug: String!): ResourceCategory
+  """Reads a single `ResourceConversation` using its globally unique `ID`."""
+  resourceConversation(
+    """The globally unique `ID` to be used in selecting a single `ResourceConversation`."""
+    nodeId: ID!
+  ): ResourceConversation
+  resourceConversationById(id: UUID!): ResourceConversation
+  resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId(bidderAccountId: UUID!, ownerAccountId: UUID!, resourceId: UUID!): ResourceConversation
+  """Reads a single `ResourceMessage` using its globally unique `ID`."""
+  resourceMessage(
+    """The globally unique `ID` to be used in selecting a single `ResourceMessage`."""
+    nodeId: ID!
+  ): ResourceMessage
+  resourceMessageById(id: UUID!): ResourceMessage
+  """Reads a single `ResourceMessageImage` using its globally unique `ID`."""
+  resourceMessageImage(
+    """The globally unique `ID` to be used in selecting a single `ResourceMessageImage`."""
+    nodeId: ID!
+  ): ResourceMessageImage
+  resourceMessageImageById(id: UUID!): ResourceMessageImage
   searchNeeds(
     """Read all values in the set after (below) this cursor."""
     after: Cursor
@@ -7628,6 +8714,26 @@ type Resource implements Node {
     """The method to use when ordering `ResourceCategoryAssignment`."""
     orderBy: [ResourceCategoryAssignmentsOrderBy!] = [PRIMARY_KEY_ASC]
   ): ResourceCategoryAssignmentsConnection!
+  """Reads and enables pagination through a set of `ResourceConversation`."""
+  resourceConversationsByResourceId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceConversationCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsConnection!
   title: String!
   updatedAt: Datetime!
 }
@@ -8033,6 +9139,117 @@ input ResourceCondition {
   isActive: Boolean
 }
 
+"""One private conversation channel per (resource, participant-pair). Attached to a resource_bid once one is submitted."""
+type ResourceConversation implements Node {
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByBidderAccountId: Account
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByOwnerAccountId: Account
+  bidderAccountId: UUID!
+  createdAt: Datetime!
+  id: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  ownerAccountId: UUID!
+  resourceBidId: UUID
+  """Reads a single `Resource` that is related to this `ResourceConversation`."""
+  resourceByResourceId: Resource
+  resourceId: UUID!
+  """Reads and enables pagination through a set of `ResourceMessage`."""
+  resourceMessagesByConversationId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceMessageCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesConnection!
+  updatedAt: Datetime!
+}
+
+"""
+A condition to be used against `ResourceConversation` object types. All fields
+are tested for equality and combined with a logical ‘and.’
+"""
+input ResourceConversationCondition {
+  """Checks for equality with the object’s `bidderAccountId` field."""
+  bidderAccountId: UUID
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+  """Checks for equality with the object’s `ownerAccountId` field."""
+  ownerAccountId: UUID
+  """Checks for equality with the object’s `resourceId` field."""
+  resourceId: UUID
+}
+
+"""An input for mutations affecting `ResourceConversation`"""
+input ResourceConversationInput {
+  bidderAccountId: UUID!
+  createdAt: Datetime
+  id: UUID
+  ownerAccountId: UUID!
+  resourceBidId: UUID
+  resourceId: UUID!
+  updatedAt: Datetime
+}
+
+"""Represents an update to a `ResourceConversation`. Fields that are set will be updated."""
+input ResourceConversationPatch {
+  bidderAccountId: UUID
+  createdAt: Datetime
+  id: UUID
+  ownerAccountId: UUID
+  resourceBidId: UUID
+  resourceId: UUID
+  updatedAt: Datetime
+}
+
+"""A connection to a list of `ResourceConversation` values."""
+type ResourceConversationsConnection {
+  """A list of edges which contains the `ResourceConversation` and cursor to aid in pagination."""
+  edges: [ResourceConversationsEdge!]!
+  """A list of `ResourceConversation` objects."""
+  nodes: [ResourceConversation!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `ResourceConversation` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `ResourceConversation` edge in the connection."""
+type ResourceConversationsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `ResourceConversation` at the end of the edge."""
+  node: ResourceConversation!
+}
+
+"""Methods to use when ordering `ResourceConversation`."""
+enum ResourceConversationsOrderBy {
+  BIDDER_ACCOUNT_ID_ASC
+  BIDDER_ACCOUNT_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  OWNER_ACCOUNT_ID_ASC
+  OWNER_ACCOUNT_ID_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  RESOURCE_ID_ASC
+  RESOURCE_ID_DESC
+}
+
 """An input for mutations affecting `Resource`"""
 input ResourceInput {
   canBeDelivered: Boolean
@@ -8055,6 +9272,173 @@ input ResourceInput {
   longitude: BigFloat
   title: String!
   updatedAt: Datetime
+}
+
+type ResourceMessage implements Node {
+  body: String!
+  conversationId: UUID!
+  createdAt: Datetime!
+  id: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  readAt: Datetime
+  """Reads a single `ResourceConversation` that is related to this `ResourceMessage`."""
+  resourceConversationByConversationId: ResourceConversation
+  """Reads and enables pagination through a set of `ResourceMessageImage`."""
+  resourceMessageImagesByMessageId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """A condition to be used in determining which values should be returned by the collection."""
+    condition: ResourceMessageImageCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `ResourceMessageImage`."""
+    orderBy: [ResourceMessageImagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessageImagesConnection!
+  senderAccountId: UUID!
+}
+
+"""
+A condition to be used against `ResourceMessage` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input ResourceMessageCondition {
+  """Checks for equality with the object’s `conversationId` field."""
+  conversationId: UUID
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+}
+
+type ResourceMessageImage implements Node {
+  createdAt: Datetime!
+  id: UUID!
+  imageUrl: String!
+  messageId: UUID!
+  """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
+  nodeId: ID!
+  """Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`."""
+  resourceMessageByMessageId: ResourceMessage
+  sortOrder: Int!
+}
+
+"""
+A condition to be used against `ResourceMessageImage` object types. All fields
+are tested for equality and combined with a logical ‘and.’
+"""
+input ResourceMessageImageCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+  """Checks for equality with the object’s `messageId` field."""
+  messageId: UUID
+}
+
+"""An input for mutations affecting `ResourceMessageImage`"""
+input ResourceMessageImageInput {
+  createdAt: Datetime
+  id: UUID
+  imageUrl: String!
+  messageId: UUID!
+  sortOrder: Int
+}
+
+"""Represents an update to a `ResourceMessageImage`. Fields that are set will be updated."""
+input ResourceMessageImagePatch {
+  createdAt: Datetime
+  id: UUID
+  imageUrl: String
+  messageId: UUID
+  sortOrder: Int
+}
+
+"""A connection to a list of `ResourceMessageImage` values."""
+type ResourceMessageImagesConnection {
+  """A list of edges which contains the `ResourceMessageImage` and cursor to aid in pagination."""
+  edges: [ResourceMessageImagesEdge!]!
+  """A list of `ResourceMessageImage` objects."""
+  nodes: [ResourceMessageImage!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `ResourceMessageImage` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `ResourceMessageImage` edge in the connection."""
+type ResourceMessageImagesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `ResourceMessageImage` at the end of the edge."""
+  node: ResourceMessageImage!
+}
+
+"""Methods to use when ordering `ResourceMessageImage`."""
+enum ResourceMessageImagesOrderBy {
+  ID_ASC
+  ID_DESC
+  MESSAGE_ID_ASC
+  MESSAGE_ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""An input for mutations affecting `ResourceMessage`"""
+input ResourceMessageInput {
+  body: String!
+  conversationId: UUID!
+  createdAt: Datetime
+  id: UUID
+  readAt: Datetime
+  senderAccountId: UUID!
+}
+
+"""Represents an update to a `ResourceMessage`. Fields that are set will be updated."""
+input ResourceMessagePatch {
+  body: String
+  conversationId: UUID
+  createdAt: Datetime
+  id: UUID
+  readAt: Datetime
+  senderAccountId: UUID
+}
+
+"""A connection to a list of `ResourceMessage` values."""
+type ResourceMessagesConnection {
+  """A list of edges which contains the `ResourceMessage` and cursor to aid in pagination."""
+  edges: [ResourceMessagesEdge!]!
+  """A list of `ResourceMessage` objects."""
+  nodes: [ResourceMessage!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """The count of *all* `ResourceMessage` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `ResourceMessage` edge in the connection."""
+type ResourceMessagesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `ResourceMessage` at the end of the edge."""
+  node: ResourceMessage!
+}
+
+"""Methods to use when ordering `ResourceMessage`."""
+enum ResourceMessagesOrderBy {
+  CONVERSATION_ID_ASC
+  CONVERSATION_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
 }
 
 """Represents an update to a `Resource`. Fields that are set will be updated."""
@@ -8313,6 +9697,102 @@ type SendClaimMessagePayload {
   clientMutationId: String
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
+}
+
+"""All input for the `sendNeedMessage` mutation."""
+input SendNeedMessageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pBody: String
+  pImageUrls: [String]
+  pNeedId: UUID
+}
+
+"""The output of our `sendNeedMessage` mutation."""
+type SendNeedMessagePayload {
+  """Reads a single `Account` that is related to this `ClaimMessage`."""
+  accountBySenderAccountId: Account
+  """Reads a single `ClaimConversation` that is related to this `ClaimMessage`."""
+  claimConversationByConversationId: ClaimConversation
+  claimMessage: ClaimMessage
+  """An edge for our `ClaimMessage`. May be used by Relay 1."""
+  claimMessageEdge(
+    """The method to use when ordering `ClaimMessage`."""
+    orderBy: [ClaimMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ClaimMessagesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
+"""All input for the `sendResourceMessageDirect` mutation."""
+input SendResourceMessageDirectInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pBody: String
+  pImageUrls: [String]
+  pOtherAccountId: UUID
+  pResourceId: UUID
+}
+
+"""The output of our `sendResourceMessageDirect` mutation."""
+type SendResourceMessageDirectPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceConversation` that is related to this `ResourceMessage`."""
+  resourceConversationByConversationId: ResourceConversation
+  resourceMessage: ResourceMessage
+  """An edge for our `ResourceMessage`. May be used by Relay 1."""
+  resourceMessageEdge(
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesEdge
+}
+
+"""All input for the `sendResourceMessage` mutation."""
+input SendResourceMessageInput {
+  body: String
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  imageUrls: [String]
+  resourceBidId: UUID
+}
+
+"""The output of our `sendResourceMessage` mutation."""
+type SendResourceMessagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceConversation` that is related to this `ResourceMessage`."""
+  resourceConversationByConversationId: ResourceConversation
+  resourceMessage: ResourceMessage
+  """An edge for our `ResourceMessage`. May be used by Relay 1."""
+  resourceMessageEdge(
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesEdge
 }
 
 """All input for the `setAccountDeliveryPreference` mutation."""
@@ -8814,6 +10294,43 @@ input UpdateCampaignByIdInput {
   id: UUID!
 }
 
+"""All input for the `updateCampaignForModeration` mutation."""
+input UpdateCampaignForModerationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pAirdropAmount: Int
+  pAirdropAt: Datetime
+  pCampaignId: UUID
+  pEndAt: Datetime
+  pManagerNoteFromCreator: String
+  pRewardsMultiplier: Int
+  pStartAt: Datetime
+  pTheme: String
+  pTitle: String
+}
+
+"""The output of our `updateCampaignForModeration` mutation."""
+type UpdateCampaignForModerationPayload {
+  """Reads a single `Account` that is related to this `Campaign`."""
+  accountByCreatorAccountId: Account
+  campaign: Campaign
+  """An edge for our `Campaign`. May be used by Relay 1."""
+  campaignEdge(
+    """The method to use when ordering `Campaign`."""
+    orderBy: [CampaignsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `updateCampaign` mutation."""
 input UpdateCampaignInput {
   """An object where the defined keys will be set on the `Campaign` being updated."""
@@ -8825,6 +10342,53 @@ input UpdateCampaignInput {
   clientMutationId: String
   """The globally unique `ID` which will identify a single `Campaign` to be updated."""
   nodeId: ID!
+}
+
+"""All input for the `updateCampaignModerationAuditEventById` mutation."""
+input UpdateCampaignModerationAuditEventByIdInput {
+  """An object where the defined keys will be set on the `CampaignModerationAuditEvent` being updated."""
+  campaignModerationAuditEventPatch: CampaignModerationAuditEventPatch!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `updateCampaignModerationAuditEvent` mutation."""
+input UpdateCampaignModerationAuditEventInput {
+  """An object where the defined keys will be set on the `CampaignModerationAuditEvent` being updated."""
+  campaignModerationAuditEventPatch: CampaignModerationAuditEventPatch!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `CampaignModerationAuditEvent` to be updated."""
+  nodeId: ID!
+}
+
+"""The output of our update `CampaignModerationAuditEvent` mutation."""
+type UpdateCampaignModerationAuditEventPayload {
+  """Reads a single `Account` that is related to this `CampaignModerationAuditEvent`."""
+  accountByActorAccountId: Account
+  """Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`."""
+  campaignByCampaignId: Campaign
+  """The `CampaignModerationAuditEvent` that was updated by this mutation."""
+  campaignModerationAuditEvent: CampaignModerationAuditEvent
+  """An edge for our `CampaignModerationAuditEvent`. May be used by Relay 1."""
+  campaignModerationAuditEventEdge(
+    """The method to use when ordering `CampaignModerationAuditEvent`."""
+    orderBy: [CampaignModerationAuditEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignModerationAuditEventsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
 }
 
 """All input for the `updateCampaignModerationNoteById` mutation."""
@@ -8994,6 +10558,53 @@ type UpdateCampaignResourcePayload {
   resourceByResourceId: Resource
 }
 
+"""All input for the `updateChatTypingPresenceByConversationKindAndConversationIdAndAccountId` mutation."""
+input UpdateChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput {
+  accountId: UUID!
+  """An object where the defined keys will be set on the `ChatTypingPresence` being updated."""
+  chatTypingPresencePatch: ChatTypingPresencePatch!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  conversationId: UUID!
+  conversationKind: ChatContextKind!
+}
+
+"""All input for the `updateChatTypingPresence` mutation."""
+input UpdateChatTypingPresenceInput {
+  """An object where the defined keys will be set on the `ChatTypingPresence` being updated."""
+  chatTypingPresencePatch: ChatTypingPresencePatch!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ChatTypingPresence` to be updated."""
+  nodeId: ID!
+}
+
+"""The output of our update `ChatTypingPresence` mutation."""
+type UpdateChatTypingPresencePayload {
+  """Reads a single `Account` that is related to this `ChatTypingPresence`."""
+  accountByAccountId: Account
+  """The `ChatTypingPresence` that was updated by this mutation."""
+  chatTypingPresence: ChatTypingPresence
+  """An edge for our `ChatTypingPresence`. May be used by Relay 1."""
+  chatTypingPresenceEdge(
+    """The method to use when ordering `ChatTypingPresence`."""
+    orderBy: [ChatTypingPresencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ChatTypingPresencesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `updateClaimConversationById` mutation."""
 input UpdateClaimConversationByIdInput {
   """An object where the defined keys will be set on the `ClaimConversation` being updated."""
@@ -9006,16 +10617,18 @@ input UpdateClaimConversationByIdInput {
   id: UUID!
 }
 
-"""All input for the `updateClaimConversationByNeedClaimId` mutation."""
-input UpdateClaimConversationByNeedClaimIdInput {
+"""All input for the `updateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId` mutation."""
+input UpdateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput {
   """An object where the defined keys will be set on the `ClaimConversation` being updated."""
   claimConversationPatch: ClaimConversationPatch!
+  claimerAccountId: UUID!
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-  needClaimId: UUID!
+  creatorAccountId: UUID!
+  needId: UUID!
 }
 
 """All input for the `updateClaimConversation` mutation."""
@@ -9051,8 +10664,6 @@ type UpdateClaimConversationPayload {
   clientMutationId: String
   """Reads a single `Need` that is related to this `ClaimConversation`."""
   needByNeedId: Need
-  """Reads a single `NeedClaim` that is related to this `ClaimConversation`."""
-  needClaimByNeedClaimId: NeedClaim
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
 }
@@ -9838,6 +11449,69 @@ type UpdateResourceCategoryPayload {
   ): ResourceCategoriesEdge
 }
 
+"""All input for the `updateResourceConversationById` mutation."""
+input UpdateResourceConversationByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+  """An object where the defined keys will be set on the `ResourceConversation` being updated."""
+  resourceConversationPatch: ResourceConversationPatch!
+}
+
+"""All input for the `updateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId` mutation."""
+input UpdateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput {
+  bidderAccountId: UUID!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  ownerAccountId: UUID!
+  """An object where the defined keys will be set on the `ResourceConversation` being updated."""
+  resourceConversationPatch: ResourceConversationPatch!
+  resourceId: UUID!
+}
+
+"""All input for the `updateResourceConversation` mutation."""
+input UpdateResourceConversationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ResourceConversation` to be updated."""
+  nodeId: ID!
+  """An object where the defined keys will be set on the `ResourceConversation` being updated."""
+  resourceConversationPatch: ResourceConversationPatch!
+}
+
+"""The output of our update `ResourceConversation` mutation."""
+type UpdateResourceConversationPayload {
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByBidderAccountId: Account
+  """Reads a single `Account` that is related to this `ResourceConversation`."""
+  accountByOwnerAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `Resource` that is related to this `ResourceConversation`."""
+  resourceByResourceId: Resource
+  """The `ResourceConversation` that was updated by this mutation."""
+  resourceConversation: ResourceConversation
+  """An edge for our `ResourceConversation`. May be used by Relay 1."""
+  resourceConversationEdge(
+    """The method to use when ordering `ResourceConversation`."""
+    orderBy: [ResourceConversationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceConversationsEdge
+}
+
 """All input for the `updateResource` mutation."""
 input UpdateResourceInput {
   """
@@ -9849,6 +11523,96 @@ input UpdateResourceInput {
   nodeId: ID!
   """An object where the defined keys will be set on the `Resource` being updated."""
   resourcePatch: ResourcePatch!
+}
+
+"""All input for the `updateResourceMessageById` mutation."""
+input UpdateResourceMessageByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+  """An object where the defined keys will be set on the `ResourceMessage` being updated."""
+  resourceMessagePatch: ResourceMessagePatch!
+}
+
+"""All input for the `updateResourceMessageImageById` mutation."""
+input UpdateResourceMessageImageByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+  """An object where the defined keys will be set on the `ResourceMessageImage` being updated."""
+  resourceMessageImagePatch: ResourceMessageImagePatch!
+}
+
+"""All input for the `updateResourceMessageImage` mutation."""
+input UpdateResourceMessageImageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ResourceMessageImage` to be updated."""
+  nodeId: ID!
+  """An object where the defined keys will be set on the `ResourceMessageImage` being updated."""
+  resourceMessageImagePatch: ResourceMessageImagePatch!
+}
+
+"""The output of our update `ResourceMessageImage` mutation."""
+type UpdateResourceMessageImagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`."""
+  resourceMessageByMessageId: ResourceMessage
+  """The `ResourceMessageImage` that was updated by this mutation."""
+  resourceMessageImage: ResourceMessageImage
+  """An edge for our `ResourceMessageImage`. May be used by Relay 1."""
+  resourceMessageImageEdge(
+    """The method to use when ordering `ResourceMessageImage`."""
+    orderBy: [ResourceMessageImagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessageImagesEdge
+}
+
+"""All input for the `updateResourceMessage` mutation."""
+input UpdateResourceMessageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """The globally unique `ID` which will identify a single `ResourceMessage` to be updated."""
+  nodeId: ID!
+  """An object where the defined keys will be set on the `ResourceMessage` being updated."""
+  resourceMessagePatch: ResourceMessagePatch!
+}
+
+"""The output of our update `ResourceMessage` mutation."""
+type UpdateResourceMessagePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `ResourceConversation` that is related to this `ResourceMessage`."""
+  resourceConversationByConversationId: ResourceConversation
+  """The `ResourceMessage` that was updated by this mutation."""
+  resourceMessage: ResourceMessage
+  """An edge for our `ResourceMessage`. May be used by Relay 1."""
+  resourceMessageEdge(
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesEdge
 }
 
 """The output of our update `Resource` mutation."""
@@ -9971,6 +11735,36 @@ type UpdateTokenMovementPayload {
     """The method to use when ordering `TokenMovement`."""
     orderBy: [TokenMovementsOrderBy!] = [PRIMARY_KEY_ASC]
   ): TokenMovementsEdge
+}
+
+"""All input for the `upsertChatTypingPresence` mutation."""
+input UpsertChatTypingPresenceInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pConversationId: UUID
+  pConversationKind: ChatContextKind
+}
+
+"""The output of our `upsertChatTypingPresence` mutation."""
+type UpsertChatTypingPresencePayload {
+  """Reads a single `Account` that is related to this `ChatTypingPresence`."""
+  accountByAccountId: Account
+  chatTypingPresence: ChatTypingPresence
+  """An edge for our `ChatTypingPresence`. May be used by Relay 1."""
+  chatTypingPresenceEdge(
+    """The method to use when ordering `ChatTypingPresence`."""
+    orderBy: [ChatTypingPresencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ChatTypingPresencesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
 }
 
 """All input for the `upsertGrant` mutation."""

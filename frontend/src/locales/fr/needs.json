@@ -4,7 +4,9 @@
     "editTitle": "Modifier le besoin",
     "detailTitle": "Détails du besoin",
     "detailDescription": "Une page de détail publique dédiée à {{needId}} est réservée dans la nouvelle architecture.",
-    "thisNeed": "ce besoin"
+    "thisNeed": "ce besoin",
+    "contactCreator": "Écrire au créateur",
+    "signInToContact": "Se connecter pour écrire au créateur"
   },
   "browse": {
     "title": "Découvrir les besoins actifs",

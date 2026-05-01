@@ -4,7 +4,9 @@
     "editTitle": "Edit need",
     "detailTitle": "Need details",
     "detailDescription": "A dedicated public detail page for {{needId}} is reserved in the new shared UI architecture.",
-    "thisNeed": "this need"
+    "thisNeed": "this need",
+    "contactCreator": "Message creator",
+    "signInToContact": "Sign in to message the creator"
   },
   "browse": {
     "title": "Discover active needs",

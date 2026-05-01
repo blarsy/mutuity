@@ -35,8 +35,8 @@ export const COUNT_CHAT_CONVERSATIONS_QUERY = gql`
  * appears at the top of the UI thread.
  */
 export const RESOURCE_CONVERSATION_QUERY = gql`
-  query ResourceConversation($bidId: UUID!) {
-    resourceConversationByResourceBidId(resourceBidId: $bidId) {
+  query ResourceConversation($conversationId: UUID!) {
+    resourceConversationById(id: $conversationId) {
       id
       resourceBidId
       resourceId
@@ -68,7 +68,13 @@ export const RESOURCE_CONVERSATION_QUERY = gql`
 export const SEND_RESOURCE_MESSAGE_MUTATION = gql`
   mutation SendResourceMessage($input: SendResourceMessageInput!) {
     sendResourceMessage(input: $input) {
-      uuid
+      resourceMessage {
+        id
+        conversationId
+        senderAccountId
+        body
+        createdAt
+      }
     }
   }
 `;
@@ -80,7 +86,13 @@ export const SEND_RESOURCE_MESSAGE_MUTATION = gql`
 export const SEND_RESOURCE_MESSAGE_DIRECT_MUTATION = gql`
   mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
     sendResourceMessageDirect(input: $input) {
-      uuid
+      resourceMessage {
+        id
+        conversationId
+        senderAccountId
+        body
+        createdAt
+      }
     }
   }
 `;
@@ -92,11 +104,13 @@ export const SEND_RESOURCE_MESSAGE_DIRECT_MUTATION = gql`
 export const SEND_NEED_MESSAGE_MUTATION = gql`
   mutation SendNeedMessage($input: SendNeedMessageInput!) {
     sendNeedMessage(input: $input) {
-      id
-      conversationId
-      senderAccountId
-      body
-      createdAt
+      claimMessage {
+        id
+        conversationId
+        senderAccountId
+        body
+        createdAt
+      }
     }
   }
 `;

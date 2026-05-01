@@ -119,6 +119,7 @@
     "noDescription": "No additional description was provided.",
     "published": "Published",
     "respondTitle": "Respond to this resource",
+    "contactCreator": "Message creator",
     "currentResponsePrefix": "Your current response is",
     "respondHint": "Send a short note and optionally propose a token amount to start the coordination.",
     "notAcceptingResponses": "This resource is not accepting new responses.",
