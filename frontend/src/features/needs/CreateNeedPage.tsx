@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
+import { IntensityPicker } from "../../components/IntensityPicker";
+import { LocationPicker } from "../../components/LocationPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
   createNeedInitialValues,
@@ -339,44 +341,50 @@ export default function EditNeedPage() {
                   value={values.description}
                 />
 
-                <TextField
-                  name="location"
-                  label={t("form.locationLabel")}
-                  value={values.location}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.location && errors.location)}
-                  helperText={touched.location ? errors.location : ""}
+                <LocationPicker
+                  value={{
+                    address: values.location,
+                    latitude: 50.6072,
+                    longitude: 3.3889,
+                  }}
+                  onChange={(loc) => {
+                    void setFieldValue("location", loc.address);
+                  }}
+                  onBlur={() => {
+                    void setFieldTouched("location", true, true);
+                  }}
+                  addressLabel={t("form.locationLabel")}
+                  addressError={Boolean(touched.location && errors.location)}
+                  addressHelperText={touched.location && errors.location ? errors.location : undefined}
                   required
                 />
 
-                <TextField
-                  select
-                  name="intensity"
-                  label={t("form.intensityLabel")}
-                  value={values.intensity}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.intensity && errors.intensity)}
-                  helperText={touched.intensity ? errors.intensity : ""}
-                  required
-                >
-                  <MenuItem value="LEG_UP">{t("form.intensityLegUp")}</MenuItem>
-                  <MenuItem value="SHARING">{t("form.intensitySharing")}</MenuItem>
-                  <MenuItem value="COMMITMENT">{t("form.intensityCommitment")}</MenuItem>
-                  <MenuItem value="RARE_CONTRIBUTION">{t("form.intensityRareContribution")}</MenuItem>
-                </TextField>
-
-                <TextField
-                  name="proposedTopesAmount"
-                  label={t("form.proposedTopesLabel")}
-                  type="number"
-                  value={values.proposedTopesAmount}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.proposedTopesAmount && errors.proposedTopesAmount)}
-                  helperText={touched.proposedTopesAmount ? errors.proposedTopesAmount : t("form.optionalLabel", { ns: "common" })}
-                  inputProps={{ min: 1 }}
+                <IntensityPicker
+                  intensity={values.intensity}
+                  tokenAmount={values.proposedTopesAmount}
+                  tokenAmountLabel={t("form.proposedTopesLabel")}
+                  uppercase
+                  onIntensityChange={(v) => {
+                    void setFieldValue("intensity", v);
+                  }}
+                  onTokenAmountChange={(v) => {
+                    void setFieldValue("proposedTopesAmount", v);
+                  }}
+                  onBlur={() => {
+                    void setFieldTouched("intensity", true, true);
+                    void setFieldTouched("proposedTopesAmount", true, true);
+                  }}
+                  error={Boolean(
+                    (touched.intensity && errors.intensity) ||
+                    (touched.proposedTopesAmount && errors.proposedTopesAmount)
+                  )}
+                  helperText={
+                    (touched.intensity && errors.intensity)
+                      ? String(errors.intensity)
+                      : (touched.proposedTopesAmount && errors.proposedTopesAmount)
+                      ? String(errors.proposedTopesAmount)
+                      : undefined
+                  }
                 />
 
                 <Stack spacing={0}>

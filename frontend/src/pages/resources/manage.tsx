@@ -245,7 +245,7 @@ export default function ManageResourcesPage() {
                       {t("lastUpdated", { ns: "common", date: formatUpdatedAt(resource.updatedAt) })}
                     </Typography>
                   )}
-                  imageUrl={resource.imageUrls?.[0] ?? null}
+                  imageUrls={resource.imageUrls ?? []}
                   key={resource.id}
                   location={resource.location}
                   onClick={() => {

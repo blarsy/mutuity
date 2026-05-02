@@ -33,5 +33,9 @@
     "optionalLabel": "Optionnel"
   },
   "redirecting": "Redirection vers la connexion…",
-  "checking": "Vérification de votre session…"
+  "checking": "Vérification de votre session…",
+  "locationPicker": {
+    "addressLabel": "Localisation",
+    "loadError": "Échec du chargement de la recherche d'adresse"
+  }
 }

@@ -21,6 +21,9 @@ import { useTranslation } from "react-i18next";
 import { useRequireAuth } from "../auth/requireAuth";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { ImageUploadField } from "../../components/ImageUploadField";
+import { IntensityPicker } from "../../components/IntensityPicker";
+import { LocationPicker } from "../../components/LocationPicker";
+import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import {
@@ -134,7 +137,7 @@ function toDateTimeLocalValue(value: string | null) {
 
 export default function CreateResourcePage() {
   const router = useRouter();
-  const { t } = useTranslation("resources");
+  const { t, i18n } = useTranslation("resources");
   const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
   const isEditMode = Boolean(resourceId);
   const [publishResource, { loading, error, data }] = useMutation<
@@ -351,38 +354,31 @@ export default function CreateResourcePage() {
                   required
                 />
 
-                <TextField
-                  select
-                  name="intensity"
-                  label={t("form.intensityLabel")}
-                  value={values.intensity}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.intensity && errors.intensity)}
-                  helperText={touched.intensity ? errors.intensity : t("form.intensityHelper")}
-                  required
-                >
-                  {RESOURCE_INTENSITY_OPTIONS.map(option => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label} ({option.tokenRange} tokens)
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                <TextField
-                  name="defaultTokenAmount"
-                  label={t("form.defaultTokenLabel")}
-                  type="number"
-                  value={values.defaultTokenAmount}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.defaultTokenAmount && errors.defaultTokenAmount)}
+                <IntensityPicker
+                  intensity={values.intensity}
+                  tokenAmount={values.defaultTokenAmount}
+                  tokenAmountLabel={t("form.defaultTokenLabel")}
+                  onIntensityChange={(v) => {
+                    void setFieldValue("intensity", v);
+                  }}
+                  onTokenAmountChange={(v) => {
+                    void setFieldValue("defaultTokenAmount", v);
+                  }}
+                  onBlur={() => {
+                    void setFieldTouched("intensity", true, true);
+                    void setFieldTouched("defaultTokenAmount", true, true);
+                  }}
+                  error={Boolean(
+                    (touched.intensity && errors.intensity) ||
+                    (touched.defaultTokenAmount && errors.defaultTokenAmount)
+                  )}
                   helperText={
-                    touched.defaultTokenAmount && errors.defaultTokenAmount
-                      ? errors.defaultTokenAmount
-                      : t("form.tokenAmountHelperPrefix", { range: getTokenRangeLabel(values.intensity) })
+                    (touched.intensity && errors.intensity)
+                      ? String(errors.intensity)
+                      : (touched.defaultTokenAmount && errors.defaultTokenAmount)
+                      ? String(errors.defaultTokenAmount)
+                      : undefined
                   }
-                  inputProps={{ min: 1 }}
                 />
 
                 <RichTextEditor
@@ -413,43 +409,40 @@ export default function CreateResourcePage() {
                   }}
                 />
 
-                <TextField
-                  name="location"
-                  label={t("form.locationLabel")}
-                  value={values.location}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.location && errors.location)}
-                  helperText={touched.location ? errors.location : t("form.locationHelper")}
+                <LocationPicker
+                  value={{
+                    address: values.location,
+                    latitude: Number(values.latitude) || 50.6072,
+                    longitude: Number(values.longitude) || 3.3889,
+                  }}
+                  onChange={(loc) => {
+                    void setFieldValue("location", loc.address);
+                    void setFieldValue("latitude", loc.latitude);
+                    void setFieldValue("longitude", loc.longitude);
+                  }}
+                  onBlur={() => {
+                    void setFieldTouched("location", true, true);
+                  }}
+                  addressLabel={t("form.locationLabel")}
+                  addressError={Boolean(touched.location && errors.location)}
+                  addressHelperText={
+                    touched.location && errors.location
+                      ? errors.location
+                      : t("form.locationHelper")
+                  }
+                  coordinatesError={Boolean(
+                    (touched.latitude && errors.latitude) ||
+                    (touched.longitude && errors.longitude)
+                  )}
+                  coordinatesHelperText={
+                    (touched.latitude && errors.latitude)
+                      ? errors.latitude
+                      : (touched.longitude && errors.longitude)
+                      ? errors.longitude
+                      : undefined
+                  }
                   required
                 />
-
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                  <TextField
-                    name="latitude"
-                    label={t("form.latitudeLabel")}
-                    type="number"
-                    value={values.latitude}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={Boolean(touched.latitude && errors.latitude)}
-                    helperText={touched.latitude ? errors.latitude : t("form.coordinatesHelper")}
-                    required
-                    fullWidth
-                  />
-                  <TextField
-                    name="longitude"
-                    label={t("form.longitudeLabel")}
-                    type="number"
-                    value={values.longitude}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={Boolean(touched.longitude && errors.longitude)}
-                    helperText={touched.longitude ? errors.longitude : t("form.coordinatesHelper")}
-                    required
-                    fullWidth
-                  />
-                </Stack>
 
                 <Box>
                   <Typography gutterBottom variant="subtitle1">
@@ -461,25 +454,14 @@ export default function CreateResourcePage() {
                   {loadingCategories ? (
                     <Alert severity="info">{t("form.loadingCategories")}</Alert>
                   ) : (
-                    <FormGroup>
-                      {categoryOptions.map(category => (
-                        <FormControlLabel
-                          key={category.code}
-                          control={
-                            <Checkbox
-                              checked={values.categoryCodes.includes(category.code)}
-                              onChange={(_, checked) => {
-                                const nextCodes = checked
-                                  ? [...values.categoryCodes, category.code].sort((left, right) => left - right)
-                                  : values.categoryCodes.filter(code => code !== category.code);
-                                void setFieldValue("categoryCodes", nextCodes);
-                              }}
-                            />
-                          }
-                          label={`${category.label} / ${category.labelFr}`}
-                        />
-                      ))}
-                    </FormGroup>
+                    <CategoriesPicker
+                      options={categoryOptions}
+                      selected={values.categoryCodes}
+                      localizedLabel={(opt) => i18n.language === "fr" ? opt.labelFr : opt.label}
+                      onChange={(codes) => {
+                        void setFieldValue("categoryCodes", codes);
+                      }}
+                    />
                   )}
                 </Box>
 

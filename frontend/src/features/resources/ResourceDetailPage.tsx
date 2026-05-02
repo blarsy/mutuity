@@ -20,7 +20,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextContent } from "../../components/richText/RichTextContent";
-import { getDisplayIntensityLabel } from "../shared/displayIntensity";
+import { IntensityDisplay } from "../../components/IntensityPicker";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { StartConversationDialog } from "../chat/StartConversationDialog";
 import { ResourceBidDialog } from "./ResourceBidDialog";
@@ -98,7 +98,7 @@ function buildResourceTags(resource: ResourceDetailData["resourceById"], t: (key
     return [] as string[];
   }
 
-  const tags = [getDisplayIntensityLabel(resource.intensity, t)];
+  const tags: string[] = [];
 
   if (resource.isProduct) {
     tags.push(t("tags.product"));
@@ -321,9 +321,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
               <Divider />
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                <Typography color="text.secondary" variant="body2">
-                  {t("card.suggestedTokenAmount")}: {resource.defaultTokenAmount ?? t("card.notSet")}
-                </Typography>
+                <IntensityDisplay intensity={resource.intensity} tokenAmount={resource.defaultTokenAmount} />
                 <Typography color="text.secondary" variant="body2">
                   {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
                 </Typography>

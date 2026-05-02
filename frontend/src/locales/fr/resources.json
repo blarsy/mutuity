@@ -180,5 +180,24 @@
     "saving": "Enregistrement…",
     "saveResponse": "Enregistrer la réponse",
     "sendResponse": "Envoyer la réponse"
+  },
+  "intensity": {
+    "leg_up": "Coup de main",
+    "sharing": "Partage",
+    "commitment": "Engagement",
+    "rare_contribution": "Contribution rare",
+    "LEG_UP": "Coup de main",
+    "SHARING": "Partage",
+    "COMMITMENT": "Engagement",
+    "RARE_CONTRIBUTION": "Contribution rare",
+    "rangeHint": "Plage de jetons",
+    "suggestedAmount": "Montant suggéré"
+  },
+  "categories": {
+    "dialogTitle": "Sélectionner des catégories",
+    "addButton": "Ajouter des catégories",
+    "cancel": "Annuler",
+    "confirm": "OK",
+    "noCategories": "Aucune catégorie sélectionnée"
   }
 }

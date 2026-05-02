@@ -182,5 +182,24 @@
     "saving": "Saving…",
     "saveResponse": "Save response",
     "sendResponse": "Send response"
+  },
+  "intensity": {
+    "leg_up": "Leg up",
+    "sharing": "Sharing",
+    "commitment": "Commitment",
+    "rare_contribution": "Rare contribution",
+    "LEG_UP": "Leg up",
+    "SHARING": "Sharing",
+    "COMMITMENT": "Commitment",
+    "RARE_CONTRIBUTION": "Rare contribution",
+    "rangeHint": "Token range",
+    "suggestedAmount": "Suggested amount"
+  },
+  "categories": {
+    "dialogTitle": "Select categories",
+    "addButton": "Add categories",
+    "cancel": "Cancel",
+    "confirm": "OK",
+    "noCategories": "No categories selected"
   }
 }

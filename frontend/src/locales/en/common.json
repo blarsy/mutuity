@@ -33,5 +33,9 @@
     "optionalLabel": "Optional"
   },
   "redirecting": "Redirecting to sign in…",
-  "checking": "Checking your session…"
+  "checking": "Checking your session…",
+  "locationPicker": {
+    "addressLabel": "Location",
+    "loadError": "Failed to load address search"
+  }
 }
