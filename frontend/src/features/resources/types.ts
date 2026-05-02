@@ -75,6 +75,7 @@ export type PublicResourceCard = {
   canBeDelivered: boolean;
   expiresAt: string | null;
   createdAt: string;
+  imageUrls: string[];
   distanceKm: string;
   queryLatitude: string;
   queryLongitude: string;

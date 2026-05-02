@@ -119,6 +119,7 @@ export const PUBLIC_RESOURCES_QUERY = gql`
         canBeDelivered
         expiresAt
         createdAt
+        imageUrls
         distanceKm
         queryLatitude
         queryLongitude

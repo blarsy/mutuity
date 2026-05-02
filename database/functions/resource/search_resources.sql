@@ -118,6 +118,7 @@ returns table (
   expires_at timestamptz,
   created_at timestamptz,
   updated_at timestamptz,
+  image_urls text[],
   distance_km numeric,
   query_latitude numeric,
   query_longitude numeric
@@ -222,6 +223,7 @@ as $$
     fr.expires_at,
     fr.created_at,
     fr.updated_at,
+    fr.image_urls,
     round(fr.distance_km, 3) as distance_km,
     fr.query_latitude,
     fr.query_longitude

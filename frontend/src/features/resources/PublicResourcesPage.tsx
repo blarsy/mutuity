@@ -322,6 +322,7 @@ export default function PublicResourcesPage() {
                   creatorName={resource.creatorDisplayName}
                   description={resource.description}
                   expiresAt={resource.expiresAt}
+                  imageUrl={resource.imageUrls?.[0] ?? null}
                   footer={
                     <Typography color="text.secondary" variant="body2">
                       {t("card.suggestedTokenAmount")}: {resource.defaultTokenAmount ?? t("card.notSet")} • {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
