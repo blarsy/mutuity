@@ -80,6 +80,8 @@ export type Account = Node & {
   accountNotificationsByRecipientAccountId: AccountNotificationsConnection;
   avatarUrl: Maybe<Scalars['String']['output']>;
   bio: Maybe<Scalars['String']['output']>;
+  /** Reads and enables pagination through a set of `CampaignModerationAuditEvent`. */
+  campaignModerationAuditEventsByActorAccountId: CampaignModerationAuditEventsConnection;
   /** Reads and enables pagination through a set of `CampaignModerationNote`. */
   campaignModerationNotesByManagerAccountId: CampaignModerationNotesConnection;
   /** Reads and enables pagination through a set of `CampaignNeed`. */
@@ -88,6 +90,8 @@ export type Account = Node & {
   campaignResourcesByActedByAccountId: CampaignResourcesConnection;
   /** Reads and enables pagination through a set of `Campaign`. */
   campaignsByCreatorAccountId: CampaignsConnection;
+  /** Reads and enables pagination through a set of `ChatTypingPresence`. */
+  chatTypingPresencesByAccountId: ChatTypingPresencesConnection;
   /** Reads and enables pagination through a set of `ClaimConversation`. */
   claimConversationsByClaimerAccountId: ClaimConversationsConnection;
   /** Reads and enables pagination through a set of `ClaimConversation`. */
@@ -99,6 +103,8 @@ export type Account = Node & {
   externalSubject: Scalars['String']['output'];
   /** Reads and enables pagination through a set of `GrantClaim`. */
   grantClaimsByAccountId: GrantClaimsConnection;
+  /** Reads and enables pagination through a set of `GrantDefinition`. */
+  grantDefinitionsByCreatedByAccountId: GrantDefinitionsConnection;
   /** Reads and enables pagination through a set of `GrantTargetAccount`. */
   grantTargetAccountsByAccountId: GrantTargetAccountsConnection;
   id: Scalars['UUID']['output'];
@@ -119,6 +125,8 @@ export type Account = Node & {
   needsByCreatorAccountId: NeedsConnection;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID']['output'];
+  /** Reads and enables pagination through a set of `OperationalLog`. */
+  operationalLogsByAccountId: OperationalLogsConnection;
   /** The account owner's preferred UI and email language. Supported values: en, fr. */
   preferredLanguage: Scalars['String']['output'];
   profileLinks: Scalars['JSON']['output'];
@@ -128,6 +136,10 @@ export type Account = Node & {
   resourceBidsByBidderAccountId: ResourceBidsConnection;
   /** Reads and enables pagination through a set of `ResourceBid`. */
   resourceBidsByRespondedByAccountId: ResourceBidsConnection;
+  /** Reads and enables pagination through a set of `ResourceConversation`. */
+  resourceConversationsByBidderAccountId: ResourceConversationsConnection;
+  /** Reads and enables pagination through a set of `ResourceConversation`. */
+  resourceConversationsByOwnerAccountId: ResourceConversationsConnection;
   /** Reads and enables pagination through a set of `Resource`. */
   resourcesByCreatorAccountId: ResourcesConnection;
   /** Reads and enables pagination through a set of `TokenMovement`. */
@@ -157,6 +169,17 @@ export type AccountAccountNotificationsByRecipientAccountIdArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<AccountNotificationsOrderBy>>;
+};
+
+
+export type AccountCampaignModerationAuditEventsByActorAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignModerationAuditEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignModerationAuditEventsOrderBy>>;
 };
 
 
@@ -204,6 +227,17 @@ export type AccountCampaignsByCreatorAccountIdArgs = {
 };
 
 
+export type AccountChatTypingPresencesByAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ChatTypingPresenceCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ChatTypingPresencesOrderBy>>;
+};
+
+
 export type AccountClaimConversationsByClaimerAccountIdArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -245,6 +279,17 @@ export type AccountGrantClaimsByAccountIdArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
+};
+
+
+export type AccountGrantDefinitionsByCreatedByAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantDefinitionCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
 };
 
 
@@ -325,6 +370,17 @@ export type AccountNeedsByCreatorAccountIdArgs = {
 };
 
 
+export type AccountOperationalLogsByAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<OperationalLogCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<OperationalLogsOrderBy>>;
+};
+
+
 export type AccountResourceBidNotificationsByRecipientAccountIdArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -355,6 +411,28 @@ export type AccountResourceBidsByRespondedByAccountIdArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ResourceBidsOrderBy>>;
+};
+
+
+export type AccountResourceConversationsByBidderAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceConversationCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
+};
+
+
+export type AccountResourceConversationsByOwnerAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceConversationCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
 };
 
 
@@ -672,6 +750,29 @@ export type AddCampaignModerationNotePayloadCampaignModerationNoteEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignModerationNotesOrderBy>>;
 };
 
+/** All input for the `adminGetMailContent` mutation. */
+export type AdminGetMailContentInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pMailId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `adminGetMailContent` mutation. */
+export type AdminGetMailContentPayload = {
+  __typename: 'AdminGetMailContentPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  string: Maybe<Scalars['String']['output']>;
+};
+
 /** A `AdminListAccountsRecord` edge in the connection. */
 export type AdminListAccountEdge = {
   __typename: 'AdminListAccountEdge';
@@ -769,6 +870,7 @@ export type AdminListCampaignsRecord = {
   description: Maybe<Scalars['String']['output']>;
   endDatetime: Maybe<Scalars['Datetime']['output']>;
   id: Maybe<Scalars['UUID']['output']>;
+  moderationStatus: Maybe<CampaignModerationStatus>;
   resourceRewardsMultiplier: Maybe<Scalars['Int']['output']>;
   summary: Maybe<Scalars['String']['output']>;
 };
@@ -928,6 +1030,28 @@ export type AdminListResourcesRecord = {
   tokenAmount: Maybe<Scalars['Int']['output']>;
 };
 
+/** All input for the `adminResendMail` mutation. */
+export type AdminResendMailInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pMailId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `adminResendMail` mutation. */
+export type AdminResendMailPayload = {
+  __typename: 'AdminResendMailPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** All input for the `approveCampaign` mutation. */
 export type ApproveCampaignInput = {
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
@@ -974,6 +1098,10 @@ export type ArchiveGrantInput = {
 /** The output of our `archiveGrant` mutation. */
 export type ArchiveGrantPayload = {
   __typename: 'ArchiveGrantPayload';
+  /** Reads a single `Account` that is related to this `GrantDefinition`. */
+  accountByCreatedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `GrantDefinition`. */
+  campaignByLinkedCampaignId: Maybe<Campaign>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -1051,6 +1179,8 @@ export type Campaign = Node & {
   accountByCreatorAccountId: Maybe<Account>;
   airdropAmount: Scalars['Int']['output'];
   airdropAt: Scalars['Datetime']['output'];
+  /** Reads and enables pagination through a set of `CampaignModerationAuditEvent`. */
+  campaignModerationAuditEventsByCampaignId: CampaignModerationAuditEventsConnection;
   /** Reads and enables pagination through a set of `CampaignModerationNote`. */
   campaignModerationNotesByCampaignId: CampaignModerationNotesConnection;
   /** Reads and enables pagination through a set of `CampaignNeed`. */
@@ -1060,6 +1190,8 @@ export type Campaign = Node & {
   createdAt: Scalars['Datetime']['output'];
   creatorAccountId: Scalars['UUID']['output'];
   endAt: Scalars['Datetime']['output'];
+  /** Reads and enables pagination through a set of `GrantDefinition`. */
+  grantDefinitionsByLinkedCampaignId: GrantDefinitionsConnection;
   id: Scalars['UUID']['output'];
   managerNoteFromCreator: Maybe<Scalars['String']['output']>;
   moderationStatus: CampaignModerationStatus;
@@ -1070,6 +1202,18 @@ export type Campaign = Node & {
   theme: Scalars['String']['output'];
   title: Scalars['String']['output'];
   updatedAt: Scalars['Datetime']['output'];
+};
+
+
+/** Campaign submitted by an account and moderated before going live. */
+export type CampaignCampaignModerationAuditEventsByCampaignIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignModerationAuditEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignModerationAuditEventsOrderBy>>;
 };
 
 
@@ -1108,6 +1252,18 @@ export type CampaignCampaignResourcesByCampaignIdArgs = {
   orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
 };
 
+
+/** Campaign submitted by an account and moderated before going live. */
+export type CampaignGrantDefinitionsByLinkedCampaignIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantDefinitionCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantDefinitionsOrderBy>>;
+};
+
 /**
  * A condition to be used against `Campaign` object types. All fields are tested
  * for equality and combined with a logical ‘and.’
@@ -1123,6 +1279,119 @@ export type CampaignCondition = {
   moderationStatus?: InputMaybe<CampaignModerationStatus>;
   /** Checks for equality with the object’s `startAt` field. */
   startAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+export type CampaignModerationAuditEvent = Node & {
+  __typename: 'CampaignModerationAuditEvent';
+  /** Reads a single `Account` that is related to this `CampaignModerationAuditEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  actorAccountId: Scalars['UUID']['output'];
+  body: Maybe<Scalars['String']['output']>;
+  /** Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  campaignId: Scalars['UUID']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  eventType: Scalars['String']['output'];
+  id: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+};
+
+/**
+ * A condition to be used against `CampaignModerationAuditEvent` object types. All
+ * fields are tested for equality and combined with a logical ‘and.’
+ */
+export type CampaignModerationAuditEventCondition = {
+  /** Checks for equality with the object’s `actorAccountId` field. */
+  actorAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `campaignId` field. */
+  campaignId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `CampaignModerationAuditEvent` */
+export type CampaignModerationAuditEventInput = {
+  actorAccountId: Scalars['UUID']['input'];
+  body?: InputMaybe<Scalars['String']['input']>;
+  campaignId: Scalars['UUID']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  eventType: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** Represents an update to a `CampaignModerationAuditEvent`. Fields that are set will be updated. */
+export type CampaignModerationAuditEventPatch = {
+  actorAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  body?: InputMaybe<Scalars['String']['input']>;
+  campaignId?: InputMaybe<Scalars['UUID']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  eventType?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** A connection to a list of `CampaignModerationAuditEvent` values. */
+export type CampaignModerationAuditEventsConnection = {
+  __typename: 'CampaignModerationAuditEventsConnection';
+  /** A list of edges which contains the `CampaignModerationAuditEvent` and cursor to aid in pagination. */
+  edges: Array<CampaignModerationAuditEventsEdge>;
+  /** A list of `CampaignModerationAuditEvent` objects. */
+  nodes: Array<CampaignModerationAuditEvent>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `CampaignModerationAuditEvent` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `CampaignModerationAuditEvent` edge in the connection. */
+export type CampaignModerationAuditEventsEdge = {
+  __typename: 'CampaignModerationAuditEventsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `CampaignModerationAuditEvent` at the end of the edge. */
+  node: CampaignModerationAuditEvent;
+};
+
+/** Methods to use when ordering `CampaignModerationAuditEvent`. */
+export enum CampaignModerationAuditEventsOrderBy {
+  ActorAccountIdAsc = 'ACTOR_ACCOUNT_ID_ASC',
+  ActorAccountIdDesc = 'ACTOR_ACCOUNT_ID_DESC',
+  CampaignIdAsc = 'CAMPAIGN_ID_ASC',
+  CampaignIdDesc = 'CAMPAIGN_ID_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/** A `CampaignModerationEventsRecord` edge in the connection. */
+export type CampaignModerationEventEdge = {
+  __typename: 'CampaignModerationEventEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `CampaignModerationEventsRecord` at the end of the edge. */
+  node: CampaignModerationEventsRecord;
+};
+
+/** A connection to a list of `CampaignModerationEventsRecord` values. */
+export type CampaignModerationEventsConnection = {
+  __typename: 'CampaignModerationEventsConnection';
+  /** A list of edges which contains the `CampaignModerationEventsRecord` and cursor to aid in pagination. */
+  edges: Array<CampaignModerationEventEdge>;
+  /** A list of `CampaignModerationEventsRecord` objects. */
+  nodes: Array<CampaignModerationEventsRecord>;
+  /** The count of *all* `CampaignModerationEventsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** The return type of our `campaignModerationEvents` query. */
+export type CampaignModerationEventsRecord = {
+  __typename: 'CampaignModerationEventsRecord';
+  actorAccountId: Maybe<Scalars['UUID']['output']>;
+  body: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  eventType: Maybe<Scalars['String']['output']>;
 };
 
 export type CampaignModerationNote = Node & {
@@ -1212,6 +1481,7 @@ export enum CampaignModerationNotesOrderBy {
 
 export enum CampaignModerationStatus {
   Approved = 'APPROVED',
+  AwaitingAdaptation = 'AWAITING_ADAPTATION',
   Pending = 'PENDING'
 }
 
@@ -1454,7 +1724,132 @@ export enum CampaignsOrderBy {
   StartAtDesc = 'START_AT_DESC'
 }
 
-/** One private conversation channel per need claim. */
+export enum ChatContextKind {
+  Need = 'NEED',
+  Resource = 'RESOURCE'
+}
+
+/** A connection to a list of `ChatConversationSummary` values. */
+export type ChatConversationSummariesConnection = {
+  __typename: 'ChatConversationSummariesConnection';
+  /** A list of edges which contains the `ChatConversationSummary` and cursor to aid in pagination. */
+  edges: Array<ChatConversationSummariesEdge>;
+  /** A list of `ChatConversationSummary` objects. */
+  nodes: Array<ChatConversationSummary>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `ChatConversationSummary` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `ChatConversationSummary` edge in the connection. */
+export type ChatConversationSummariesEdge = {
+  __typename: 'ChatConversationSummariesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `ChatConversationSummary` at the end of the edge. */
+  node: ChatConversationSummary;
+};
+
+/** Methods to use when ordering `ChatConversationSummary`. */
+export enum ChatConversationSummariesOrderBy {
+  Natural = 'NATURAL'
+}
+
+/** Read model that lists both need and resource conversations per participant account. */
+export type ChatConversationSummary = {
+  __typename: 'ChatConversationSummary';
+  contextId: Maybe<Scalars['UUID']['output']>;
+  contextTitle: Maybe<Scalars['String']['output']>;
+  conversationId: Maybe<Scalars['UUID']['output']>;
+  conversationKind: Maybe<ChatContextKind>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  lastActivityAt: Maybe<Scalars['Datetime']['output']>;
+  lastMessagePreview: Maybe<Scalars['String']['output']>;
+  otherAccountId: Maybe<Scalars['UUID']['output']>;
+  participantAccountId: Maybe<Scalars['UUID']['output']>;
+  unreadCount: Maybe<Scalars['Int']['output']>;
+};
+
+export type ChatTypingPresence = Node & {
+  __typename: 'ChatTypingPresence';
+  /** Reads a single `Account` that is related to this `ChatTypingPresence`. */
+  accountByAccountId: Maybe<Account>;
+  accountId: Scalars['UUID']['output'];
+  conversationId: Scalars['UUID']['output'];
+  conversationKind: ChatContextKind;
+  createdAt: Scalars['Datetime']['output'];
+  lastTypedAt: Scalars['Datetime']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  updatedAt: Scalars['Datetime']['output'];
+};
+
+/**
+ * A condition to be used against `ChatTypingPresence` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type ChatTypingPresenceCondition = {
+  /** Checks for equality with the object’s `accountId` field. */
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `conversationKind` field. */
+  conversationKind?: InputMaybe<ChatContextKind>;
+};
+
+/** An input for mutations affecting `ChatTypingPresence` */
+export type ChatTypingPresenceInput = {
+  accountId: Scalars['UUID']['input'];
+  conversationId: Scalars['UUID']['input'];
+  conversationKind: ChatContextKind;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  lastTypedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** Represents an update to a `ChatTypingPresence`. Fields that are set will be updated. */
+export type ChatTypingPresencePatch = {
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
+  conversationId?: InputMaybe<Scalars['UUID']['input']>;
+  conversationKind?: InputMaybe<ChatContextKind>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  lastTypedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** A connection to a list of `ChatTypingPresence` values. */
+export type ChatTypingPresencesConnection = {
+  __typename: 'ChatTypingPresencesConnection';
+  /** A list of edges which contains the `ChatTypingPresence` and cursor to aid in pagination. */
+  edges: Array<ChatTypingPresencesEdge>;
+  /** A list of `ChatTypingPresence` objects. */
+  nodes: Array<ChatTypingPresence>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `ChatTypingPresence` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `ChatTypingPresence` edge in the connection. */
+export type ChatTypingPresencesEdge = {
+  __typename: 'ChatTypingPresencesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `ChatTypingPresence` at the end of the edge. */
+  node: ChatTypingPresence;
+};
+
+/** Methods to use when ordering `ChatTypingPresence`. */
+export enum ChatTypingPresencesOrderBy {
+  AccountIdAsc = 'ACCOUNT_ID_ASC',
+  AccountIdDesc = 'ACCOUNT_ID_DESC',
+  ConversationKindAsc = 'CONVERSATION_KIND_ASC',
+  ConversationKindDesc = 'CONVERSATION_KIND_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/** One private conversation channel per (need, participant-pair). Attached to a need_claim once one is submitted. */
 export type ClaimConversation = Node & {
   __typename: 'ClaimConversation';
   /** Reads a single `Account` that is related to this `ClaimConversation`. */
@@ -1469,16 +1864,14 @@ export type ClaimConversation = Node & {
   id: Scalars['UUID']['output'];
   /** Reads a single `Need` that is related to this `ClaimConversation`. */
   needByNeedId: Maybe<Need>;
-  /** Reads a single `NeedClaim` that is related to this `ClaimConversation`. */
-  needClaimByNeedClaimId: Maybe<NeedClaim>;
-  needClaimId: Scalars['UUID']['output'];
+  needClaimId: Maybe<Scalars['UUID']['output']>;
   needId: Scalars['UUID']['output'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID']['output'];
 };
 
 
-/** One private conversation channel per need claim. */
+/** One private conversation channel per (need, participant-pair). Attached to a need_claim once one is submitted. */
 export type ClaimConversationClaimMessagesByConversationIdArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -1500,8 +1893,6 @@ export type ClaimConversationCondition = {
   creatorAccountId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
-  /** Checks for equality with the object’s `needClaimId` field. */
-  needClaimId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `needId` field. */
   needId?: InputMaybe<Scalars['UUID']['input']>;
 };
@@ -1512,7 +1903,7 @@ export type ClaimConversationInput = {
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   creatorAccountId: Scalars['UUID']['input'];
   id?: InputMaybe<Scalars['UUID']['input']>;
-  needClaimId: Scalars['UUID']['input'];
+  needClaimId?: InputMaybe<Scalars['UUID']['input']>;
   needId: Scalars['UUID']['input'];
 };
 
@@ -1557,8 +1948,6 @@ export enum ClaimConversationsOrderBy {
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
-  NeedClaimIdAsc = 'NEED_CLAIM_ID_ASC',
-  NeedClaimIdDesc = 'NEED_CLAIM_ID_DESC',
   NeedIdAsc = 'NEED_ID_ASC',
   NeedIdDesc = 'NEED_ID_DESC',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
@@ -2036,6 +2425,43 @@ export type CreateCampaignInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** All input for the create `CampaignModerationAuditEvent` mutation. */
+export type CreateCampaignModerationAuditEventInput = {
+  /** The `CampaignModerationAuditEvent` to be created by this mutation. */
+  campaignModerationAuditEvent: CampaignModerationAuditEventInput;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our create `CampaignModerationAuditEvent` mutation. */
+export type CreateCampaignModerationAuditEventPayload = {
+  __typename: 'CreateCampaignModerationAuditEventPayload';
+  /** Reads a single `Account` that is related to this `CampaignModerationAuditEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  /** The `CampaignModerationAuditEvent` that was created by this mutation. */
+  campaignModerationAuditEvent: Maybe<CampaignModerationAuditEvent>;
+  /** An edge for our `CampaignModerationAuditEvent`. May be used by Relay 1. */
+  campaignModerationAuditEventEdge: Maybe<CampaignModerationAuditEventsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `CampaignModerationAuditEvent` mutation. */
+export type CreateCampaignModerationAuditEventPayloadCampaignModerationAuditEventEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignModerationAuditEventsOrderBy>>;
+};
+
 /** All input for the create `CampaignModerationNote` mutation. */
 export type CreateCampaignModerationNoteInput = {
   /** The `CampaignModerationNote` to be created by this mutation. */
@@ -2174,6 +2600,41 @@ export type CreateCampaignResourcePayloadCampaignResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
 };
 
+/** All input for the create `ChatTypingPresence` mutation. */
+export type CreateChatTypingPresenceInput = {
+  /** The `ChatTypingPresence` to be created by this mutation. */
+  chatTypingPresence: ChatTypingPresenceInput;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our create `ChatTypingPresence` mutation. */
+export type CreateChatTypingPresencePayload = {
+  __typename: 'CreateChatTypingPresencePayload';
+  /** Reads a single `Account` that is related to this `ChatTypingPresence`. */
+  accountByAccountId: Maybe<Account>;
+  /** The `ChatTypingPresence` that was created by this mutation. */
+  chatTypingPresence: Maybe<ChatTypingPresence>;
+  /** An edge for our `ChatTypingPresence`. May be used by Relay 1. */
+  chatTypingPresenceEdge: Maybe<ChatTypingPresencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our create `ChatTypingPresence` mutation. */
+export type CreateChatTypingPresencePayloadChatTypingPresenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<ChatTypingPresencesOrderBy>>;
+};
+
 /** All input for the create `ClaimConversation` mutation. */
 export type CreateClaimConversationInput = {
   /** The `ClaimConversation` to be created by this mutation. */
@@ -2203,8 +2664,6 @@ export type CreateClaimConversationPayload = {
   clientMutationId: Maybe<Scalars['String']['output']>;
   /** Reads a single `Need` that is related to this `ClaimConversation`. */
   needByNeedId: Maybe<Need>;
-  /** Reads a single `NeedClaim` that is related to this `ClaimConversation`. */
-  needClaimByNeedClaimId: Maybe<NeedClaim>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
 };
@@ -2316,6 +2775,8 @@ export type CreateGrantClaimPayload = {
   grantDefinitionByGrantId: Maybe<GrantDefinition>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
+  /** Reads a single `TokenMovement` that is related to this `GrantClaim`. */
+  tokenMovementByTokenMovementId: Maybe<TokenMovement>;
 };
 
 
@@ -2338,6 +2799,10 @@ export type CreateGrantDefinitionInput = {
 /** The output of our create `GrantDefinition` mutation. */
 export type CreateGrantDefinitionPayload = {
   __typename: 'CreateGrantDefinitionPayload';
+  /** Reads a single `Account` that is related to this `GrantDefinition`. */
+  accountByCreatedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `GrantDefinition`. */
+  campaignByLinkedCampaignId: Maybe<Campaign>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -2608,6 +3073,8 @@ export type CreateOperationalLogInput = {
 /** The output of our create `OperationalLog` mutation. */
 export type CreateOperationalLogPayload = {
   __typename: 'CreateOperationalLogPayload';
+  /** Reads a single `Account` that is related to this `OperationalLog`. */
+  accountByAccountId: Maybe<Account>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -2773,6 +3240,45 @@ export type CreateResourceCategoryPayloadResourceCategoryEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceCategoriesOrderBy>>;
 };
 
+/** All input for the create `ResourceConversation` mutation. */
+export type CreateResourceConversationInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `ResourceConversation` to be created by this mutation. */
+  resourceConversation: ResourceConversationInput;
+};
+
+/** The output of our create `ResourceConversation` mutation. */
+export type CreateResourceConversationPayload = {
+  __typename: 'CreateResourceConversationPayload';
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByBidderAccountId: Maybe<Account>;
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByOwnerAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `ResourceConversation`. */
+  resourceByResourceId: Maybe<Resource>;
+  /** The `ResourceConversation` that was created by this mutation. */
+  resourceConversation: Maybe<ResourceConversation>;
+  /** An edge for our `ResourceConversation`. May be used by Relay 1. */
+  resourceConversationEdge: Maybe<ResourceConversationsEdge>;
+};
+
+
+/** The output of our create `ResourceConversation` mutation. */
+export type CreateResourceConversationPayloadResourceConversationEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
+};
+
 /** All input for the create `Resource` mutation. */
 export type CreateResourceInput = {
   /**
@@ -2782,6 +3288,76 @@ export type CreateResourceInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   /** The `Resource` to be created by this mutation. */
   resource: ResourceInput;
+};
+
+/** All input for the create `ResourceMessageImage` mutation. */
+export type CreateResourceMessageImageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `ResourceMessageImage` to be created by this mutation. */
+  resourceMessageImage: ResourceMessageImageInput;
+};
+
+/** The output of our create `ResourceMessageImage` mutation. */
+export type CreateResourceMessageImagePayload = {
+  __typename: 'CreateResourceMessageImagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`. */
+  resourceMessageByMessageId: Maybe<ResourceMessage>;
+  /** The `ResourceMessageImage` that was created by this mutation. */
+  resourceMessageImage: Maybe<ResourceMessageImage>;
+  /** An edge for our `ResourceMessageImage`. May be used by Relay 1. */
+  resourceMessageImageEdge: Maybe<ResourceMessageImagesEdge>;
+};
+
+
+/** The output of our create `ResourceMessageImage` mutation. */
+export type CreateResourceMessageImagePayloadResourceMessageImageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessageImagesOrderBy>>;
+};
+
+/** All input for the create `ResourceMessage` mutation. */
+export type CreateResourceMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The `ResourceMessage` to be created by this mutation. */
+  resourceMessage: ResourceMessageInput;
+};
+
+/** The output of our create `ResourceMessage` mutation. */
+export type CreateResourceMessagePayload = {
+  __typename: 'CreateResourceMessagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  /** The `ResourceMessage` that was created by this mutation. */
+  resourceMessage: Maybe<ResourceMessage>;
+  /** An edge for our `ResourceMessage`. May be used by Relay 1. */
+  resourceMessageEdge: Maybe<ResourceMessagesEdge>;
+};
+
+
+/** The output of our create `ResourceMessage` mutation. */
+export type CreateResourceMessagePayloadResourceMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
 };
 
 /** The output of our create `Resource` mutation. */
@@ -3047,6 +3623,54 @@ export type DeleteCampaignInput = {
   nodeId: Scalars['ID']['input'];
 };
 
+/** All input for the `deleteCampaignModerationAuditEventById` mutation. */
+export type DeleteCampaignModerationAuditEventByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteCampaignModerationAuditEvent` mutation. */
+export type DeleteCampaignModerationAuditEventInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `CampaignModerationAuditEvent` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `CampaignModerationAuditEvent` mutation. */
+export type DeleteCampaignModerationAuditEventPayload = {
+  __typename: 'DeleteCampaignModerationAuditEventPayload';
+  /** Reads a single `Account` that is related to this `CampaignModerationAuditEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  /** The `CampaignModerationAuditEvent` that was deleted by this mutation. */
+  campaignModerationAuditEvent: Maybe<CampaignModerationAuditEvent>;
+  /** An edge for our `CampaignModerationAuditEvent`. May be used by Relay 1. */
+  campaignModerationAuditEventEdge: Maybe<CampaignModerationAuditEventsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedCampaignModerationEventId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `CampaignModerationAuditEvent` mutation. */
+export type DeleteCampaignModerationAuditEventPayloadCampaignModerationAuditEventEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignModerationAuditEventsOrderBy>>;
+};
+
 /** All input for the `deleteCampaignModerationNoteById` mutation. */
 export type DeleteCampaignModerationNoteByIdInput = {
   /**
@@ -3222,6 +3846,54 @@ export type DeleteCampaignResourcePayloadCampaignResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
 };
 
+/** All input for the `deleteChatTypingPresenceByConversationKindAndConversationIdAndAccountId` mutation. */
+export type DeleteChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput = {
+  accountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  conversationId: Scalars['UUID']['input'];
+  conversationKind: ChatContextKind;
+};
+
+/** All input for the `deleteChatTypingPresence` mutation. */
+export type DeleteChatTypingPresenceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ChatTypingPresence` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `ChatTypingPresence` mutation. */
+export type DeleteChatTypingPresencePayload = {
+  __typename: 'DeleteChatTypingPresencePayload';
+  /** Reads a single `Account` that is related to this `ChatTypingPresence`. */
+  accountByAccountId: Maybe<Account>;
+  /** The `ChatTypingPresence` that was deleted by this mutation. */
+  chatTypingPresence: Maybe<ChatTypingPresence>;
+  /** An edge for our `ChatTypingPresence`. May be used by Relay 1. */
+  chatTypingPresenceEdge: Maybe<ChatTypingPresencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedChatTypingPresenceId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our delete `ChatTypingPresence` mutation. */
+export type DeleteChatTypingPresencePayloadChatTypingPresenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<ChatTypingPresencesOrderBy>>;
+};
+
 /** All input for the `deleteClaimConversationById` mutation. */
 export type DeleteClaimConversationByIdInput = {
   /**
@@ -3232,14 +3904,16 @@ export type DeleteClaimConversationByIdInput = {
   id: Scalars['UUID']['input'];
 };
 
-/** All input for the `deleteClaimConversationByNeedClaimId` mutation. */
-export type DeleteClaimConversationByNeedClaimIdInput = {
+/** All input for the `deleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId` mutation. */
+export type DeleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput = {
+  claimerAccountId: Scalars['UUID']['input'];
   /**
    * An arbitrary string value with no semantic meaning. Will be included in the
    * payload verbatim. May be used to track mutations by the client.
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  needClaimId: Scalars['UUID']['input'];
+  creatorAccountId: Scalars['UUID']['input'];
+  needId: Scalars['UUID']['input'];
 };
 
 /** All input for the `deleteClaimConversation` mutation. */
@@ -3272,8 +3946,6 @@ export type DeleteClaimConversationPayload = {
   deletedClaimConversationId: Maybe<Scalars['ID']['output']>;
   /** Reads a single `Need` that is related to this `ClaimConversation`. */
   needByNeedId: Maybe<Need>;
-  /** Reads a single `NeedClaim` that is related to this `ClaimConversation`. */
-  needClaimByNeedClaimId: Maybe<NeedClaim>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
 };
@@ -3429,6 +4101,8 @@ export type DeleteGrantClaimPayload = {
   grantDefinitionByGrantId: Maybe<GrantDefinition>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
+  /** Reads a single `TokenMovement` that is related to this `GrantClaim`. */
+  tokenMovementByTokenMovementId: Maybe<TokenMovement>;
 };
 
 
@@ -3461,6 +4135,10 @@ export type DeleteGrantDefinitionInput = {
 /** The output of our delete `GrantDefinition` mutation. */
 export type DeleteGrantDefinitionPayload = {
   __typename: 'DeleteGrantDefinitionPayload';
+  /** Reads a single `Account` that is related to this `GrantDefinition`. */
+  accountByCreatedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `GrantDefinition`. */
+  campaignByLinkedCampaignId: Maybe<Campaign>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -3818,6 +4496,8 @@ export type DeleteOperationalLogInput = {
 /** The output of our delete `OperationalLog` mutation. */
 export type DeleteOperationalLogPayload = {
   __typename: 'DeleteOperationalLogPayload';
+  /** Reads a single `Account` that is related to this `OperationalLog`. */
+  accountByAccountId: Maybe<Account>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -4060,6 +4740,68 @@ export type DeleteResourceCategoryPayloadResourceCategoryEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceCategoriesOrderBy>>;
 };
 
+/** All input for the `deleteResourceConversationById` mutation. */
+export type DeleteResourceConversationByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId` mutation. */
+export type DeleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput = {
+  bidderAccountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  ownerAccountId: Scalars['UUID']['input'];
+  resourceId: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteResourceConversation` mutation. */
+export type DeleteResourceConversationInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ResourceConversation` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `ResourceConversation` mutation. */
+export type DeleteResourceConversationPayload = {
+  __typename: 'DeleteResourceConversationPayload';
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByBidderAccountId: Maybe<Account>;
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByOwnerAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedResourceConversationId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `ResourceConversation`. */
+  resourceByResourceId: Maybe<Resource>;
+  /** The `ResourceConversation` that was deleted by this mutation. */
+  resourceConversation: Maybe<ResourceConversation>;
+  /** An edge for our `ResourceConversation`. May be used by Relay 1. */
+  resourceConversationEdge: Maybe<ResourceConversationsEdge>;
+};
+
+
+/** The output of our delete `ResourceConversation` mutation. */
+export type DeleteResourceConversationPayloadResourceConversationEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
+};
+
 /** All input for the `deleteResource` mutation. */
 export type DeleteResourceInput = {
   /**
@@ -4069,6 +4811,98 @@ export type DeleteResourceInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   /** The globally unique `ID` which will identify a single `Resource` to be deleted. */
   nodeId: Scalars['ID']['input'];
+};
+
+/** All input for the `deleteResourceMessageById` mutation. */
+export type DeleteResourceMessageByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteResourceMessageImageById` mutation. */
+export type DeleteResourceMessageImageByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteResourceMessageImage` mutation. */
+export type DeleteResourceMessageImageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ResourceMessageImage` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `ResourceMessageImage` mutation. */
+export type DeleteResourceMessageImagePayload = {
+  __typename: 'DeleteResourceMessageImagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedResourceMessageImageId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`. */
+  resourceMessageByMessageId: Maybe<ResourceMessage>;
+  /** The `ResourceMessageImage` that was deleted by this mutation. */
+  resourceMessageImage: Maybe<ResourceMessageImage>;
+  /** An edge for our `ResourceMessageImage`. May be used by Relay 1. */
+  resourceMessageImageEdge: Maybe<ResourceMessageImagesEdge>;
+};
+
+
+/** The output of our delete `ResourceMessageImage` mutation. */
+export type DeleteResourceMessageImagePayloadResourceMessageImageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessageImagesOrderBy>>;
+};
+
+/** All input for the `deleteResourceMessage` mutation. */
+export type DeleteResourceMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ResourceMessage` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `ResourceMessage` mutation. */
+export type DeleteResourceMessagePayload = {
+  __typename: 'DeleteResourceMessagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedResourceMessageId: Maybe<Scalars['ID']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  /** The `ResourceMessage` that was deleted by this mutation. */
+  resourceMessage: Maybe<ResourceMessage>;
+  /** An edge for our `ResourceMessage`. May be used by Relay 1. */
+  resourceMessageEdge: Maybe<ResourceMessagesEdge>;
+};
+
+
+/** The output of our delete `ResourceMessage` mutation. */
+export type DeleteResourceMessagePayloadResourceMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
 };
 
 /** The output of our delete `Resource` mutation. */
@@ -4312,6 +5146,8 @@ export type GrantClaim = Node & {
   id: Scalars['UUID']['output'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID']['output'];
+  /** Reads a single `TokenMovement` that is related to this `GrantClaim`. */
+  tokenMovementByTokenMovementId: Maybe<TokenMovement>;
   tokenMovementId: Maybe<Scalars['UUID']['output']>;
 };
 
@@ -4326,6 +5162,8 @@ export type GrantClaimCondition = {
   grantId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `tokenMovementId` field. */
+  tokenMovementId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
 /** An input for mutations affecting `GrantClaim` */
@@ -4390,18 +5228,24 @@ export enum GrantClaimsOrderBy {
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
-  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  TokenMovementIdAsc = 'TOKEN_MOVEMENT_ID_ASC',
+  TokenMovementIdDesc = 'TOKEN_MOVEMENT_ID_DESC'
 }
 
 /** Administrator-defined token seeding grants with optional targeting and campaign criteria. */
 export type GrantDefinition = Node & {
   __typename: 'GrantDefinition';
+  /** Reads a single `Account` that is related to this `GrantDefinition`. */
+  accountByCreatedByAccountId: Maybe<Account>;
   archivedAt: Maybe<Scalars['Datetime']['output']>;
   awardedTokenAmount: Scalars['Int']['output'];
+  /** Reads a single `Campaign` that is related to this `GrantDefinition`. */
+  campaignByLinkedCampaignId: Maybe<Campaign>;
   createdAt: Scalars['Datetime']['output'];
   createdByAccountId: Scalars['UUID']['output'];
   description: Scalars['String']['output'];
-  expiresAt: Maybe<Scalars['Datetime']['output']>;
+  expiresAt: Scalars['Datetime']['output'];
   /** Reads and enables pagination through a set of `GrantClaim`. */
   grantClaimsByGrantId: GrantClaimsConnection;
   /** Reads and enables pagination through a set of `GrantTargetAccount`. */
@@ -4460,8 +5304,12 @@ export type GrantDefinitionGrantTargetEmailsByGrantIdArgs = {
 export type GrantDefinitionCondition = {
   /** Checks for equality with the object’s `createdAt` field. */
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Checks for equality with the object’s `createdByAccountId` field. */
+  createdByAccountId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `linkedCampaignId` field. */
+  linkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
 /** An input for mutations affecting `GrantDefinition` */
@@ -4471,7 +5319,7 @@ export type GrantDefinitionInput = {
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   createdByAccountId: Scalars['UUID']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
-  expiresAt?: InputMaybe<Scalars['Datetime']['input']>;
+  expiresAt: Scalars['Datetime']['input'];
   id?: InputMaybe<Scalars['UUID']['input']>;
   linkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
   maxSuccessfulClaimCount?: InputMaybe<Scalars['Int']['input']>;
@@ -4520,8 +5368,12 @@ export type GrantDefinitionsEdge = {
 export enum GrantDefinitionsOrderBy {
   CreatedAtAsc = 'CREATED_AT_ASC',
   CreatedAtDesc = 'CREATED_AT_DESC',
+  CreatedByAccountIdAsc = 'CREATED_BY_ACCOUNT_ID_ASC',
+  CreatedByAccountIdDesc = 'CREATED_BY_ACCOUNT_ID_DESC',
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
+  LinkedCampaignIdAsc = 'LINKED_CAMPAIGN_ID_ASC',
+  LinkedCampaignIdDesc = 'LINKED_CAMPAIGN_ID_DESC',
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
@@ -4697,6 +5549,40 @@ export type LinkAccountExternalIdentityPayload = {
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
   string: Maybe<Scalars['String']['output']>;
+};
+
+/** A `ListChatConversationsRecord` edge in the connection. */
+export type ListChatConversationEdge = {
+  __typename: 'ListChatConversationEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `ListChatConversationsRecord` at the end of the edge. */
+  node: ListChatConversationsRecord;
+};
+
+/** A connection to a list of `ListChatConversationsRecord` values. */
+export type ListChatConversationsConnection = {
+  __typename: 'ListChatConversationsConnection';
+  /** A list of edges which contains the `ListChatConversationsRecord` and cursor to aid in pagination. */
+  edges: Array<ListChatConversationEdge>;
+  /** A list of `ListChatConversationsRecord` objects. */
+  nodes: Array<ListChatConversationsRecord>;
+  /** The count of *all* `ListChatConversationsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** The return type of our `listChatConversations` query. */
+export type ListChatConversationsRecord = {
+  __typename: 'ListChatConversationsRecord';
+  contextId: Maybe<Scalars['UUID']['output']>;
+  contextTitle: Maybe<Scalars['String']['output']>;
+  conversationId: Maybe<Scalars['UUID']['output']>;
+  conversationKind: Maybe<ChatContextKind>;
+  lastActivityAt: Maybe<Scalars['Datetime']['output']>;
+  lastMessagePreview: Maybe<Scalars['String']['output']>;
+  otherAccountDisplayName: Maybe<Scalars['String']['output']>;
+  otherAccountId: Maybe<Scalars['UUID']['output']>;
+  unreadCount: Maybe<Scalars['Int']['output']>;
 };
 
 /** A connection to a list of `ListResourceCategoriesRecord` values. */
@@ -4877,11 +5763,38 @@ export type MarkResourceBidNotificationReadPayloadResourceBidNotificationEdgeArg
   orderBy?: InputMaybe<Array<ResourceBidNotificationsOrderBy>>;
 };
 
+/** All input for the `markResourceMessagesRead` mutation. */
+export type MarkResourceMessagesReadInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pConversationId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `markResourceMessagesRead` mutation. */
+export type MarkResourceMessagesReadPayload = {
+  __typename: 'MarkResourceMessagesReadPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  integer: Maybe<Scalars['Int']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** The root mutation type which contains root level fields which mutate data. */
 export type Mutation = {
   __typename: 'Mutation';
   acceptCampaignNeed: Maybe<AcceptCampaignNeedPayload>;
   addCampaignModerationNote: Maybe<AddCampaignModerationNotePayload>;
+  /** Returns the stored HTML body of a mail outbox entry. Admin only. */
+  adminGetMailContent: Maybe<AdminGetMailContentPayload>;
+  /** Resets a mail outbox entry to pending for re-delivery via the same scheduled mailing routine. Admin only. */
+  adminResendMail: Maybe<AdminResendMailPayload>;
   approveCampaign: Maybe<ApproveCampaignPayload>;
   /** Archives a grant definition so it no longer appears in the claim flow. Admin only. */
   archiveGrant: Maybe<ArchiveGrantPayload>;
@@ -4908,12 +5821,16 @@ export type Mutation = {
   /** Creates a single `AccountNotification`. */
   createAccountNotification: Maybe<CreateAccountNotificationPayload>;
   createCampaign: Maybe<CreateCampaignPayload>;
+  /** Creates a single `CampaignModerationAuditEvent`. */
+  createCampaignModerationAuditEvent: Maybe<CreateCampaignModerationAuditEventPayload>;
   /** Creates a single `CampaignModerationNote`. */
   createCampaignModerationNote: Maybe<CreateCampaignModerationNotePayload>;
   /** Creates a single `CampaignNeed`. */
   createCampaignNeed: Maybe<CreateCampaignNeedPayload>;
   /** Creates a single `CampaignResource`. */
   createCampaignResource: Maybe<CreateCampaignResourcePayload>;
+  /** Creates a single `ChatTypingPresence`. */
+  createChatTypingPresence: Maybe<CreateChatTypingPresencePayload>;
   /** Creates a single `ClaimConversation`. */
   createClaimConversation: Maybe<CreateClaimConversationPayload>;
   /** Creates a single `ClaimMessage`. */
@@ -4947,6 +5864,12 @@ export type Mutation = {
   createResourceCategory: Maybe<CreateResourceCategoryPayload>;
   /** Creates a single `ResourceCategoryAssignment`. */
   createResourceCategoryAssignment: Maybe<CreateResourceCategoryAssignmentPayload>;
+  /** Creates a single `ResourceConversation`. */
+  createResourceConversation: Maybe<CreateResourceConversationPayload>;
+  /** Creates a single `ResourceMessage`. */
+  createResourceMessage: Maybe<CreateResourceMessagePayload>;
+  /** Creates a single `ResourceMessageImage`. */
+  createResourceMessageImage: Maybe<CreateResourceMessageImagePayload>;
   /** Creates a single `SystemSetting`. */
   createSystemSetting: Maybe<CreateSystemSettingPayload>;
   /** Creates a single `TokenMovement`. */
@@ -4969,6 +5892,10 @@ export type Mutation = {
   deleteCampaign: Maybe<DeleteCampaignPayload>;
   /** Deletes a single `Campaign` using a unique key. */
   deleteCampaignById: Maybe<DeleteCampaignPayload>;
+  /** Deletes a single `CampaignModerationAuditEvent` using its globally unique id. */
+  deleteCampaignModerationAuditEvent: Maybe<DeleteCampaignModerationAuditEventPayload>;
+  /** Deletes a single `CampaignModerationAuditEvent` using a unique key. */
+  deleteCampaignModerationAuditEventById: Maybe<DeleteCampaignModerationAuditEventPayload>;
   /** Deletes a single `CampaignModerationNote` using its globally unique id. */
   deleteCampaignModerationNote: Maybe<DeleteCampaignModerationNotePayload>;
   /** Deletes a single `CampaignModerationNote` using a unique key. */
@@ -4981,12 +5908,16 @@ export type Mutation = {
   deleteCampaignResource: Maybe<DeleteCampaignResourcePayload>;
   /** Deletes a single `CampaignResource` using a unique key. */
   deleteCampaignResourceByCampaignIdAndResourceId: Maybe<DeleteCampaignResourcePayload>;
+  /** Deletes a single `ChatTypingPresence` using its globally unique id. */
+  deleteChatTypingPresence: Maybe<DeleteChatTypingPresencePayload>;
+  /** Deletes a single `ChatTypingPresence` using a unique key. */
+  deleteChatTypingPresenceByConversationKindAndConversationIdAndAccountId: Maybe<DeleteChatTypingPresencePayload>;
   /** Deletes a single `ClaimConversation` using its globally unique id. */
   deleteClaimConversation: Maybe<DeleteClaimConversationPayload>;
   /** Deletes a single `ClaimConversation` using a unique key. */
   deleteClaimConversationById: Maybe<DeleteClaimConversationPayload>;
   /** Deletes a single `ClaimConversation` using a unique key. */
-  deleteClaimConversationByNeedClaimId: Maybe<DeleteClaimConversationPayload>;
+  deleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: Maybe<DeleteClaimConversationPayload>;
   /** Deletes a single `ClaimMessage` using its globally unique id. */
   deleteClaimMessage: Maybe<DeleteClaimMessagePayload>;
   /** Deletes a single `ClaimMessage` using a unique key. */
@@ -5061,6 +5992,20 @@ export type Mutation = {
   deleteResourceCategoryByCode: Maybe<DeleteResourceCategoryPayload>;
   /** Deletes a single `ResourceCategory` using a unique key. */
   deleteResourceCategoryBySlug: Maybe<DeleteResourceCategoryPayload>;
+  /** Deletes a single `ResourceConversation` using its globally unique id. */
+  deleteResourceConversation: Maybe<DeleteResourceConversationPayload>;
+  /** Deletes a single `ResourceConversation` using a unique key. */
+  deleteResourceConversationById: Maybe<DeleteResourceConversationPayload>;
+  /** Deletes a single `ResourceConversation` using a unique key. */
+  deleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: Maybe<DeleteResourceConversationPayload>;
+  /** Deletes a single `ResourceMessage` using its globally unique id. */
+  deleteResourceMessage: Maybe<DeleteResourceMessagePayload>;
+  /** Deletes a single `ResourceMessage` using a unique key. */
+  deleteResourceMessageById: Maybe<DeleteResourceMessagePayload>;
+  /** Deletes a single `ResourceMessageImage` using its globally unique id. */
+  deleteResourceMessageImage: Maybe<DeleteResourceMessageImagePayload>;
+  /** Deletes a single `ResourceMessageImage` using a unique key. */
+  deleteResourceMessageImageById: Maybe<DeleteResourceMessageImagePayload>;
   /** Deletes a single `SystemSetting` using its globally unique id. */
   deleteSystemSetting: Maybe<DeleteSystemSettingPayload>;
   /** Deletes a single `SystemSetting` using a unique key. */
@@ -5079,6 +6024,7 @@ export type Mutation = {
   markClaimMessagesRead: Maybe<MarkClaimMessagesReadPayload>;
   markNeedClaimNotificationRead: Maybe<MarkNeedClaimNotificationReadPayload>;
   markResourceBidNotificationRead: Maybe<MarkResourceBidNotificationReadPayload>;
+  markResourceMessagesRead: Maybe<MarkResourceMessagesReadPayload>;
   publishResource: Maybe<PublishResourcePayload>;
   registerLocalAccount: Maybe<RegisterLocalAccountPayload>;
   registerLocalAccountWithPassword: Maybe<RegisterLocalAccountWithPasswordPayload>;
@@ -5088,6 +6034,9 @@ export type Mutation = {
   respondToResourceBid: Maybe<RespondToResourceBidPayload>;
   searchOperationalLogs: Maybe<SearchOperationalLogsPayload>;
   sendClaimMessage: Maybe<SendClaimMessagePayload>;
+  sendNeedMessage: Maybe<SendNeedMessagePayload>;
+  sendResourceMessage: Maybe<SendResourceMessagePayload>;
+  sendResourceMessageDirect: Maybe<SendResourceMessageDirectPayload>;
   setAccountDeliveryPreference: Maybe<SetAccountDeliveryPreferencePayload>;
   /** Replaces the full set of account-id targeting criteria for a grant. Admin only. */
   setGrantTargetAccounts: Maybe<SetGrantTargetAccountsPayload>;
@@ -5113,6 +6062,11 @@ export type Mutation = {
   updateCampaign: Maybe<UpdateCampaignPayload>;
   /** Updates a single `Campaign` using a unique key and a patch. */
   updateCampaignById: Maybe<UpdateCampaignPayload>;
+  updateCampaignForModeration: Maybe<UpdateCampaignForModerationPayload>;
+  /** Updates a single `CampaignModerationAuditEvent` using its globally unique id and a patch. */
+  updateCampaignModerationAuditEvent: Maybe<UpdateCampaignModerationAuditEventPayload>;
+  /** Updates a single `CampaignModerationAuditEvent` using a unique key and a patch. */
+  updateCampaignModerationAuditEventById: Maybe<UpdateCampaignModerationAuditEventPayload>;
   /** Updates a single `CampaignModerationNote` using its globally unique id and a patch. */
   updateCampaignModerationNote: Maybe<UpdateCampaignModerationNotePayload>;
   /** Updates a single `CampaignModerationNote` using a unique key and a patch. */
@@ -5125,12 +6079,16 @@ export type Mutation = {
   updateCampaignResource: Maybe<UpdateCampaignResourcePayload>;
   /** Updates a single `CampaignResource` using a unique key and a patch. */
   updateCampaignResourceByCampaignIdAndResourceId: Maybe<UpdateCampaignResourcePayload>;
+  /** Updates a single `ChatTypingPresence` using its globally unique id and a patch. */
+  updateChatTypingPresence: Maybe<UpdateChatTypingPresencePayload>;
+  /** Updates a single `ChatTypingPresence` using a unique key and a patch. */
+  updateChatTypingPresenceByConversationKindAndConversationIdAndAccountId: Maybe<UpdateChatTypingPresencePayload>;
   /** Updates a single `ClaimConversation` using its globally unique id and a patch. */
   updateClaimConversation: Maybe<UpdateClaimConversationPayload>;
   /** Updates a single `ClaimConversation` using a unique key and a patch. */
   updateClaimConversationById: Maybe<UpdateClaimConversationPayload>;
   /** Updates a single `ClaimConversation` using a unique key and a patch. */
-  updateClaimConversationByNeedClaimId: Maybe<UpdateClaimConversationPayload>;
+  updateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: Maybe<UpdateClaimConversationPayload>;
   /** Updates a single `ClaimMessage` using its globally unique id and a patch. */
   updateClaimMessage: Maybe<UpdateClaimMessagePayload>;
   /** Updates a single `ClaimMessage` using a unique key and a patch. */
@@ -5205,6 +6163,20 @@ export type Mutation = {
   updateResourceCategoryByCode: Maybe<UpdateResourceCategoryPayload>;
   /** Updates a single `ResourceCategory` using a unique key and a patch. */
   updateResourceCategoryBySlug: Maybe<UpdateResourceCategoryPayload>;
+  /** Updates a single `ResourceConversation` using its globally unique id and a patch. */
+  updateResourceConversation: Maybe<UpdateResourceConversationPayload>;
+  /** Updates a single `ResourceConversation` using a unique key and a patch. */
+  updateResourceConversationById: Maybe<UpdateResourceConversationPayload>;
+  /** Updates a single `ResourceConversation` using a unique key and a patch. */
+  updateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: Maybe<UpdateResourceConversationPayload>;
+  /** Updates a single `ResourceMessage` using its globally unique id and a patch. */
+  updateResourceMessage: Maybe<UpdateResourceMessagePayload>;
+  /** Updates a single `ResourceMessage` using a unique key and a patch. */
+  updateResourceMessageById: Maybe<UpdateResourceMessagePayload>;
+  /** Updates a single `ResourceMessageImage` using its globally unique id and a patch. */
+  updateResourceMessageImage: Maybe<UpdateResourceMessageImagePayload>;
+  /** Updates a single `ResourceMessageImage` using a unique key and a patch. */
+  updateResourceMessageImageById: Maybe<UpdateResourceMessageImagePayload>;
   /** Updates a single `SystemSetting` using its globally unique id and a patch. */
   updateSystemSetting: Maybe<UpdateSystemSettingPayload>;
   /** Updates a single `SystemSetting` using a unique key and a patch. */
@@ -5215,6 +6187,7 @@ export type Mutation = {
   updateTokenMovementById: Maybe<UpdateTokenMovementPayload>;
   /** Updates a single `TokenMovement` using a unique key and a patch. */
   updateTokenMovementByIdempotencyKey: Maybe<UpdateTokenMovementPayload>;
+  upsertChatTypingPresence: Maybe<UpsertChatTypingPresencePayload>;
   /** Creates a new grant definition when p_grant_id is null, or updates an existing one. Admin only. */
   upsertGrant: Maybe<UpsertGrantPayload>;
   writeOperationalLog: Maybe<WriteOperationalLogPayload>;
@@ -5230,6 +6203,18 @@ export type MutationAcceptCampaignNeedArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationAddCampaignModerationNoteArgs = {
   input: AddCampaignModerationNoteInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminGetMailContentArgs = {
+  input: AdminGetMailContentInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAdminResendMailArgs = {
+  input: AdminResendMailInput;
 };
 
 
@@ -5330,6 +6315,12 @@ export type MutationCreateCampaignArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateCampaignModerationAuditEventArgs = {
+  input: CreateCampaignModerationAuditEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateCampaignModerationNoteArgs = {
   input: CreateCampaignModerationNoteInput;
 };
@@ -5344,6 +6335,12 @@ export type MutationCreateCampaignNeedArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateCampaignResourceArgs = {
   input: CreateCampaignResourceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateChatTypingPresenceArgs = {
+  input: CreateChatTypingPresenceInput;
 };
 
 
@@ -5450,6 +6447,24 @@ export type MutationCreateResourceCategoryAssignmentArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateResourceConversationArgs = {
+  input: CreateResourceConversationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateResourceMessageArgs = {
+  input: CreateResourceMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateResourceMessageImageArgs = {
+  input: CreateResourceMessageImageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateSystemSettingArgs = {
   input: CreateSystemSettingInput;
 };
@@ -5516,6 +6531,18 @@ export type MutationDeleteCampaignByIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteCampaignModerationAuditEventArgs = {
+  input: DeleteCampaignModerationAuditEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteCampaignModerationAuditEventByIdArgs = {
+  input: DeleteCampaignModerationAuditEventByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteCampaignModerationNoteArgs = {
   input: DeleteCampaignModerationNoteInput;
 };
@@ -5552,6 +6579,18 @@ export type MutationDeleteCampaignResourceByCampaignIdAndResourceIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteChatTypingPresenceArgs = {
+  input: DeleteChatTypingPresenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteChatTypingPresenceByConversationKindAndConversationIdAndAccountIdArgs = {
+  input: DeleteChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteClaimConversationArgs = {
   input: DeleteClaimConversationInput;
 };
@@ -5564,8 +6603,8 @@ export type MutationDeleteClaimConversationByIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
-export type MutationDeleteClaimConversationByNeedClaimIdArgs = {
-  input: DeleteClaimConversationByNeedClaimIdInput;
+export type MutationDeleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdArgs = {
+  input: DeleteClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput;
 };
 
 
@@ -5792,6 +6831,48 @@ export type MutationDeleteResourceCategoryBySlugArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceConversationArgs = {
+  input: DeleteResourceConversationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceConversationByIdArgs = {
+  input: DeleteResourceConversationByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdArgs = {
+  input: DeleteResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceMessageArgs = {
+  input: DeleteResourceMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceMessageByIdArgs = {
+  input: DeleteResourceMessageByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceMessageImageArgs = {
+  input: DeleteResourceMessageImageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteResourceMessageImageByIdArgs = {
+  input: DeleteResourceMessageImageByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteSystemSettingArgs = {
   input: DeleteSystemSettingInput;
 };
@@ -5870,6 +6951,12 @@ export type MutationMarkResourceBidNotificationReadArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationMarkResourceMessagesReadArgs = {
+  input: MarkResourceMessagesReadInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationPublishResourceArgs = {
   input: PublishResourceInput;
 };
@@ -5920,6 +7007,24 @@ export type MutationSearchOperationalLogsArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSendClaimMessageArgs = {
   input: SendClaimMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSendNeedMessageArgs = {
+  input: SendNeedMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSendResourceMessageArgs = {
+  input: SendResourceMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSendResourceMessageDirectArgs = {
+  input: SendResourceMessageDirectInput;
 };
 
 
@@ -6008,6 +7113,24 @@ export type MutationUpdateCampaignByIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCampaignForModerationArgs = {
+  input: UpdateCampaignForModerationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCampaignModerationAuditEventArgs = {
+  input: UpdateCampaignModerationAuditEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCampaignModerationAuditEventByIdArgs = {
+  input: UpdateCampaignModerationAuditEventByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateCampaignModerationNoteArgs = {
   input: UpdateCampaignModerationNoteInput;
 };
@@ -6044,6 +7167,18 @@ export type MutationUpdateCampaignResourceByCampaignIdAndResourceIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateChatTypingPresenceArgs = {
+  input: UpdateChatTypingPresenceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateChatTypingPresenceByConversationKindAndConversationIdAndAccountIdArgs = {
+  input: UpdateChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateClaimConversationArgs = {
   input: UpdateClaimConversationInput;
 };
@@ -6056,8 +7191,8 @@ export type MutationUpdateClaimConversationByIdArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
-export type MutationUpdateClaimConversationByNeedClaimIdArgs = {
-  input: UpdateClaimConversationByNeedClaimIdInput;
+export type MutationUpdateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdArgs = {
+  input: UpdateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput;
 };
 
 
@@ -6284,6 +7419,48 @@ export type MutationUpdateResourceCategoryBySlugArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceConversationArgs = {
+  input: UpdateResourceConversationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceConversationByIdArgs = {
+  input: UpdateResourceConversationByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdArgs = {
+  input: UpdateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceMessageArgs = {
+  input: UpdateResourceMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceMessageByIdArgs = {
+  input: UpdateResourceMessageByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceMessageImageArgs = {
+  input: UpdateResourceMessageImageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateResourceMessageImageByIdArgs = {
+  input: UpdateResourceMessageImageByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateSystemSettingArgs = {
   input: UpdateSystemSettingInput;
 };
@@ -6310,6 +7487,12 @@ export type MutationUpdateTokenMovementByIdArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateTokenMovementByIdempotencyKeyArgs = {
   input: UpdateTokenMovementByIdempotencyKeyInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpsertChatTypingPresenceArgs = {
+  input: UpsertChatTypingPresenceInput;
 };
 
 
@@ -6416,13 +7599,6 @@ export type NeedClaim = Node & {
   accountByClaimerAccountId: Maybe<Account>;
   /** Reads a single `Account` that is related to this `NeedClaim`. */
   accountBySettledByAccountId: Maybe<Account>;
-  /** Reads a single `ClaimConversation` that is related to this `NeedClaim`. */
-  claimConversationByNeedClaimId: Maybe<ClaimConversation>;
-  /**
-   * Reads and enables pagination through a set of `ClaimConversation`.
-   * @deprecated Please use claimConversationByNeedClaimId instead
-   */
-  claimConversationsByNeedClaimId: ClaimConversationsConnection;
   claimerAccountId: Scalars['UUID']['output'];
   createdAt: Scalars['Datetime']['output'];
   id: Scalars['UUID']['output'];
@@ -6445,18 +7621,6 @@ export type NeedClaim = Node & {
   settledByAccountId: Maybe<Scalars['UUID']['output']>;
   status: NeedClaimStatus;
   updatedAt: Scalars['Datetime']['output'];
-};
-
-
-/** Claims made by authenticated accounts on active needs. */
-export type NeedClaimClaimConversationsByNeedClaimIdArgs = {
-  after?: InputMaybe<Scalars['Cursor']['input']>;
-  before?: InputMaybe<Scalars['Cursor']['input']>;
-  condition?: InputMaybe<ClaimConversationCondition>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<ClaimConversationsOrderBy>>;
 };
 
 
@@ -6842,6 +8006,8 @@ export type Node = {
 /** Unified operational log sink for mobile app, backoffice web, web API, and worker jobs. */
 export type OperationalLog = Node & {
   __typename: 'OperationalLog';
+  /** Reads a single `Account` that is related to this `OperationalLog`. */
+  accountByAccountId: Maybe<Account>;
   accountId: Maybe<Scalars['UUID']['output']>;
   component: Scalars['String']['output'];
   context: Maybe<Scalars['String']['output']>;
@@ -6859,6 +8025,8 @@ export type OperationalLog = Node & {
  * tested for equality and combined with a logical ‘and.’
  */
 export type OperationalLogCondition = {
+  /** Checks for equality with the object’s `accountId` field. */
+  accountId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `component` field. */
   component?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
@@ -6917,6 +8085,8 @@ export type OperationalLogsEdge = {
 
 /** Methods to use when ordering `OperationalLog`. */
 export enum OperationalLogsOrderBy {
+  AccountIdAsc = 'ACCOUNT_ID_ASC',
+  AccountIdDesc = 'ACCOUNT_ID_DESC',
   ComponentAsc = 'COMPONENT_ASC',
   ComponentDesc = 'COMPONENT_DESC',
   CreatedAtAsc = 'CREATED_AT_ASC',
@@ -7019,6 +8189,8 @@ export type Query = Node & {
   allAccountNotifications: Maybe<AccountNotificationsConnection>;
   /** Reads and enables pagination through a set of `Account`. */
   allAccounts: Maybe<AccountsConnection>;
+  /** Reads and enables pagination through a set of `CampaignModerationAuditEvent`. */
+  allCampaignModerationAuditEvents: Maybe<CampaignModerationAuditEventsConnection>;
   /** Reads and enables pagination through a set of `CampaignModerationNote`. */
   allCampaignModerationNotes: Maybe<CampaignModerationNotesConnection>;
   /** Reads and enables pagination through a set of `CampaignNeed`. */
@@ -7027,6 +8199,10 @@ export type Query = Node & {
   allCampaignResources: Maybe<CampaignResourcesConnection>;
   /** Reads and enables pagination through a set of `Campaign`. */
   allCampaigns: Maybe<CampaignsConnection>;
+  /** Reads and enables pagination through a set of `ChatConversationSummary`. */
+  allChatConversationSummaries: Maybe<ChatConversationSummariesConnection>;
+  /** Reads and enables pagination through a set of `ChatTypingPresence`. */
+  allChatTypingPresences: Maybe<ChatTypingPresencesConnection>;
   /** Reads and enables pagination through a set of `ClaimConversation`. */
   allClaimConversations: Maybe<ClaimConversationsConnection>;
   /** Reads and enables pagination through a set of `ClaimMessageImage`. */
@@ -7059,6 +8235,12 @@ export type Query = Node & {
   allResourceCategories: Maybe<ResourceCategoriesConnection>;
   /** Reads and enables pagination through a set of `ResourceCategoryAssignment`. */
   allResourceCategoryAssignments: Maybe<ResourceCategoryAssignmentsConnection>;
+  /** Reads and enables pagination through a set of `ResourceConversation`. */
+  allResourceConversations: Maybe<ResourceConversationsConnection>;
+  /** Reads and enables pagination through a set of `ResourceMessageImage`. */
+  allResourceMessageImages: Maybe<ResourceMessageImagesConnection>;
+  /** Reads and enables pagination through a set of `ResourceMessage`. */
+  allResourceMessages: Maybe<ResourceMessagesConnection>;
   /** Reads and enables pagination through a set of `Resource`. */
   allResources: Maybe<ResourcesConnection>;
   /** Reads and enables pagination through a set of `SystemSetting`. */
@@ -7069,6 +8251,10 @@ export type Query = Node & {
   /** Reads a single `Campaign` using its globally unique `ID`. */
   campaign: Maybe<Campaign>;
   campaignById: Maybe<Campaign>;
+  /** Reads a single `CampaignModerationAuditEvent` using its globally unique `ID`. */
+  campaignModerationAuditEvent: Maybe<CampaignModerationAuditEvent>;
+  campaignModerationAuditEventById: Maybe<CampaignModerationAuditEvent>;
+  campaignModerationEvents: Maybe<CampaignModerationEventsConnection>;
   /** Reads a single `CampaignModerationNote` using its globally unique `ID`. */
   campaignModerationNote: Maybe<CampaignModerationNote>;
   campaignModerationNoteById: Maybe<CampaignModerationNote>;
@@ -7078,16 +8264,20 @@ export type Query = Node & {
   /** Reads a single `CampaignResource` using its globally unique `ID`. */
   campaignResource: Maybe<CampaignResource>;
   campaignResourceByCampaignIdAndResourceId: Maybe<CampaignResource>;
+  /** Reads a single `ChatTypingPresence` using its globally unique `ID`. */
+  chatTypingPresence: Maybe<ChatTypingPresence>;
+  chatTypingPresenceByConversationKindAndConversationIdAndAccountId: Maybe<ChatTypingPresence>;
   /** Reads a single `ClaimConversation` using its globally unique `ID`. */
   claimConversation: Maybe<ClaimConversation>;
   claimConversationById: Maybe<ClaimConversation>;
-  claimConversationByNeedClaimId: Maybe<ClaimConversation>;
+  claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: Maybe<ClaimConversation>;
   /** Reads a single `ClaimMessage` using its globally unique `ID`. */
   claimMessage: Maybe<ClaimMessage>;
   claimMessageById: Maybe<ClaimMessage>;
   /** Reads a single `ClaimMessageImage` using its globally unique `ID`. */
   claimMessageImage: Maybe<ClaimMessageImage>;
   claimMessageImageById: Maybe<ClaimMessageImage>;
+  countChatConversations: Maybe<Scalars['Int']['output']>;
   currentTokenBalance: Maybe<Scalars['Int']['output']>;
   getGrantForClaim: Maybe<GetGrantForClaimConnection>;
   getOperationalLogRetentionDays: Maybe<Scalars['Int']['output']>;
@@ -7104,6 +8294,7 @@ export type Query = Node & {
   /** Reads a single `GrantTargetEmail` using its globally unique `ID`. */
   grantTargetEmail: Maybe<GrantTargetEmail>;
   grantTargetEmailByGrantIdAndTargetEmailNormalized: Maybe<GrantTargetEmail>;
+  listChatConversations: Maybe<ListChatConversationsConnection>;
   listResourceCategories: Maybe<ListResourceCategoriesConnection>;
   /** Reads a single `Need` using its globally unique `ID`. */
   need: Maybe<Need>;
@@ -7148,6 +8339,16 @@ export type Query = Node & {
   resourceCategoryAssignmentByResourceIdAndCategoryCode: Maybe<ResourceCategoryAssignment>;
   resourceCategoryByCode: Maybe<ResourceCategory>;
   resourceCategoryBySlug: Maybe<ResourceCategory>;
+  /** Reads a single `ResourceConversation` using its globally unique `ID`. */
+  resourceConversation: Maybe<ResourceConversation>;
+  resourceConversationById: Maybe<ResourceConversation>;
+  resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: Maybe<ResourceConversation>;
+  /** Reads a single `ResourceMessage` using its globally unique `ID`. */
+  resourceMessage: Maybe<ResourceMessage>;
+  resourceMessageById: Maybe<ResourceMessage>;
+  /** Reads a single `ResourceMessageImage` using its globally unique `ID`. */
+  resourceMessageImage: Maybe<ResourceMessageImage>;
+  resourceMessageImageById: Maybe<ResourceMessageImage>;
   searchNeeds: Maybe<SearchNeedsConnection>;
   searchResources: Maybe<SearchResourcesConnection>;
   /** Reads a single `SystemSetting` using its globally unique `ID`. */
@@ -7239,6 +8440,7 @@ export type QueryAdminListCampaignsArgs = {
   pLimit?: InputMaybe<Scalars['Int']['input']>;
   pOffset?: InputMaybe<Scalars['Int']['input']>;
   pSearch?: InputMaybe<Scalars['String']['input']>;
+  pStatus?: InputMaybe<CampaignModerationStatus>;
 };
 
 
@@ -7344,6 +8546,18 @@ export type QueryAllAccountsArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryAllCampaignModerationAuditEventsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignModerationAuditEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignModerationAuditEventsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryAllCampaignModerationNotesArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -7388,6 +8602,29 @@ export type QueryAllCampaignsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<CampaignsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllChatConversationSummariesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ChatConversationSummariesOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllChatTypingPresencesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ChatTypingPresenceCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ChatTypingPresencesOrderBy>>;
 };
 
 
@@ -7584,6 +8821,42 @@ export type QueryAllResourceCategoryAssignmentsArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryAllResourceConversationsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceConversationCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllResourceMessageImagesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceMessageImageCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceMessageImagesOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllResourceMessagesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceMessageCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryAllResourcesArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
@@ -7632,6 +8905,29 @@ export type QueryCampaignByIdArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryCampaignModerationAuditEventArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCampaignModerationAuditEventByIdArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCampaignModerationEventsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryCampaignModerationNoteArgs = {
   nodeId: Scalars['ID']['input'];
 };
@@ -7670,6 +8966,20 @@ export type QueryCampaignResourceByCampaignIdAndResourceIdArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryChatTypingPresenceArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryChatTypingPresenceByConversationKindAndConversationIdAndAccountIdArgs = {
+  accountId: Scalars['UUID']['input'];
+  conversationId: Scalars['UUID']['input'];
+  conversationKind: ChatContextKind;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryClaimConversationArgs = {
   nodeId: Scalars['ID']['input'];
 };
@@ -7682,8 +8992,10 @@ export type QueryClaimConversationByIdArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
-export type QueryClaimConversationByNeedClaimIdArgs = {
-  needClaimId: Scalars['UUID']['input'];
+export type QueryClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdArgs = {
+  claimerAccountId: Scalars['UUID']['input'];
+  creatorAccountId: Scalars['UUID']['input'];
+  needId: Scalars['UUID']['input'];
 };
 
 
@@ -7708,6 +9020,12 @@ export type QueryClaimMessageImageArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryClaimMessageImageByIdArgs = {
   id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCountChatConversationsArgs = {
+  pSearch?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -7776,6 +9094,19 @@ export type QueryGrantTargetEmailArgs = {
 export type QueryGrantTargetEmailByGrantIdAndTargetEmailNormalizedArgs = {
   grantId: Scalars['UUID']['input'];
   targetEmailNormalized: Scalars['String']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryListChatConversationsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -7939,6 +9270,50 @@ export type QueryResourceCategoryByCodeArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryResourceCategoryBySlugArgs = {
   slug: Scalars['String']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceConversationArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceConversationByIdArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdArgs = {
+  bidderAccountId: Scalars['UUID']['input'];
+  ownerAccountId: Scalars['UUID']['input'];
+  resourceId: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceMessageArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceMessageByIdArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceMessageImageArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryResourceMessageImageByIdArgs = {
+  id: Scalars['UUID']['input'];
 };
 
 
@@ -8187,6 +9562,8 @@ export type Resource = Node & {
   resourceBidsByResourceId: ResourceBidsConnection;
   /** Reads and enables pagination through a set of `ResourceCategoryAssignment`. */
   resourceCategoryAssignmentsByResourceId: ResourceCategoryAssignmentsConnection;
+  /** Reads and enables pagination through a set of `ResourceConversation`. */
+  resourceConversationsByResourceId: ResourceConversationsConnection;
   title: Scalars['String']['output'];
   updatedAt: Scalars['Datetime']['output'];
 };
@@ -8222,6 +9599,17 @@ export type ResourceResourceCategoryAssignmentsByResourceIdArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<ResourceCategoryAssignmentsOrderBy>>;
+};
+
+
+export type ResourceResourceConversationsByResourceIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceConversationCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
 };
 
 /** Responses and negotiations created by interested accounts on resources. */
@@ -8624,6 +10012,114 @@ export type ResourceCondition = {
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+/** One private conversation channel per (resource, participant-pair). Attached to a resource_bid once one is submitted. */
+export type ResourceConversation = Node & {
+  __typename: 'ResourceConversation';
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByBidderAccountId: Maybe<Account>;
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByOwnerAccountId: Maybe<Account>;
+  bidderAccountId: Scalars['UUID']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  id: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  ownerAccountId: Scalars['UUID']['output'];
+  resourceBidId: Maybe<Scalars['UUID']['output']>;
+  /** Reads a single `Resource` that is related to this `ResourceConversation`. */
+  resourceByResourceId: Maybe<Resource>;
+  resourceId: Scalars['UUID']['output'];
+  /** Reads and enables pagination through a set of `ResourceMessage`. */
+  resourceMessagesByConversationId: ResourceMessagesConnection;
+  updatedAt: Scalars['Datetime']['output'];
+};
+
+
+/** One private conversation channel per (resource, participant-pair). Attached to a resource_bid once one is submitted. */
+export type ResourceConversationResourceMessagesByConversationIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceMessageCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
+};
+
+/**
+ * A condition to be used against `ResourceConversation` object types. All fields
+ * are tested for equality and combined with a logical ‘and.’
+ */
+export type ResourceConversationCondition = {
+  /** Checks for equality with the object’s `bidderAccountId` field. */
+  bidderAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `ownerAccountId` field. */
+  ownerAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `resourceId` field. */
+  resourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `ResourceConversation` */
+export type ResourceConversationInput = {
+  bidderAccountId: Scalars['UUID']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  ownerAccountId: Scalars['UUID']['input'];
+  resourceBidId?: InputMaybe<Scalars['UUID']['input']>;
+  resourceId: Scalars['UUID']['input'];
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** Represents an update to a `ResourceConversation`. Fields that are set will be updated. */
+export type ResourceConversationPatch = {
+  bidderAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  ownerAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  resourceBidId?: InputMaybe<Scalars['UUID']['input']>;
+  resourceId?: InputMaybe<Scalars['UUID']['input']>;
+  updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** A connection to a list of `ResourceConversation` values. */
+export type ResourceConversationsConnection = {
+  __typename: 'ResourceConversationsConnection';
+  /** A list of edges which contains the `ResourceConversation` and cursor to aid in pagination. */
+  edges: Array<ResourceConversationsEdge>;
+  /** A list of `ResourceConversation` objects. */
+  nodes: Array<ResourceConversation>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `ResourceConversation` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `ResourceConversation` edge in the connection. */
+export type ResourceConversationsEdge = {
+  __typename: 'ResourceConversationsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `ResourceConversation` at the end of the edge. */
+  node: ResourceConversation;
+};
+
+/** Methods to use when ordering `ResourceConversation`. */
+export enum ResourceConversationsOrderBy {
+  BidderAccountIdAsc = 'BIDDER_ACCOUNT_ID_ASC',
+  BidderAccountIdDesc = 'BIDDER_ACCOUNT_ID_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  OwnerAccountIdAsc = 'OWNER_ACCOUNT_ID_ASC',
+  OwnerAccountIdDesc = 'OWNER_ACCOUNT_ID_DESC',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  ResourceIdAsc = 'RESOURCE_ID_ASC',
+  ResourceIdDesc = 'RESOURCE_ID_DESC'
+}
+
 /** An input for mutations affecting `Resource` */
 export type ResourceInput = {
   canBeDelivered?: InputMaybe<Scalars['Boolean']['input']>;
@@ -8647,6 +10143,172 @@ export type ResourceInput = {
   title: Scalars['String']['input'];
   updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
+
+export type ResourceMessage = Node & {
+  __typename: 'ResourceMessage';
+  body: Scalars['String']['output'];
+  conversationId: Scalars['UUID']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  id: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  readAt: Maybe<Scalars['Datetime']['output']>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  /** Reads and enables pagination through a set of `ResourceMessageImage`. */
+  resourceMessageImagesByMessageId: ResourceMessageImagesConnection;
+  senderAccountId: Scalars['UUID']['output'];
+};
+
+
+export type ResourceMessageResourceMessageImagesByMessageIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<ResourceMessageImageCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<ResourceMessageImagesOrderBy>>;
+};
+
+/**
+ * A condition to be used against `ResourceMessage` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type ResourceMessageCondition = {
+  /** Checks for equality with the object’s `conversationId` field. */
+  conversationId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+export type ResourceMessageImage = Node & {
+  __typename: 'ResourceMessageImage';
+  createdAt: Scalars['Datetime']['output'];
+  id: Scalars['UUID']['output'];
+  imageUrl: Scalars['String']['output'];
+  messageId: Scalars['UUID']['output'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  /** Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`. */
+  resourceMessageByMessageId: Maybe<ResourceMessage>;
+  sortOrder: Scalars['Int']['output'];
+};
+
+/**
+ * A condition to be used against `ResourceMessageImage` object types. All fields
+ * are tested for equality and combined with a logical ‘and.’
+ */
+export type ResourceMessageImageCondition = {
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `messageId` field. */
+  messageId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `ResourceMessageImage` */
+export type ResourceMessageImageInput = {
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  imageUrl: Scalars['String']['input'];
+  messageId: Scalars['UUID']['input'];
+  sortOrder?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** Represents an update to a `ResourceMessageImage`. Fields that are set will be updated. */
+export type ResourceMessageImagePatch = {
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  messageId?: InputMaybe<Scalars['UUID']['input']>;
+  sortOrder?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** A connection to a list of `ResourceMessageImage` values. */
+export type ResourceMessageImagesConnection = {
+  __typename: 'ResourceMessageImagesConnection';
+  /** A list of edges which contains the `ResourceMessageImage` and cursor to aid in pagination. */
+  edges: Array<ResourceMessageImagesEdge>;
+  /** A list of `ResourceMessageImage` objects. */
+  nodes: Array<ResourceMessageImage>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `ResourceMessageImage` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `ResourceMessageImage` edge in the connection. */
+export type ResourceMessageImagesEdge = {
+  __typename: 'ResourceMessageImagesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `ResourceMessageImage` at the end of the edge. */
+  node: ResourceMessageImage;
+};
+
+/** Methods to use when ordering `ResourceMessageImage`. */
+export enum ResourceMessageImagesOrderBy {
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  MessageIdAsc = 'MESSAGE_ID_ASC',
+  MessageIdDesc = 'MESSAGE_ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/** An input for mutations affecting `ResourceMessage` */
+export type ResourceMessageInput = {
+  body: Scalars['String']['input'];
+  conversationId: Scalars['UUID']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  readAt?: InputMaybe<Scalars['Datetime']['input']>;
+  senderAccountId: Scalars['UUID']['input'];
+};
+
+/** Represents an update to a `ResourceMessage`. Fields that are set will be updated. */
+export type ResourceMessagePatch = {
+  body?: InputMaybe<Scalars['String']['input']>;
+  conversationId?: InputMaybe<Scalars['UUID']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  readAt?: InputMaybe<Scalars['Datetime']['input']>;
+  senderAccountId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** A connection to a list of `ResourceMessage` values. */
+export type ResourceMessagesConnection = {
+  __typename: 'ResourceMessagesConnection';
+  /** A list of edges which contains the `ResourceMessage` and cursor to aid in pagination. */
+  edges: Array<ResourceMessagesEdge>;
+  /** A list of `ResourceMessage` objects. */
+  nodes: Array<ResourceMessage>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `ResourceMessage` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `ResourceMessage` edge in the connection. */
+export type ResourceMessagesEdge = {
+  __typename: 'ResourceMessagesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `ResourceMessage` at the end of the edge. */
+  node: ResourceMessage;
+};
+
+/** Methods to use when ordering `ResourceMessage`. */
+export enum ResourceMessagesOrderBy {
+  ConversationIdAsc = 'CONVERSATION_ID_ASC',
+  ConversationIdDesc = 'CONVERSATION_ID_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
 
 /** Represents an update to a `Resource`. Fields that are set will be updated. */
 export type ResourcePatch = {
@@ -8924,6 +10586,114 @@ export type SendClaimMessagePayloadClaimMessageEdgeArgs = {
   orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
 };
 
+/** All input for the `sendNeedMessage` mutation. */
+export type SendNeedMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pBody?: InputMaybe<Scalars['String']['input']>;
+  pImageUrls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pNeedId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `sendNeedMessage` mutation. */
+export type SendNeedMessagePayload = {
+  __typename: 'SendNeedMessagePayload';
+  /** Reads a single `Account` that is related to this `ClaimMessage`. */
+  accountBySenderAccountId: Maybe<Account>;
+  /** Reads a single `ClaimConversation` that is related to this `ClaimMessage`. */
+  claimConversationByConversationId: Maybe<ClaimConversation>;
+  claimMessage: Maybe<ClaimMessage>;
+  /** An edge for our `ClaimMessage`. May be used by Relay 1. */
+  claimMessageEdge: Maybe<ClaimMessagesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `sendNeedMessage` mutation. */
+export type SendNeedMessagePayloadClaimMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
+};
+
+/** All input for the `sendResourceMessageDirect` mutation. */
+export type SendResourceMessageDirectInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pBody?: InputMaybe<Scalars['String']['input']>;
+  pImageUrls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pOtherAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  pResourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `sendResourceMessageDirect` mutation. */
+export type SendResourceMessageDirectPayload = {
+  __typename: 'SendResourceMessageDirectPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  resourceMessage: Maybe<ResourceMessage>;
+  /** An edge for our `ResourceMessage`. May be used by Relay 1. */
+  resourceMessageEdge: Maybe<ResourceMessagesEdge>;
+};
+
+
+/** The output of our `sendResourceMessageDirect` mutation. */
+export type SendResourceMessageDirectPayloadResourceMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
+};
+
+/** All input for the `sendResourceMessage` mutation. */
+export type SendResourceMessageInput = {
+  body?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  imageUrls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  resourceBidId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `sendResourceMessage` mutation. */
+export type SendResourceMessagePayload = {
+  __typename: 'SendResourceMessagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  resourceMessage: Maybe<ResourceMessage>;
+  /** An edge for our `ResourceMessage`. May be used by Relay 1. */
+  resourceMessageEdge: Maybe<ResourceMessagesEdge>;
+};
+
+
+/** The output of our `sendResourceMessage` mutation. */
+export type SendResourceMessagePayloadResourceMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
+};
+
 /** All input for the `setAccountDeliveryPreference` mutation. */
 export type SetAccountDeliveryPreferenceInput = {
   /**
@@ -9162,6 +10932,8 @@ export type TokenMovement = Node & {
   counterpartyAccountId: Maybe<Scalars['UUID']['output']>;
   createdAt: Scalars['Datetime']['output'];
   eventType: Scalars['String']['output'];
+  /** Reads and enables pagination through a set of `GrantClaim`. */
+  grantClaimsByTokenMovementId: GrantClaimsConnection;
   id: Scalars['UUID']['output'];
   idempotencyKey: Maybe<Scalars['String']['output']>;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
@@ -9169,6 +10941,18 @@ export type TokenMovement = Node & {
   payload: Scalars['JSON']['output'];
   referenceId: Maybe<Scalars['UUID']['output']>;
   referenceType: Maybe<Scalars['String']['output']>;
+};
+
+
+/** Auditable Topes ledger entries for all positive and negative account movements. */
+export type TokenMovementGrantClaimsByTokenMovementIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<GrantClaimCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<GrantClaimsOrderBy>>;
 };
 
 /**
@@ -9432,6 +11216,47 @@ export type UpdateCampaignByIdInput = {
   id: Scalars['UUID']['input'];
 };
 
+/** All input for the `updateCampaignForModeration` mutation. */
+export type UpdateCampaignForModerationInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pAirdropAmount?: InputMaybe<Scalars['Int']['input']>;
+  pAirdropAt?: InputMaybe<Scalars['Datetime']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pEndAt?: InputMaybe<Scalars['Datetime']['input']>;
+  pManagerNoteFromCreator?: InputMaybe<Scalars['String']['input']>;
+  pRewardsMultiplier?: InputMaybe<Scalars['Int']['input']>;
+  pStartAt?: InputMaybe<Scalars['Datetime']['input']>;
+  pTheme?: InputMaybe<Scalars['String']['input']>;
+  pTitle?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `updateCampaignForModeration` mutation. */
+export type UpdateCampaignForModerationPayload = {
+  __typename: 'UpdateCampaignForModerationPayload';
+  /** Reads a single `Account` that is related to this `Campaign`. */
+  accountByCreatorAccountId: Maybe<Account>;
+  campaign: Maybe<Campaign>;
+  /** An edge for our `Campaign`. May be used by Relay 1. */
+  campaignEdge: Maybe<CampaignsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `updateCampaignForModeration` mutation. */
+export type UpdateCampaignForModerationPayloadCampaignEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignsOrderBy>>;
+};
+
 /** All input for the `updateCampaign` mutation. */
 export type UpdateCampaignInput = {
   /** An object where the defined keys will be set on the `Campaign` being updated. */
@@ -9443,6 +11268,57 @@ export type UpdateCampaignInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   /** The globally unique `ID` which will identify a single `Campaign` to be updated. */
   nodeId: Scalars['ID']['input'];
+};
+
+/** All input for the `updateCampaignModerationAuditEventById` mutation. */
+export type UpdateCampaignModerationAuditEventByIdInput = {
+  /** An object where the defined keys will be set on the `CampaignModerationAuditEvent` being updated. */
+  campaignModerationAuditEventPatch: CampaignModerationAuditEventPatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateCampaignModerationAuditEvent` mutation. */
+export type UpdateCampaignModerationAuditEventInput = {
+  /** An object where the defined keys will be set on the `CampaignModerationAuditEvent` being updated. */
+  campaignModerationAuditEventPatch: CampaignModerationAuditEventPatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `CampaignModerationAuditEvent` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `CampaignModerationAuditEvent` mutation. */
+export type UpdateCampaignModerationAuditEventPayload = {
+  __typename: 'UpdateCampaignModerationAuditEventPayload';
+  /** Reads a single `Account` that is related to this `CampaignModerationAuditEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignModerationAuditEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  /** The `CampaignModerationAuditEvent` that was updated by this mutation. */
+  campaignModerationAuditEvent: Maybe<CampaignModerationAuditEvent>;
+  /** An edge for our `CampaignModerationAuditEvent`. May be used by Relay 1. */
+  campaignModerationAuditEventEdge: Maybe<CampaignModerationAuditEventsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `CampaignModerationAuditEvent` mutation. */
+export type UpdateCampaignModerationAuditEventPayloadCampaignModerationAuditEventEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignModerationAuditEventsOrderBy>>;
 };
 
 /** All input for the `updateCampaignModerationNoteById` mutation. */
@@ -9628,6 +11504,57 @@ export type UpdateCampaignResourcePayloadCampaignResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
 };
 
+/** All input for the `updateChatTypingPresenceByConversationKindAndConversationIdAndAccountId` mutation. */
+export type UpdateChatTypingPresenceByConversationKindAndConversationIdAndAccountIdInput = {
+  accountId: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `ChatTypingPresence` being updated. */
+  chatTypingPresencePatch: ChatTypingPresencePatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  conversationId: Scalars['UUID']['input'];
+  conversationKind: ChatContextKind;
+};
+
+/** All input for the `updateChatTypingPresence` mutation. */
+export type UpdateChatTypingPresenceInput = {
+  /** An object where the defined keys will be set on the `ChatTypingPresence` being updated. */
+  chatTypingPresencePatch: ChatTypingPresencePatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ChatTypingPresence` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `ChatTypingPresence` mutation. */
+export type UpdateChatTypingPresencePayload = {
+  __typename: 'UpdateChatTypingPresencePayload';
+  /** Reads a single `Account` that is related to this `ChatTypingPresence`. */
+  accountByAccountId: Maybe<Account>;
+  /** The `ChatTypingPresence` that was updated by this mutation. */
+  chatTypingPresence: Maybe<ChatTypingPresence>;
+  /** An edge for our `ChatTypingPresence`. May be used by Relay 1. */
+  chatTypingPresenceEdge: Maybe<ChatTypingPresencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our update `ChatTypingPresence` mutation. */
+export type UpdateChatTypingPresencePayloadChatTypingPresenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<ChatTypingPresencesOrderBy>>;
+};
+
 /** All input for the `updateClaimConversationById` mutation. */
 export type UpdateClaimConversationByIdInput = {
   /** An object where the defined keys will be set on the `ClaimConversation` being updated. */
@@ -9640,16 +11567,18 @@ export type UpdateClaimConversationByIdInput = {
   id: Scalars['UUID']['input'];
 };
 
-/** All input for the `updateClaimConversationByNeedClaimId` mutation. */
-export type UpdateClaimConversationByNeedClaimIdInput = {
+/** All input for the `updateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId` mutation. */
+export type UpdateClaimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountIdInput = {
   /** An object where the defined keys will be set on the `ClaimConversation` being updated. */
   claimConversationPatch: ClaimConversationPatch;
+  claimerAccountId: Scalars['UUID']['input'];
   /**
    * An arbitrary string value with no semantic meaning. Will be included in the
    * payload verbatim. May be used to track mutations by the client.
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  needClaimId: Scalars['UUID']['input'];
+  creatorAccountId: Scalars['UUID']['input'];
+  needId: Scalars['UUID']['input'];
 };
 
 /** All input for the `updateClaimConversation` mutation. */
@@ -9683,8 +11612,6 @@ export type UpdateClaimConversationPayload = {
   clientMutationId: Maybe<Scalars['String']['output']>;
   /** Reads a single `Need` that is related to this `ClaimConversation`. */
   needByNeedId: Maybe<Need>;
-  /** Reads a single `NeedClaim` that is related to this `ClaimConversation`. */
-  needClaimByNeedClaimId: Maybe<NeedClaim>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
 };
@@ -9851,6 +11778,8 @@ export type UpdateGrantClaimPayload = {
   grantDefinitionByGrantId: Maybe<GrantDefinition>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
+  /** Reads a single `TokenMovement` that is related to this `GrantClaim`. */
+  tokenMovementByTokenMovementId: Maybe<TokenMovement>;
 };
 
 
@@ -9887,6 +11816,10 @@ export type UpdateGrantDefinitionInput = {
 /** The output of our update `GrantDefinition` mutation. */
 export type UpdateGrantDefinitionPayload = {
   __typename: 'UpdateGrantDefinitionPayload';
+  /** Reads a single `Account` that is related to this `GrantDefinition`. */
+  accountByCreatedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `GrantDefinition`. */
+  campaignByLinkedCampaignId: Maybe<Campaign>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -10269,6 +12202,8 @@ export type UpdateOperationalLogInput = {
 /** The output of our update `OperationalLog` mutation. */
 export type UpdateOperationalLogPayload = {
   __typename: 'UpdateOperationalLogPayload';
+  /** Reads a single `Account` that is related to this `OperationalLog`. */
+  accountByAccountId: Maybe<Account>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -10528,6 +12463,73 @@ export type UpdateResourceCategoryPayloadResourceCategoryEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceCategoriesOrderBy>>;
 };
 
+/** All input for the `updateResourceConversationById` mutation. */
+export type UpdateResourceConversationByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `ResourceConversation` being updated. */
+  resourceConversationPatch: ResourceConversationPatch;
+};
+
+/** All input for the `updateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId` mutation. */
+export type UpdateResourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountIdInput = {
+  bidderAccountId: Scalars['UUID']['input'];
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  ownerAccountId: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `ResourceConversation` being updated. */
+  resourceConversationPatch: ResourceConversationPatch;
+  resourceId: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateResourceConversation` mutation. */
+export type UpdateResourceConversationInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ResourceConversation` to be updated. */
+  nodeId: Scalars['ID']['input'];
+  /** An object where the defined keys will be set on the `ResourceConversation` being updated. */
+  resourceConversationPatch: ResourceConversationPatch;
+};
+
+/** The output of our update `ResourceConversation` mutation. */
+export type UpdateResourceConversationPayload = {
+  __typename: 'UpdateResourceConversationPayload';
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByBidderAccountId: Maybe<Account>;
+  /** Reads a single `Account` that is related to this `ResourceConversation`. */
+  accountByOwnerAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `ResourceConversation`. */
+  resourceByResourceId: Maybe<Resource>;
+  /** The `ResourceConversation` that was updated by this mutation. */
+  resourceConversation: Maybe<ResourceConversation>;
+  /** An edge for our `ResourceConversation`. May be used by Relay 1. */
+  resourceConversationEdge: Maybe<ResourceConversationsEdge>;
+};
+
+
+/** The output of our update `ResourceConversation` mutation. */
+export type UpdateResourceConversationPayloadResourceConversationEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceConversationsOrderBy>>;
+};
+
 /** All input for the `updateResource` mutation. */
 export type UpdateResourceInput = {
   /**
@@ -10539,6 +12541,104 @@ export type UpdateResourceInput = {
   nodeId: Scalars['ID']['input'];
   /** An object where the defined keys will be set on the `Resource` being updated. */
   resourcePatch: ResourcePatch;
+};
+
+/** All input for the `updateResourceMessageById` mutation. */
+export type UpdateResourceMessageByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `ResourceMessage` being updated. */
+  resourceMessagePatch: ResourceMessagePatch;
+};
+
+/** All input for the `updateResourceMessageImageById` mutation. */
+export type UpdateResourceMessageImageByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+  /** An object where the defined keys will be set on the `ResourceMessageImage` being updated. */
+  resourceMessageImagePatch: ResourceMessageImagePatch;
+};
+
+/** All input for the `updateResourceMessageImage` mutation. */
+export type UpdateResourceMessageImageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ResourceMessageImage` to be updated. */
+  nodeId: Scalars['ID']['input'];
+  /** An object where the defined keys will be set on the `ResourceMessageImage` being updated. */
+  resourceMessageImagePatch: ResourceMessageImagePatch;
+};
+
+/** The output of our update `ResourceMessageImage` mutation. */
+export type UpdateResourceMessageImagePayload = {
+  __typename: 'UpdateResourceMessageImagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceMessage` that is related to this `ResourceMessageImage`. */
+  resourceMessageByMessageId: Maybe<ResourceMessage>;
+  /** The `ResourceMessageImage` that was updated by this mutation. */
+  resourceMessageImage: Maybe<ResourceMessageImage>;
+  /** An edge for our `ResourceMessageImage`. May be used by Relay 1. */
+  resourceMessageImageEdge: Maybe<ResourceMessageImagesEdge>;
+};
+
+
+/** The output of our update `ResourceMessageImage` mutation. */
+export type UpdateResourceMessageImagePayloadResourceMessageImageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessageImagesOrderBy>>;
+};
+
+/** All input for the `updateResourceMessage` mutation. */
+export type UpdateResourceMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `ResourceMessage` to be updated. */
+  nodeId: Scalars['ID']['input'];
+  /** An object where the defined keys will be set on the `ResourceMessage` being updated. */
+  resourceMessagePatch: ResourceMessagePatch;
+};
+
+/** The output of our update `ResourceMessage` mutation. */
+export type UpdateResourceMessagePayload = {
+  __typename: 'UpdateResourceMessagePayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  /** The `ResourceMessage` that was updated by this mutation. */
+  resourceMessage: Maybe<ResourceMessage>;
+  /** An edge for our `ResourceMessage`. May be used by Relay 1. */
+  resourceMessageEdge: Maybe<ResourceMessagesEdge>;
+};
+
+
+/** The output of our update `ResourceMessage` mutation. */
+export type UpdateResourceMessagePayloadResourceMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
 };
 
 /** The output of our update `Resource` mutation. */
@@ -10675,6 +12775,40 @@ export type UpdateTokenMovementPayloadTokenMovementEdgeArgs = {
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
 };
 
+/** All input for the `upsertChatTypingPresence` mutation. */
+export type UpsertChatTypingPresenceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pConversationId?: InputMaybe<Scalars['UUID']['input']>;
+  pConversationKind?: InputMaybe<ChatContextKind>;
+};
+
+/** The output of our `upsertChatTypingPresence` mutation. */
+export type UpsertChatTypingPresencePayload = {
+  __typename: 'UpsertChatTypingPresencePayload';
+  /** Reads a single `Account` that is related to this `ChatTypingPresence`. */
+  accountByAccountId: Maybe<Account>;
+  chatTypingPresence: Maybe<ChatTypingPresence>;
+  /** An edge for our `ChatTypingPresence`. May be used by Relay 1. */
+  chatTypingPresenceEdge: Maybe<ChatTypingPresencesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `upsertChatTypingPresence` mutation. */
+export type UpsertChatTypingPresencePayloadChatTypingPresenceEdgeArgs = {
+  orderBy?: InputMaybe<Array<ChatTypingPresencesOrderBy>>;
+};
+
 /** All input for the `upsertGrant` mutation. */
 export type UpsertGrantInput = {
   /**
@@ -10689,12 +12823,18 @@ export type UpsertGrantInput = {
   pGrantId?: InputMaybe<Scalars['UUID']['input']>;
   pLinkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
   pMaxSuccessfulClaimCount?: InputMaybe<Scalars['Int']['input']>;
+  pTargetAccountIds?: InputMaybe<Array<InputMaybe<Scalars['UUID']['input']>>>;
+  pTargetEmails?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   pTitle?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** The output of our `upsertGrant` mutation. */
 export type UpsertGrantPayload = {
   __typename: 'UpsertGrantPayload';
+  /** Reads a single `Account` that is related to this `GrantDefinition`. */
+  accountByCreatedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `GrantDefinition`. */
+  campaignByLinkedCampaignId: Maybe<Campaign>;
   /**
    * The exact same `clientMutationId` that was provided in the mutation input,
    * unchanged and unused. May be used by a client to track mutations.
@@ -10788,12 +12928,13 @@ export type AdminListMailsQuery = { __typename: 'Query', adminListMails: { __typ
 
 export type AdminListCampaignsQueryVariables = Exact<{
   pSearch?: InputMaybe<Scalars['String']['input']>;
+  pStatus?: InputMaybe<CampaignModerationStatus>;
   pLimit?: InputMaybe<Scalars['Int']['input']>;
   pOffset?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type AdminListCampaignsQuery = { __typename: 'Query', adminListCampaigns: { __typename: 'AdminListCampaignsConnection', totalCount: number, nodes: Array<{ __typename: 'AdminListCampaignsRecord', id: any | null, creatorName: string | null, summary: string | null, description: string | null, airdropDatetime: any | null, airdropTokenAmount: number | null, beginDatetime: any | null, endDatetime: any | null, resourceRewardsMultiplier: number | null, createdAt: any | null }> } | null };
+export type AdminListCampaignsQuery = { __typename: 'Query', adminListCampaigns: { __typename: 'AdminListCampaignsConnection', totalCount: number, nodes: Array<{ __typename: 'AdminListCampaignsRecord', id: any | null, creatorName: string | null, summary: string | null, description: string | null, moderationStatus: CampaignModerationStatus | null, airdropDatetime: any | null, airdropTokenAmount: number | null, beginDatetime: any | null, endDatetime: any | null, resourceRewardsMultiplier: number | null, createdAt: any | null }> } | null };
 
 export type AdminListGrantsQueryVariables = Exact<{
   pSearch?: InputMaybe<Scalars['String']['input']>;
@@ -10812,6 +12953,33 @@ export type AdminListLogsQueryVariables = Exact<{
 
 
 export type AdminListLogsQuery = { __typename: 'Query', adminListLogs: { __typename: 'AdminListLogsConnection', totalCount: number, nodes: Array<{ __typename: 'AdminListLogsRecord', component: string | null, severity: string | null, message: string | null, context: string | null, timestamp: any | null }> } | null };
+
+export type AdminGetMailContentMutationVariables = Exact<{
+  pMailId: Scalars['UUID']['input'];
+}>;
+
+
+export type AdminGetMailContentMutation = { __typename: 'Mutation', adminGetMailContent: { __typename: 'AdminGetMailContentPayload', string: string | null } | null };
+
+export type AdminResendMailMutationVariables = Exact<{
+  pMailId: Scalars['UUID']['input'];
+}>;
+
+
+export type AdminResendMailMutation = { __typename: 'Mutation', adminResendMail: { __typename: 'AdminResendMailPayload', clientMutationId: string | null } | null };
+
+export type AdminCreateGrantMutationVariables = Exact<{
+  pTitle: Scalars['String']['input'];
+  pDescription?: InputMaybe<Scalars['String']['input']>;
+  pAwardedTokenAmount: Scalars['Int']['input'];
+  pMaxSuccessfulClaimCount?: InputMaybe<Scalars['Int']['input']>;
+  pExpiresAt: Scalars['Datetime']['input'];
+  pLinkedCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pTargetEmails?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+}>;
+
+
+export type AdminCreateGrantMutation = { __typename: 'Mutation', upsertGrant: { __typename: 'UpsertGrantPayload', grantDefinition: { __typename: 'GrantDefinition', id: any, title: string, createdAt: any } | null } | null };
 
 export type AuthSessionQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -10896,7 +13064,29 @@ export type CampaignModerationHistoryQueryVariables = Exact<{
 }>;
 
 
-export type CampaignModerationHistoryQuery = { __typename: 'Query', allCampaignModerationNotes: { __typename: 'CampaignModerationNotesConnection', nodes: Array<{ __typename: 'CampaignModerationNote', id: any, campaignId: any, managerAccountId: any, body: string, createdAt: any }> } | null };
+export type CampaignModerationHistoryQuery = { __typename: 'Query', campaignModerationEvents: { __typename: 'CampaignModerationEventsConnection', nodes: Array<{ __typename: 'CampaignModerationEventsRecord', eventType: string | null, body: string | null, actorAccountId: any | null, createdAt: any | null }> } | null };
+
+export type UpdateCampaignForModerationMutationVariables = Exact<{
+  pCampaignId: Scalars['UUID']['input'];
+  pTitle: Scalars['String']['input'];
+  pTheme: Scalars['String']['input'];
+  pManagerNoteFromCreator?: InputMaybe<Scalars['String']['input']>;
+  pRewardsMultiplier: Scalars['Int']['input'];
+  pAirdropAmount: Scalars['Int']['input'];
+  pStartAt: Scalars['Datetime']['input'];
+  pAirdropAt: Scalars['Datetime']['input'];
+  pEndAt: Scalars['Datetime']['input'];
+}>;
+
+
+export type UpdateCampaignForModerationMutation = { __typename: 'Mutation', updateCampaignForModeration: { __typename: 'UpdateCampaignForModerationPayload', campaign: { __typename: 'Campaign', id: any, title: string, theme: string, managerNoteFromCreator: string | null, rewardsMultiplier: number, airdropAmount: number, startAt: any, airdropAt: any, endAt: any, moderationStatus: CampaignModerationStatus, createdAt: any } | null } | null };
+
+export type CampaignModerationDetailsQueryVariables = Exact<{
+  campaignId: Scalars['UUID']['input'];
+}>;
+
+
+export type CampaignModerationDetailsQuery = { __typename: 'Query', campaignById: { __typename: 'Campaign', id: any, title: string, theme: string, managerNoteFromCreator: string | null, rewardsMultiplier: number, airdropAmount: number, startAt: any, airdropAt: any, endAt: any, moderationStatus: CampaignModerationStatus, createdAt: any } | null };
 
 export type CampaignNeedTriageQueryVariables = Exact<{
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
@@ -10945,11 +13135,6 @@ export type PublicCampaignsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type PublicCampaignsQuery = { __typename: 'Query', allCampaigns: { __typename: 'CampaignsConnection', nodes: Array<{ __typename: 'Campaign', id: any, title: string, theme: string, moderationStatus: CampaignModerationStatus, startAt: any, airdropAt: any, endAt: any }> } | null };
 
-export type PendingCampaignsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type PendingCampaignsQuery = { __typename: 'Query', allCampaigns: { __typename: 'CampaignsConnection', nodes: Array<{ __typename: 'Campaign', id: any, title: string, theme: string, moderationStatus: CampaignModerationStatus, startAt: any, airdropAt: any, endAt: any, createdAt: any }> } | null };
-
 export type ApproveCampaignMutationVariables = Exact<{
   campaignId: Scalars['UUID']['input'];
 }>;
@@ -10970,6 +13155,85 @@ export type InspirationCampaignsQueryVariables = Exact<{ [key: string]: never; }
 
 
 export type InspirationCampaignsQuery = { __typename: 'Query', allCampaigns: { __typename: 'CampaignsConnection', nodes: Array<{ __typename: 'Campaign', id: any, title: string, theme: string, moderationStatus: CampaignModerationStatus, startAt: any, airdropAt: any, endAt: any, createdAt: any }> } | null };
+
+export type ListChatConversationsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type ListChatConversationsQuery = { __typename: 'Query', listChatConversations: { __typename: 'ListChatConversationsConnection', nodes: Array<{ __typename: 'ListChatConversationsRecord', conversationKind: ChatContextKind | null, conversationId: any | null, contextId: any | null, contextTitle: string | null, otherAccountId: any | null, otherAccountDisplayName: string | null, lastMessagePreview: string | null, unreadCount: number | null, lastActivityAt: any | null }> } | null };
+
+export type CountChatConversationsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type CountChatConversationsQuery = { __typename: 'Query', countChatConversations: number | null };
+
+export type ChatResourceConversationQueryVariables = Exact<{
+  conversationId: Scalars['UUID']['input'];
+}>;
+
+
+export type ChatResourceConversationQuery = { __typename: 'Query', resourceConversationById: { __typename: 'ResourceConversation', id: any, resourceBidId: any | null, resourceId: any, ownerAccountId: any, bidderAccountId: any, createdAt: any, updatedAt: any, resourceByResourceId: { __typename: 'Resource', id: any, title: string } | null, resourceMessagesByConversationId: { __typename: 'ResourceMessagesConnection', nodes: Array<{ __typename: 'ResourceMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any, readAt: any | null, resourceMessageImagesByMessageId: { __typename: 'ResourceMessageImagesConnection', nodes: Array<{ __typename: 'ResourceMessageImage', id: any, imageUrl: string, sortOrder: number }> } }> } } | null };
+
+export type SendResourceMessageMutationVariables = Exact<{
+  input: SendResourceMessageInput;
+}>;
+
+
+export type SendResourceMessageMutation = { __typename: 'Mutation', sendResourceMessage: { __typename: 'SendResourceMessagePayload', resourceMessage: { __typename: 'ResourceMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any } | null } | null };
+
+export type SendResourceMessageDirectMutationVariables = Exact<{
+  input: SendResourceMessageDirectInput;
+}>;
+
+
+export type SendResourceMessageDirectMutation = { __typename: 'Mutation', sendResourceMessageDirect: { __typename: 'SendResourceMessageDirectPayload', resourceMessage: { __typename: 'ResourceMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any } | null } | null };
+
+export type SendNeedMessageMutationVariables = Exact<{
+  input: SendNeedMessageInput;
+}>;
+
+
+export type SendNeedMessageMutation = { __typename: 'Mutation', sendNeedMessage: { __typename: 'SendNeedMessagePayload', claimMessage: { __typename: 'ClaimMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any } | null } | null };
+
+export type ChatClaimConversationQueryVariables = Exact<{
+  conversationId: Scalars['UUID']['input'];
+}>;
+
+
+export type ChatClaimConversationQuery = { __typename: 'Query', claimConversationById: { __typename: 'ClaimConversation', id: any, needClaimId: any | null, needId: any, creatorAccountId: any, claimerAccountId: any, createdAt: any, needByNeedId: { __typename: 'Need', id: any, title: string } | null, claimMessagesByConversationId: { __typename: 'ClaimMessagesConnection', nodes: Array<{ __typename: 'ClaimMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any, readAt: any | null, claimMessageImagesByMessageId: { __typename: 'ClaimMessageImagesConnection', nodes: Array<{ __typename: 'ClaimMessageImage', id: any, imageUrl: string, sortOrder: number }> } }> } } | null };
+
+export type ChatSendClaimMessageMutationVariables = Exact<{
+  input: SendClaimMessageInput;
+}>;
+
+
+export type ChatSendClaimMessageMutation = { __typename: 'Mutation', sendClaimMessage: { __typename: 'SendClaimMessagePayload', claimMessage: { __typename: 'ClaimMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any } | null } | null };
+
+export type MarkResourceMessagesReadMutationVariables = Exact<{
+  input: MarkResourceMessagesReadInput;
+}>;
+
+
+export type MarkResourceMessagesReadMutation = { __typename: 'Mutation', markResourceMessagesRead: { __typename: 'MarkResourceMessagesReadPayload', integer: number | null } | null };
+
+export type MarkClaimMessagesReadMutationVariables = Exact<{
+  input: MarkClaimMessagesReadInput;
+}>;
+
+
+export type MarkClaimMessagesReadMutation = { __typename: 'Mutation', markClaimMessagesRead: { __typename: 'MarkClaimMessagesReadPayload', integer: number | null } | null };
+
+export type UpsertChatTypingPresenceMutationVariables = Exact<{
+  input: UpsertChatTypingPresenceInput;
+}>;
+
+
+export type UpsertChatTypingPresenceMutation = { __typename: 'Mutation', upsertChatTypingPresence: { __typename: 'UpsertChatTypingPresencePayload', clientMutationId: string | null } | null };
 
 export type TokenBalanceQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -11017,12 +13281,21 @@ export type WriteOperationalLogMutationVariables = Exact<{
 
 export type WriteOperationalLogMutation = { __typename: 'Mutation', writeOperationalLog: { __typename: 'WriteOperationalLogPayload', uuid: any | null } | null };
 
-export type ClaimConversationQueryVariables = Exact<{
+export type NeedClaimDetailQueryVariables = Exact<{
   claimId: Scalars['UUID']['input'];
 }>;
 
 
-export type ClaimConversationQuery = { __typename: 'Query', needClaimById: { __typename: 'NeedClaim', id: any, needId: any, claimerAccountId: any, message: string | null, status: NeedClaimStatus, createdAt: any, updatedAt: any, settledAt: any | null, settledByAccountId: any | null, needClaimSettlementEventByNeedClaimId: { __typename: 'NeedClaimSettlementEvent', id: any, topesAmount: number, createdAt: any, settledByAccountId: any } | null, needByNeedId: { __typename: 'Need', id: any, title: string, creatorAccountId: any } | null, accountByClaimerAccountId: { __typename: 'Account', id: any, displayName: string | null, externalSubject: string } | null, claimConversationByNeedClaimId: { __typename: 'ClaimConversation', id: any, needClaimId: any, needId: any, creatorAccountId: any, claimerAccountId: any, createdAt: any, claimMessagesByConversationId: { __typename: 'ClaimMessagesConnection', nodes: Array<{ __typename: 'ClaimMessage', id: any, senderAccountId: any, body: string, createdAt: any, readAt: any | null, claimMessageImagesByMessageId: { __typename: 'ClaimMessageImagesConnection', nodes: Array<{ __typename: 'ClaimMessageImage', id: any, imageUrl: string, sortOrder: number }> } }> } } | null } | null };
+export type NeedClaimDetailQuery = { __typename: 'Query', needClaimById: { __typename: 'NeedClaim', id: any, needId: any, claimerAccountId: any, message: string | null, status: NeedClaimStatus, createdAt: any, updatedAt: any, settledAt: any | null, needClaimSettlementEventByNeedClaimId: { __typename: 'NeedClaimSettlementEvent', id: any, topesAmount: number, createdAt: any, settledByAccountId: any } | null, needByNeedId: { __typename: 'Need', id: any, title: string, creatorAccountId: any } | null, accountByClaimerAccountId: { __typename: 'Account', id: any, displayName: string | null, externalSubject: string } | null } | null };
+
+export type ClaimConversationByPartiesQueryVariables = Exact<{
+  needId: Scalars['UUID']['input'];
+  creatorAccountId: Scalars['UUID']['input'];
+  claimerAccountId: Scalars['UUID']['input'];
+}>;
+
+
+export type ClaimConversationByPartiesQuery = { __typename: 'Query', claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: { __typename: 'ClaimConversation', id: any, claimMessagesByConversationId: { __typename: 'ClaimMessagesConnection', nodes: Array<{ __typename: 'ClaimMessage', id: any, senderAccountId: any, body: string, createdAt: any, readAt: any | null, claimMessageImagesByMessageId: { __typename: 'ClaimMessageImagesConnection', nodes: Array<{ __typename: 'ClaimMessageImage', id: any, imageUrl: string, sortOrder: number }> } }> } } | null };
 
 export type SendClaimMessageMutationVariables = Exact<{
   input: SendClaimMessageInput;
@@ -11031,24 +13304,17 @@ export type SendClaimMessageMutationVariables = Exact<{
 
 export type SendClaimMessageMutation = { __typename: 'Mutation', sendClaimMessage: { __typename: 'SendClaimMessagePayload', claimMessage: { __typename: 'ClaimMessage', id: any, conversationId: any, senderAccountId: any, body: string, createdAt: any, readAt: any | null, claimMessageImagesByMessageId: { __typename: 'ClaimMessageImagesConnection', nodes: Array<{ __typename: 'ClaimMessageImage', id: any, imageUrl: string, sortOrder: number }> } } | null } | null };
 
-export type MarkClaimMessagesReadMutationVariables = Exact<{
-  input: MarkClaimMessagesReadInput;
-}>;
-
-
-export type MarkClaimMessagesReadMutation = { __typename: 'Mutation', markClaimMessagesRead: { __typename: 'MarkClaimMessagesReadPayload', integer: number | null } | null };
-
 export type ClaimNeedMutationVariables = Exact<{
   input: ClaimNeedInput;
 }>;
 
 
-export type ClaimNeedMutation = { __typename: 'Mutation', claimNeed: { __typename: 'ClaimNeedPayload', needClaim: { __typename: 'NeedClaim', id: any, needId: any, claimerAccountId: any, message: string | null, status: NeedClaimStatus, createdAt: any, updatedAt: any, settledAt: any | null, claimConversationByNeedClaimId: { __typename: 'ClaimConversation', id: any } | null } | null } | null };
+export type ClaimNeedMutation = { __typename: 'Mutation', claimNeed: { __typename: 'ClaimNeedPayload', needClaim: { __typename: 'NeedClaim', id: any, needId: any, claimerAccountId: any, message: string | null, status: NeedClaimStatus, createdAt: any, updatedAt: any, settledAt: any | null } | null } | null };
 
 export type ViewerClaimOverviewQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ViewerClaimOverviewQuery = { __typename: 'Query', allNeedClaims: { __typename: 'NeedClaimsConnection', nodes: Array<{ __typename: 'NeedClaim', id: any, needId: any, claimerAccountId: any, message: string | null, status: NeedClaimStatus, createdAt: any, updatedAt: any, settledAt: any | null, settledByAccountId: any | null, needByNeedId: { __typename: 'Need', id: any, title: string, creatorAccountId: any, proposedTopesAmount: number | null } | null, accountByClaimerAccountId: { __typename: 'Account', id: any, displayName: string | null, externalSubject: string } | null, claimConversationByNeedClaimId: { __typename: 'ClaimConversation', id: any, createdAt: any } | null, needClaimSettlementEventByNeedClaimId: { __typename: 'NeedClaimSettlementEvent', id: any, topesAmount: number, createdAt: any, settledByAccountId: any } | null }> } | null, allNeedClaimNotifications: { __typename: 'NeedClaimNotificationsConnection', nodes: Array<{ __typename: 'NeedClaimNotification', id: any, needClaimId: any, eventType: string, payload: any, createdAt: any, readAt: any | null }> } | null };
+export type ViewerClaimOverviewQuery = { __typename: 'Query', allNeedClaims: { __typename: 'NeedClaimsConnection', nodes: Array<{ __typename: 'NeedClaim', id: any, needId: any, claimerAccountId: any, message: string | null, status: NeedClaimStatus, createdAt: any, updatedAt: any, settledAt: any | null, settledByAccountId: any | null, needByNeedId: { __typename: 'Need', id: any, title: string, creatorAccountId: any, proposedTopesAmount: number | null } | null, accountByClaimerAccountId: { __typename: 'Account', id: any, displayName: string | null, externalSubject: string } | null, needClaimSettlementEventByNeedClaimId: { __typename: 'NeedClaimSettlementEvent', id: any, topesAmount: number, createdAt: any, settledByAccountId: any } | null }> } | null, allNeedClaimNotifications: { __typename: 'NeedClaimNotificationsConnection', nodes: Array<{ __typename: 'NeedClaimNotification', id: any, needClaimId: any, eventType: string, payload: any, createdAt: any, readAt: any | null }> } | null };
 
 export type NeedClaimManagementQueryVariables = Exact<{
   claimId: Scalars['UUID']['input'];
@@ -11309,9 +13575,12 @@ export const AdminListBidsDocument = {"kind":"Document","definitions":[{"kind":"
 export const AdminListResourcesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListResources"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListResources"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorName"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"tokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"imageCount"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"expirationDatetime"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListResourcesQuery, AdminListResourcesQueryVariables>;
 export const AdminListNotificationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListNotifications"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListNotifications"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"accountName"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListNotificationsQuery, AdminListNotificationsQueryVariables>;
 export const AdminListMailsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListMails"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListMails"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"recipientAccountName"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListMailsQuery, AdminListMailsQueryVariables>;
-export const AdminListCampaignsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListCampaigns"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"creatorName"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"airdropDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"airdropTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"beginDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"endDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"resourceRewardsMultiplier"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListCampaignsQuery, AdminListCampaignsQueryVariables>;
+export const AdminListCampaignsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListCampaigns"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pStatus"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"CampaignModerationStatus"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pStatus"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pStatus"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"creatorName"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"airdropDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"airdropTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"beginDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"endDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"resourceRewardsMultiplier"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListCampaignsQuery, AdminListCampaignsQueryVariables>;
 export const AdminListGrantsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListGrants"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListGrants"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"expirationDatetime"}},{"kind":"Field","name":{"kind":"Name","value":"amountGranted"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListGrantsQuery, AdminListGrantsQueryVariables>;
 export const AdminListLogsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListLogs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"component"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"context"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListLogsQuery, AdminListLogsQueryVariables>;
+export const AdminGetMailContentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AdminGetMailContent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pMailId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminGetMailContent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pMailId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pMailId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"string"}}]}}]}}]} as unknown as DocumentNode<AdminGetMailContentMutation, AdminGetMailContentMutationVariables>;
+export const AdminResendMailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AdminResendMail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pMailId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminResendMail"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pMailId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pMailId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"clientMutationId"}}]}}]}}]} as unknown as DocumentNode<AdminResendMailMutation, AdminResendMailMutationVariables>;
+export const AdminCreateGrantDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AdminCreateGrant"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pTitle"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pDescription"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pAwardedTokenAmount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pMaxSuccessfulClaimCount"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pExpiresAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLinkedCampaignId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pTargetEmails"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertGrant"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pTitle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pTitle"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pDescription"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pDescription"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pAwardedTokenAmount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pAwardedTokenAmount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMaxSuccessfulClaimCount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pMaxSuccessfulClaimCount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pExpiresAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pExpiresAt"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pLinkedCampaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLinkedCampaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pTargetEmails"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pTargetEmails"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"grantDefinition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminCreateGrantMutation, AdminCreateGrantMutationVariables>;
 export const AuthSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AuthSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"emailVerified"}},{"kind":"Field","name":{"kind":"Name","value":"preferredLanguage"}}]}}]}}]}}]} as unknown as DocumentNode<AuthSessionQuery, AuthSessionQueryVariables>;
 export const AuthLoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AuthLogin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authLogin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"identifier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"emailVerified"}},{"kind":"Field","name":{"kind":"Name","value":"preferredLanguage"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AuthLoginMutation, AuthLoginMutationVariables>;
 export const AuthLogoutDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AuthLogout"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authLogout"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authenticated"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"emailVerified"}},{"kind":"Field","name":{"kind":"Name","value":"preferredLanguage"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AuthLogoutMutation, AuthLogoutMutationVariables>;
@@ -11322,28 +13591,40 @@ export const ConfirmEmailVerificationDocument = {"kind":"Document","definitions"
 export const RequestPasswordResetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestPasswordReset"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resetTtlMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"throttleMs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestPasswordReset"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"identifier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"identifier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"resetTtlMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resetTtlMs"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"throttleMs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"throttleMs"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"boolean"}}]}}]}}]} as unknown as DocumentNode<RequestPasswordResetMutation, RequestPasswordResetMutationVariables>;
 export const ConfirmPasswordResetWithPasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ConfirmPasswordResetWithPassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"token"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"nextPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"confirmPasswordResetWithPassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"token"},"value":{"kind":"Variable","name":{"kind":"Name","value":"token"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"nextPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"nextPassword"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"boolean"}}]}}]}}]} as unknown as DocumentNode<ConfirmPasswordResetWithPasswordMutation, ConfirmPasswordResetWithPasswordMutationVariables>;
 export const AddCampaignModerationNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddCampaignModerationNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"body"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addCampaignModerationNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"body"},"value":{"kind":"Variable","name":{"kind":"Name","value":"body"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignModerationNote"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"managerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<AddCampaignModerationNoteMutation, AddCampaignModerationNoteMutationVariables>;
-export const CampaignModerationHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CampaignModerationHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaignModerationNotes"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CREATED_AT_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"managerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables>;
+export const CampaignModerationHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CampaignModerationHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignModerationEvents"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pCampaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"actorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables>;
+export const UpdateCampaignForModerationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateCampaignForModeration"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pCampaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pTitle"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pTheme"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pManagerNoteFromCreator"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pRewardsMultiplier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pAirdropAmount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pStartAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pAirdropAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pEndAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateCampaignForModeration"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pCampaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pCampaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pTitle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pTitle"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pTheme"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pTheme"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pManagerNoteFromCreator"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pManagerNoteFromCreator"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pRewardsMultiplier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pRewardsMultiplier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pAirdropAmount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pAirdropAmount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pStartAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pStartAt"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pAirdropAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pAirdropAt"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pEndAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pEndAt"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaign"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"theme"}},{"kind":"Field","name":{"kind":"Name","value":"managerNoteFromCreator"}},{"kind":"Field","name":{"kind":"Name","value":"rewardsMultiplier"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAmount"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<UpdateCampaignForModerationMutation, UpdateCampaignForModerationMutationVariables>;
+export const CampaignModerationDetailsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CampaignModerationDetails"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"theme"}},{"kind":"Field","name":{"kind":"Name","value":"managerNoteFromCreator"}},{"kind":"Field","name":{"kind":"Name","value":"rewardsMultiplier"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAmount"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<CampaignModerationDetailsQuery, CampaignModerationDetailsQueryVariables>;
 export const CampaignNeedTriageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CampaignNeedTriage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaignNeeds"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"CREATED_AT_DESC"}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"actedAt"}},{"kind":"Field","name":{"kind":"Name","value":"actedByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"campaignByCampaignId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTopesAmount"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CampaignNeedTriageQuery, CampaignNeedTriageQueryVariables>;
 export const AcceptCampaignNeedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AcceptCampaignNeed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"needId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"acceptCampaignNeed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"needId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"needId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignNeed"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"actedByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"actedAt"}}]}}]}}]}}]} as unknown as DocumentNode<AcceptCampaignNeedMutation, AcceptCampaignNeedMutationVariables>;
 export const RejectCampaignNeedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RejectCampaignNeed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"needId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rejectCampaignNeed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"needId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"needId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignNeed"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"actedByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"actedAt"}}]}}]}}]}}]} as unknown as DocumentNode<RejectCampaignNeedMutation, RejectCampaignNeedMutationVariables>;
 export const CreateCampaignDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCampaign"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"title"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"theme"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"managerNoteFromCreator"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"rewardsMultiplier"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"airdropAmount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"airdropAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"endAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCampaign"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"title"},"value":{"kind":"Variable","name":{"kind":"Name","value":"title"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"theme"},"value":{"kind":"Variable","name":{"kind":"Name","value":"theme"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"managerNoteFromCreator"},"value":{"kind":"Variable","name":{"kind":"Name","value":"managerNoteFromCreator"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"rewardsMultiplier"},"value":{"kind":"Variable","name":{"kind":"Name","value":"rewardsMultiplier"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"airdropAmount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"airdropAmount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"startAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startAt"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"airdropAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"airdropAt"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"endAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"endAt"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaign"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}}]}}]}}]}}]} as unknown as DocumentNode<CreateCampaignMutation, CreateCampaignMutationVariables>;
 export const MyCampaignsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyCampaigns"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CREATED_AT_DESC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}}]}}]}}]}}]} as unknown as DocumentNode<MyCampaignsQuery, MyCampaignsQueryVariables>;
 export const PublicCampaignsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"PublicCampaigns"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"moderationStatus"},"value":{"kind":"EnumValue","value":"APPROVED"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"START_AT_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"theme"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}}]}}]}}]}}]} as unknown as DocumentNode<PublicCampaignsQuery, PublicCampaignsQueryVariables>;
-export const PendingCampaignsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"PendingCampaigns"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"moderationStatus"},"value":{"kind":"EnumValue","value":"PENDING"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CREATED_AT_DESC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"theme"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<PendingCampaignsQuery, PendingCampaignsQueryVariables>;
 export const ApproveCampaignDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ApproveCampaign"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"approveCampaign"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaign"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}}]}}]}}]}}]} as unknown as DocumentNode<ApproveCampaignMutation, ApproveCampaignMutationVariables>;
 export const MyCampaignsConnectionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyCampaignsConnection"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"creatorAccountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Cursor"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"creatorAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"creatorAccountId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CREATED_AT_DESC"}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"theme"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}}]} as unknown as DocumentNode<MyCampaignsConnectionQuery, MyCampaignsConnectionQueryVariables>;
 export const InspirationCampaignsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"InspirationCampaigns"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"moderationStatus"},"value":{"kind":"EnumValue","value":"APPROVED"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CREATED_AT_DESC"}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"10"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"theme"}},{"kind":"Field","name":{"kind":"Name","value":"moderationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"airdropAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<InspirationCampaignsQuery, InspirationCampaignsQueryVariables>;
+export const ListChatConversationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListChatConversations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listChatConversations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"conversationKind"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"contextId"}},{"kind":"Field","name":{"kind":"Name","value":"contextTitle"}},{"kind":"Field","name":{"kind":"Name","value":"otherAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"otherAccountDisplayName"}},{"kind":"Field","name":{"kind":"Name","value":"lastMessagePreview"}},{"kind":"Field","name":{"kind":"Name","value":"unreadCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastActivityAt"}}]}}]}}]}}]} as unknown as DocumentNode<ListChatConversationsQuery, ListChatConversationsQueryVariables>;
+export const CountChatConversationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CountChatConversations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"countChatConversations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}}]}]}}]} as unknown as DocumentNode<CountChatConversationsQuery, CountChatConversationsQueryVariables>;
+export const ChatResourceConversationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ChatResourceConversation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceConversationById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"resourceBidId"}},{"kind":"Field","name":{"kind":"Name","value":"resourceId"}},{"kind":"Field","name":{"kind":"Name","value":"ownerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"bidderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"resourceByResourceId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}}]}},{"kind":"Field","name":{"kind":"Name","value":"resourceMessagesByConversationId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"resourceMessageImagesByMessageId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ChatResourceConversationQuery, ChatResourceConversationQueryVariables>;
+export const SendResourceMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendResourceMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendResourceMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendResourceMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<SendResourceMessageMutation, SendResourceMessageMutationVariables>;
+export const SendResourceMessageDirectDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendResourceMessageDirect"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendResourceMessageDirectInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendResourceMessageDirect"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<SendResourceMessageDirectMutation, SendResourceMessageDirectMutationVariables>;
+export const SendNeedMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendNeedMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendNeedMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendNeedMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<SendNeedMessageMutation, SendNeedMessageMutationVariables>;
+export const ChatClaimConversationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ChatClaimConversation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimConversationById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}}]}},{"kind":"Field","name":{"kind":"Name","value":"claimMessagesByConversationId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ChatClaimConversationQuery, ChatClaimConversationQueryVariables>;
+export const ChatSendClaimMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ChatSendClaimMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendClaimMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendClaimMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<ChatSendClaimMessageMutation, ChatSendClaimMessageMutationVariables>;
+export const MarkResourceMessagesReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkResourceMessagesRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkResourceMessagesReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markResourceMessagesRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"integer"}}]}}]}}]} as unknown as DocumentNode<MarkResourceMessagesReadMutation, MarkResourceMessagesReadMutationVariables>;
+export const MarkClaimMessagesReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkClaimMessagesRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkClaimMessagesReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markClaimMessagesRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"integer"}}]}}]}}]} as unknown as DocumentNode<MarkClaimMessagesReadMutation, MarkClaimMessagesReadMutationVariables>;
+export const UpsertChatTypingPresenceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpsertChatTypingPresence"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertChatTypingPresenceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertChatTypingPresence"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"clientMutationId"}}]}}]}}]} as unknown as DocumentNode<UpsertChatTypingPresenceMutation, UpsertChatTypingPresenceMutationVariables>;
 export const TokenBalanceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TokenBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTokenBalance"}}]}}]} as unknown as DocumentNode<TokenBalanceQuery, TokenBalanceQueryVariables>;
 export const ContributionOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ContributionOverview"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"10"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Cursor"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTokenBalance"}},{"kind":"Field","name":{"kind":"Name","value":"allTokenMovements"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"amountDelta"}},{"kind":"Field","name":{"kind":"Name","value":"referenceType"}},{"kind":"Field","name":{"kind":"Name","value":"referenceId"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]} as unknown as DocumentNode<ContributionOverviewQuery, ContributionOverviewQueryVariables>;
 export const GiftTokensDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GiftTokens"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GiftTokensInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"giftTokens"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tokenMovement"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"amountDelta"}},{"kind":"Field","name":{"kind":"Name","value":"referenceType"}},{"kind":"Field","name":{"kind":"Name","value":"referenceId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<GiftTokensMutation, GiftTokensMutationVariables>;
 export const GetGrantForClaimDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGrantForClaim"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getGrantForClaim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pGrantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"awardedTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"maxSuccessfulClaimCount"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<GetGrantForClaimQuery, GetGrantForClaimQueryVariables>;
 export const ClaimGrantDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimGrant"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimGrant"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pGrantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"grantClaimResult"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"outcomeCode"}},{"kind":"Field","name":{"kind":"Name","value":"claimedAmount"}},{"kind":"Field","name":{"kind":"Name","value":"grantClaimId"}}]}}]}}]}}]} as unknown as DocumentNode<ClaimGrantMutation, ClaimGrantMutationVariables>;
 export const WriteOperationalLogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"WriteOperationalLog"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"level"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"component"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"message"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"context"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"writeOperationalLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pLevel"},"value":{"kind":"Variable","name":{"kind":"Name","value":"level"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pComponent"},"value":{"kind":"Variable","name":{"kind":"Name","value":"component"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"message"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pContext"},"value":{"kind":"Variable","name":{"kind":"Name","value":"context"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"accountId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pMetadata"},"value":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"uuid"}}]}}]}}]} as unknown as DocumentNode<WriteOperationalLogMutation, WriteOperationalLogMutationVariables>;
-export const ClaimConversationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ClaimConversation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaimById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"claimConversationByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessagesByConversationId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ClaimConversationQuery, ClaimConversationQueryVariables>;
+export const NeedClaimDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NeedClaimDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaimById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}}]}}]}}]} as unknown as DocumentNode<NeedClaimDetailQuery, NeedClaimDetailQueryVariables>;
+export const ClaimConversationByPartiesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ClaimConversationByParties"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"needId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"creatorAccountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"claimerAccountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"needId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"needId"}}},{"kind":"Argument","name":{"kind":"Name","value":"creatorAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"creatorAccountId"}}},{"kind":"Argument","name":{"kind":"Name","value":"claimerAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"claimerAccountId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessagesByConversationId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ClaimConversationByPartiesQuery, ClaimConversationByPartiesQueryVariables>;
 export const SendClaimMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendClaimMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendClaimMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendClaimMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"sortOrder"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SendClaimMessageMutation, SendClaimMessageMutationVariables>;
-export const MarkClaimMessagesReadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MarkClaimMessagesRead"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MarkClaimMessagesReadInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markClaimMessagesRead"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"integer"}}]}}]}}]} as unknown as DocumentNode<MarkClaimMessagesReadMutation, MarkClaimMessagesReadMutationVariables>;
-export const ClaimNeedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimNeed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ClaimNeedInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimNeed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaim"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimConversationByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]} as unknown as DocumentNode<ClaimNeedMutation, ClaimNeedMutationVariables>;
-export const ViewerClaimOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ViewerClaimOverview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allNeedClaims"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"100"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTopesAmount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"claimConversationByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"allNeedClaimNotifications"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"30"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}}]}}]}}]}}]} as unknown as DocumentNode<ViewerClaimOverviewQuery, ViewerClaimOverviewQueryVariables>;
+export const ClaimNeedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimNeed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ClaimNeedInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimNeed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaim"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}}]}}]}}]}}]} as unknown as DocumentNode<ClaimNeedMutation, ClaimNeedMutationVariables>;
+export const ViewerClaimOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ViewerClaimOverview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allNeedClaims"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"100"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTopesAmount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"allNeedClaimNotifications"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"30"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}}]}}]}}]}}]} as unknown as DocumentNode<ViewerClaimOverviewQuery, ViewerClaimOverviewQueryVariables>;
 export const NeedClaimManagementDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NeedClaimManagement"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaimById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"claimId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needByNeedId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTopesAmount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"accountByClaimerAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimId"}},{"kind":"Field","name":{"kind":"Name","value":"needId"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"claimerAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]}}]} as unknown as DocumentNode<NeedClaimManagementQuery, NeedClaimManagementQueryVariables>;
 export const SettleNeedClaimDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SettleNeedClaim"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SettleNeedClaimInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"settleNeedClaim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"needClaim"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"settledAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"needClaimSettlementEventByNeedClaimId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topesAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"settledByAccountId"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SettleNeedClaimMutation, SettleNeedClaimMutationVariables>;
 export const CreateNeedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateNeed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"title"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"description"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"location"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"intensity"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"NeedIntensity"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"proposedTopesAmount"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"objectRequired"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competenceRequired"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"toolingRequired"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"multiplePeopleRequired"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"requiredCompetenceText"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"requiredToolingText"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"requiredPeopleCount"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"expiresAt"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Datetime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createNeed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"title"},"value":{"kind":"Variable","name":{"kind":"Name","value":"title"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"description"},"value":{"kind":"Variable","name":{"kind":"Name","value":"description"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"location"},"value":{"kind":"Variable","name":{"kind":"Name","value":"location"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"intensity"},"value":{"kind":"Variable","name":{"kind":"Name","value":"intensity"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"proposedTopesAmount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"proposedTopesAmount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"objectRequired"},"value":{"kind":"Variable","name":{"kind":"Name","value":"objectRequired"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"competenceRequired"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competenceRequired"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"toolingRequired"},"value":{"kind":"Variable","name":{"kind":"Name","value":"toolingRequired"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"multiplePeopleRequired"},"value":{"kind":"Variable","name":{"kind":"Name","value":"multiplePeopleRequired"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"requiredCompetenceText"},"value":{"kind":"Variable","name":{"kind":"Name","value":"requiredCompetenceText"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"requiredToolingText"},"value":{"kind":"Variable","name":{"kind":"Name","value":"requiredToolingText"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"requiredPeopleCount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"requiredPeopleCount"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"expiresAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"expiresAt"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"need"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTopesAmount"}}]}}]}}]}}]} as unknown as DocumentNode<CreateNeedMutation, CreateNeedMutationVariables>;

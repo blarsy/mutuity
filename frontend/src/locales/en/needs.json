@@ -72,7 +72,19 @@
     "needCreated": "Need created: {{title}}.",
     "needUpdated": "Need updated: {{title}}.",
     "loadingNeed": "Loading need…",
-    "notFound": "This need was not found or is no longer accessible."
+    "notFound": "This need was not found or is no longer accessible.",
+    "title": "Need editor",
+    "loading": "Loading need…",
+    "editSubtitle": "Update your need details and availability settings.",
+    "createSubtitle": "Create a standalone need or link it to an approved, currently active campaign.",
+    "createSuccess": "Need created: {{title}}.",
+    "updateSuccess": "Need updated: {{title}}.",
+    "needNatureLabel": "Need nature",
+    "requiredToolingLabel": "Required tooling",
+    "requiredCompetenceLabel": "Required competence",
+    "requiredPeopleCountLabel": "Required number of people",
+    "saveButton": "Save",
+    "addButton": "Add"
   },
   "manage": {
     "title": "Needs workspace",

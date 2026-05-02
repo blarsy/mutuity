@@ -15,7 +15,8 @@ import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
-  CLAIM_CONVERSATION_QUERY,
+  NEED_CLAIM_DETAIL_QUERY,
+  CLAIM_CONVERSATION_BY_PARTIES_QUERY,
   MARK_CLAIM_MESSAGES_READ_MUTATION,
   SEND_CLAIM_MESSAGE_MUTATION
 } from "./claimConversation.queries";
@@ -36,7 +37,7 @@ type ClaimConversationPanelProps = {
   currentAccountId: string;
 };
 
-type ClaimConversationQueryData = {
+type NeedClaimDetailQueryData = {
   needClaimById: {
     id: string;
     needId: string;
@@ -62,25 +63,28 @@ type ClaimConversationQueryData = {
       createdAt: string;
       settledByAccountId: string;
     } | null;
-    claimConversationByNeedClaimId: {
-      id: string;
-      claimMessagesByConversationId: {
-        nodes: Array<{
-          id: string;
-          senderAccountId: string;
-          body: string;
-          createdAt: string;
-          readAt: string | null;
-          claimMessageImagesByMessageId: {
-            nodes: Array<{
-              id: string;
-              imageUrl: string;
-              sortOrder: number;
-            }>;
-          };
-        }>;
-      };
-    } | null;
+  } | null;
+};
+
+type ClaimConversationByPartiesData = {
+  claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: {
+    id: string;
+    claimMessagesByConversationId: {
+      nodes: Array<{
+        id: string;
+        senderAccountId: string;
+        body: string;
+        createdAt: string;
+        readAt: string | null;
+        claimMessageImagesByMessageId: {
+          nodes: Array<{
+            id: string;
+            imageUrl: string;
+            sortOrder: number;
+          }>;
+        };
+      }>;
+    };
   } | null;
 };
 
@@ -157,16 +161,32 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const { t } = useTranslation("needs");
   const [draftBody, setDraftBody] = useState("");
   const [draftImageUrls, setDraftImageUrls] = useState("");
-  const { data, loading, error, refetch } = useQuery<ClaimConversationQueryData>(CLAIM_CONVERSATION_QUERY, {
-    variables: { claimId }
-  });
+
   const [sendClaimMessage, { loading: sendLoading, error: sendError }] = useMutation(
     SEND_CLAIM_MESSAGE_MUTATION
   );
   const [markClaimMessagesRead] = useMutation(MARK_CLAIM_MESSAGES_READ_MUTATION);
 
+  const { data, loading, error, refetch } = useQuery<NeedClaimDetailQueryData>(NEED_CLAIM_DETAIL_QUERY, {
+    variables: { claimId }
+  });
+
   const claim = data?.needClaimById ?? null;
-  const conversation = claim?.claimConversationByNeedClaimId ?? null;
+
+  const { data: convData, refetch: refetchConv } = useQuery<ClaimConversationByPartiesData>(
+    CLAIM_CONVERSATION_BY_PARTIES_QUERY,
+    {
+      variables: {
+        needId: claim?.needId ?? "",
+        creatorAccountId: claim?.needByNeedId?.creatorAccountId ?? "",
+        claimerAccountId: claim?.claimerAccountId ?? ""
+      },
+      skip: !claim?.needId || !claim?.needByNeedId?.creatorAccountId || !claim?.claimerAccountId
+    }
+  );
+
+  const conversation =
+    convData?.claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId ?? null;
   const claimStatus = claim?.status ?? "OPEN";
   const isCreator = claim?.needByNeedId.creatorAccountId === currentAccountId;
 
@@ -203,7 +223,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
         }
       }
     })
-      .then(() => refetch())
+      .then(() => refetchConv())
       .catch(markReadError => {
         console.error("[needs] Failed to mark claim messages as read", markReadError);
         void logBackofficeError("[needs] Failed to mark claim messages as read", markReadError, {
@@ -237,7 +257,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
 
     setDraftBody("");
     setDraftImageUrls("");
-    await refetch();
+    await refetchConv();
   };
 
   if (loading) {

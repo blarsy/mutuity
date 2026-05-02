@@ -80,10 +80,6 @@ type ClaimOverviewNode = {
     displayName: string | null;
     externalSubject: string;
   } | null;
-  claimConversationByNeedClaimId: {
-    id: string;
-    createdAt: string;
-  } | null;
 };
 
 type ClaimNotificationNode = {

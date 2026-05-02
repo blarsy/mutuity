@@ -35,7 +35,7 @@ export const COUNT_CHAT_CONVERSATIONS_QUERY = gql`
  * appears at the top of the UI thread.
  */
 export const RESOURCE_CONVERSATION_QUERY = gql`
-  query ResourceConversation($conversationId: UUID!) {
+  query ChatResourceConversation($conversationId: UUID!) {
     resourceConversationById(id: $conversationId) {
       id
       resourceBidId
@@ -44,7 +44,11 @@ export const RESOURCE_CONVERSATION_QUERY = gql`
       bidderAccountId
       createdAt
       updatedAt
-      resourceMessagesByConversationId(orderBy: CREATED_AT_ASC) {
+      resourceByResourceId {
+        id
+        title
+      }
+      resourceMessagesByConversationId(orderBy: PRIMARY_KEY_ASC) {
         nodes {
           id
           conversationId
@@ -52,7 +56,7 @@ export const RESOURCE_CONVERSATION_QUERY = gql`
           body
           createdAt
           readAt
-          resourceMessageImagesByMessageId(orderBy: SORT_ORDER_ASC) {
+          resourceMessageImagesByMessageId(orderBy: PRIMARY_KEY_ASC) {
             nodes {
               id
               imageUrl
@@ -115,9 +119,69 @@ export const SEND_NEED_MESSAGE_MUTATION = gql`
   }
 `;
 
+/**
+ * Load the full thread for a claim-based (need) conversation.
+ * Messages are ordered by createdAt ascending.
+ */
+export const CLAIM_CONVERSATION_QUERY = gql`
+  query ChatClaimConversation($conversationId: UUID!) {
+    claimConversationById(id: $conversationId) {
+      id
+      needClaimId
+      needId
+      creatorAccountId
+      claimerAccountId
+      createdAt
+      needByNeedId {
+        id
+        title
+      }
+      claimMessagesByConversationId(orderBy: PRIMARY_KEY_ASC) {
+        nodes {
+          id
+          conversationId
+          senderAccountId
+          body
+          createdAt
+          readAt
+          claimMessageImagesByMessageId(orderBy: PRIMARY_KEY_ASC) {
+            nodes {
+              id
+              imageUrl
+              sortOrder
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const SEND_CLAIM_MESSAGE_MUTATION = gql`
+  mutation ChatSendClaimMessage($input: SendClaimMessageInput!) {
+    sendClaimMessage(input: $input) {
+      claimMessage {
+        id
+        conversationId
+        senderAccountId
+        body
+        createdAt
+      }
+    }
+  }
+`;
+
 export const MARK_RESOURCE_MESSAGES_READ_MUTATION = gql`
   mutation MarkResourceMessagesRead($input: MarkResourceMessagesReadInput!) {
     markResourceMessagesRead(input: $input) {
+      integer
+    }
+  }
+`;
+
+export const MARK_CLAIM_MESSAGES_READ_MUTATION = gql`
+  mutation MarkClaimMessagesRead($input: MarkClaimMessagesReadInput!) {
+    markClaimMessagesRead(input: $input) {
       integer
     }
   }

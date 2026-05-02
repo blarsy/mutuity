@@ -137,9 +137,11 @@ export const ADMIN_LIST_LOGS_QUERY = gql`
   }
 `;
 
-export const ADMIN_GET_MAIL_CONTENT_QUERY = gql`
-  query AdminGetMailContent($pMailId: UUID!) {
-    adminGetMailContent(pMailId: $pMailId)
+export const ADMIN_GET_MAIL_CONTENT_MUTATION = gql`
+  mutation AdminGetMailContent($pMailId: UUID!) {
+    adminGetMailContent(input: { pMailId: $pMailId }) {
+      string
+    }
   }
 `;
 

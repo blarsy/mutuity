@@ -1,7 +1,12 @@
 import { gql } from "@apollo/client";
 
-export const CLAIM_CONVERSATION_QUERY = gql`
-  query ClaimConversation($claimId: UUID!) {
+/**
+ * Load claim detail. Use CLAIM_CONVERSATION_BY_PARTIES_QUERY in a second
+ * hook to load the conversation once needId/creatorAccountId/claimerAccountId
+ * are known from this result.
+ */
+export const NEED_CLAIM_DETAIL_QUERY = gql`
+  query NeedClaimDetail($claimId: UUID!) {
     needClaimById(id: $claimId) {
       id
       needId
@@ -11,7 +16,6 @@ export const CLAIM_CONVERSATION_QUERY = gql`
       createdAt
       updatedAt
       settledAt
-      settledByAccountId
       needClaimSettlementEventByNeedClaimId {
         id
         topesAmount
@@ -28,26 +32,35 @@ export const CLAIM_CONVERSATION_QUERY = gql`
         displayName
         externalSubject
       }
-      claimConversationByNeedClaimId {
-        id
-        needClaimId
-        needId
-        creatorAccountId
-        claimerAccountId
-        createdAt
-        claimMessagesByConversationId {
-          nodes {
-            id
-            senderAccountId
-            body
-            createdAt
-            readAt
-            claimMessageImagesByMessageId {
-              nodes {
-                id
-                imageUrl
-                sortOrder
-              }
+    }
+  }
+`;
+
+/**
+ * Look up the ClaimConversation by its three-party unique key.
+ * Run this after NEED_CLAIM_DETAIL_QUERY provides needId, creatorAccountId,
+ * and claimerAccountId.
+ */
+export const CLAIM_CONVERSATION_BY_PARTIES_QUERY = gql`
+  query ClaimConversationByParties($needId: UUID!, $creatorAccountId: UUID!, $claimerAccountId: UUID!) {
+    claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId(
+      needId: $needId
+      creatorAccountId: $creatorAccountId
+      claimerAccountId: $claimerAccountId
+    ) {
+      id
+      claimMessagesByConversationId(orderBy: PRIMARY_KEY_ASC) {
+        nodes {
+          id
+          senderAccountId
+          body
+          createdAt
+          readAt
+          claimMessageImagesByMessageId(orderBy: PRIMARY_KEY_ASC) {
+            nodes {
+              id
+              imageUrl
+              sortOrder
             }
           }
         }

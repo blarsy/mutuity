@@ -72,7 +72,19 @@
     "needCreated": "Besoin créé : {{title}}.",
     "needUpdated": "Besoin mis à jour : {{title}}.",
     "loadingNeed": "Chargement du besoin…",
-    "notFound": "Ce besoin n'a pas été trouvé ou n'est plus accessible."
+    "notFound": "Ce besoin n'a pas été trouvé ou n'est plus accessible.",
+    "title": "Éditeur de besoin",
+    "loading": "Chargement du besoin…",
+    "editSubtitle": "Mettez à jour les détails et les paramètres de disponibilité de votre besoin.",
+    "createSubtitle": "Créez un besoin autonome ou associez-le à une campagne approuvée et actuellement active.",
+    "createSuccess": "Besoin créé : {{title}}.",
+    "updateSuccess": "Besoin mis à jour : {{title}}.",
+    "needNatureLabel": "Nature du besoin",
+    "requiredToolingLabel": "Outillage requis",
+    "requiredCompetenceLabel": "Compétence requise",
+    "requiredPeopleCountLabel": "Nombre de personnes requis",
+    "saveButton": "Enregistrer",
+    "addButton": "Ajouter"
   },
   "manage": {
     "title": "Espace de gestion des besoins",

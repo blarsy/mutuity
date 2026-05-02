@@ -27,5 +27,11 @@
     "genericRetry": "Une erreur s'est produite. Veuillez réessayer."
   },
   "lastUpdated": "Dernière mise à jour : {{date}}",
-  "optionalLabel": "Optionnel"
+  "optionalLabel": "Optionnel",
+  "form": {
+    "submitError": "Une erreur s'est produite. Veuillez réessayer.",
+    "optionalLabel": "Optionnel"
+  },
+  "redirecting": "Redirection vers la connexion…",
+  "checking": "Vérification de votre session…"
 }

@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
+import { ImageUploadField } from "../../components/ImageUploadField";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import {
@@ -102,13 +103,6 @@ function normalizeOptionalInteger(value: number | "") {
   return Number.isFinite(Number(value)) ? Number(value) : undefined;
 }
 
-function parseImageUrls(value: string) {
-  return value
-    .split(/\n|,/)
-    .map(item => item.trim())
-    .filter(Boolean);
-}
-
 function fromGraphQLResourceIntensity(value: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION") {
   switch (value) {
     case "LEG_UP":
@@ -174,7 +168,7 @@ export default function CreateResourcePage() {
     return {
       title: editResource.title,
       description: editResource.description ?? "",
-      imageUrlsText: editResource.imageUrls.join("\n"),
+      imageUrls: editResource.imageUrls,
       location: editResource.location,
       latitude: editResource.latitude,
       longitude: editResource.longitude,
@@ -203,7 +197,7 @@ export default function CreateResourcePage() {
         intensity: toGraphQLResourceIntensity(values.intensity),
         defaultTokenAmount: normalizeOptionalInteger(values.defaultTokenAmount),
         categoryCodes: values.categoryCodes.length > 0 ? values.categoryCodes : undefined,
-        imageUrls: parseImageUrls(values.imageUrlsText),
+        imageUrls: values.imageUrls.length > 0 ? values.imageUrls : undefined,
         isProduct: values.isProduct,
         isService: values.isService,
         canBeGiven: values.canBeGiven,
@@ -361,7 +355,7 @@ export default function CreateResourcePage() {
                   helperText={
                     touched.defaultTokenAmount && errors.defaultTokenAmount
                       ? errors.defaultTokenAmount
-                      : t("form.defaultTokenHelper", { range: getTokenRangeLabel(values.intensity) })
+                      : t("form.tokenAmountHelperPrefix", { range: getTokenRangeLabel(values.intensity) })
                   }
                   inputProps={{ min: 1 }}
                 />
@@ -381,16 +375,17 @@ export default function CreateResourcePage() {
                   value={values.description}
                 />
 
-                <TextField
-                  name="imageUrlsText"
-                  label={t("form.imageUrlsLabel")}
-                  value={values.imageUrlsText}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.imageUrlsText && errors.imageUrlsText)}
-                  helperText={touched.imageUrlsText ? errors.imageUrlsText : t("form.imageUrlsHelper")}
-                  multiline
-                  minRows={2}
+                <ImageUploadField
+                  imageUrls={values.imageUrls}
+                  onImageAdded={(url) => {
+                    void setFieldValue("imageUrls", [...values.imageUrls, url]);
+                  }}
+                  onImageRemoved={(index) => {
+                    void setFieldValue(
+                      "imageUrls",
+                      values.imageUrls.filter((_, i) => i !== index),
+                    );
+                  }}
                 />
 
                 <TextField

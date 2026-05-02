@@ -24,5 +24,15 @@
     "sending": "Sending…",
     "sendAndOpen": "Send and open conversation"
   },
-  "lastActivity": "Last activity: {{date}}"
+  "lastActivity": "Last activity: {{date}}",
+  "thread": {
+    "selectPrompt": "Select a conversation to start chatting.",
+    "empty": "No messages yet. Be the first to write!",
+    "loadingHeader": "Loading conversation…",
+    "back": "Back to conversations",
+    "messagePlaceholder": "Write a message…",
+    "send": "Send",
+    "sendHint": "Ctrl+Enter to send",
+    "sendError": "Failed to send message. Please try again."
+  }
 }

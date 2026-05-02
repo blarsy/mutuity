@@ -10,14 +10,16 @@
     "graphql:codegen": "graphql-codegen --config codegen.cjs",
     "graphql:check": "npm run graphql:schema && npm run graphql:codegen",
     "typecheck": "npm run graphql:check && tsc --noEmit -p tsconfig.json",
-    "lint": "next lint",
+    "lint": "next lint && npm run typecheck",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@apollo/client": "^4.1.6",
+    "@cloudinary/url-gen": "^1.22.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.18.0",
+    "@mui/lab": "^9.0.0-beta.2",
     "@mui/material": "^5.15.15",
     "@tiptap/extension-link": "^3.22.5",
     "@tiptap/extension-placeholder": "^3.22.5",
@@ -32,6 +34,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^17.0.4",
+    "react-image-crop": "^11.0.10",
     "yup": "^1.7.1"
   },
   "devDependencies": {

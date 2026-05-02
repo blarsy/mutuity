@@ -24,5 +24,15 @@
     "sending": "Envoi…",
     "sendAndOpen": "Envoyer et ouvrir la conversation"
   },
-  "lastActivity": "Dernière activité : {{date}}"
+  "lastActivity": "Dernière activité : {{date}}",
+  "thread": {
+    "selectPrompt": "Sélectionnez une conversation pour commencer à discuter.",
+    "empty": "Aucun message pour l'instant. Soyez le premier à écrire !",
+    "loadingHeader": "Chargement de la conversation…",
+    "back": "Retour aux conversations",
+    "messagePlaceholder": "Écrivez un message…",
+    "send": "Envoyer",
+    "sendHint": "Ctrl+Entrée pour envoyer",
+    "sendError": "Échec de l'envoi du message. Veuillez réessayer."
+  }
 }

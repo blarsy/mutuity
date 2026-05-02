@@ -18,11 +18,14 @@
     "empty": "Aucune ressource active ne correspond aux filtres actuels pour l’instant."
   },
   "form": {
+    "title": "Éditeur de ressource",
+    "loading": "Chargement du formulaire…",
     "titleLabel": "Titre de la ressource",
     "descriptionLabel": "Description",
     "descriptionHelper": "Optionnel, jusqu’à 8000 caractères.",
     "intensityLabel": "Intensité",
     "intensityHelper": "Choisissez la même échelle d’intensité que pour les besoins.",
+    "defaultTokenLabel": "Montant de jetons suggéré",
     "tokenAmountLabel": "Montant de jetons suggéré",
     "tokenAmountHelperPrefix": "Optionnel.",
     "imageUrlsLabel": "URLs d’images",
@@ -33,6 +36,10 @@
     "latitudeHelper": "Pour le tri par distance",
     "longitudeLabel": "Longitude",
     "longitudeHelper": "Pour le tri par distance",
+    "coordinatesHelper": "Obligatoire pour le classement par distance.",
+    "categoriesTitle": "Catégories",
+    "resourceTypeTitle": "Type de ressource",
+    "modalityFlagsTitle": "Options de livraison et d’échange",
     "categoriesLabel": "Catégories",
     "categoriesHelper": "Choisissez dans la liste fixe des catégories système.",
     "loadingCategories": "Chargement des catégories…",
@@ -51,10 +58,23 @@
     "publishedSuccess": "La ressource « {{title}} » a été {{action}}.",
     "publishedActionCreated": "publiée",
     "publishedActionUpdated": "mise à jour",
+    "saveButton": "Enregistrer",
+    "addButton": "Ajouter",
     "loadingResource": "Chargement de la ressource…",
     "notFound": "Cette ressource n’a pas été trouvée ou n’est plus accessible."
-  },
-  "manage": {
+  },  "imageUpload": {
+    "title": "Images",
+    "selectFile": "Sélectionner un fichier",
+    "dragHint": "ou déposer une image ici",
+    "cropHint": "Dessinez une zone de recadrage carrée sur l'image",
+    "upload": "Recadrer et envoyer",
+    "cancel": "Annuler",
+    "imageAlt": "Image {{index}}",
+    "previewAlt": "Aperçu",
+    "removeImage": "Supprimer l'image",
+    "fileFormatError": "Fichier non reconnu comme image. Utilisez PNG, JPEG, GIF ou WebP.",
+    "uploadError": "L'envoi a échoué. Veuillez réessayer."
+  },  "manage": {
     "title": "Espace de gestion des ressources",
     "subtitle": "Vos ressources sont affichées en commençant par les plus récemment modifiées.",
     "empty": "Vous n’avez pas encore publié de ressources.",

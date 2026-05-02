@@ -27,5 +27,11 @@
     "genericRetry": "Something went wrong. Please try again."
   },
   "lastUpdated": "Last updated: {{date}}",
-  "optionalLabel": "Optional"
+  "optionalLabel": "Optional",
+  "form": {
+    "submitError": "Something went wrong. Please try again.",
+    "optionalLabel": "Optional"
+  },
+  "redirecting": "Redirecting to sign in…",
+  "checking": "Checking your session…"
 }

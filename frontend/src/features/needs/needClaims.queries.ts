@@ -12,10 +12,7 @@ export const CLAIM_NEED_MUTATION = gql`
         createdAt
         updatedAt
         settledAt
-        claimConversationByNeedClaimId {
-          id
         }
-      }
     }
   }
 `;
@@ -43,10 +40,6 @@ export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
           id
           displayName
           externalSubject
-        }
-        claimConversationByNeedClaimId {
-          id
-          createdAt
         }
         needClaimSettlementEventByNeedClaimId {
           id

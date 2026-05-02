@@ -33,10 +33,6 @@ type ClaimOverviewNode = {
     displayName: string | null;
     externalSubject: string;
   } | null;
-  claimConversationByNeedClaimId: {
-    id: string;
-    createdAt: string;
-  } | null;
 };
 
 type ClaimNotificationNode = {
@@ -166,7 +162,7 @@ export default function ClaimsPage() {
                             }}
                             variant="contained"
                           >
-                            {claim.claimConversationByNeedClaimId ? t("actions.openThread") : t("actions.viewClaim")}
+                            {t("actions.viewClaim")}
                           </Button>
                           <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
                             {t("actions.viewNeed")}
@@ -181,9 +177,7 @@ export default function ClaimsPage() {
                             size="small"
                             variant="outlined"
                           />
-                          {claim.claimConversationByNeedClaimId ? (
-                            <Chip label={t("threadOpen")} size="small" variant="outlined" />
-                          ) : null}
+
                         </>
                       }
                       creatorName={need.creatorAccountId === currentAccountId ? t("you") : t("needOwner")}
@@ -243,7 +237,7 @@ export default function ClaimsPage() {
                             }}
                             variant="contained"
                           >
-                            {claim.claimConversationByNeedClaimId ? t("actions.manageThread") : t("actions.reviewClaim")}
+                            {t("actions.reviewClaim")}
                           </Button>
                           <Button component={NextLink} href={`/accounts/${claim.claimerAccountId}`} variant="text">
                             {t("actions.viewClaimer")}

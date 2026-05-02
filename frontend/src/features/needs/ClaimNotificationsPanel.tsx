@@ -24,10 +24,6 @@ type NeedClaimOverview = {
     displayName: string | null;
     externalSubject: string;
   } | null;
-  claimConversationByNeedClaimId: {
-    id: string;
-    createdAt: string;
-  } | null;
 };
 
 type NeedClaimNotificationOverview = {
@@ -109,7 +105,7 @@ export function ClaimNotificationsPanel({
                       <Stack direction="row" spacing={1}>
                         <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} size="small" status={claim.status} />
                         <Button onClick={() => onSelectClaim(claim.id)} size="small" variant="outlined">
-                          {claim.claimConversationByNeedClaimId ? t("claimNotifications.openThread") : t("claimNotifications.replyNow")}
+                          {t("claimNotifications.replyNow")}
                         </Button>
                       </Stack>
                     </Stack>
@@ -136,7 +132,7 @@ export function ClaimNotificationsPanel({
                       <Stack direction="row" spacing={1}>
                         <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} size="small" status={claim.status} />
                         <Button onClick={() => onSelectClaim(claim.id)} size="small" variant="outlined">
-                          {claim.claimConversationByNeedClaimId ? t("claimNotifications.openThread") : t("claimNotifications.viewStatus")}
+                          {t("claimNotifications.viewStatus")}
                         </Button>
                       </Stack>
                     </Stack>

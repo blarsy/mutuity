@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { TypedDocumentNode } from "@apollo/client";
 import {
@@ -43,7 +43,7 @@ import {
 import { CampaignModerationHistory } from "../campaigns/CampaignModerationHistory";
 import {
   ADMIN_CREATE_GRANT_MUTATION,
-  ADMIN_GET_MAIL_CONTENT_QUERY,
+  ADMIN_GET_MAIL_CONTENT_MUTATION,
   ADMIN_LIST_ACCOUNTS_QUERY,
   ADMIN_LIST_BIDS_QUERY,
   ADMIN_LIST_CAMPAIGNS_QUERY,
@@ -154,7 +154,7 @@ function MailRowActions({ row }: { row: AdminRecord }) {
   const [sendSuccess, setSendSuccess] = useState(false);
 
   const [getMailContent, { loading: contentLoading, data: contentData, error: contentError }] =
-    useLazyQuery<{ adminGetMailContent: string | null }>(ADMIN_GET_MAIL_CONTENT_QUERY);
+    useMutation<{ adminGetMailContent: { string: string | null } }>(ADMIN_GET_MAIL_CONTENT_MUTATION);
 
   const [resendMail, { loading: resendLoading, error: resendError }] =
     useMutation(ADMIN_RESEND_MAIL_MUTATION);
@@ -175,7 +175,7 @@ function MailRowActions({ row }: { row: AdminRecord }) {
     }
   }
 
-  const htmlContent = contentData?.adminGetMailContent ?? null;
+  const htmlContent = contentData?.adminGetMailContent?.string ?? null;
   const contentErrorMessage = getUserFacingGraphQLErrorMessage(contentError);
   const resendErrorMessage = getUserFacingGraphQLErrorMessage(resendError);
 
