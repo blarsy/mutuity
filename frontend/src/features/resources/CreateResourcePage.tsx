@@ -15,7 +15,7 @@ import {
   Typography
 } from "@mui/material";
 import { Form, Formik } from "formik";
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
@@ -154,9 +154,16 @@ export default function CreateResourcePage() {
     }
   });
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const successRef = useRef<HTMLDivElement>(null);
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const editResourceErrorMessage = getUserFacingGraphQLErrorMessage(editResourceError);
+
+  useEffect(() => {
+    if (data?.publishResource?.resource) {
+      successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [data]);
   const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
   const editResource = editData?.resourceById ?? null;
 
@@ -292,8 +299,26 @@ export default function CreateResourcePage() {
         ) : null}
 
         {data?.publishResource?.resource ? (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {t(isEditMode ? "form.updateSuccess" : "form.createSuccess", { title: data.publishResource.resource.title })}
+          <Alert ref={successRef} severity="success" sx={{ mb: 2 }}>
+            <Stack spacing={1}>
+              <span>
+                {t("form.publishedSuccess", {
+                  title: data.publishResource.resource.title,
+                  action: t(isEditMode ? "form.publishedActionUpdated" : "form.publishedActionCreated")
+                })}
+              </span>
+              <Box>
+                <Button
+                  color="success"
+                  component={NextLink}
+                  href={`/resources/${data.publishResource.resource.id}`}
+                  size="small"
+                  variant="outlined"
+                >
+                  {t("form.viewResource")}
+                </Button>
+              </Box>
+            </Stack>
           </Alert>
         ) : null}
 

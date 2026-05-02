@@ -61,7 +61,8 @@
     "saveButton": "Save",
     "addButton": "Add",
     "loadingResource": "Loading resource…",
-    "notFound": "This resource was not found or is no longer accessible."
+    "notFound": "This resource was not found or is no longer accessible.",
+    "viewResource": "View resource"
   },
   "imageUpload": {
     "title": "Images",

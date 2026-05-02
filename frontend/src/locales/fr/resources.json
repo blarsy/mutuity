@@ -61,7 +61,8 @@
     "saveButton": "Enregistrer",
     "addButton": "Ajouter",
     "loadingResource": "Chargement de la ressource…",
-    "notFound": "Cette ressource n’a pas été trouvée ou n’est plus accessible."
+    "notFound": "Cette ressource n'a pas été trouvée ou n'est plus accessible.",
+    "viewResource": "Voir la ressource"
   },  "imageUpload": {
     "title": "Images",
     "selectFile": "Sélectionner un fichier",
