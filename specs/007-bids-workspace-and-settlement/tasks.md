@@ -48,8 +48,8 @@
 
 ### Tests (US2)
 
-- [ ] T014 [P] [US2] Add backend integration tests for token reservation on bid creation, bidder-side cancellation refunds, expiry/rejection refunds, and accepted-bid settlement effects in `backend/tests/integration/bids-settlement.spec.ts`
-- [ ] T015 [P] [US2] Add frontend tests for cancel/accept/reject controls, final-acceptance confirmation messaging, and inactive-state messaging in `frontend/tests/bids/bid-actions.spec.tsx`
+- [x] T014 [P] [US2] Add backend integration tests for token reservation on bid creation, bidder-side cancellation refunds, expiry/rejection refunds, and accepted-bid settlement effects in `backend/tests/integration/bids-settlement.spec.ts`
+- [x] T015 [P] [US2] Add frontend tests for cancel/accept/reject controls, final-acceptance confirmation messaging, and inactive-state messaging in `frontend/tests/bids/bid-actions.spec.tsx`
 
 ### Implementation (US2)
 
