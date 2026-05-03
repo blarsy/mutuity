@@ -6,6 +6,14 @@ export const TOKEN_BALANCE_QUERY = gql`
   }
 `;
 
+export const TOKEN_BALANCE_SUBSCRIPTION = gql`
+  subscription TokenBalanceChanged($topic: String!) {
+    listen(topic: $topic) {
+      relatedNodeId
+    }
+  }
+`;
+
 export const CONTRIBUTION_OVERVIEW_QUERY = gql`
   query ContributionOverview($first: Int = 10, $after: Cursor) {
     currentTokenBalance

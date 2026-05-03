@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getBrowserLocation } from "../needs/locationFallback";
 import {
   buildResourceSearchVariables,
@@ -183,10 +184,6 @@ export default function PublicResourcesPage() {
           </Alert>
         )}
 
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("browse.sortDescription")}
-        </Alert>
-
         <Alert severity="info" sx={{ mb: 3 }}>
           {t(locationStatusKey)}
         </Alert>
@@ -223,29 +220,17 @@ export default function PublicResourcesPage() {
                 <Typography gutterBottom variant="subtitle2">
                   {t("browse.categoriesLabel")}
                 </Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {categoryOptions.map(category => {
-                    const selected = filters.categoryCodes.includes(category.code);
-
-                    return (
-                      <Button
-                        key={category.code}
-                        onClick={() => {
-                          setFilters(current => ({
-                            ...current,
-                            categoryCodes: selected
-                              ? current.categoryCodes.filter(code => code !== category.code)
-                              : [...current.categoryCodes, category.code].sort((left, right) => left - right)
-                          }));
-                        }}
-                        size="small"
-                        variant={selected ? "contained" : "outlined"}
-                      >
-                        {isFrench ? category.labelFr : category.label}
-                      </Button>
-                    );
-                  })}
-                </Stack>
+                <CategoriesPicker
+                  options={categoryOptions}
+                  selected={filters.categoryCodes}
+                  localizedLabel={(opt) => isFrench ? opt.labelFr : opt.label}
+                  onChange={(codes) => {
+                    setFilters(current => ({
+                      ...current,
+                      categoryCodes: codes
+                    }));
+                  }}
+                />
               </Box>
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>

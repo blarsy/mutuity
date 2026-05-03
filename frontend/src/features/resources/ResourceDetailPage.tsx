@@ -1,6 +1,8 @@
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {
   Alert,
   Box,
@@ -9,11 +11,11 @@ import {
   CardContent,
   Chip,
   Container,
-  Divider,
+  IconButton,
   Stack,
   Typography
 } from "@mui/material";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
@@ -93,40 +95,6 @@ function formatBidStatus(status: ResourceBidStatus, t: (key: string, options?: R
   return t(`detail.bidStatuses.${status}`, { defaultValue: status.replaceAll("_", " ").toLowerCase() });
 }
 
-function buildResourceTags(resource: ResourceDetailData["resourceById"], t: (key: string) => string) {
-  if (!resource) {
-    return [] as string[];
-  }
-
-  const tags: string[] = [];
-
-  if (resource.isProduct) {
-    tags.push(t("tags.product"));
-  }
-
-  if (resource.isService) {
-    tags.push(t("tags.service"));
-  }
-
-  if (resource.canBeGiven) {
-    tags.push(t("tags.canBeGiven"));
-  }
-
-  if (resource.canBeExchanged) {
-    tags.push(t("tags.canBeExchanged"));
-  }
-
-  if (resource.canBeTakenAway) {
-    tags.push(t("tags.pickupAvailable"));
-  }
-
-  if (resource.canBeDelivered) {
-    tags.push(t("tags.deliveryAvailable"));
-  }
-
-  return tags;
-}
-
 function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warning" | "error" | "info" {
   switch (status) {
     case "ACCEPTED":
@@ -165,7 +133,9 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     ?? resource?.accountByCreatorAccountId?.externalSubject
     ?? resource?.creatorAccountId
     ?? t("detail.unknownAccount");
-  const firstImageUrl = resource?.imageUrls?.[0] ?? null;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const imageUrls = resource?.imageUrls ?? [];
+  const currentImageUrl = imageUrls[currentImageIndex] ?? null;
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(respondError);
   const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
@@ -180,6 +150,22 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
 
     return map;
   }, [categoryOptions, isFrench]);
+  const natureLabels = [
+    resource?.isProduct ? t("form.isProduct") : null,
+    resource?.isService ? t("form.isService") : null
+  ].filter((value): value is string => Boolean(value));
+  const exchangeLabels = [
+    resource?.canBeGiven ? t("form.canBeGiven") : null,
+    resource?.canBeExchanged ? t("form.canBeExchanged") : null
+  ].filter((value): value is string => Boolean(value));
+  const deliveryLabels = [
+    resource?.canBeTakenAway ? t("form.canBeTakenAway") : null,
+    resource?.canBeDelivered ? t("form.canBeDelivered") : null
+  ].filter((value): value is string => Boolean(value));
+
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [resource?.id]);
 
   const handleDecision = async (resourceBidId: string, nextStatus: "ACCEPTED" | "DECLINED") => {
     await respondToResourceBid({
@@ -252,9 +238,28 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
           </Alert>
         ) : session.authenticated ? (
           <Alert severity={isCreator ? "success" : "info"} sx={{ mb: 2 }}>
-            {isCreator
-              ? t("detail.creatorHint")
-              : t("detail.bidderHint")}
+            <Stack
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              spacing={1.5}
+            >
+              <Typography variant="body2">
+                {isCreator
+                  ? t("detail.creatorHint")
+                  : t("detail.bidderHint")}
+              </Typography>
+              {isCreator ? (
+                <Button
+                  component={NextLink}
+                  href={`/resources/create?resourceId=${resource.id}`}
+                  size="small"
+                  variant="contained"
+                >
+                  {t("page.editTitle")}
+                </Button>
+              ) : null}
+            </Stack>
           </Alert>
         ) : (
           <Alert severity="info" sx={{ mb: 2 }}>
@@ -282,52 +287,173 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
 
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
-            <Stack spacing={2}>
+            <Stack spacing={2.5}>
               <Box
                 sx={{
                   alignItems: "center",
-                  bgcolor: firstImageUrl ? "grey.100" : "grey.50",
-                  backgroundImage: firstImageUrl ? `url(${firstImageUrl})` : "none",
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                  borderRadius: 1,
-                  color: "text.secondary",
                   display: "flex",
-                  height: 220,
                   justifyContent: "center",
-                  overflow: "hidden"
+                  gap: 1
                 }}
               >
-                {!firstImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
+                <IconButton
+                  disabled={currentImageIndex === 0 || imageUrls.length <= 1}
+                  onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 1))}
+                  sx={{
+                    visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible"
+                  }}
+                >
+                  <ArrowBackIosNewIcon fontSize="small" />
+                </IconButton>
+
+                <Box
+                  sx={{
+                    alignItems: "center",
+                    bgcolor: currentImageUrl ? "grey.100" : "grey.50",
+                    backgroundImage: currentImageUrl ? `url(${currentImageUrl})` : "none",
+                    backgroundPosition: "center",
+                    backgroundSize: "cover",
+                    borderRadius: 3,
+                    color: "text.secondary",
+                    display: "flex",
+                    height: 320,
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    width: "100%",
+                    maxWidth: 520
+                  }}
+                >
+                  {!currentImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
+                </Box>
+
+                <IconButton
+                  disabled={currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1}
+                  onClick={() => setCurrentImageIndex((prev) => Math.min(imageUrls.length - 1, prev + 1))}
+                  sx={{
+                    visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible"
+                  }}
+                >
+                  <ArrowForwardIosIcon fontSize="small" />
+                </IconButton>
               </Box>
 
-              <RichTextContent emptyFallback={t("detail.noDescription")} html={resource.description ?? ""} />
+              {imageUrls.length > 1 ? (
+                <Stack direction="row" justifyContent="center" spacing={0.75}>
+                  {imageUrls.map((_, index) => (
+                    <Box
+                      key={`detail-image-dot-${index}`}
+                      sx={(theme) => ({
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: index === currentImageIndex ? theme.palette.primary.main : theme.palette.action.disabled
+                      })}
+                    />
+                  ))}
+                </Stack>
+              ) : null}
 
-              <Stack direction="row" flexWrap="wrap" gap={1}>
-                {buildResourceTags(resource, t).map(tag => (
-                  <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
-                ))}
-                {resource.categoryLabels.map(label => (
-                  <Chip
-                    key={`${resource.id}-category-${label}`}
-                    color="secondary"
-                    label={localizedCategoryByLabel.get(label) ?? label}
-                    size="small"
-                    variant="outlined"
-                  />
-                ))}
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("form.titleLabel")}
+                </Typography>
+                <Typography variant="h5">
+                  {resource.title}
+                </Typography>
               </Stack>
 
-              <Divider />
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("form.descriptionLabel")}
+                </Typography>
+                <RichTextContent emptyFallback={t("detail.noDescription")} html={resource.description ?? ""} />
+              </Stack>
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("form.intensityLabel")}
+                </Typography>
                 <IntensityDisplay intensity={resource.intensity} tokenAmount={resource.defaultTokenAmount} />
-                <Typography color="text.secondary" variant="body2">
-                  {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
+              </Stack>
+
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("form.categoriesLabel")}
                 </Typography>
-                <Typography color="text.secondary" variant="body2">
-                  {t("detail.published")}: {formatDate(resource.createdAt, t("card.permanent"))}
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {resource.categoryLabels.length === 0 ? (
+                    <Chip label={t("categories.noCategories")} size="small" variant="outlined" />
+                  ) : resource.categoryLabels.map(label => (
+                    <Chip
+                      key={`${resource.id}-category-${label}`}
+                      color="secondary"
+                      label={localizedCategoryByLabel.get(label) ?? label}
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                </Stack>
+              </Stack>
+
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("form.resourceTypeTitle")}
                 </Typography>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {natureLabels.map(label => (
+                    <Chip key={`nature-${label}`} label={label} size="small" variant="outlined" />
+                  ))}
+                </Stack>
+              </Stack>
+
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("filters.canBeExchanged")}
+                </Typography>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {exchangeLabels.map(label => (
+                    <Chip key={`exchange-${label}`} label={label} size="small" variant="outlined" />
+                  ))}
+                </Stack>
+              </Stack>
+
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("filters.canBeDelivered")}
+                </Typography>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {deliveryLabels.map(label => (
+                    <Chip key={`delivery-${label}`} label={label} size="small" variant="outlined" />
+                  ))}
+                </Stack>
+              </Stack>
+
+              <Stack spacing={0.5}>
+                <Typography color="text.secondary" variant="overline">
+                  {t("form.locationLabel")}
+                </Typography>
+                <Typography variant="body2">
+                  {resource.location}
+                </Typography>
+              </Stack>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
+                <Stack spacing={0.25}>
+                  <Typography color="text.secondary" variant="overline">
+                    {t("card.expires")}
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDate(resource.expiresAt, t("card.permanent"))}
+                  </Typography>
+                </Stack>
+                <Stack spacing={0.25}>
+                  <Typography color="text.secondary" variant="overline">
+                    {t("detail.published")}
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDate(resource.createdAt, t("card.permanent"))}
+                  </Typography>
+                </Stack>
               </Stack>
             </Stack>
           </CardContent>

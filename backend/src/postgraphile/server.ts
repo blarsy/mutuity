@@ -1,17 +1,22 @@
 import "dotenv/config";
 
+import { createServer } from "node:http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import { GraphQLError } from "graphql";
 import { Pool } from "pg";
-import { postgraphile } from "postgraphile";
+import { postgraphile, makePluginHook, enhanceHttpServerWithSubscriptions } from "postgraphile";
+import PgPubSub from "@graphile/pg-pubsub";
 
 import { createAuthSessionMiddleware } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
 
 const app = express();
+// PgPubSub is a CJS default export; unwrap the .default when imported as ESM.
+const PgPubSubPlugin = (PgPubSub as unknown as { default: typeof PgPubSub }).default ?? PgPubSub;
+const pluginHook = makePluginHook([PgPubSubPlugin]);
 const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "admin"]);
 const AUTHENTICATION_ERROR_MESSAGE = "You must sign in to continue.";
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
@@ -292,8 +297,18 @@ app.use(
 
 // SQL functions in app_public (for example createCampaign and addCampaignModerationNote)
 // are exposed as GraphQL mutations by PostGraphile.
-app.use(
-  postgraphile(DATABASE_URL, process.env.GRAPHILE_SCHEMA ?? "app_public", {
+const postgraphileMiddleware = postgraphile(
+  DATABASE_URL,
+  process.env.GRAPHILE_SCHEMA ?? "app_public",
+  {
+    pluginHook,
+    subscriptions: true,
+    simpleSubscriptions: true,
+    // Subscriptions share the same session/cookie middleware as HTTP requests.
+    websocketMiddlewares: [
+      cookieParser(sessionSecret),
+      createAuthSessionMiddleware(pool)
+    ],
     graphiql: allowGraphiql,
     enhanceGraphiql: allowGraphiql,
     dynamicJson: true,
@@ -349,14 +364,20 @@ app.use(
       expressReq: req as express.Request,
       expressRes: res as express.Response
     })
-  })
+  }
 );
+
+app.use(postgraphileMiddleware);
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-app.listen(port, () => {
+// Upgrade the HTTP server to handle WebSocket connections for GraphQL subscriptions.
+const httpServer = createServer(app);
+enhanceHttpServerWithSubscriptions(httpServer, postgraphileMiddleware);
+
+httpServer.listen(port, () => {
   // Keep logs concise for local bootstrap.
   console.log(`PostGraphile server listening on http://localhost:${port}/graphiql`);
   void logWebApiInfo("PostGraphile server listening", {

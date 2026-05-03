@@ -5646,6 +5646,14 @@ export type ListResourceCategoryEdge = {
   node: ListResourceCategoriesRecord;
 };
 
+export type ListenPayload = {
+  __typename: 'ListenPayload';
+  /** Our root query field type. Allows us to run any query from our subscription payload. */
+  query: Maybe<Query>;
+  relatedNode: Maybe<Node>;
+  relatedNodeId: Maybe<Scalars['ID']['output']>;
+};
+
 /** All input for the `markAccountNotificationRead` mutation. */
 export type MarkAccountNotificationReadInput = {
   /**
@@ -10927,6 +10935,19 @@ export type SubmitResourceBidPayload = {
 /** The output of our `submitResourceBid` mutation. */
 export type SubmitResourceBidPayloadResourceBidEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceBidsOrderBy>>;
+};
+
+/** The root subscription type: contains realtime events you can subscribe to with the `subscription` operation. */
+export type Subscription = {
+  __typename: 'Subscription';
+  listen: ListenPayload;
+};
+
+
+/** The root subscription type: contains realtime events you can subscribe to with the `subscription` operation. */
+export type SubscriptionListenArgs = {
+  initialEvent?: Scalars['Boolean']['input'];
+  topic: Scalars['String']['input'];
 };
 
 /** SQL-owned system configuration values used for operational controls such as retention windows. */

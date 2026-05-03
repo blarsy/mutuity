@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useSubscription } from "@apollo/client/react";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import { AppBar, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LoginDialog } from "../auth/LoginDialog";
-import { TOKEN_BALANCE_QUERY } from "../contribution/contribution.queries";
+import { TOKEN_BALANCE_QUERY, TOKEN_BALANCE_SUBSCRIPTION } from "../contribution/contribution.queries";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import type { AppColorMode } from "../../theme";
 
@@ -20,6 +20,9 @@ const signedOutLinks = [
 
 const LANGUAGE_STORAGE_KEY = "mutuity-language";
 const AVAILABLE_LANGUAGES = ["fr", "en"] as const;
+const TOKEN_BALANCE_FALLBACK_POLL_INTERVAL_MS = Number(
+  process.env.NEXT_PUBLIC_TOKEN_BALANCE_POLL_INTERVAL_MS ?? 60000
+);
 
 const signedInLinks = [
   { labelKey: "nav.search", href: "/resources" },
@@ -45,10 +48,19 @@ export function AppTopBar({
   const { t, i18n } = useTranslation("layout");
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const { data: balanceData } = useQuery<{ currentTokenBalance: number }>(TOKEN_BALANCE_QUERY, {
-    pollInterval: session.authenticated ? 15000 : 0,
+  const { data: balanceData, refetch: refetchBalance } = useQuery<{ currentTokenBalance: number }>(TOKEN_BALANCE_QUERY, {
+    pollInterval: session.authenticated ? TOKEN_BALANCE_FALLBACK_POLL_INTERVAL_MS : 0,
     skip: !session.authenticated
   });
+
+  useSubscription(
+    TOKEN_BALANCE_SUBSCRIPTION,
+    {
+      variables: { topic: `token_balance_${session.account?.id ?? ""}` },
+      skip: !session.authenticated || !session.account?.id,
+      onData: () => { void refetchBalance(); }
+    }
+  );
 
   const currentLabel = useMemo(() => {
     return session.account?.displayName ?? session.account?.externalSubject ?? t("topbar.profileFallback");
