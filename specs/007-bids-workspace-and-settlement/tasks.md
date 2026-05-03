@@ -16,12 +16,12 @@
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] T004 Review the current `resource_bid` lifecycle model and add any missing status timestamp, validity, or settlement helpers in `database/migrations/024_bids_workspace_and_settlement.sql`, including enforcement of the 12–48 hour bid-validity window
-- [ ] T005 [P] Add SQL helpers or views for sent/received bid ordering by latest status-change time and active-only filtering based on `validUntil`, status, and resource state in `database/functions/resource/` and/or `database/functions/bid/`
-- [ ] T006 [P] Add or expose SQL-owned cancel-bid behavior for bidder-side cancellation from the workspace plus automatic cancellation when a resource expires or is deactivated in `database/functions/resource/`
-- [ ] T007 Verify or complete the accepted-bid settlement transfer path in `database/functions/token/` and `database/functions/resource/`, while preserving the rule that accepting one bid does not auto-close the others and that reserved Topes move directly to the receiver on acceptance
-- [ ] T008 Add shared frontend bid-workspace types and query documents in `frontend/src/features/resources/` and/or `frontend/src/features/bids/`, including the page-size-5 pagination contract
-- [ ] T009 Create the background worker task `process_resource_bid_expirations` in `backend/src/worker/tasks/process-resource-bid-expirations.ts` and the corresponding SQL function in `database/functions/resource/process_resource_bid_expirations.sql` that automatically expires open bids after their `validUntil` timestamp, refunds reserved Topes, and issues notifications
+- [x] T004 Review the current `resource_bid` lifecycle model and add any missing status timestamp, validity, or settlement helpers in `database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql`, including enforcement of the 12–48 hour bid-validity window
+- [x] T005 [P] Add SQL helpers or views for sent/received bid ordering by latest status-change time and active-only filtering based on `validUntil`, status, and resource state in `database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql`
+- [x] T006 [P] Add or expose SQL-owned cancel-bid behavior for bidder-side cancellation from the workspace plus automatic cancellation when a resource expires or is deactivated in `database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql`
+- [x] T007 Verify or complete the accepted-bid settlement transfer path in `database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql`, while preserving the rule that accepting one bid does not auto-close the others and that reserved Topes move directly to the receiver on acceptance
+	- [x] T008 Add shared frontend bid-workspace types and query documents in `frontend/src/features/resources/` and/or `frontend/src/features/bids/`, including the page-size-5 pagination contract
+	- [x] T009 Create the background worker task `process_resource_bid_expirations` in `backend/src/worker/tasks/process-resource-bid-expirations.ts` and the corresponding SQL function in `database/functions/resource/process_resource_bid_expirations.sql` that automatically expires open bids after their `validUntil` timestamp, refunds reserved Topes, and issues notifications
 
 ## Phase 3: User Story 1 - Browse Sent And Received Bids (Priority: P1)
 
@@ -36,9 +36,9 @@
 
 ### Implementation (US1)
 
-- [ ] T011 [US1] Extend `frontend/src/pages/bids.tsx` to order by latest status-change time rather than creation time alone
-- [ ] T012 [US1] Add separate `only active bids` filters for sent and received sections in `frontend/src/pages/bids.tsx`
-- [ ] T013 [US1] Add load-more pagination behavior with a page size of 5 to large bid histories in `frontend/src/pages/bids.tsx` and the supporting queries
+	- [x] T011 [US1] Extend `frontend/src/pages/bids.tsx` to order by latest status-change time rather than creation time alone
+	- [x] T012 [US1] Add separate `only active bids` filters for sent and received sections in `frontend/src/pages/bids.tsx`
+	- [x] T013 [US1] Add load-more pagination behavior with a page size of 5 to large bid histories in `frontend/src/pages/bids.tsx` and the supporting queries
 
 ## Phase 4: User Story 2 - Manage Bid Status From The Workspace (Priority: P1)
 
@@ -53,9 +53,9 @@
 
 ### Implementation (US2)
 
-- [ ] T016 [US2] Add cancel actions to sent bids in `frontend/src/pages/bids.tsx` and the relevant bid card component
-- [ ] T017 [US2] Add accept/reject actions to received bids in `frontend/src/pages/bids.tsx` and the relevant bid card component
-- [ ] T018 [US2] Surface inactive explanations for accepted, rejected, cancelled, and expired bids in the workspace UI
+	- [x] T016 [US2] Add cancel actions to sent bids in `frontend/src/pages/bids.tsx` and the relevant bid card component
+	- [x] T017 [US2] Add accept/reject actions to received bids in `frontend/src/pages/bids.tsx` and the relevant bid card component
+	- [x] T018 [US2] Surface inactive explanations for accepted, rejected, cancelled, and expired bids in the workspace UI
 - [ ] T019 [US2] Ensure the workspace reflects settlement/refund outcomes clearly on the `Contribution` page and through notifications, including auto-cancellation caused by resource expiry or confirmed deactivation
 
 ## Phase 5: User Story 3 - Navigate To Resource, Counterparty, Or Conversation (Priority: P2)

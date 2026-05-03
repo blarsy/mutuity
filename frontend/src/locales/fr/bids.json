@@ -24,12 +24,33 @@
     "tokens": "{{value}} jetons",
     "exchangeable": "échangeable"
   },
+  "filters": {
+    "activeOnly": "Actives seulement",
+    "all": "Toutes"
+  },
   "actions": {
     "viewResource": "Voir la ressource",
     "viewCreator": "Voir le créateur",
-    "reviewOnResource": "Examiner sur la page ressource",
-    "viewBidder": "Voir l'offreur"
+    "viewBidder": "Voir l'offreur",
+    "cancel": "Annuler l'offre",
+    "accept": "Accepter l'offre",
+    "decline": "Refuser l'offre",
+    "loadMore": "Charger plus"
   },
+  "acceptConfirm": {
+    "title": "Confirmer l'acceptation",
+    "message": "Assurez-vous d'avoir organisé la logistique avec l'offreur avant d'accepter. L'acceptation est définitive et les Topes seront transférés immédiatement.",
+    "confirm": "Oui, accepter",
+    "cancel": "Retour"
+  },
+  "inactive": {
+    "accepted": "Cette offre a été acceptée.",
+    "declined": "Cette offre a été refusée.",
+    "withdrawn": "Cette offre a été annulée par l'offreur.",
+    "expired": "Cette offre a expiré."
+  },
+  "validity": "Valide jusqu'au {{date}}",
+  "reserved": "{{value}} Topes réservés",
   "statuses": {
     "OPEN": "ouverte",
     "ACCEPTED": "acceptée",

@@ -1883,6 +1883,39 @@ enum CampaignsOrderBy {
   START_AT_DESC
 }
 
+"""All input for the `cancelResourceBid` mutation."""
+input CancelResourceBidInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  resourceBidId: UUID
+}
+
+"""The output of our `cancelResourceBid` mutation."""
+type CancelResourceBidPayload {
+  """Reads a single `Account` that is related to this `ResourceBid`."""
+  accountByBidderAccountId: Account
+  """Reads a single `Account` that is related to this `ResourceBid`."""
+  accountByRespondedByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  resourceBid: ResourceBid
+  """An edge for our `ResourceBid`. May be used by Relay 1."""
+  resourceBidEdge(
+    """The method to use when ordering `ResourceBid`."""
+    orderBy: [ResourceBidsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceBidsEdge
+  """Reads a single `Resource` that is related to this `ResourceBid`."""
+  resourceByResourceId: Resource
+}
+
 enum ChatContextKind {
   NEED
   RESOURCE
@@ -5736,6 +5769,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AuthLogoutInput!
   ): AuthLogoutPayload
+  cancelResourceBid(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CancelResourceBidInput!
+  ): CancelResourceBidPayload
   """
   Atomically evaluates all grant criteria for the authenticated account and, if satisfied,
   issues a token award and returns outcome_code = 'success'. On failure returns a safe denial
@@ -8443,6 +8480,23 @@ type Query implements Node {
   which can only query top level fields if they are in a particular form.
   """
   query: Query!
+  """Reads and enables pagination through a set of `ResourceBid`."""
+  receivedResourceBids(
+    activeOnly: Boolean
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): ResourceBidsConnection
   """Reads a single `Resource` using its globally unique `ID`."""
   resource(
     """The globally unique `ID` to be used in selecting a single `Resource`."""
@@ -8547,6 +8601,23 @@ type Query implements Node {
     offset: Int
     searchText: String
   ): SearchResourcesConnection
+  """Reads and enables pagination through a set of `ResourceBid`."""
+  sentResourceBids(
+    activeOnly: Boolean
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): ResourceBidsConnection
   """Reads a single `SystemSetting` using its globally unique `ID`."""
   systemSetting(
     """The globally unique `ID` to be used in selecting a single `SystemSetting`."""
@@ -8813,6 +8884,7 @@ type ResourceBid implements Node {
   bidderAccountId: UUID!
   createdAt: Datetime!
   id: UUID!
+  isActive: Boolean
   message: String
   """A globally unique identifier. Can be used in various places throughout the system to identify this single value."""
   nodeId: ID!
@@ -8864,6 +8936,7 @@ type ResourceBid implements Node {
   respondedByAccountId: UUID
   status: ResourceBidStatus!
   updatedAt: Datetime!
+  validUntil: Datetime!
 }
 
 """
@@ -8895,6 +8968,7 @@ input ResourceBidInput {
   respondedByAccountId: UUID
   status: ResourceBidStatus
   updatedAt: Datetime
+  validUntil: Datetime
 }
 
 """Notification events emitted when resource bid lifecycle changes occur."""
@@ -8994,6 +9068,7 @@ input ResourceBidPatch {
   respondedByAccountId: UUID
   status: ResourceBidStatus
   updatedAt: Datetime
+  validUntil: Datetime
 }
 
 enum ResourceBidStatus {
@@ -10018,6 +10093,7 @@ input SubmitResourceBidInput {
   message: String
   proposedTokenAmount: Int
   resourceId: UUID
+  validHours: Int
 }
 
 """The output of our `submitResourceBid` mutation."""

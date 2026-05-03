@@ -28,11 +28,11 @@ Cadence: update at least once per workday
 | P1 | Platform foundations and auth baseline | 003, 004 | DONE | 100% | 2026-04-18 to 2026-04-25 (proposed) |
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
-| P4 | Resource loop MVP | 005 (Slices 1-4) | IN PROGRESS | 92% | TBD |
-| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | NOT STARTED | 0% | TBD |
+| P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 10% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
-| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | IN PROGRESS | 70% | TBD |
-| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | IN PROGRESS | 45% | TBD |
+| P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
+| P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -134,23 +134,23 @@ Definition of Done:
 
 ### P4 - Resource Loop MVP (005 Slices 1-4)
 
-Status: IN PROGRESS
+Status: DONE
 Goal: deliver resource discovery/publish/bid baseline and core notifications.
 
 Checkpoints:
 
-- [ ] Resource discovery (active filtering, sorting, tri-state filters).
-- [ ] Resource edit page supports creation and update modes.
-- [ ] Bid flow baseline and expired-resource protections.
-- [ ] Notifications inbox foundations integrated.
+- [x] Resource discovery (active filtering, sorting, tri-state filters).
+- [x] Resource edit page supports creation and update modes.
+- [x] Bid flow baseline and expired-resource protections.
+- [x] Notifications inbox foundations integrated.
 
 Definition of Done:
 
-- [ ] Resource loop is independently usable end-to-end.
+- [x] Resource loop is independently usable end-to-end.
 
 ### P5 - Settlement And Ledger Consistency (007, 008)
 
-Status: NOT STARTED
+Status: IN PROGRESS
 Goal: ensure token movement correctness for claims and bids lifecycle.
 
 Checkpoints:
@@ -181,46 +181,46 @@ Definition of Done:
 
 ### P7 - Engagement And Delivery Controls (005 extended)
 
-Status: IN PROGRESS
+Status: DONE
 Goal: deploy preference-managed out-of-app delivery and digest behavior.
 
 Checkpoints:
 
-- [ ] Preferences page and backend persistence complete.
+- [x] Preferences page and backend persistence complete.
 - [x] Activity-gated push/email behavior enforced.
 - [x] 08:00 digest run implemented with idempotent marking.
-- [ ] Frequency cadence and no-duplicate guarantees tested.
+- [x] Frequency cadence and no-duplicate guarantees tested.
 
 Definition of Done:
 
-- [ ] Delivery behavior matches configured strategy per category.
+- [x] Delivery behavior matches configured strategy per category.
 
 ### P8 - Admin And Ops Hardening (005 extended)
 
-Status: IN PROGRESS
+Status: DONE
 Goal: operational support surfaces, grants, and logging hardening ready for production.
 
 Checkpoints:
 
 - [x] Admin pages delivered with role guard and case-insensitive contains search.
-- [ ] Grant creation/claim flow and fixed grant amount behavior implemented.
-- [ ] Unified logging across components with retention setting.
-- [ ] Side-effect actions audited and observable.
+- [x] Grant creation/claim flow and fixed grant amount behavior implemented.
+- [x] Unified logging across components with retention setting.
+- [x] Side-effect actions audited and observable.
 
 Definition of Done:
 
-- [ ] Support, audit, and troubleshooting workflows are production-ready.
+- [x] Support, audit, and troubleshooting workflows are production-ready.
 
 ## Active Work Queue
 
-Current phase: P4
-Current milestone: P8-M1 - Admin support and troubleshooting docs and backend foundation
+Current phase: P5
+Current milestone: P5-M1 - Bids workspace parity and settlement correctness (007)
 
 This week priorities:
 
-1. Complete admin support matrix documentation and lock the projection/search/action contract per admin page.
-2. Implement SQL-owned/admin-only list and search surfaces with newest-first ordering and pagination.
-3. Add role guard and side-effect authorization coverage before building admin pages.
+1. Complete bid validity window enforcement and accepted-bid token settlement (SQL helpers done in migration 084-085).
+2. Rebuild `/bids` page with separate sent/received sections, active-only filters, pagination (page size 5), and direct cancel/accept/decline actions.
+3. Add backend integration coverage for bid lifecycle actions, settlement effects, and resource-expiry auto-cancellation.
 
 ## Session Log
 
@@ -294,6 +294,11 @@ This week priorities:
 | 2026-04-26 | P8 execution | Completed T075 by adding SQL-owned, admin-only paginated list/search helpers for accounts, bids, resources, notifications, mails, campaigns, grants, and logs, each with newest-first ordering and scoped case-insensitive search fields, plus supporting timestamp indexes. Migration `059` applied successfully and backend typecheck passed. | database/migrations/059_admin_support_list_search_helpers.sql; docker compose run --rm migrate; npm -C backend run typecheck; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T076 admin access guard and role enforcement for admin routes and side-effect actions. |
 | 2026-04-26 | P8 execution | Completed T076 by adding a reusable frontend admin-route guard hook (`useRequireAdmin`) and extending backend safe GraphQL error mapping for admin-support access denials, keeping role enforcement user-safe and consistent for admin-only operations. Frontend GraphQL schema/codegen artifacts were refreshed after the new admin helper functions became available. | frontend/src/features/auth/requireAdmin.ts; backend/src/postgraphile/server.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C backend run typecheck; npm -C frontend run typecheck; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T077 admin pages with shared table/search scaffolding for all admin support entities. |
 | 2026-04-26 | P8 execution | Completed T077 by building a shared admin support table/search scaffold and wiring all eight admin routes (`accounts`, `bids`, `resources`, `notifications`, `mails`, `campaigns`, `grants`, `logs`) behind `useRequireAdmin`, with paginated newest-first query views and placeholder action buttons for the next action-oriented tasks. Also finalized migration `060` so admin list helpers are exposed as stable GraphQL query fields. | frontend/src/features/admin/AdminSupportPage.tsx; frontend/src/features/admin/adminSupport.queries.ts; frontend/src/pages/admin/[section].tsx; frontend/src/pages/admin/index.tsx; database/migrations/060_admin_support_helpers_stable.sql; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C frontend run typecheck; npm -C backend run typecheck; specs/005-resource-discovery-and-publishing/tasks.md | None | Implement T078 mail actions (fullscreen HTML viewer and send-again action wiring). |
+| 2026-04-27 | P8 execution | Completed T078-T081 by implementing fullscreen HTML mail viewer and send-again action for admin mails page, campaign description viewer and moderation-handoff action for admin campaigns page, create-grant dialog from admin grants page, fullscreen log message viewer from admin logs page, and end-to-end verification for admin search/filter behavior, action outcomes, authorization restrictions, and audit-log emission. | frontend/src/features/admin/AdminSupportPage.tsx; backend/tests/integration/admin-support.spec.ts; npm -C frontend run typecheck; npm -C backend run typecheck; specs/005-resource-discovery-and-publishing/tasks.md | None | Start T082 role-model consolidation (manager → admin). |
+| 2026-04-27 | P8 execution | Completed T082-T086 by consolidating the role model from manager/admin split to single administrator role: updated SQL grants/policies (migration 065), refactored backend PostGraphile auth helpers, refactored all frontend role-gated surfaces, aligned all spec/task docs, and added E2E auth verification for consolidated admin-only behavior. | database/migrations/065_role_model_admin_only.sql; backend/src/postgraphile/server.ts; frontend/src/features/auth/requireAdmin.ts; specs/005-resource-discovery-and-publishing/tasks.md; npm -C backend run typecheck; npm -C frontend run typecheck | None | Implement T087 campaign moderation notification catalog extension. |
+| 2026-04-28 | P8 execution | Completed T087-T089 by extending the notification catalog for campaign moderation note received, campaign approved, and creator adaptation submitted; adding moderation-status filtering (including `awaiting_adaptation`) to the admin campaigns page with notification-driven prefill; and adding E2E verification for campaign moderation notification routing. | database/migrations/069_campaign_moderation_workflow_refinement.sql; database/migrations/070_campaign_moderation_event_graphql_rename.sql; frontend/src/features/admin/AdminSupportPage.tsx; backend/tests/integration/campaign-moderation-notifications.spec.ts; specs/005-resource-discovery-and-publishing/tasks.md; npm -C backend run typecheck; npm -C frontend run typecheck | None | Implement T090 rich-text authoring extension. |
+| 2026-04-29 | P4 execution | Completed T090 by extending the constrained rich-text editor and sanitized renderer to campaign, need, and resource description authoring/display surfaces; marked P4, P7, and P8 as DONE (100%). | frontend/src/components/richText/; frontend/src/features/needs/; frontend/src/features/resources/; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Kick off P5 bids workspace (007 T004+). |
+| 2026-05-03 | P5 kickoff | UI polish pass committed (full-height chat, resource detail minimap, primary chips, profile location/avatar, search cleanup). Started P5 with migrations 084-085: added valid_until bid validity window (12-48h, default 24h), accepted-bid token settlement path, cancel_resource_bid function, sent/received workspace helpers with updated_at-desc ordering and active-only filter, resource_bid_is_active computed field, and updated process_resource_bid_notifications to expire bids on valid_until. | database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql; database/migrations/085_drop_old_create_resource_bid_overload.sql; npm -C frontend run graphql:schema; npm -C frontend run graphql:codegen | None | Complete bids page rebuild (pagination, filters, cancel/accept/decline actions). |
 
 ## Decisions Log
 
@@ -313,7 +318,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1 complete, P2 complete, P3 complete; P4/P7 largely advanced; P8 in progress with grants completed and admin support phase started.
+- Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with SQL foundations laid in migrations 084-085.
 - Current health: GREEN
-- Main risk: Admin support pages span multiple operational entities; consistency of projection/search/pagination contracts can drift without shared helpers.
+- Main risk: P5 bids page rebuild in progress; frontend typecheck not yet run against new bids.tsx rewrite.
 - Requested supervisor input: none.

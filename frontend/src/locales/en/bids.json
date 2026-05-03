@@ -24,12 +24,33 @@
     "tokens": "{{value}} tokens",
     "exchangeable": "exchangeable"
   },
+  "filters": {
+    "activeOnly": "Active only",
+    "all": "All"
+  },
   "actions": {
     "viewResource": "View resource",
     "viewCreator": "View creator",
-    "reviewOnResource": "Review on resource page",
-    "viewBidder": "View bidder"
+    "viewBidder": "View bidder",
+    "cancel": "Cancel bid",
+    "accept": "Accept bid",
+    "decline": "Decline bid",
+    "loadMore": "Load more"
   },
+  "acceptConfirm": {
+    "title": "Confirm acceptance",
+    "message": "Make sure you have arranged logistics with the bidder before accepting. Acceptance is final and the Topes will be transferred immediately.",
+    "confirm": "Yes, accept",
+    "cancel": "Go back"
+  },
+  "inactive": {
+    "accepted": "This bid was accepted.",
+    "declined": "This bid was declined.",
+    "withdrawn": "This bid was cancelled by the bidder.",
+    "expired": "This bid has expired."
+  },
+  "validity": "Valid until {{date}}",
+  "reserved": "{{value}} Topes reserved",
   "statuses": {
     "OPEN": "open",
     "ACCEPTED": "accepted",

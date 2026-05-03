@@ -313,3 +313,89 @@ export const RESPOND_TO_RESOURCE_BID_MUTATION = gql`
     }
   }
 `;
+
+const BID_WORKSPACE_FIELDS = gql`
+  fragment BidWorkspaceFields on ResourceBid {
+    id
+    resourceId
+    bidderAccountId
+    message
+    proposedTokenAmount
+    status
+    isActive
+    validUntil
+    createdAt
+    updatedAt
+    respondedAt
+    respondedByAccountId
+    accountByBidderAccountId {
+      id
+      displayName
+      externalSubject
+    }
+    resourceByResourceId {
+      id
+      creatorAccountId
+      title
+      description
+      location
+      defaultTokenAmount
+      imageUrls
+      categoryLabels
+      isProduct
+      isService
+      canBeExchanged
+      isActive
+      expiresAt
+      accountByCreatorAccountId {
+        id
+        displayName
+        externalSubject
+      }
+    }
+  }
+`;
+
+export const SENT_BIDS_QUERY = gql`
+  ${BID_WORKSPACE_FIELDS}
+  query SentBids($activeOnly: Boolean!, $first: Int!, $after: Cursor) {
+    sentResourceBids(activeOnly: $activeOnly, first: $first, after: $after) {
+      nodes {
+        ...BidWorkspaceFields
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      totalCount
+    }
+  }
+`;
+
+export const RECEIVED_BIDS_QUERY = gql`
+  ${BID_WORKSPACE_FIELDS}
+  query ReceivedBids($activeOnly: Boolean!, $first: Int!, $after: Cursor) {
+    receivedResourceBids(activeOnly: $activeOnly, first: $first, after: $after) {
+      nodes {
+        ...BidWorkspaceFields
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      totalCount
+    }
+  }
+`;
+
+export const CANCEL_RESOURCE_BID_MUTATION = gql`
+  mutation CancelResourceBid($input: CancelResourceBidInput!) {
+    cancelResourceBid(input: $input) {
+      resourceBid {
+        id
+        status
+        updatedAt
+      }
+    }
+  }
+`;
