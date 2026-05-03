@@ -29,7 +29,7 @@ Cadence: update at least once per workday
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
-| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 10% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 30% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
@@ -219,8 +219,8 @@ Current milestone: P5-M1 - Bids workspace parity and settlement correctness (007
 This week priorities:
 
 1. Complete bid validity window enforcement and accepted-bid token settlement (SQL helpers done in migration 084-085).
-2. Rebuild `/bids` page with separate sent/received sections, active-only filters, pagination (page size 5), and direct cancel/accept/decline actions.
-3. Add backend integration coverage for bid lifecycle actions, settlement effects, and resource-expiry auto-cancellation.
+2. Add backend integration coverage for bid lifecycle actions, settlement effects, and resource-expiry auto-cancellation.
+3. Add frontend/backend test coverage for bid action flows (cancel/accept/decline) and contribution-ledger reflection.
 
 ## Session Log
 
@@ -299,6 +299,7 @@ This week priorities:
 | 2026-04-28 | P8 execution | Completed T087-T089 by extending the notification catalog for campaign moderation note received, campaign approved, and creator adaptation submitted; adding moderation-status filtering (including `awaiting_adaptation`) to the admin campaigns page with notification-driven prefill; and adding E2E verification for campaign moderation notification routing. | database/migrations/069_campaign_moderation_workflow_refinement.sql; database/migrations/070_campaign_moderation_event_graphql_rename.sql; frontend/src/features/admin/AdminSupportPage.tsx; backend/tests/integration/campaign-moderation-notifications.spec.ts; specs/005-resource-discovery-and-publishing/tasks.md; npm -C backend run typecheck; npm -C frontend run typecheck | None | Implement T090 rich-text authoring extension. |
 | 2026-04-29 | P4 execution | Completed T090 by extending the constrained rich-text editor and sanitized renderer to campaign, need, and resource description authoring/display surfaces; marked P4, P7, and P8 as DONE (100%). | frontend/src/components/richText/; frontend/src/features/needs/; frontend/src/features/resources/; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Kick off P5 bids workspace (007 T004+). |
 | 2026-05-03 | P5 kickoff | UI polish pass committed (full-height chat, resource detail minimap, primary chips, profile location/avatar, search cleanup). Started P5 with migrations 084-085: added valid_until bid validity window (12-48h, default 24h), accepted-bid token settlement path, cancel_resource_bid function, sent/received workspace helpers with updated_at-desc ordering and active-only filter, resource_bid_is_active computed field, and updated process_resource_bid_notifications to expire bids on valid_until. | database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql; database/migrations/085_drop_old_create_resource_bid_overload.sql; npm -C frontend run graphql:schema; npm -C frontend run graphql:codegen | None | Complete bids page rebuild (pagination, filters, cancel/accept/decline actions). |
+| 2026-05-03 | P5 execution | Completed bids workspace page rebuild (sent/received sections, active-only toggles, page-size-5 load-more, cancel/accept/decline, accept-confirm dialog, inactive explanations) and added US1 test coverage for ordering/filtering: backend integration spec for sent/received ordering + active-only and frontend BidsPage rendering/filter/order assertions. | frontend/src/pages/bids.tsx; backend/tests/integration/bids-workspace.spec.ts; frontend/tests/bids/bids-page.spec.tsx; npm -C backend test -- --runInBand tests/integration/bids-workspace.spec.ts; npm -C frontend test -- --runInBand tests/bids/bids-page.spec.tsx | None | Implement US2 settlement-action test coverage and contribution-page settlement/refund reflection (T014-T015, T019). |
 
 ## Decisions Log
 
@@ -318,7 +319,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with SQL foundations laid in migrations 084-085.
+- Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with bids workspace implementation and US1 coverage now landed.
 - Current health: GREEN
-- Main risk: P5 bids page rebuild in progress; frontend typecheck not yet run against new bids.tsx rewrite.
+- Main risk: Remaining P5 scope is mainly US2 settlement-action validation and contribution-surface reflection, which can still surface ledger edge cases under retries/concurrency.
 - Requested supervisor input: none.

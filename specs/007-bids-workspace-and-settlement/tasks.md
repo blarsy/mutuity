@@ -31,8 +31,8 @@
 
 ### Tests (US1)
 
-- [ ] T009 [P] [US1] Add backend integration tests for sent/received bid ordering and active-only filtering in `backend/tests/integration/bids-workspace.spec.ts`
-- [ ] T010 [P] [US1] Add frontend tests for `BidsPage` rendering, filters, and status ordering in `frontend/tests/bids/bids-page.spec.tsx`
+- [x] T009 [P] [US1] Add backend integration tests for sent/received bid ordering and active-only filtering in `backend/tests/integration/bids-workspace.spec.ts`
+- [x] T010 [P] [US1] Add frontend tests for `BidsPage` rendering, filters, and status ordering in `frontend/tests/bids/bids-page.spec.tsx`
 
 ### Implementation (US1)
 
