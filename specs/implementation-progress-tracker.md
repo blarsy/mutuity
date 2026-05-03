@@ -29,7 +29,7 @@ Cadence: update at least once per workday
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
-| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 45% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 55% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
@@ -301,6 +301,7 @@ This week priorities:
 | 2026-05-03 | P5 kickoff | UI polish pass committed (full-height chat, resource detail minimap, primary chips, profile location/avatar, search cleanup). Started P5 with migrations 084-085: added valid_until bid validity window (12-48h, default 24h), accepted-bid token settlement path, cancel_resource_bid function, sent/received workspace helpers with updated_at-desc ordering and active-only filter, resource_bid_is_active computed field, and updated process_resource_bid_notifications to expire bids on valid_until. | database/migrations/084_bid_validity_settlement_and_workspace_helpers.sql; database/migrations/085_drop_old_create_resource_bid_overload.sql; npm -C frontend run graphql:schema; npm -C frontend run graphql:codegen | None | Complete bids page rebuild (pagination, filters, cancel/accept/decline actions). |
 | 2026-05-03 | P5 execution | Completed bids workspace page rebuild (sent/received sections, active-only toggles, page-size-5 load-more, cancel/accept/decline, accept-confirm dialog, inactive explanations) and added US1 test coverage for ordering/filtering: backend integration spec for sent/received ordering + active-only and frontend BidsPage rendering/filter/order assertions. | frontend/src/pages/bids.tsx; backend/tests/integration/bids-workspace.spec.ts; frontend/tests/bids/bids-page.spec.tsx; npm -C backend test -- --runInBand tests/integration/bids-workspace.spec.ts; npm -C frontend test -- --runInBand tests/bids/bids-page.spec.tsx | None | Implement US2 settlement-action test coverage and contribution-page settlement/refund reflection (T014-T015, T019). |
 | 2026-05-03 | P5 execution | Fixed runtime regression in `respondToResourceBid` (`app_private.is_administrator()` missing) by adding migration 086 compatibility alias to `app_private.is_admin()`, then completed US2 test coverage: backend settlement integration scenarios (reservation, bidder-cancel refund, decline refund, acceptance settlement, validity-expiry refund) and frontend bid-action coverage (cancel/accept/decline controls, inactive-state messaging, acceptance-confirmation copy presence). | database/migrations/086_admin_helper_compat_alias.sql; backend/tests/integration/bids-settlement.spec.ts; frontend/tests/bids/bid-actions.spec.tsx; docker compose run --rm migrate; npm -C backend test -- --runInBand tests/integration/resource-bids.spec.ts tests/integration/bids-settlement.spec.ts; npm -C frontend test -- --runInBand tests/bids/bid-actions.spec.tsx | None | Implement T019 contribution-page settlement/refund reflection and then US3 navigation/deep-link tasks. |
+| 2026-05-03 | P5 execution | Completed T019 by improving contribution-ledger clarity for bid settlement and refund outcomes: added explicit `resource_bid_settled` movement label and reason-specific refund detail copy (bidder cancel, decline, validity expiry, resource expiry/deactivation) in EN/FR, and surfaced those details in contribution movement cards. | frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; npm -C frontend run typecheck; npm -C frontend test -- --runInBand tests/bids/bids-page.spec.tsx tests/bids/bid-actions.spec.tsx | None | Start US3 navigation/deep-link implementation tasks T020-T024. |
 
 ## Decisions Log
 
@@ -322,5 +323,5 @@ Use this section for quick day-level oversight.
 
 - Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with bids workspace implementation plus US1/US2 test coverage landed.
 - Current health: GREEN
-- Main risk: Remaining P5 scope is now concentrated in contribution-surface settlement visibility (T019) and US3 navigation/deep-link parity, plus concurrency validation for claim settlement paths.
+- Main risk: Remaining P5 scope is now concentrated in US3 navigation/deep-link parity and claim-settlement concurrency validation, which may still reveal cross-feature integration gaps.
 - Requested supervisor input: none.

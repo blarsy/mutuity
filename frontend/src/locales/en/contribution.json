@@ -64,6 +64,7 @@
   "movements": {
     "resource_bid_reserved": "Bid created / tokens reserved",
     "resource_bid_refunded": "Bid refunded",
+    "resource_bid_settled": "Bid accepted / tokens settled",
     "claim_settlement_credit": "Claim settled in your favor",
     "claim_settlement_debit": "You settled a claim on your need",
     "profile_first_avatar_reward": "First profile avatar added",
@@ -75,5 +76,18 @@
     "resource_age_24h_reward": "Resource reached the 24-hour milestone",
     "claim_age_24h_reward": "Claim stayed valid for 24 hours",
     "campaign_airdrop_received": "Campaign airdrop received"
+  },
+  "movementDetails": {
+    "resourceBidSettled": {
+      "accepted": "The resource creator accepted this bid and the reserved Topes were transferred to them."
+    },
+    "resourceBidRefunded": {
+      "bidCancelledByBidder": "You cancelled this bid, so the reserved Topes were returned to your balance.",
+      "bidDeclined": "The resource creator declined this bid, so the reserved Topes were returned to your balance.",
+      "bidValidityExpired": "This bid expired after its validity window elapsed, so the reserved Topes were returned to your balance.",
+      "resourceExpired": "The resource expired before this bid was resolved, so the reserved Topes were returned to your balance.",
+      "resourceDeactivated": "The resource was deactivated before this bid was resolved, so the reserved Topes were returned to your balance.",
+      "fallback": "The reserved Topes were returned to your balance."
+    }
   }
 }

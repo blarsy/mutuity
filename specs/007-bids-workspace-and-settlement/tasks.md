@@ -56,7 +56,7 @@
 	- [x] T016 [US2] Add cancel actions to sent bids in `frontend/src/pages/bids.tsx` and the relevant bid card component
 	- [x] T017 [US2] Add accept/reject actions to received bids in `frontend/src/pages/bids.tsx` and the relevant bid card component
 	- [x] T018 [US2] Surface inactive explanations for accepted, rejected, cancelled, and expired bids in the workspace UI
-- [ ] T019 [US2] Ensure the workspace reflects settlement/refund outcomes clearly on the `Contribution` page and through notifications, including auto-cancellation caused by resource expiry or confirmed deactivation
+- [x] T019 [US2] Ensure the workspace reflects settlement/refund outcomes clearly on the `Contribution` page and through notifications, including auto-cancellation caused by resource expiry or confirmed deactivation
 
 ## Phase 5: User Story 3 - Navigate To Resource, Counterparty, Or Conversation (Priority: P2)
 

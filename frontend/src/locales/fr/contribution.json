@@ -64,6 +64,7 @@
   "movements": {
     "resource_bid_reserved": "Offre créée / jetons réservés",
     "resource_bid_refunded": "Offre remboursée",
+    "resource_bid_settled": "Offre acceptée / jetons réglés",
     "claim_settlement_credit": "Demande réglée en votre faveur",
     "claim_settlement_debit": "Vous avez réglé une demande sur votre besoin",
     "profile_first_avatar_reward": "Premier avatar de profil ajouté",
@@ -75,5 +76,18 @@
     "resource_age_24h_reward": "La ressource a atteint le jalon des 24 heures",
     "claim_age_24h_reward": "La demande est restée valide pendant 24 heures",
     "campaign_airdrop_received": "Airdrop de campagne reçu"
+  },
+  "movementDetails": {
+    "resourceBidSettled": {
+      "accepted": "Le createur de la ressource a accepte cette offre et les Topes reserves lui ont ete transferes."
+    },
+    "resourceBidRefunded": {
+      "bidCancelledByBidder": "Vous avez annule cette offre, les Topes reserves ont donc ete rendus a votre solde.",
+      "bidDeclined": "Le createur de la ressource a refuse cette offre, les Topes reserves ont donc ete rendus a votre solde.",
+      "bidValidityExpired": "Cette offre a expire a la fin de sa periode de validite, les Topes reserves ont donc ete rendus a votre solde.",
+      "resourceExpired": "La ressource a expire avant la resolution de cette offre, les Topes reserves ont donc ete rendus a votre solde.",
+      "resourceDeactivated": "La ressource a ete desactivee avant la resolution de cette offre, les Topes reserves ont donc ete rendus a votre solde.",
+      "fallback": "Les Topes reserves ont ete rendus a votre solde."
+    }
   }
 }

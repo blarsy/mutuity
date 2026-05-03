@@ -53,6 +53,37 @@ function formatSignedAmount(amountDelta: number) {
   return `${amountDelta > 0 ? "+" : ""}${amountDelta}`;
 }
 
+function asText(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function movementDetailTranslationKey(movement: ContributionOverviewData["allTokenMovements"]["edges"][number]["node"]) {
+  if (movement.eventType === "resource_bid_settled") {
+    return "movementDetails.resourceBidSettled.accepted";
+  }
+
+  if (movement.eventType !== "resource_bid_refunded") {
+    return null;
+  }
+
+  const reason = asText(movement.payload?.reason);
+
+  switch (reason) {
+    case "bid_cancelled_by_bidder":
+      return "movementDetails.resourceBidRefunded.bidCancelledByBidder";
+    case "bid_declined":
+      return "movementDetails.resourceBidRefunded.bidDeclined";
+    case "bid_validity_expired":
+      return "movementDetails.resourceBidRefunded.bidValidityExpired";
+    case "resource_expired":
+      return "movementDetails.resourceBidRefunded.resourceExpired";
+    case "resource_deactivated":
+      return "movementDetails.resourceBidRefunded.resourceDeactivated";
+    default:
+      return "movementDetails.resourceBidRefunded.fallback";
+  }
+}
+
 const TOPES_GUIDE_SLIDES = ["what", "earn", "spend", "tips"] as const;
 const TOPES_EARNING_OPPORTUNITIES = [
   { key: "profileAvatar", amount: 20, href: "/profile" },
@@ -287,9 +318,18 @@ export default function ContributionPage() {
               {movements.map(movement => (
                 <Card key={movement.id} variant="outlined">
                   <CardContent>
+                    {(() => {
+                      const movementDetailKey = movementDetailTranslationKey(movement);
+
+                      return (
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
                       <Stack spacing={0.5}>
                         <Typography variant="body1">{t(`movements.${movement.eventType}`, { defaultValue: movement.eventType.replaceAll("_", " ").toLowerCase() })}</Typography>
+                        {movementDetailKey ? (
+                          <Typography color="text.secondary" variant="body2">
+                            {t(movementDetailKey)}
+                          </Typography>
+                        ) : null}
                         <Typography color="text.secondary" variant="caption">
                           {new Date(movement.createdAt).toLocaleString()}
                           {movement.referenceType && movement.referenceId
@@ -304,6 +344,8 @@ export default function ContributionPage() {
                         size="small"
                       />
                     </Stack>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               ))}
