@@ -7,6 +7,8 @@ export const ACCOUNT_PROFILE_QUERY = gql`
       displayName
       bio
       location
+      latitude
+      longitude
       avatarUrl
       preferredLanguage
       profileLinks
@@ -22,6 +24,8 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
         displayName
         bio
         location
+        latitude
+        longitude
         avatarUrl
         preferredLanguage
         profileLinks

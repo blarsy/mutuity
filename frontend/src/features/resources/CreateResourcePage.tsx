@@ -272,15 +272,6 @@ export default function CreateResourcePage() {
               {t("form.subtitle")}
             </Typography>
           </Box>
-
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href="/resources" variant="outlined">
-              {t("form.browseResources")}
-            </Button>
-            <Button component={NextLink} href="/needs" variant="outlined">
-              {t("form.browseNeeds")}
-            </Button>
-          </Stack>
         </Stack>
 
         {errorMessage ? (

@@ -10,6 +10,7 @@
     "searchLabel": "Rechercher des ressources",
     "searchPlaceholder": "Essayez le titre, la description ou le nom du créateur",
     "categoriesLabel": "Catégories",
+    "filtersLabel": "Filtres",
     "addButton": "Ajouter",
     "signInButton": "Se connecter",
     "locationFallbackStatus": "Utilisation des coordonnées du compte ou du repli Tournai lorsqu'aucune coordonnée explicite n'est fournie.",

@@ -14,7 +14,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { APIProvider, Map, Marker, useMarkerRef } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, Marker, useMapsLibrary, useMarkerRef } from "@vis.gl/react-google-maps";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -60,6 +60,7 @@ function AddressAutocomplete({
   onLocationResolved,
 }: AddressAutocompleteProps) {
   const { t } = useTranslation("common");
+  const placesLibrary = useMapsLibrary("places");
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<
     google.maps.places.PlacePrediction[]
@@ -72,21 +73,23 @@ function AddressAutocomplete({
   }, [value]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        if (!google.maps.places) {
-          await google.maps.importLibrary("places");
-        }
-        setReady(true);
-      } catch (e) {
-        setLoadError(t("locationPicker.loadError"));
-      }
-    })();
-  }, [t]);
+    if (!API_KEY) {
+      setLoadError(t("locationPicker.loadError"));
+      setReady(false);
+      return;
+    }
+
+    if (!placesLibrary) {
+      return;
+    }
+
+    setLoadError(null);
+    setReady(true);
+  }, [placesLibrary, t]);
 
   const handleInputChange = async (text: string) => {
     setInputValue(text);
-    if (!ready || text.length < 3) {
+    if (!ready || !placesLibrary || text.length < 3) {
       setSuggestions([]);
       return;
     }
@@ -122,18 +125,11 @@ function AddressAutocomplete({
     setSuggestions([]);
   };
 
-  if (loadError) {
-    return (
-      <Typography color="error" variant="body2">
-        {loadError}
-      </Typography>
-    );
-  }
-
   return (
     <Autocomplete<google.maps.places.PlacePrediction, false, true, true>
       freeSolo
       disableClearable
+      disabled={Boolean(loadError)}
       options={suggestions}
       getOptionLabel={(opt) => {
         if (typeof opt === "string") return opt;
@@ -151,8 +147,8 @@ function AddressAutocomplete({
           {...params}
           label={label}
           required={required}
-          error={error}
-          helperText={helperText}
+          error={Boolean(error || loadError)}
+          helperText={loadError ?? helperText}
           onBlur={onBlur}
           InputProps={{
             ...params.InputProps,
@@ -249,13 +245,12 @@ export function LocationPicker({
           onLocationResolved={onChange}
         />
         <Box
-          sx={(theme) => ({
+          sx={{
             borderRadius: 1,
-            height: 260,
+            aspectRatio: "1 / 1",
             overflow: "hidden",
-            width: "100%",
-            [theme.breakpoints.up("sm")]: { height: 340 },
-          })}
+            width: "100%"
+          }}
         >
           <PickerMap
             latitude={value.latitude || 50.6072}

@@ -10,6 +10,7 @@
     "searchLabel": "Search resources",
     "searchPlaceholder": "Try title, description, or creator name",
     "categoriesLabel": "Categories",
+    "filtersLabel": "Filters",
     "addButton": "Add",
     "signInButton": "Sign in",
     "locationFallbackStatus": "Using account or Tournai fallback when no explicit coordinates are provided.",

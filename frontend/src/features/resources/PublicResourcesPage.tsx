@@ -6,7 +6,6 @@ import { Alert, Box, Button, Card, CardContent, Chip, Container, Stack, TextFiel
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
-import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getBrowserLocation } from "../needs/locationFallback";
@@ -87,9 +86,6 @@ export default function PublicResourcesPage() {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t, i18n } = useTranslation("resources");
-  const publishResourceHref = session.authenticated
-    ? "/resources/create"
-    : "/login?next=%2Fresources%2Fcreate";
   const [filters, setFilters] = useState(DEFAULT_RESOURCE_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<ReturnType<typeof getBrowserLocation> extends Promise<infer T> ? T : never>();
   const [locationStatusKey, setLocationStatusKey] = useState("browse.locationFallbackStatus");
@@ -161,15 +157,9 @@ export default function PublicResourcesPage() {
             <Typography component="h1" gutterBottom variant="h4">
               {t("browse.title")}
             </Typography>
-            <Typography color="text.secondary">
-              {t("browse.subtitle")}
-            </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href={publishResourceHref} variant="contained">
-              {t("browse.addButton")}
-            </Button>
             {!session.authenticated &&
               <Button component={NextLink} href="/login?next=%2Fresources" variant="contained">
                 {t("browse.signInButton")}
@@ -205,8 +195,8 @@ export default function PublicResourcesPage() {
             <Stack spacing={2}>
               <TextField
                 fullWidth
-              label={t("browse.searchLabel")}
-              placeholder={t("browse.searchPlaceholder")}
+                label={t("browse.searchLabel")}
+                placeholder={t("browse.searchPlaceholder")}
                 value={filters.searchText}
                 onChange={event => {
                   setFilters(current => ({
@@ -233,26 +223,31 @@ export default function PublicResourcesPage() {
                 />
               </Box>
 
-              <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
-                <Button onClick={() => toggleFilter("isProduct")} size="small" variant={filterVariant(filters.isProduct)}>
-                  {t("filters.isProduct")}: {t(`triState.${describeTriStateFilter(filters.isProduct)}`)}
-                </Button>
-                <Button onClick={() => toggleFilter("isService")} size="small" variant={filterVariant(filters.isService)}>
-                  {t("filters.isService")}: {t(`triState.${describeTriStateFilter(filters.isService)}`)}
-                </Button>
-                <Button onClick={() => toggleFilter("canBeGiven")} size="small" variant={filterVariant(filters.canBeGiven)}>
-                  {t("filters.canBeGiven")}: {t(`triState.${describeTriStateFilter(filters.canBeGiven)}`)}
-                </Button>
-                <Button onClick={() => toggleFilter("canBeExchanged")} size="small" variant={filterVariant(filters.canBeExchanged)}>
-                  {t("filters.canBeExchanged")}: {t(`triState.${describeTriStateFilter(filters.canBeExchanged)}`)}
-                </Button>
-                <Button onClick={() => toggleFilter("canBeTakenAway")} size="small" variant={filterVariant(filters.canBeTakenAway)}>
-                  {t("filters.canBeTakenAway")}: {t(`triState.${describeTriStateFilter(filters.canBeTakenAway)}`)}
-                </Button>
-                <Button onClick={() => toggleFilter("canBeDelivered")} size="small" variant={filterVariant(filters.canBeDelivered)}>
-                  {t("filters.canBeDelivered")}: {t(`triState.${describeTriStateFilter(filters.canBeDelivered)}`)}
-                </Button>
-              </Stack>
+              <Box>
+                <Typography gutterBottom variant="subtitle2">
+                  {t("browse.filtersLabel")}
+                </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
+                  <Button color="primary" onClick={() => toggleFilter("isProduct")} size="small" variant={filterVariant(filters.isProduct)}>
+                    {t("filters.isProduct")}: {t(`triState.${describeTriStateFilter(filters.isProduct)}`)}
+                  </Button>
+                  <Button color="primary" onClick={() => toggleFilter("isService")} size="small" variant={filterVariant(filters.isService)}>
+                    {t("filters.isService")}: {t(`triState.${describeTriStateFilter(filters.isService)}`)}
+                  </Button>
+                  <Button color="primary" onClick={() => toggleFilter("canBeGiven")} size="small" variant={filterVariant(filters.canBeGiven)}>
+                    {t("filters.canBeGiven")}: {t(`triState.${describeTriStateFilter(filters.canBeGiven)}`)}
+                  </Button>
+                  <Button color="primary" onClick={() => toggleFilter("canBeExchanged")} size="small" variant={filterVariant(filters.canBeExchanged)}>
+                    {t("filters.canBeExchanged")}: {t(`triState.${describeTriStateFilter(filters.canBeExchanged)}`)}
+                  </Button>
+                  <Button color="primary" onClick={() => toggleFilter("canBeTakenAway")} size="small" variant={filterVariant(filters.canBeTakenAway)}>
+                    {t("filters.canBeTakenAway")}: {t(`triState.${describeTriStateFilter(filters.canBeTakenAway)}`)}
+                  </Button>
+                  <Button color="primary" onClick={() => toggleFilter("canBeDelivered")} size="small" variant={filterVariant(filters.canBeDelivered)}>
+                    {t("filters.canBeDelivered")}: {t(`triState.${describeTriStateFilter(filters.canBeDelivered)}`)}
+                  </Button>
+                </Stack>
+              </Box>
             </Stack>
           </CardContent>
         </Card>
@@ -295,7 +290,7 @@ export default function PublicResourcesPage() {
                       {resource.categoryLabels.map(label => (
                         <Chip
                           key={`${resource.id}-category-${label}`}
-                          color="secondary"
+                          color="primary"
                           label={localizedCategoryByLabel.get(label) ?? label}
                           size="small"
                           variant="outlined"

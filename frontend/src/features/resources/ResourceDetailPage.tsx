@@ -15,11 +15,11 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
-import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { IntensityDisplay } from "../../components/IntensityPicker";
@@ -29,6 +29,8 @@ import { ResourceBidDialog } from "./ResourceBidDialog";
 import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
 import type { ResourceCategoryOption } from "./types";
+
+const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
 type ResourceDetailPageProps = {
   resourceId: string;
@@ -162,6 +164,9 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     resource?.canBeTakenAway ? t("form.canBeTakenAway") : null,
     resource?.canBeDelivered ? t("form.canBeDelivered") : null
   ].filter((value): value is string => Boolean(value));
+  const latitude = Number(resource?.latitude);
+  const longitude = Number(resource?.longitude);
+  const hasValidCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -212,24 +217,10 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
               >
                 {creatorLabel}
               </Button>
-              <Typography color="text.secondary">• {resource.location}</Typography>
             </Stack>
           </Box>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href="/resources" variant="outlined">
-              {t("detail.backToResources")}
-            </Button>
-            {session.authenticated ? (
-              <LogoutButton color="inherit" redirectTo={`/resources/${resource.id}`} variant="outlined">
-                {t("detail.signOut")}
-              </LogoutButton>
-            ) : (
-              <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                {t("detail.signIn")}
-              </Button>
-            )}
-          </Stack>
+
         </Stack>
 
         {status === "loading" ? (
@@ -316,11 +307,11 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                     borderRadius: 3,
                     color: "text.secondary",
                     display: "flex",
-                    height: 320,
                     justifyContent: "center",
                     overflow: "hidden",
                     width: "100%",
-                    maxWidth: 520
+                    maxWidth: 520,
+                    aspectRatio: "1 / 1"
                   }}
                 >
                   {!currentImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
@@ -386,7 +377,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                   ) : resource.categoryLabels.map(label => (
                     <Chip
                       key={`${resource.id}-category-${label}`}
-                      color="secondary"
+                      color="primary"
                       label={localizedCategoryByLabel.get(label) ?? label}
                       size="small"
                       variant="outlined"
@@ -432,9 +423,49 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 <Typography color="text.secondary" variant="overline">
                   {t("form.locationLabel")}
                 </Typography>
-                <Typography variant="body2">
-                  {resource.location}
-                </Typography>
+                <Stack spacing={1.25}>
+                  <Typography variant="body2">
+                    {resource.location}
+                  </Typography>
+                  <Box
+                    sx={{
+                      borderRadius: 1,
+                      overflow: "hidden",
+                      width: "100%",
+                      aspectRatio: "16 / 9",
+                      bgcolor: "grey.100"
+                    }}
+                  >
+                    {MAPS_API_KEY && hasValidCoordinates ? (
+                      <APIProvider apiKey={MAPS_API_KEY}>
+                        <GoogleMap
+                          center={{ lat: latitude, lng: longitude }}
+                          defaultZoom={14}
+                          disableDefaultUI={false}
+                          clickableIcons={false}
+                          mapTypeControl={false}
+                          streetViewControl={false}
+                          fullscreenControl={false}
+                          style={{ width: "100%", height: "100%" }}
+                        >
+                          <Marker position={{ lat: latitude, lng: longitude }} />
+                        </GoogleMap>
+                      </APIProvider>
+                    ) : (
+                      <Box
+                        sx={{
+                          alignItems: "center",
+                          color: "text.secondary",
+                          display: "flex",
+                          height: "100%",
+                          justifyContent: "center"
+                        }}
+                      >
+                        <Typography variant="caption">{resource.location}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Stack>
               </Stack>
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>

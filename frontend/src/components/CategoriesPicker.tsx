@@ -129,7 +129,7 @@ export function CategoriesPicker({
           <Chip
             key={opt.code}
             label={localizedLabel(opt)}
-            color="secondary"
+            color="primary"
             size="small"
             onDelete={() =>
               onChange(selected.filter((c) => c !== opt.code))
@@ -138,6 +138,7 @@ export function CategoriesPicker({
         ))}
         <Chip
           label={selectedOptions.length === 0 ? t("categories.addButton") : "…"}
+          color="primary"
           size="small"
           variant="outlined"
           onClick={() => setDialogOpen(true)}

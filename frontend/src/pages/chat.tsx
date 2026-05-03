@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { Alert, Box, Container, Typography } from "@mui/material";
+import { Alert, Box, Container, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
@@ -46,48 +46,26 @@ export default function ChatPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: { sm: 3, xs: hasThread ? 0 : 3 } }}>
-        <Typography
-          component="h1"
-          gutterBottom
-          sx={{ display: { sm: "block", xs: hasThread ? "none" : "block" } }}
-          variant="h4"
-        >
-          {t("workspaceTitle")}
-        </Typography>
-        <Typography
-          color="text.secondary"
-          sx={{ display: { sm: "block", xs: hasThread ? "none" : "block" } }}
-        >
-          {t("workspaceSubtitle")}
-        </Typography>
-      </Box>
-
-      <Box
+    <Container disableGutters maxWidth={false} sx={{ px: { xs: 0, sm: 2 }, py: 0 }}>
+      <Stack
+        direction="row"
         sx={{
-          border: 1,
-          borderColor: "divider",
-          borderRadius: 1,
-          display: "flex",
-          height: "calc(100vh - 240px)",
-          minHeight: 400,
+          height: { xs: "calc(100dvh - 56px)", sm: "calc(100dvh - 64px)" },
+          maxHeight: "100%",
           overflow: "hidden"
         }}
       >
-        {/* Left pane: conversation list */}
         <Box
           sx={{
             borderRight: 1,
             borderColor: "divider",
             display: {
               sm: "flex",
-              // On mobile, hide list when a thread is open
               xs: hasThread ? "none" : "flex"
             },
             flexDirection: "column",
             flexShrink: 0,
-            width: { sm: "35%", lg: "30%" }
+            width: { sm: "35%", lg: "30%", xs: "100%" }
           }}
         >
           <ConversationListPanel
@@ -96,12 +74,10 @@ export default function ChatPage() {
           />
         </Box>
 
-        {/* Right pane: conversation thread */}
         <Box
           sx={{
             display: {
               sm: "flex",
-              // On mobile, show thread only when one is selected
               xs: hasThread ? "flex" : "none"
             },
             flex: 1,
@@ -132,7 +108,7 @@ export default function ChatPage() {
             </Box>
           )}
         </Box>
-      </Box>
+      </Stack>
     </Container>
   );
 }

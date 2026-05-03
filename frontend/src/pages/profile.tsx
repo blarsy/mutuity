@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Alert, Box, Button, Card, CardContent, Container, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Button, Card, CardContent, Container, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "../features/profile/profile.queries";
-import { AvatarIconButton } from "../features/ui/AvatarIconButton";
+import { LocationPicker } from "../components/LocationPicker";
+import { ImageUploadField } from "../components/ImageUploadField";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 type ProfileLinkType = "website" | "facebook" | "instagram" | "x";
@@ -23,6 +24,8 @@ type AccountProfileData = {
     displayName: string | null;
     bio: string | null;
     location: string | null;
+    latitude: number | null;
+    longitude: number | null;
     avatarUrl: string | null;
     preferredLanguage: "en" | "fr" | null;
     profileLinks: ProfileLink[] | null;
@@ -59,6 +62,8 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
+  const [latitude, setLatitude] = useState<number>(50.6072);
+  const [longitude, setLongitude] = useState<number>(3.3889);
   const [avatarUrl, setAvatarUrl] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>("fr");
   const [profileLinks, setProfileLinks] = useState<ProfileLink[]>([]);
@@ -75,6 +80,8 @@ export default function ProfilePage() {
     setDisplayName(profile.displayName ?? "");
     setBio(profile.bio ?? "");
     setLocation(profile.location ?? "");
+    setLatitude(profile.latitude ?? 50.6072);
+    setLongitude(profile.longitude ?? 3.3889);
     setAvatarUrl(profile.avatarUrl ?? "");
     setPreferredLanguage(profile.preferredLanguage === "en" ? "en" : "fr");
     setProfileLinks(
@@ -102,6 +109,8 @@ export default function ProfilePage() {
           displayName: displayName.trim() || null,
           bio: bio.trim() || null,
           location: location.trim() || null,
+          latitude,
+          longitude,
           avatarUrl: avatarUrl.trim() || null,
           preferredLanguage,
           profileLinks: profileLinks
@@ -155,16 +164,13 @@ export default function ProfilePage() {
             </Typography>
           </Box>
 
-          <Card variant="outlined">
-            <CardContent>
-              <Stack alignItems="center" spacing={2}>
-                <AvatarIconButton displayName={displayName || session.account?.displayName} imageUrl={avatarUrl || null} size={72} />
-                <Typography color="text.secondary" variant="body2">
-                  {t("avatarPreviewHint")}
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Avatar
+              alt={displayName || session.account?.displayName || "Profile avatar"}
+              src={avatarUrl || undefined}
+              sx={{ height: 300, width: 300 }}
+            />
+          </Box>
 
           {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
@@ -181,7 +187,19 @@ export default function ProfilePage() {
                   onChange={event => setBio(event.target.value)}
                   value={bio}
                 />
-                <TextField label={t("fields.location")} onChange={event => setLocation(event.target.value)} value={location} />
+                <LocationPicker
+                  value={{
+                    address: location,
+                    latitude,
+                    longitude
+                  }}
+                  addressLabel={t("fields.location")}
+                  onChange={(loc) => {
+                    setLocation(loc.address);
+                    setLatitude(loc.latitude);
+                    setLongitude(loc.longitude);
+                  }}
+                />
                 <TextField
                   select
                   label={t("fields.language")}
@@ -194,11 +212,16 @@ export default function ProfilePage() {
                   <MenuItem value="fr">{t("languages.fr")}</MenuItem>
                   <MenuItem value="en">{t("languages.en")}</MenuItem>
                 </TextField>
-                <TextField
-                  label={t("fields.avatarUrl")}
-                  onChange={event => setAvatarUrl(event.target.value)}
-                  placeholder={t("fields.avatarPlaceholder")}
-                  value={avatarUrl}
+
+                <ImageUploadField
+                  imageUrls={avatarUrl ? [avatarUrl] : []}
+                  showExistingImages={false}
+                  onImageAdded={(url) => {
+                    setAvatarUrl(url);
+                  }}
+                  onImageRemoved={() => {
+                    setAvatarUrl("");
+                  }}
                 />
 
                 <Stack spacing={1.5}>

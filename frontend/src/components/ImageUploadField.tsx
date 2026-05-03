@@ -7,12 +7,10 @@ import {
   Button,
   CircularProgress,
   IconButton,
-  ImageList,
-  ImageListItem,
-  ImageListItemBar,
   Stack,
   Typography,
 } from "@mui/material";
+import AspectRatioIcon from "@mui/icons-material/AspectRatio";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +20,7 @@ type Props = {
   imageUrls: string[];
   onImageAdded: (url: string) => void;
   onImageRemoved: (index: number) => void;
+  showExistingImages?: boolean;
 };
 
 async function cropAndUpload(image: HTMLImageElement, crop: Crop): Promise<string> {
@@ -64,7 +63,7 @@ async function cropAndUpload(image: HTMLImageElement, crop: Crop): Promise<strin
   return urlFromPublicId(publicId);
 }
 
-export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved }: Props) {
+export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, showExistingImages = true }: Props) {
   const { t } = useTranslation("resources");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -109,29 +108,45 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved }: Pr
     <Stack spacing={1}>
       <Typography variant="subtitle2">{t("imageUpload.title")}</Typography>
 
-      {imageUrls.length > 0 && (
-        <ImageList cols={3} rowHeight={120} sx={{ mt: 0 }}>
+      {showExistingImages && imageUrls.length > 0 && (
+        <Box
+          sx={{
+            display: "grid",
+            gap: 1,
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            mt: 0,
+          }}
+        >
           {imageUrls.map((url, index) => (
-            <ImageListItem key={url}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={t("imageUpload.imageAlt", { index: index + 1 })} style={{ objectFit: "cover", height: "100%" }} />
-              <ImageListItemBar
-                actionIcon={
-                  <IconButton
-                    size="small"
-                    onClick={() => onImageRemoved(index)}
-                    aria-label={t("imageUpload.removeImage")}
-                    sx={{ color: "white" }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                }
-                position="top"
-                sx={{ background: "transparent" }}
+            <Box key={url} sx={{ position: "relative", width: "100%", aspectRatio: "1 / 1" }}>
+              <Box
+                sx={{
+                  backgroundImage: `url(${url})`,
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                  borderRadius: 1,
+                  inset: 0,
+                  position: "absolute"
+                }}
               />
-            </ImageListItem>
+              <IconButton
+                size="small"
+                onClick={() => onImageRemoved(index)}
+                aria-label={t("imageUpload.removeImage")}
+                sx={{
+                  color: "white",
+                  position: "absolute",
+                  right: 4,
+                  top: 4,
+                  bgcolor: "rgba(0, 0, 0, 0.45)",
+                  "&:hover": { bgcolor: "rgba(0, 0, 0, 0.6)" }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
           ))}
-        </ImageList>
+        </Box>
       )}
 
       {!imageFile && (
@@ -141,9 +156,13 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved }: Pr
             borderColor: isDraggedOver ? "primary.main" : "divider",
             borderRadius: 1,
             p: 2,
+            minHeight: 176,
             textAlign: "center",
             opacity: isDraggedOver ? 0.6 : 1,
             cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between"
           }}
           onDragEnter={() => setIsDraggedOver(true)}
           onDragLeave={() => setIsDraggedOver(false)}
@@ -171,6 +190,9 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved }: Pr
           <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
             {t("imageUpload.dragHint")}
           </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <AspectRatioIcon sx={{ color: "text.primary", fontSize: "4rem" }} />
+          </Box>
         </Box>
       )}
 
