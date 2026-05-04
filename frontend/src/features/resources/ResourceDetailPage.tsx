@@ -1,6 +1,6 @@
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useQuery } from "@apollo/client/react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {
@@ -20,13 +20,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
+import { RESOURCE_CONVERSATION_LOOKUP_QUERY } from "../chat/chat.queries";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { IntensityDisplay } from "../../components/IntensityPicker";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { StartConversationDialog } from "../chat/StartConversationDialog";
 import { ResourceBidDialog } from "./ResourceBidDialog";
-import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY, RESPOND_TO_RESOURCE_BID_MUTATION } from "./resources.queries";
+import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
 import type { ResourceCategoryOption } from "./types";
 
@@ -70,19 +71,16 @@ type ResourceDetailData = {
   } | null;
 };
 
-type RespondToResourceBidMutationData = {
-  respondToResourceBid: {
-    resourceBid: {
-      id: string;
-      status: string;
-    };
-  };
-};
-
 type ResourceCategoryOptionsQueryData = {
   allResourceCategories: {
     nodes: ResourceCategoryOption[];
   };
+};
+
+type ResourceConversationLookupData = {
+  resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: {
+    id: string;
+  } | null;
 };
 
 function formatDate(value: string | null, noDateLabel: string) {
@@ -97,39 +95,33 @@ function formatBidStatus(status: ResourceBidStatus, t: (key: string, options?: R
   return t(`detail.bidStatuses.${status}`, { defaultValue: status.replaceAll("_", " ").toLowerCase() });
 }
 
-function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warning" | "error" | "info" {
-  switch (status) {
-    case "ACCEPTED":
-      return "success";
-    case "DECLINED":
-      return "error";
-    case "EXPIRED":
-      return "warning";
-    case "WITHDRAWN":
-      return "default";
-    default:
-      return "info";
-  }
-}
-
 export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t, i18n } = useTranslation("resources");
+  const currentAccountId = session.account?.id ?? null;
   const { data, loading, error, refetch } = useQuery<ResourceDetailData>(RESOURCE_DETAIL_QUERY, {
     variables: { resourceId }
   });
-  const { data: categoryData } = useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
-  const [respondToResourceBid, { loading: respondLoading, error: respondError }] =
-    useMutation<RespondToResourceBidMutationData>(RESPOND_TO_RESOURCE_BID_MUTATION);
-
   const resource = data?.resourceById ?? null;
-  const currentAccountId = session.account?.id ?? null;
+  const { data: categoryData } = useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
+  const { data: conversationData } = useQuery<ResourceConversationLookupData>(RESOURCE_CONVERSATION_LOOKUP_QUERY, {
+    skip: !resource || !currentAccountId || !resource.creatorAccountId || resource.creatorAccountId === currentAccountId,
+    variables: {
+      resourceId,
+      ownerAccountId: resource?.creatorAccountId,
+      bidderAccountId: currentAccountId
+    }
+  });
+
   const isCreator = resource?.creatorAccountId === currentAccountId;
   const resourceBids = [...(resource?.resourceBidsByResourceId.nodes ?? [])].sort(
     (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
+  const latestReceivedBid = isCreator ? resourceBids[0] ?? null : null;
   const existingBid = resourceBids.find(bid => bid.bidderAccountId === currentAccountId) ?? null;
+  const existingConversationId =
+    conversationData?.resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId?.id ?? null;
   const isExpired = resource?.expiresAt ? new Date(resource.expiresAt).getTime() <= Date.now() : false;
   const creatorLabel = resource?.accountByCreatorAccountId?.displayName
     ?? resource?.accountByCreatorAccountId?.externalSubject
@@ -138,7 +130,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const imageUrls = resource?.imageUrls ?? [];
   const currentImageUrl = imageUrls[currentImageIndex] ?? null;
-  const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(respondError);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
   const localizedCategoryByLabel = useMemo(() => {
@@ -171,19 +163,6 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [resource?.id]);
-
-  const handleDecision = async (resourceBidId: string, nextStatus: "ACCEPTED" | "DECLINED") => {
-    await respondToResourceBid({
-      variables: {
-        input: {
-          resourceBidId,
-          status: nextStatus
-        }
-      }
-    });
-
-    await refetch();
-  };
 
   if (loading) {
     return <Alert severity="info">{t("detail.loading")}</Alert>;
@@ -220,6 +199,31 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
             </Stack>
           </Box>
 
+          {session.authenticated && !isCreator ? (
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <StartConversationDialog
+                buttonLabel={t("detail.chat")}
+                creatorAccountId={resource.creatorAccountId}
+                disabled={!resource.isActive || isExpired}
+                disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingBids") : null}
+                existingConversationId={existingConversationId}
+                kind="resource"
+                resourceId={resource.id}
+                title={resource.title}
+              />
+              <ResourceBidDialog
+                defaultTokenAmount={resource.defaultTokenAmount}
+                disabled={!resource.isActive || isExpired}
+                disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingBids") : null}
+                existingBid={existingBid ?? undefined}
+                resourceId={resource.id}
+                resourceTitle={resource.title}
+                onSubmitted={() => {
+                  void refetch();
+                }}
+              />
+            </Stack>
+          ) : null}
 
         </Stack>
 
@@ -227,7 +231,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
           <Alert severity="info" sx={{ mb: 2 }}>
             {t("authGuard.checking", { ns: "common" })}
           </Alert>
-        ) : session.authenticated ? (
+        ) : session.authenticated && isCreator ? (
           <Alert severity={isCreator ? "success" : "info"} sx={{ mb: 2 }}>
             <Stack
               alignItems={{ xs: "flex-start", sm: "center" }}
@@ -252,11 +256,45 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
               ) : null}
             </Stack>
           </Alert>
+        ) : session.authenticated && existingBid ? (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Stack
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              spacing={1.5}
+            >
+              <Typography variant="body2">
+                {t("detail.existingBidHint", { status: formatBidStatus(existingBid.status, t) })}
+              </Typography>
+              <Button component={NextLink} href={`/bids?bidId=${existingBid.id}`} size="small" variant="outlined">
+                {t("detail.viewLatestBid")}
+              </Button>
+            </Stack>
+          </Alert>
         ) : (
           <Alert severity="info" sx={{ mb: 2 }}>
             {t("detail.signInHint")}
           </Alert>
         )}
+
+        {session.authenticated && isCreator && latestReceivedBid ? (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Stack
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              spacing={1.5}
+            >
+              <Typography variant="body2">
+                {t("detail.receivedBidsHint")}
+              </Typography>
+              <Button component={NextLink} href={`/bids?bidId=${latestReceivedBid.id}`} size="small" variant="outlined">
+                {t("detail.viewLatestReceivedBid")}
+              </Button>
+            </Stack>
+          </Alert>
+        ) : null}
 
         {!resource.isActive ? (
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -490,139 +528,6 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
           </CardContent>
         </Card>
 
-        {!isCreator ? (
-          <Card sx={{ mb: 3 }} variant="outlined">
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography variant="h6">{t("detail.respondTitle")}</Typography>
-
-                {existingBid ? (
-                  <Alert severity={existingBid.status === "ACCEPTED" ? "success" : "info"}>
-                    {t("detail.currentResponsePrefix")} <strong>{formatBidStatus(existingBid.status, t)}</strong>.
-                  </Alert>
-                ) : (
-                  <Typography color="text.secondary" variant="body2">
-                    {t("detail.respondHint")}
-                  </Typography>
-                )}
-
-                {session.authenticated ? (
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-                    <ResourceBidDialog
-                      defaultTokenAmount={resource.defaultTokenAmount}
-                      disabled={!resource.isActive || isExpired}
-                      disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingResponses") : null}
-                      existingBid={existingBid ?? undefined}
-                      resourceId={resource.id}
-                      resourceTitle={resource.title}
-                      onSubmitted={() => {
-                        void refetch();
-                      }}
-                    />
-                    <StartConversationDialog
-                      buttonLabel={t("detail.contactCreator")}
-                      creatorAccountId={resource.creatorAccountId}
-                      disabled={!resource.isActive || isExpired}
-                      disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingResponses") : null}
-                      kind="resource"
-                      resourceId={resource.id}
-                      title={resource.title}
-                    />
-                  </Stack>
-                ) : (
-                  <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                    {t("card.signInToRespond")}
-                  </Button>
-                )}
-              </Stack>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {(isCreator || existingBid) ? (
-          <Card variant="outlined">
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography variant="h6">
-                  {isCreator ? t("detail.incomingResponses") : t("detail.yourResponseHistory")}
-                </Typography>
-
-                {resourceBids.length === 0 ? (
-                  <Alert severity="info">{t("detail.noResponsesYet")}</Alert>
-                ) : (
-                  <Stack spacing={2}>
-                    {(isCreator ? resourceBids : resourceBids.filter(bid => bid.bidderAccountId === currentAccountId)).map(bid => {
-                      const bidderLabel = bid.accountByBidderAccountId?.displayName
-                        ?? bid.accountByBidderAccountId?.externalSubject
-                        ?? bid.bidderAccountId;
-
-                      return (
-                        <Card key={bid.id} variant="outlined">
-                          <CardContent>
-                            <Stack spacing={1.5}>
-                              <Stack
-                                alignItems={{ xs: "flex-start", sm: "center" }}
-                                direction={{ xs: "column", sm: "row" }}
-                                justifyContent="space-between"
-                                spacing={1}
-                              >
-                                <Box>
-                                  <Typography variant="subtitle1">
-                                    {isCreator ? bidderLabel : t("detail.yourResponse")}
-                                  </Typography>
-                                  <Typography color="text.secondary" variant="body2">
-                                    {t("detail.sentAt", { date: formatDate(bid.createdAt, t("card.permanent")) })}
-                                    {bid.respondedAt ? ` • ${t("detail.reviewedAt", { date: formatDate(bid.respondedAt, t("card.permanent")) })}` : ""}
-                                  </Typography>
-                                </Box>
-                                <Chip color={bidChipColor(bid.status)} label={formatBidStatus(bid.status, t)} size="small" />
-                              </Stack>
-
-                              {bid.message ? (
-                                <Typography sx={{ whiteSpace: "pre-wrap" }} variant="body2">
-                                  {bid.message}
-                                </Typography>
-                              ) : (
-                                <Typography color="text.secondary" variant="body2">
-                                  {t("detail.noOpeningMessage")}
-                                </Typography>
-                              )}
-
-                              <Typography color="text.secondary" variant="body2">
-                                {t("detail.proposedTokenAmount")}: {bid.proposedTokenAmount ?? t("card.notSet")}
-                              </Typography>
-
-                              {isCreator && bid.status === "OPEN" ? (
-                                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                                  <Button
-                                    color="success"
-                                    disabled={respondLoading}
-                                    onClick={() => void handleDecision(bid.id, "ACCEPTED")}
-                                    variant="contained"
-                                  >
-                                    {t("detail.accept")}
-                                  </Button>
-                                  <Button
-                                    color="error"
-                                    disabled={respondLoading}
-                                    onClick={() => void handleDecision(bid.id, "DECLINED")}
-                                    variant="outlined"
-                                  >
-                                    {t("detail.decline")}
-                                  </Button>
-                                </Stack>
-                              ) : null}
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </Stack>
-                )}
-              </Stack>
-            </CardContent>
-          </Card>
-        ) : null}
       </Box>
     </Container>
   );

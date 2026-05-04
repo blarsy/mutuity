@@ -1,41 +1,13 @@
-create or replace function app_private.create_resource_bid_notification(
-  p_recipient_account_id uuid,
-  p_resource_bid_id uuid,
-  p_event_type text,
-  p_payload jsonb default '{}'::jsonb
-)
-returns app_public.resource_bid_notification
-language plpgsql
-security definer
-set search_path = app_public, app_private, public
-as $$
-declare
-  v_notification app_public.resource_bid_notification;
-begin
-  insert into app_public.resource_bid_notification (
-    recipient_account_id,
-    resource_bid_id,
-    event_type,
-    payload
-  )
-  values (
-    p_recipient_account_id,
-    p_resource_bid_id,
-    p_event_type,
-    coalesce(p_payload, '{}'::jsonb)
-  )
-  returning * into v_notification;
-
-  return v_notification;
-end;
-$$;
+-- Migration 090: resource intensity is advisory for bids; do not reject
+-- proposed token amounts outside the resource intensity range.
 
 drop function if exists app_public.create_resource_bid(uuid, text, integer);
 
 create or replace function app_public.create_resource_bid(
   resource_id uuid,
   message text default null,
-  proposed_token_amount integer default null
+  proposed_token_amount integer default null,
+  valid_hours integer default 24
 )
 returns app_public.resource_bid
 language plpgsql
@@ -52,12 +24,20 @@ declare
   v_existing_reserved_amount integer := 0;
   v_new_reserved_amount integer := 0;
   v_reserve_delta integer := 0;
+  v_valid_hours integer;
+  v_valid_until timestamptz;
 begin
   v_account_id := app_private.current_account_id();
 
   if v_account_id is null then
     raise exception using message = 'Authentication required';
   end if;
+
+  v_valid_hours := coalesce(create_resource_bid.valid_hours, 24);
+  if v_valid_hours < 12 or v_valid_hours > 48 then
+    raise exception using message = 'Bid validity must be between 12 and 48 hours';
+  end if;
+  v_valid_until := now() + (v_valid_hours || ' hours')::interval;
 
   select *
   into v_resource
@@ -108,18 +88,21 @@ begin
     bidder_account_id,
     message,
     proposed_token_amount,
-    status
+    status,
+    valid_until
   )
   values (
     create_resource_bid.resource_id,
     v_account_id,
     nullif(btrim(create_resource_bid.message), ''),
     v_effective_token_amount,
-    'open'
+    'open',
+    v_valid_until
   )
   on conflict on constraint resource_bid_unique_per_account do update
   set message = excluded.message,
       proposed_token_amount = excluded.proposed_token_amount,
+      valid_until = excluded.valid_until,
       status = case
         when app_public.resource_bid.status in ('declined', 'withdrawn', 'expired')
           then 'open'::app_public.resource_bid_status
@@ -191,4 +174,4 @@ begin
 end;
 $$;
 
-comment on function app_public.create_resource_bid(uuid, text, integer) is '@name submitResourceBid';
+comment on function app_public.create_resource_bid(uuid, text, integer, integer) is '@name submitResourceBid';

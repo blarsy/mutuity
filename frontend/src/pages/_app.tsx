@@ -6,6 +6,7 @@ import { I18nextProvider } from "react-i18next";
 
 import { AuthProvider } from "../features/auth/AuthProvider";
 import { AppShell } from "../features/layout/AppShell";
+import { AccountEventSubscriptionProvider } from "../services/graphql/accountEvents";
 import { apolloClient } from "../services/graphql/client";
 import { type AppColorMode, createAppTheme } from "../theme";
 import i18n from "../i18n";
@@ -73,12 +74,14 @@ export default function App({ Component, pageProps }: AppProps) {
     <I18nextProvider i18n={i18n}>
       <ApolloProvider client={apolloClient}>
         <AuthProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <AppShell colorMode={colorMode} onToggleColorMode={handleToggleColorMode}>
-              <Component {...pageProps} />
-            </AppShell>
-          </ThemeProvider>
+          <AccountEventSubscriptionProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <AppShell colorMode={colorMode} onToggleColorMode={handleToggleColorMode}>
+                <Component {...pageProps} />
+              </AppShell>
+            </ThemeProvider>
+          </AccountEventSubscriptionProvider>
         </AuthProvider>
       </ApolloProvider>
     </I18nextProvider>

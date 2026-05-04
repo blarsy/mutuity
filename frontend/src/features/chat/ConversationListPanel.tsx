@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 
 import { LIST_CHAT_CONVERSATIONS_QUERY, COUNT_CHAT_CONVERSATIONS_QUERY } from "./chat.queries";
 import { conversationThreadUrl } from "./chatRouting";
+import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
 type ConversationNode = {
@@ -58,22 +59,30 @@ export function ConversationListPanel({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounced(search, 300);
 
-  const { data, loading, error } = useQuery<ListChatConversationsData>(
+  const { data, loading, error, refetch } = useQuery<ListChatConversationsData>(
     LIST_CHAT_CONVERSATIONS_QUERY,
     {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       variables: { search: debouncedSearch || null, limit: PAGE_SIZE, offset: 0 },
-      skip: !isAuthenticated,
-      pollInterval: isAuthenticated ? 15000 : 0
+      skip: !isAuthenticated
     }
   );
 
-  const { data: countData } = useQuery<CountChatConversationsData>(
+  const { data: countData, refetch: refetchCount } = useQuery<CountChatConversationsData>(
     COUNT_CHAT_CONVERSATIONS_QUERY,
     {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       variables: { search: debouncedSearch || null },
       skip: !isAuthenticated
     }
   );
+
+  useAccountEventSignal(() => {
+    void refetch();
+    void refetchCount();
+  }, isAuthenticated);
 
   const conversations = data?.listChatConversations.nodes ?? [];
   const totalCount = countData?.countChatConversations ?? 0;

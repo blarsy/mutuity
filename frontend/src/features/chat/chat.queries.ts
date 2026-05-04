@@ -69,6 +69,18 @@ export const RESOURCE_CONVERSATION_QUERY = gql`
   }
 `;
 
+export const RESOURCE_CONVERSATION_LOOKUP_QUERY = gql`
+  query ResourceConversationLookup($resourceId: UUID!, $ownerAccountId: UUID!, $bidderAccountId: UUID!) {
+    resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId(
+      resourceId: $resourceId
+      ownerAccountId: $ownerAccountId
+      bidderAccountId: $bidderAccountId
+    ) {
+      id
+    }
+  }
+`;
+
 export const SEND_RESOURCE_MESSAGE_MUTATION = gql`
   mutation SendResourceMessage($input: SendResourceMessageInput!) {
     sendResourceMessage(input: $input) {

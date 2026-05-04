@@ -44,9 +44,9 @@
     "cancel": "Retour"
   },
   "inactive": {
-    "accepted": "Cette offre a été acceptée.",
-    "declined": "Cette offre a été refusée.",
-    "withdrawn": "Cette offre a été annulée par l'offreur.",
+    "accepted": "Cette offre a été acceptée le {{date}}.",
+    "declined": "Cette offre a été refusée le {{date}}.",
+    "withdrawn": "Vous avez annulé l'offre le {{date}}.",
     "expired": "Cette offre a expiré."
   },
   "validity": "Valide jusqu'au {{date}}",

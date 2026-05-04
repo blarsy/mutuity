@@ -44,9 +44,9 @@
     "cancel": "Go back"
   },
   "inactive": {
-    "accepted": "This bid was accepted.",
-    "declined": "This bid was declined.",
-    "withdrawn": "This bid was cancelled by the bidder.",
+    "accepted": "This bid was accepted at {{date}}.",
+    "declined": "This bid was declined at {{date}}.",
+    "withdrawn": "You cancelled the bid on {{date}}.",
     "expired": "This bid has expired."
   },
   "validity": "Valid until {{date}}",

@@ -29,6 +29,7 @@ import {
 } from "../features/notifications/notifications.queries";
 import { notificationUrlForEvent } from "../features/notifications/notificationRouting";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
+import { useAccountEventSignal } from "../services/graphql/accountEvents";
 
 type NeedClaimNotificationNode = {
   id: string;
@@ -178,10 +179,13 @@ export default function NotificationsPage() {
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { data, loading, error, refetch } = useQuery<NotificationsOverviewData>(NOTIFICATIONS_OVERVIEW_QUERY, {
-    pollInterval: isAuthenticated ? 15000 : 0,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
     variables: { first: 200 }
   });
+
+  useAccountEventSignal(() => { void refetch(); }, isAuthenticated);
 
   const [markNeedClaimRead, { loading: markNeedClaimLoading }] = useMutation(
     MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION

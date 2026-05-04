@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { CONTRIBUTION_OVERVIEW_QUERY, GIFT_TOKENS_MUTATION } from "../features/contribution/contribution.queries";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
+import { useAccountEventSignal } from "../services/graphql/accountEvents";
 
 type ContributionOverviewData = {
   currentTokenBalance: number;
@@ -101,11 +102,14 @@ export default function ContributionPage() {
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const { t } = useTranslation("contribution");
   const { data, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
-    pollInterval: isAuthenticated ? 15000 : 0,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
     notifyOnNetworkStatusChange: true,
     variables: { first: PAGE_SIZE }
   });
+
+  useAccountEventSignal(() => { void refetch(); }, isAuthenticated);
   const [giftTokens, { loading: gifting, error: giftError }] = useMutation(GIFT_TOKENS_MUTATION);
   const [recipientAccountId, setRecipientAccountId] = useState("");
   const [giftAmount, setGiftAmount] = useState("");

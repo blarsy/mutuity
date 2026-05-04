@@ -3,6 +3,7 @@ import { Alert, Box, Button, Card, CardContent, Stack, Typography } from "@mui/m
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { ClaimConversationPanel } from "./ClaimConversationPanel";
 import { NEED_CLAIM_MANAGEMENT_QUERY, SETTLE_NEED_CLAIM_MUTATION } from "./needClaims.queries";
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
@@ -51,6 +52,8 @@ export function NeedClaimManagementPage({
 }: NeedClaimManagementPageProps) {
   const { t } = useTranslation("needs");
   const { data, loading, error, refetch } = useQuery<NeedClaimManagementData>(NEED_CLAIM_MANAGEMENT_QUERY, {
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     variables: { claimId }
   });
   const [settleNeedClaim, { loading: settleLoading, error: settleError }] = useMutation(
@@ -61,6 +64,10 @@ export function NeedClaimManagementPage({
   const isCreator = claim?.needByNeedId.creatorAccountId === currentAccountId;
   const canSettle = isCreator && claim?.status === "OPEN";
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(settleError);
+
+  useAccountEventSignal(() => {
+    void refetch();
+  }, Boolean(currentAccountId));
 
   const handleSettle = async () => {
     if (!claim) {
@@ -79,7 +86,7 @@ export function NeedClaimManagementPage({
     onClaimsChanged?.();
   };
 
-  if (loading) {
+  if (loading && !claim) {
     return <Alert severity="info">{t("claimManagement.loading")}</Alert>;
   }
 

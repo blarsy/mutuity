@@ -31,6 +31,7 @@ import {
   MARK_CLAIM_MESSAGES_READ_MUTATION
 } from "./chat.queries";
 import { conversationContextUrl } from "./chatRouting";
+import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -75,8 +76,6 @@ type ClaimConversationData = {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const NEAR_BOTTOM_THRESHOLD_PX = 80;
-const POLL_INTERVAL_MS = 8000;
-
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export function ConversationThread({
@@ -96,16 +95,18 @@ export function ConversationThread({
 
   const { data: resourceData, loading: resourceLoading, error: resourceError, refetch: resourceRefetch } =
     useQuery<ResourceConversationData>(RESOURCE_CONVERSATION_QUERY, {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       variables: { conversationId },
-      skip: !isResource,
-      pollInterval: isResource ? POLL_INTERVAL_MS : 0
+      skip: !isResource
     });
 
   const { data: claimData, loading: claimLoading, error: claimError, refetch: claimRefetch } =
     useQuery<ClaimConversationData>(CLAIM_CONVERSATION_QUERY, {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       variables: { conversationId },
-      skip: isResource,
-      pollInterval: !isResource ? POLL_INTERVAL_MS : 0
+      skip: isResource
     });
 
   const [markResourceRead] = useMutation(MARK_RESOURCE_MESSAGES_READ_MUTATION);
@@ -141,6 +142,15 @@ export function ConversationThread({
     : myAccountId === claimConv?.creatorAccountId
       ? (claimConv?.claimerAccountId ?? null)
       : (claimConv?.creatorAccountId ?? null);
+
+  useAccountEventSignal(() => {
+    if (isResource) {
+      void resourceRefetch();
+      return;
+    }
+
+    void claimRefetch();
+  }, Boolean(conversationId) && Boolean(myAccountId));
 
   // ─── Scroll management ─────────────────────────────────────────────────────
 

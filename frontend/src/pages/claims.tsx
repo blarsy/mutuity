@@ -11,6 +11,7 @@ import { ClaimNotificationsPanel } from "../features/needs/ClaimNotificationsPan
 import { VIEWER_CLAIM_OVERVIEW_QUERY } from "../features/needs/needClaims.queries";
 import { NeedClaimStatusChip } from "../features/needs/NeedClaimStatusChip";
 import { NeedCard } from "../features/ui/NeedCard";
+import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 type ClaimOverviewNode = {
@@ -72,9 +73,14 @@ export default function ClaimsPage() {
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const { data, loading, error, refetch } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
-    pollInterval: isAuthenticated ? 15000 : 0,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     skip: !isAuthenticated
   });
+
+  useAccountEventSignal(() => {
+    void refetch();
+  }, isAuthenticated);
 
   const currentAccountId = session.account?.id ?? null;
   const allClaims = useMemo(() => {
@@ -121,7 +127,7 @@ export default function ClaimsPage() {
             <Chip color="info" label={t("notificationsCount", { count: notifications.length })} />
           </Stack>
 
-          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
+          {loading && !data ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
           <ClaimNotificationsPanel

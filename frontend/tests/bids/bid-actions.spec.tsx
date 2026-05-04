@@ -46,6 +46,7 @@ const RECEIVED_QUERY_DOC = { kind: "Document", name: "received" };
 
 const mockUseQuery = jest.fn();
 const mockUseMutation = jest.fn(() => [jest.fn()]);
+const mockUseSubscription = jest.fn();
 
 let sentNodes: BidNode[] = [];
 let receivedNodes: BidNode[] = [];
@@ -58,7 +59,8 @@ jest.mock("next/link", () => ({
 
 jest.mock("@apollo/client/react", () => ({
   useQuery: mockUseQuery,
-  useMutation: mockUseMutation
+  useMutation: mockUseMutation,
+  useSubscription: mockUseSubscription
 }));
 
 jest.mock("../../src/features/resources/resources.queries", () => ({

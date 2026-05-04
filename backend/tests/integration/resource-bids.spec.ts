@@ -283,6 +283,72 @@ describe("resource bid integration", () => {
     });
   });
 
+  it("allows proposed token amounts outside the resource intensity suggested range", async () => {
+    const stamp = Date.now();
+    const creator = await seedDemoAccount({
+      identifier: `resource-bid-intensity-creator-${stamp}@example.com`,
+      displayName: "Intensity Advisory Creator"
+    });
+    const bidder = await seedDemoAccount({
+      identifier: `resource-bid-intensity-bidder-${stamp}@example.com`,
+      displayName: "Intensity Advisory Bidder"
+    });
+    const resource = await seedResource({
+      creatorAccount: creator,
+      title: `Intensity advisory resource ${stamp}`,
+      intensity: "leg_up",
+      defaultTokenAmount: 20,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      categoryCodes: [3]
+    });
+
+    const sessionCookie = await loginAs(bidder);
+
+    const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: sessionCookie
+      },
+      body: JSON.stringify({
+        query: `
+          mutation SubmitResourceBid($input: SubmitResourceBidInput!) {
+            submitResourceBid(input: $input) {
+              resourceBid {
+                id
+                resourceId
+                bidderAccountId
+                proposedTokenAmount
+                status
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            resourceId: resource.id,
+            proposedTokenAmount: 120,
+            message: "I can help quickly."
+          }
+        }
+      })
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      data: {
+        submitResourceBid: {
+          resourceBid: {
+            resourceId: resource.id,
+            bidderAccountId: bidder.accountId,
+            proposedTokenAmount: 120,
+            status: "OPEN"
+          }
+        }
+      }
+    });
+  });
+
   it("rejects new bids on expired resources", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({

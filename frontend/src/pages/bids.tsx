@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import NextLink from "next/link";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
@@ -19,6 +19,7 @@ import {
   Typography
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/router";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
@@ -29,6 +30,7 @@ import {
   SENT_BIDS_QUERY
 } from "../features/resources/resources.queries";
 import type { ResourceBidStatus } from "../features/resources/types";
+import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 const PAGE_SIZE = 5;
@@ -94,10 +96,15 @@ function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warni
   }
 }
 
-function InactiveExplanation({ status, t }: { status: ResourceBidStatus; t: (k: string) => string }) {
+function InactiveExplanation({ bid, t }: { bid: BidNode; t: (k: string, opts?: Record<string, unknown>) => string }) {
+  const { status } = bid;
   const key = status.toLowerCase() as "accepted" | "declined" | "withdrawn" | "expired";
+  const decisionDate =
+    status === "WITHDRAWN"
+      ? bid.updatedAt
+      : bid.respondedAt ?? bid.updatedAt;
   const severity = status === "ACCEPTED" ? "success" : status === "DECLINED" ? "error" : "warning";
-  return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`)}</Alert>;
+  return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, { date: formatDate(decisionDate) })}</Alert>;
 }
 
 function BidCard({
@@ -105,12 +112,14 @@ function BidCard({
   counterpartyLabel,
   counterpartyHref,
   actions,
+  highlighted = false,
   t
 }: {
   bid: BidNode;
   counterpartyLabel: string;
   counterpartyHref: string;
   actions: React.ReactNode;
+  highlighted?: boolean;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
   const resource = bid.resourceByResourceId;
@@ -118,10 +127,12 @@ function BidCard({
 
   return (
     <Box
+      id={`bid-${bid.id}`}
       sx={{
         border: 1,
-        borderColor: "divider",
+        borderColor: highlighted ? "primary.main" : "divider",
         borderRadius: 2,
+        boxShadow: highlighted ? theme => `0 0 0 2px ${theme.palette.primary.light}` : "none",
         display: "flex",
         flexDirection: "column",
         gap: 1.5,
@@ -163,7 +174,7 @@ function BidCard({
         </Typography>
       ) : null}
 
-      {!bid.isActive ? <InactiveExplanation status={bid.status} t={t} /> : null}
+      {!bid.isActive ? <InactiveExplanation bid={bid} t={t} /> : null}
 
       {actions}
     </Box>
@@ -233,6 +244,7 @@ function BidSection({
 }
 
 export default function BidsPage() {
+  const router = useRouter();
   const { session } = useAuth();
   const { t } = useTranslation("bids");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
@@ -243,13 +255,17 @@ export default function BidsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const currentAccountLabel = session.account?.displayName ?? session.account?.externalSubject ?? t("you");
+  const highlightedBidId = typeof router.query.bidId === "string" ? router.query.bidId : null;
 
   const {
     data: sentData,
     loading: sentLoading,
     error: sentError,
-    fetchMore: sentFetchMore
+    fetchMore: sentFetchMore,
+    refetch: refetchSentBids
   } = useQuery<{ sentResourceBids: BidQueryData }>(SENT_BIDS_QUERY, {
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
     variables: { activeOnly: sentActiveOnly, first: PAGE_SIZE, after: null }
   });
@@ -258,8 +274,11 @@ export default function BidsPage() {
     data: receivedData,
     loading: receivedLoading,
     error: receivedError,
-    fetchMore: receivedFetchMore
+    fetchMore: receivedFetchMore,
+    refetch: refetchReceivedBids
   } = useQuery<{ receivedResourceBids: BidQueryData }>(RECEIVED_BIDS_QUERY, {
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
     variables: { activeOnly: receivedActiveOnly, first: PAGE_SIZE, after: null }
   });
@@ -278,12 +297,32 @@ export default function BidsPage() {
     ]
   });
 
+  const handleBidWorkspaceSignal = useCallback(() => {
+    void refetchSentBids({ activeOnly: sentActiveOnly, first: PAGE_SIZE, after: null });
+    void refetchReceivedBids({ activeOnly: receivedActiveOnly, first: PAGE_SIZE, after: null });
+  }, [receivedActiveOnly, refetchReceivedBids, refetchSentBids, sentActiveOnly]);
+
+  useAccountEventSignal(handleBidWorkspaceSignal, isAuthenticated);
+
   if (isChecking || isRedirecting) return null;
 
   const sentBids = sentData?.sentResourceBids.nodes ?? [];
   const receivedBids = receivedData?.receivedResourceBids.nodes ?? [];
   const sentHasMore = sentData?.sentResourceBids.pageInfo.hasNextPage ?? false;
   const receivedHasMore = receivedData?.receivedResourceBids.pageInfo.hasNextPage ?? false;
+
+  useEffect(() => {
+    if (!highlightedBidId) {
+      return;
+    }
+
+    const element = document.getElementById(`bid-${highlightedBidId}`);
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [highlightedBidId, receivedBids.length, sentBids.length]);
 
   const handleLoadMoreSent = () => {
     void sentFetchMore({
@@ -360,6 +399,7 @@ export default function BidsPage() {
         bid={bid}
         counterpartyHref={`/accounts/${resource.creatorAccountId}`}
         counterpartyLabel={creatorLabel}
+        highlighted={highlightedBidId === bid.id}
         t={t}
       />
     );
@@ -397,6 +437,7 @@ export default function BidsPage() {
         bid={bid}
         counterpartyHref={`/accounts/${bid.bidderAccountId}`}
         counterpartyLabel={bidderLabel}
+        highlighted={highlightedBidId === bid.id}
         t={t}
       />
     );

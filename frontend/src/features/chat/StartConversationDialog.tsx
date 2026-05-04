@@ -27,6 +27,7 @@ type StartConversationDialogProps =
     title: string;
     buttonLabel: string;
     needId: string;
+    existingConversationId?: string | null;
     disabled?: boolean;
     disabledReason?: string | null;
   }
@@ -36,6 +37,7 @@ type StartConversationDialogProps =
     buttonLabel: string;
     resourceId: string;
     creatorAccountId: string;
+    existingConversationId?: string | null;
     disabled?: boolean;
     disabledReason?: string | null;
   };
@@ -69,6 +71,17 @@ export function StartConversationDialog(props: StartConversationDialogProps) {
   const loading = needLoading || resourceLoading;
   const errorMessage = getUserFacingGraphQLErrorMessage(needError)
     ?? getUserFacingGraphQLErrorMessage(resourceError);
+  const canOpenExistingConversation = Boolean(props.existingConversationId);
+  const resolvedDisabled = props.disabled && !canOpenExistingConversation;
+
+  const handleOpen = async () => {
+    if (props.existingConversationId) {
+      await router.push(conversationThreadUrl(props.kind, props.existingConversationId));
+      return;
+    }
+
+    setOpen(true);
+  };
 
   const handleSubmit = async () => {
     const trimmed = message.trim();
@@ -121,13 +134,15 @@ export function StartConversationDialog(props: StartConversationDialogProps) {
     <>
       <Stack alignItems={{ xs: "stretch", sm: "flex-start" }} spacing={1}>
         <Button
-          disabled={props.disabled}
-          onClick={() => setOpen(true)}
+          disabled={resolvedDisabled}
+          onClick={() => {
+            void handleOpen();
+          }}
           variant="outlined"
         >
           {props.buttonLabel}
         </Button>
-        {props.disabledReason ? (
+        {resolvedDisabled && props.disabledReason ? (
           <Typography color="text.secondary" variant="caption">
             {props.disabledReason}
           </Typography>

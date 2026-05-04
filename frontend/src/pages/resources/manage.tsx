@@ -182,9 +182,6 @@ export default function ManageResourcesPage() {
             <Typography component="h1" gutterBottom variant="h4">
               {t("manage.title")}
             </Typography>
-            <Typography color="text.secondary">
-              {t("manage.subtitle")}
-            </Typography>
           </Box>
 
           {loading ? <Alert severity="info">{t("manage.loading")}</Alert> : null}
@@ -266,9 +263,6 @@ export default function ManageResourcesPage() {
             </Box>
           ) : null}
 
-          <Typography color="text.secondary" variant="body2">
-            <NextLink href="/resources">{t("manage.backToSearch")}</NextLink>
-          </Typography>
         </Stack>
       </Box>
 

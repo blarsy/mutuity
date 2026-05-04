@@ -14,6 +14,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import {
   NEED_CLAIM_DETAIL_QUERY,
   CLAIM_CONVERSATION_BY_PARTIES_QUERY,
@@ -168,6 +169,8 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const [markClaimMessagesRead] = useMutation(MARK_CLAIM_MESSAGES_READ_MUTATION);
 
   const { data, loading, error, refetch } = useQuery<NeedClaimDetailQueryData>(NEED_CLAIM_DETAIL_QUERY, {
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
     variables: { claimId }
   });
 
@@ -176,6 +179,8 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const { data: convData, refetch: refetchConv } = useQuery<ClaimConversationByPartiesData>(
     CLAIM_CONVERSATION_BY_PARTIES_QUERY,
     {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       variables: {
         needId: claim?.needId ?? "",
         creatorAccountId: claim?.needByNeedId?.creatorAccountId ?? "",
@@ -240,6 +245,11 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const canSend = canSendClaimMessages(claimStatus, Boolean(conversation), isCreator);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(sendError);
 
+  useAccountEventSignal(() => {
+    void refetch();
+    void refetchConv();
+  }, Boolean(currentAccountId));
+
   const handleSendMessage = async () => {
     if (!claim || !draftBody.trim()) {
       return;
@@ -260,7 +270,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
     await refetchConv();
   };
 
-  if (loading) {
+  if (loading && !claim) {
     return <Alert severity="info">{t("claimConversation.loading")}</Alert>;
   }
 
