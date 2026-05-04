@@ -14,6 +14,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
+  resourceConversationByConversationId: { id: string } | null;
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -76,6 +77,14 @@ jest.mock("../../src/features/auth/AuthProvider", () => ({
 
 jest.mock("../../src/features/auth/requireAuth", () => ({
   useRequireAuth: () => ({ isAuthenticated: true, isChecking: false, isRedirecting: false })
+}));
+
+jest.mock("../../src/services/graphql/accountEvents", () => ({
+  useAccountEventSignal: jest.fn()
+}));
+
+jest.mock("next/router", () => ({
+  useRouter: () => ({ query: {} })
 }));
 
 jest.mock("react-i18next", () => ({
@@ -141,6 +150,7 @@ function buildBid(overrides: Partial<BidNode> & { id: string; status: BidNode["s
     updatedAt: overrides.updatedAt ?? now,
     respondedAt: overrides.respondedAt ?? null,
     respondedByAccountId: overrides.respondedByAccountId ?? null,
+    resourceConversationByConversationId: overrides.resourceConversationByConversationId ?? null,
     accountByBidderAccountId: overrides.accountByBidderAccountId ?? {
       id: "acct-bidder",
       displayName: "Bidder",

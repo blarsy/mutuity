@@ -333,6 +333,9 @@ const BID_WORKSPACE_FIELDS = gql`
       displayName
       externalSubject
     }
+    resourceConversationByConversationId {
+      id
+    }
     resourceByResourceId {
       id
       creatorAccountId

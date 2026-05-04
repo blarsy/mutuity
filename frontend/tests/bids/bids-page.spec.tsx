@@ -14,6 +14,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
+  resourceConversationByConversationId: { id: string } | null;
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -87,6 +88,14 @@ jest.mock("../../src/features/auth/AuthProvider", () => ({
 
 jest.mock("../../src/features/auth/requireAuth", () => ({
   useRequireAuth: () => ({ isAuthenticated: true, isChecking: false, isRedirecting: false })
+}));
+
+jest.mock("../../src/services/graphql/accountEvents", () => ({
+  useAccountEventSignal: jest.fn()
+}));
+
+jest.mock("next/router", () => ({
+  useRouter: () => ({ query: {} })
 }));
 
 jest.mock("react-i18next", () => ({
@@ -191,6 +200,7 @@ describe("BidsPage", () => {
               updatedAt: sharedNow,
               respondedAt: sharedNow,
               respondedByAccountId: "acct-owner-2",
+              resourceConversationByConversationId: null,
               accountByBidderAccountId: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" },
               resourceByResourceId: {
                 id: "resource-2",
@@ -222,6 +232,7 @@ describe("BidsPage", () => {
               updatedAt: sharedNow,
               respondedAt: null,
               respondedByAccountId: null,
+              resourceConversationByConversationId: null,
               accountByBidderAccountId: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" },
               resourceByResourceId: {
                 id: "resource-1",
@@ -266,6 +277,7 @@ describe("BidsPage", () => {
               updatedAt: sharedNow,
               respondedAt: null,
               respondedByAccountId: null,
+              resourceConversationByConversationId: null,
               accountByBidderAccountId: { id: "acct-bidder-1", displayName: "Bidder One", externalSubject: "bidder-one" },
               resourceByResourceId: {
                 id: "resource-3",

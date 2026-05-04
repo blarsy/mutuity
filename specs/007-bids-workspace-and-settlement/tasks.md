@@ -66,14 +66,14 @@
 
 ### Tests (US3)
 
-- [ ] T020 [P] [US3] Add frontend tests for account/resource/chat deep links from bid cards in `frontend/tests/bids/bid-navigation.spec.tsx`
-- [ ] T021 [P] [US3] Add backend/integration coverage for the focused conversation lookup path if additional APIs are needed in `backend/tests/integration/bid-conversation-link.spec.ts`
+- [x] T020 [P] [US3] Add frontend tests for account/resource/chat deep links from bid cards in `frontend/tests/bids/bid-navigation.spec.tsx`
+- [x] T021 [P] [US3] Add backend/integration coverage for the focused conversation lookup path if additional APIs are needed in `backend/tests/integration/bid-conversation-link.spec.ts`
 
 ### Implementation (US3)
 
-- [ ] T022 [US3] Add creator/bidder account navigation affordances to the sent and received bid rows in `frontend/src/pages/bids.tsx`
-- [ ] T023 [US3] Add target resource navigation affordances to both bid sections in `frontend/src/pages/bids.tsx`
-- [ ] T024 [US3] Integrate the direct chat shortcut with the resource-bound conversation model from `specs/006-chat-and-conversations/` in `frontend/src/pages/bids.tsx` and the shared chat utilities
+- [x] T022 [US3] Add creator/bidder account navigation affordances to the sent and received bid rows in `frontend/src/pages/bids.tsx`
+- [x] T023 [US3] Add target resource navigation affordances to both bid sections in `frontend/src/pages/bids.tsx`
+- [x] T024 [US3] Integrate the direct chat shortcut with the resource-bound conversation model from `specs/006-chat-and-conversations/` in `frontend/src/pages/bids.tsx` and the shared chat utilities
 
 ## Phase 6: Polish & Validation
 

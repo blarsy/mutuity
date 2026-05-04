@@ -31,6 +31,7 @@ import {
 } from "../features/resources/resources.queries";
 import type { ResourceBidStatus } from "../features/resources/types";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
+import { conversationThreadUrl } from "../features/chat/chatRouting";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 const PAGE_SIZE = 5;
@@ -48,6 +49,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
+  resourceConversationByConversationId: { id: string } | null;
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -389,6 +391,16 @@ export default function BidsPage() {
             <Button component={NextLink} href={`/accounts/${resource.creatorAccountId}`} size="small" variant="text">
               {t("actions.viewCreator")}
             </Button>
+            {bid.resourceConversationByConversationId ? (
+              <Button
+                component={NextLink}
+                href={conversationThreadUrl("resource", bid.resourceConversationByConversationId.id)}
+                size="small"
+                variant="text"
+              >
+                {t("actions.chat")}
+              </Button>
+            ) : null}
             {bid.isActive ? (
               <Button color="error" onClick={() => { handleCancel(bid.id); }} size="small" variant="outlined">
                 {t("actions.cancel")}
@@ -422,6 +434,16 @@ export default function BidsPage() {
             <Button component={NextLink} href={`/accounts/${bid.bidderAccountId}`} size="small" variant="text">
               {t("actions.viewBidder")}
             </Button>
+            {bid.resourceConversationByConversationId ? (
+              <Button
+                component={NextLink}
+                href={conversationThreadUrl("resource", bid.resourceConversationByConversationId.id)}
+                size="small"
+                variant="text"
+              >
+                {t("actions.chat")}
+              </Button>
+            ) : null}
             {bid.isActive ? (
               <>
                 <Button color="success" onClick={() => { setAcceptConfirmBidId(bid.id); }} size="small" variant="contained">
