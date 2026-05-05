@@ -18,7 +18,7 @@
 
 - [ ] T004 Review the current `need_claim` lifecycle model and reconcile any legacy `expired` semantics with the product rule that claims themselves do not independently expire in `database/migrations/025_claims_workspace_and_settlement.sql`
 - [ ] T005 [P] Add SQL helpers or views for sent/received claim ordering by latest status-change time and tri-state active/inactive/all filtering in `database/functions/claim/`
-- [ ] T006 [P] Add or expose SQL-owned claimer-side cancellation and creator-side decline behavior for direct use from the workspace in `database/functions/claim/`
+- [x] T006 [P] Add or expose SQL-owned claimer-side cancellation and creator-side decline behavior for direct use from the workspace in `database/functions/claim/`
 - [ ] T007 [P] Add or expose a SQL helper for validating need-creator balance before settlement in `database/functions/claim/` and/or `database/functions/token/`
 - [ ] T008 [P] Add a scheduled worker task and SQL function for polling expired needs and auto-declining linked open claims in `backend/src/worker/tasks/` and `database/functions/claim/`
 - [ ] T009 Add shared frontend claim-workspace types and query documents in `frontend/src/features/needs/`, including page-size-5 pagination and section-scoped tri-state filters
@@ -36,9 +36,9 @@
 
 ### Implementation (US1)
 
-- [ ] T012 [US1] Extend `frontend/src/pages/claims.tsx` to order by latest status-change time rather than creation time alone
-- [ ] T013 [US1] Add separate `active/inactive/all` tri-state filters with default `active` to sent and received sections in `frontend/src/pages/claims.tsx`
-- [ ] T014 [US1] Add load-more pagination behavior with a page size of 5 to large claim histories in `frontend/src/pages/claims.tsx` and the supporting queries
+- [x] T012 [US1] Extend `frontend/src/pages/claims.tsx` to order by latest status-change time rather than creation time alone
+- [x] T013 [US1] Add separate `active/inactive/all` tri-state filters with default `active` to sent and received sections in `frontend/src/pages/claims.tsx`
+- [x] T014 [US1] Add load-more pagination behavior with a page size of 5 to large claim histories in `frontend/src/pages/claims.tsx` and the supporting queries
 
 ## Phase 4: User Story 2 - Manage Claim Status From The Workspace (Priority: P1)
 
@@ -53,10 +53,10 @@
 
 ### Implementation (US2)
 
-- [ ] T017 [US2] Add cancel actions to sent claims in `frontend/src/pages/claims.tsx` and the relevant claim card component
-- [ ] T018 [US2] Add decline actions to received claims in `frontend/src/pages/claims.tsx` and the relevant claim card component
-- [ ] T019 [US2] Add settle actions to received claims in `frontend/src/pages/claims.tsx` with a preemptive balance guard and final confirmation dialog
-- [ ] T020 [US2] Surface inactive explanations for settled, declined, and withdrawn claims in the workspace UI
+- [x] T017 [US2] Add cancel actions to sent claims in `frontend/src/pages/claims.tsx` and the relevant claim card component
+- [x] T018 [US2] Add decline actions to received claims in `frontend/src/pages/claims.tsx` and the relevant claim card component
+- [x] T019 [US2] Add settle actions to received claims in `frontend/src/pages/claims.tsx` with a preemptive balance guard and final confirmation dialog
+- [x] T020 [US2] Surface inactive explanations for settled, declined, and withdrawn claims in the workspace UI
 
 ## Phase 5: User Story 3 - Navigate To Need, Counterparty, Or Conversation (Priority: P2)
 

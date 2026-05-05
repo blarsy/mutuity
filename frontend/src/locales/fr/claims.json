@@ -11,6 +11,9 @@
   "receivedSection": "Demandes sur vos besoins",
   "sentEmpty": "Vous n'avez encore demandé aucun besoin.",
   "receivedEmpty": "Personne n'a encore demandé vos besoins.",
+  "sentFilterEmpty": "Aucune demande ne correspond à ce filtre.",
+  "receivedFilterEmpty": "Aucune demande ne correspond à ce filtre.",
+  "loadMore": "Charger plus",
   "you": "Vous",
   "needOwner": "Propriétaire du besoin",
   "yourNote": "Votre note : {{message}}",
@@ -23,6 +26,11 @@
   "threadOpen": "fil ouvert",
   "topesAmount": "{{amount}} Topes",
   "noTopes": "Aucun Tope",
+  "filter": {
+    "active": "Actives",
+    "inactive": "Inactives",
+    "all": "Toutes"
+  },
   "actions": {
     "openThread": "Ouvrir le fil",
     "viewClaim": "Voir la demande",

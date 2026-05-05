@@ -11,6 +11,9 @@
   "receivedSection": "Claims on your needs",
   "sentEmpty": "You have not claimed any needs yet.",
   "receivedEmpty": "No helpers have claimed your needs yet.",
+  "sentFilterEmpty": "No claims match this filter.",
+  "receivedFilterEmpty": "No claims match this filter.",
+  "loadMore": "Load more",
   "you": "You",
   "needOwner": "Need owner",
   "yourNote": "Your note: {{message}}",
@@ -23,6 +26,11 @@
   "threadOpen": "thread open",
   "topesAmount": "{{amount}} Topes",
   "noTopes": "No Topes",
+  "filter": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": "All"
+  },
   "actions": {
     "openThread": "Open thread",
     "viewClaim": "View claim",

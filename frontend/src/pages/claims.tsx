@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Alert, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
@@ -91,6 +91,10 @@ export default function ClaimsPage() {
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [settleConfirmClaimId, setSettleConfirmClaimId] = useState<string | null>(null);
+  const [sentFilter, setSentFilter] = useState<"active" | "inactive" | "all">("active");
+  const [receivedFilter, setReceivedFilter] = useState<"active" | "inactive" | "all">("active");
+  const [sentPageSize, setSentPageSize] = useState(5);
+  const [receivedPageSize, setReceivedPageSize] = useState(5);
   const { data, loading, error, refetch } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
@@ -122,12 +126,23 @@ export default function ClaimsPage() {
   const currentAccountId = session.account?.id ?? null;
   const allClaims = useMemo(() => {
     return [...(data?.allNeedClaims.nodes ?? [])].sort(
-      (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
     );
   }, [data?.allNeedClaims.nodes]);
   const notifications = data?.allNeedClaimNotifications.nodes ?? [];
-  const sentClaims = allClaims.filter(claim => claim.claimerAccountId === currentAccountId);
-  const receivedClaims = allClaims.filter(claim => claim.needByNeedId.creatorAccountId === currentAccountId);
+
+  const applyFilter = (claims: ClaimOverviewNode[], filter: "active" | "inactive" | "all") => {
+    if (filter === "active") return claims.filter(c => c.status === "OPEN");
+    if (filter === "inactive") return claims.filter(c => c.status !== "OPEN");
+    return claims;
+  };
+
+  const sentAll = allClaims.filter(claim => claim.claimerAccountId === currentAccountId);
+  const receivedAll = allClaims.filter(claim => claim.needByNeedId.creatorAccountId === currentAccountId);
+  const sentFiltered = applyFilter(sentAll, sentFilter);
+  const receivedFiltered = applyFilter(receivedAll, receivedFilter);
+  const sentClaims = sentFiltered.slice(0, sentPageSize);
+  const receivedClaims = receivedFiltered.slice(0, receivedPageSize);
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   if (!isAuthenticated) {
@@ -159,8 +174,8 @@ export default function ClaimsPage() {
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Chip color="primary" label={t("sentCount", { count: sentClaims.length })} />
-            <Chip color="secondary" label={t("receivedCount", { count: receivedClaims.length })} />
+            <Chip color="primary" label={t("sentCount", { count: sentAll.length })} />
+            <Chip color="secondary" label={t("receivedCount", { count: receivedAll.length })} />
             <Chip color="info" label={t("notificationsCount", { count: notifications.length })} />
           </Stack>
 
@@ -181,21 +196,41 @@ export default function ClaimsPage() {
           />
 
           <Stack spacing={2}>
-            <Typography variant="h5">{t("sentSection")}</Typography>
-            {sentClaims.length === 0 ? (
-              <Alert severity="info">{t("sentEmpty")}</Alert>
-            ) : (
-              <Box
-                sx={{
-                  display: "grid",
-                  gap: 2,
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
+            <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
+              <Typography variant="h5">{t("sentSection")}</Typography>
+              <ToggleButtonGroup
+                exclusive
+                onChange={(_, val: "active" | "inactive" | "all" | null) => {
+                  if (val) {
+                    setSentFilter(val);
+                    setSentPageSize(5);
+                  }
                 }}
+                size="small"
+                value={sentFilter}
               >
-                {sentClaims.map(claim => {
-                  const need = claim.needByNeedId;
-                  const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
-                  const isOpen = claim.status === "OPEN";
+                <ToggleButton value="active">{t("filter.active")}</ToggleButton>
+                <ToggleButton value="inactive">{t("filter.inactive")}</ToggleButton>
+                <ToggleButton value="all">{t("filter.all")}</ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
+            {sentAll.length === 0 ? (
+              <Alert severity="info">{t("sentEmpty")}</Alert>
+            ) : sentFiltered.length === 0 ? (
+              <Alert severity="info">{t("sentFilterEmpty")}</Alert>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gap: 2,
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
+                  }}
+                >
+                  {sentClaims.map(claim => {
+                    const need = claim.needByNeedId;
+                    const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
+                    const isOpen = claim.status === "OPEN";
 
                   return (
                     <NeedCard
@@ -271,30 +306,56 @@ export default function ClaimsPage() {
                   );
                 })}
               </Box>
+              {sentFiltered.length > sentPageSize ? (
+                <Button onClick={() => { setSentPageSize(n => n + 5); }} variant="text">
+                  {t("loadMore")}
+                </Button>
+              ) : null}
+            </>
             )}
           </Stack>
 
           <Stack spacing={2}>
-            <Typography variant="h5">{t("receivedSection")}</Typography>
-            {receivedClaims.length === 0 ? (
-              <Alert severity="info">{t("receivedEmpty")}</Alert>
-            ) : (
-              <Box
-                sx={{
-                  display: "grid",
-                  gap: 2,
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
+            <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
+              <Typography variant="h5">{t("receivedSection")}</Typography>
+              <ToggleButtonGroup
+                exclusive
+                onChange={(_, val: "active" | "inactive" | "all" | null) => {
+                  if (val) {
+                    setReceivedFilter(val);
+                    setReceivedPageSize(5);
+                  }
                 }}
+                size="small"
+                value={receivedFilter}
               >
-                {receivedClaims.map(claim => {
-                  const need = claim.needByNeedId;
-                  const claimerLabel = claim.accountByClaimerAccountId?.displayName
-                    ?? claim.accountByClaimerAccountId?.externalSubject
-                    ?? claim.claimerAccountId;
-                  const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
-                  const isOpen = claim.status === "OPEN";
+                <ToggleButton value="active">{t("filter.active")}</ToggleButton>
+                <ToggleButton value="inactive">{t("filter.inactive")}</ToggleButton>
+                <ToggleButton value="all">{t("filter.all")}</ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
+            {receivedAll.length === 0 ? (
+              <Alert severity="info">{t("receivedEmpty")}</Alert>
+            ) : receivedFiltered.length === 0 ? (
+              <Alert severity="info">{t("receivedFilterEmpty")}</Alert>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gap: 2,
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
+                  }}
+                >
+                  {receivedClaims.map(claim => {
+                    const need = claim.needByNeedId;
+                    const claimerLabel = claim.accountByClaimerAccountId?.displayName
+                      ?? claim.accountByClaimerAccountId?.externalSubject
+                      ?? claim.claimerAccountId;
+                    const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
+                    const isOpen = claim.status === "OPEN";
 
-                  return (
+                    return (
                     <NeedCard
                       actions={
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
@@ -381,6 +442,12 @@ export default function ClaimsPage() {
                   );
                 })}
               </Box>
+              {receivedFiltered.length > receivedPageSize ? (
+                <Button onClick={() => { setReceivedPageSize(n => n + 5); }} variant="text">
+                  {t("loadMore")}
+                </Button>
+              ) : null}
+            </>
             )}
           </Stack>
         </Stack>
