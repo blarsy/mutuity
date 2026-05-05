@@ -66,14 +66,14 @@
 
 ### Tests (US3)
 
-- [ ] T021 [P] [US3] Add frontend tests for account/need/chat deep links from claim cards in `frontend/tests/claims/claim-navigation.spec.tsx`
-- [ ] T022 [P] [US3] Add integration coverage for claim-conversation routing if additional APIs are required in `backend/tests/integration/claim-conversation-link.spec.ts`
+- [x] T021 [P] [US3] Add frontend tests for account/need/chat deep links from claim cards in `frontend/tests/claims/claim-navigation.spec.tsx`
+- [x] T022 [P] [US3] Add integration coverage for claim-conversation routing if additional APIs are required in `backend/tests/integration/claim-conversation-link.spec.ts`
 
 ### Implementation (US3)
 
-- [ ] T023 [US3] Add counterparty account navigation affordances to sent and received claim rows in `frontend/src/pages/claims.tsx`
-- [ ] T024 [US3] Add target need navigation affordances to both claim sections in `frontend/src/pages/claims.tsx`
-- [ ] T025 [US3] Add direct `chat` shortcuts from claim cards using the existing claim conversation model in `frontend/src/pages/claims.tsx` and shared chat utilities
+- [x] T023 [US3] Add counterparty account navigation affordances to sent and received claim rows in `frontend/src/pages/claims.tsx`
+- [x] T024 [US3] Add target need navigation affordances to both claim sections in `frontend/src/pages/claims.tsx`
+- [x] T025 [US3] Add direct `chat` shortcuts from claim cards using the existing claim conversation model in `frontend/src/pages/claims.tsx` and shared chat utilities
 
 ## Phase 6: User Story 4 - System Closes Claims When Needs Become Unavailable (Priority: P2)
 

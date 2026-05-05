@@ -27,8 +27,10 @@
     "openThread": "Ouvrir le fil",
     "viewClaim": "Voir la demande",
     "viewNeed": "Voir le besoin",
+    "viewNeedOwner": "Voir le proprietaire",
     "manageThread": "Gérer le fil",
     "reviewClaim": "Examiner la demande",
-    "viewClaimer": "Voir l'aidant"
+    "viewClaimer": "Voir l'aidant",
+    "chat": "Discussion"
   }
 }

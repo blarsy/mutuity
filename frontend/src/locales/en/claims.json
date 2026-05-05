@@ -27,8 +27,10 @@
     "openThread": "Open thread",
     "viewClaim": "View claim",
     "viewNeed": "View need",
+    "viewNeedOwner": "View need owner",
     "manageThread": "Manage thread",
     "reviewClaim": "Review claim",
-    "viewClaimer": "View claimer"
+    "viewClaimer": "View claimer",
+    "chat": "Chat"
   }
 }

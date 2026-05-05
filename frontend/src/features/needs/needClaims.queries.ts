@@ -41,6 +41,11 @@ export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
           displayName
           externalSubject
         }
+        claimConversationsByNeedClaimId(first: 1) {
+          nodes {
+            id
+          }
+        }
         needClaimSettlementEventByNeedClaimId {
           id
           topesAmount

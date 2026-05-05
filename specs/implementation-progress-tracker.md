@@ -29,7 +29,7 @@ Cadence: update at least once per workday
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
-| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 55% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 65% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
@@ -155,7 +155,7 @@ Goal: ensure token movement correctness for claims and bids lifecycle.
 
 Checkpoints:
 
-- [ ] Bid workspace and settlement actions implemented.
+- [x] Bid workspace and settlement actions implemented.
 - [ ] Claim workspace and settlement actions implemented.
 - [ ] Ledger movements are auditable and idempotent.
 - [ ] Concurrency safety validated for settlement-sensitive operations.
@@ -214,13 +214,13 @@ Definition of Done:
 ## Active Work Queue
 
 Current phase: P5
-Current milestone: P5-M1 - Bids workspace parity and settlement correctness (007)
+Current milestone: P5-M2 - Claims workspace parity and settlement correctness (008)
 
 This week priorities:
 
-1. Complete bid validity window enforcement and accepted-bid token settlement (SQL helpers done in migration 084-085).
-2. Add backend integration coverage for bid lifecycle actions, settlement effects, and resource-expiry auto-cancellation.
-3. Add frontend/backend test coverage for bid action flows (cancel/accept/decline) and contribution-ledger reflection.
+1. Complete claims workspace action parity (cancel/decline/settle) directly from `/claims` cards.
+2. Add backend/frontend coverage for need-driven automatic claim declines (need expiry/deactivation paths).
+3. Validate settlement/refund ledger correctness and concurrency behavior for claim lifecycle operations.
 
 ## Session Log
 
@@ -304,6 +304,7 @@ This week priorities:
 | 2026-05-03 | P5 execution | Completed T019 by improving contribution-ledger clarity for bid settlement and refund outcomes: added explicit `resource_bid_settled` movement label and reason-specific refund detail copy (bidder cancel, decline, validity expiry, resource expiry/deactivation) in EN/FR, and surfaced those details in contribution movement cards. | frontend/src/pages/contribution.tsx; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; npm -C frontend run typecheck; npm -C frontend test -- --runInBand tests/bids/bids-page.spec.tsx tests/bids/bid-actions.spec.tsx | None | Start US3 navigation/deep-link implementation tasks T020-T024. |
 | 2026-05-03 | P5 execution | Completed US3 navigation/deep-link (T020-T024): added `resourceConversationByConversationId { id }` to BID_WORKSPACE_FIELDS fragment, added Chat/View-resource/View-creator/View-bidder action buttons in sent and received bid cards with EN/FR i18n keys, added `next/router` and `accountEvents` mocks to existing bid test files, created `bid-navigation.spec.tsx` with 4 tests covering chat presence/absence for sent and received bids. T021 covered by existing PostGraphile schema relation. | frontend/src/pages/bids.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/locales/en/bids.json; frontend/src/locales/fr/bids.json; frontend/tests/bids/bid-navigation.spec.tsx; frontend/tests/bids/bid-actions.spec.tsx; frontend/tests/bids/bids-page.spec.tsx | None | Continue with T025-T029 (i18n polish, responsive layout, resource-deactivation flow, e2e sweep). |
 | 2026-05-05 | P5 execution | Completed Phase 6 Polish & Validation (T025-T029): T025 — changed `chips.tokens` from "tokens"/"jetons" to "Topes" in bids.json EN/FR and updated `resource_bid_reserved`/`resource_bid_settled` movement labels in contribution.json EN/FR; T026 — replaced single-column Stack with responsive two-column CSS grid (`gridTemplateColumns: {xs:"1fr", md:"1fr 1fr"}`) and widened container from "md" to "lg"; T027 — added `RESOURCE_OPEN_BID_COUNT_QUERY`, wired it into manage.tsx with `skip:!resourcePendingDelete`, and added warning Alert in delete dialog plus `openBidsWarning` i18n key in resources.json EN/FR; T028 — typecheck clean, 8 bid tests pass; T029 — added "Differences from Legacy Tope-là Behavior" section to spec.md with 7 documented intentional divergences. | frontend/src/locales/en/bids.json; frontend/src/locales/fr/bids.json; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; frontend/src/pages/bids.tsx; frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/locales/en/resources.json; frontend/src/locales/fr/resources.json; specs/007-bids-workspace-and-settlement/spec.md; specs/007-bids-workspace-and-settlement/tasks.md | None | P5 Feature 007 fully complete. Proceed to next P5 feature or P6. |
+| 2026-05-05 | P5 execution | Started Feature 008 US3 navigation/deep-link (T021-T025): added claim conversation relation (`claimConversationsByNeedClaimId(first: 1) { nodes { id } }`) to viewer claims overview query; added explicit need/account/chat navigation affordances to sent and received claim cards on `/claims`; added EN/FR i18n action keys for need-owner and chat; created frontend navigation coverage with 4 tests (sent/received chat present/absent and need/account deep links). T022 required no new API because claim conversation relation already exists in schema. | frontend/src/features/needs/needClaims.queries.ts; frontend/src/pages/claims.tsx; frontend/src/locales/en/claims.json; frontend/src/locales/fr/claims.json; frontend/tests/claims/claim-navigation.spec.tsx; specs/008-claims-workspace-and-settlement/tasks.md; npm -C frontend test -- --runInBand frontend/tests/claims/claim-navigation.spec.tsx | Existing `frontend/tests/needs/claim-thread.spec.tsx` has a locale-sensitive expectation (`"read"`) that currently fails independently of this slice. | Continue Feature 008 US2 workspace-action parity (T017-T020: cancel/decline/settle controls + inactive explanations). |
 
 ## Decisions Log
 
@@ -323,7 +324,7 @@ This week priorities:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with bids workspace implementation plus US1/US2 test coverage landed.
+- Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with Feature 007 complete and Feature 008 US3 navigation/deep-link delivered.
 - Current health: GREEN
-- Main risk: Remaining P5 scope is now concentrated in US3 navigation/deep-link parity and claim-settlement concurrency validation, which may still reveal cross-feature integration gaps.
+- Main risk: Remaining P5 scope is now concentrated in Feature 008 US2/US4 action parity and automatic need-driven claim-decline paths, plus concurrency validation for claim settlement.
 - Requested supervisor input: none.

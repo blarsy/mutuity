@@ -6,6 +6,7 @@ import { Alert, Box, Button, Chip, Container, Stack, Typography } from "@mui/mat
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { conversationThreadUrl } from "../features/chat/chatRouting";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { ClaimNotificationsPanel } from "../features/needs/ClaimNotificationsPanel";
 import { VIEWER_CLAIM_OVERVIEW_QUERY } from "../features/needs/needClaims.queries";
@@ -34,6 +35,9 @@ type ClaimOverviewNode = {
     displayName: string | null;
     externalSubject: string;
   } | null;
+  claimConversationsByNeedClaimId: {
+    nodes: Array<{ id: string }>;
+  };
 };
 
 type ClaimNotificationNode = {
@@ -157,6 +161,7 @@ export default function ClaimsPage() {
               >
                 {sentClaims.map(claim => {
                   const need = claim.needByNeedId;
+                  const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
 
                   return (
                     <NeedCard
@@ -173,6 +178,14 @@ export default function ClaimsPage() {
                           <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
                             {t("actions.viewNeed")}
                           </Button>
+                          <Button component={NextLink} href={`/accounts/${need.creatorAccountId}`} variant="text">
+                            {t("actions.viewNeedOwner")}
+                          </Button>
+                          {claimConversationId ? (
+                            <Button component={NextLink} href={conversationThreadUrl("need", claimConversationId)} variant="text">
+                              {t("actions.chat")}
+                            </Button>
+                          ) : null}
                         </Stack>
                       }
                       chips={
@@ -232,6 +245,7 @@ export default function ClaimsPage() {
                   const claimerLabel = claim.accountByClaimerAccountId?.displayName
                     ?? claim.accountByClaimerAccountId?.externalSubject
                     ?? claim.claimerAccountId;
+                  const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
 
                   return (
                     <NeedCard
@@ -248,6 +262,14 @@ export default function ClaimsPage() {
                           <Button component={NextLink} href={`/accounts/${claim.claimerAccountId}`} variant="text">
                             {t("actions.viewClaimer")}
                           </Button>
+                          <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
+                            {t("actions.viewNeed")}
+                          </Button>
+                          {claimConversationId ? (
+                            <Button component={NextLink} href={conversationThreadUrl("need", claimConversationId)} variant="text">
+                              {t("actions.chat")}
+                            </Button>
+                          ) : null}
                         </Stack>
                       }
                       chips={
