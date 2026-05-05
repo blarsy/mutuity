@@ -31,7 +31,7 @@
 
 ### Tests (US1)
 
-- [ ] T010 [P] [US1] Add backend integration tests for sent/received claim ordering and tri-state filtering in `backend/tests/integration/claims-workspace.spec.ts`
+- [x] T010 [P] [US1] Add backend integration tests for sent/received claim ordering and tri-state filtering in `backend/tests/integration/claims-workspace.spec.ts`
 - [x] T011 [P] [US1] Add frontend tests for `ClaimsPage` rendering, tri-state filters, and pagination in `frontend/tests/claims/claims-page.spec.tsx`
 
 ### Implementation (US1)
@@ -48,7 +48,7 @@
 
 ### Tests (US2)
 
-- [ ] T015 [P] [US2] Add backend integration tests for claimer-side cancellation, explicit decline, settlement auto-decline side effects, and insufficient-balance settlement failures in `backend/tests/integration/claims-settlement.spec.ts`
+- [x] T015 [P] [US2] Add backend integration tests for claimer-side cancellation, explicit decline, settlement auto-decline side effects, and insufficient-balance settlement failures in `backend/tests/integration/claims-settlement.spec.ts`
 - [x] T016 [P] [US2] Add frontend tests for cancel/decline/settle controls, settlement disabled-state messaging, and final-confirmation messaging in `frontend/tests/claims/claim-actions.spec.tsx`
 
 ### Implementation (US2)
@@ -83,8 +83,8 @@
 
 ### Tests (US4)
 
-- [ ] T026 [P] [US4] Add backend integration tests for need-expiry polling declines, need-deactivation declines, and the related notification matrix in `backend/tests/integration/claim-auto-decline.spec.ts`
-- [ ] T027 [P] [US4] Add frontend tests for need-deactivation effects surfaced in claims-related UI where applicable in `frontend/tests/claims/claim-auto-decline.spec.tsx`
+- [x] T026 [P] [US4] Add backend integration tests for need-expiry polling declines, need-deactivation declines, and the related notification matrix in `backend/tests/integration/claim-auto-decline.spec.ts`
+- [x] T027 [P] [US4] Add frontend tests for need-deactivation effects surfaced in claims-related UI where applicable in `frontend/tests/claims/claim-auto-decline.spec.tsx`
 
 ### Implementation (US4)
 

@@ -49,6 +49,8 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Need claim not found", "NOT_FOUND"],
   ["Need claim is no longer open", "BAD_USER_INPUT"],
   ["Need claim is closed", "BAD_USER_INPUT"],
+  ["Only the claimer can cancel this claim", "FORBIDDEN"],
+  ["Only the need creator can decline this claim", "FORBIDDEN"],
   ["Claim conversation not found", "NOT_FOUND"],
   ["Message body is required", "BAD_USER_INPUT"],
   ["Only administrators can add moderation notes", "FORBIDDEN"],
