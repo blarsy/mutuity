@@ -60,6 +60,7 @@ type ClaimNotificationNode = {
 };
 
 type ViewerClaimOverviewData = {
+  currentTokenBalance: number | null;
   allNeedClaims: {
     nodes: ClaimOverviewNode[];
   };
@@ -81,7 +82,8 @@ function InactiveExplanation({ claim, t }: { claim: ClaimOverviewNode; t: (k: st
   const key = status.toLowerCase() as "settled" | "declined" | "withdrawn" | "expired";
   const decisionDate = claim.settledAt ?? claim.updatedAt;
   const severity = status === "SETTLED" ? "success" : status === "DECLINED" ? "error" : "warning";
-  return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, { date: formatDate(decisionDate, "") })}</Alert>;
+  const opts = key === "expired" ? {} : { date: formatDate(decisionDate, "") };
+  return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, opts)}</Alert>;
 }
 
 export default function ClaimsPage() {
@@ -124,6 +126,7 @@ export default function ClaimsPage() {
   }, isAuthenticated);
 
   const currentAccountId = session.account?.id ?? null;
+  const viewerBalance = data?.currentTokenBalance ?? null;
   const allClaims = useMemo(() => {
     return [...(data?.allNeedClaims.nodes ?? [])].sort(
       (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
@@ -354,6 +357,8 @@ export default function ClaimsPage() {
                       ?? claim.claimerAccountId;
                     const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
                     const isOpen = claim.status === "OPEN";
+                    const requiredTopes = claim.needByNeedId.proposedTopesAmount ?? 0;
+                    const canSettle = viewerBalance === null || viewerBalance >= requiredTopes;
 
                     return (
                     <NeedCard
@@ -362,14 +367,20 @@ export default function ClaimsPage() {
                           {isOpen ? (
                             <Button
                               color="success"
-                              disabled={settling}
+                              disabled={settling || !canSettle}
                               onClick={() => {
                                 setSettleConfirmClaimId(claim.id);
                               }}
+                              title={!canSettle ? t("settleDisabledHint", { amount: requiredTopes }) : undefined}
                               variant="contained"
                             >
                               {t("actions.settle")}
                             </Button>
+                          ) : null}
+                          {isOpen && !canSettle ? (
+                            <Typography color="error" variant="caption">
+                              {t("settleDisabledHint", { amount: requiredTopes })}
+                            </Typography>
                           ) : null}
                           {isOpen ? (
                             <Button

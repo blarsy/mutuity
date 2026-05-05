@@ -48,8 +48,9 @@
     "settled": "Clôturée le {{date}}",
     "declined": "Refusée le {{date}}",
     "withdrawn": "Annulée le {{date}}",
-    "expired": "Expirée le {{date}}"
+    "expired": "Expirée — besoin inactif"
   },
+  "settleDisabledHint": "Vous avez besoin de {{amount}} Topes pour clôturer cette demande, mais votre solde est insuffisant.",
   "settleConfirm": {
     "title": "Clôturer cette demande ?",
     "message": "Clôturer confirme que le besoin a été satisfait. Les Topes proposés seront transférés à l'aidant. Cette action est irréversible.",

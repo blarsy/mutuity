@@ -48,8 +48,9 @@
     "settled": "Settled on {{date}}",
     "declined": "Declined on {{date}}",
     "withdrawn": "Cancelled on {{date}}",
-    "expired": "Expired on {{date}}"
+    "expired": "Expired — need no longer active"
   },
+  "settleDisabledHint": "You need {{amount}} Topes to settle this claim, but your current balance is insufficient.",
   "settleConfirm": {
     "title": "Settle this claim?",
     "message": "Settling confirms the need has been fulfilled. Any Topes offered will be transferred to the claimer. This action cannot be undone.",

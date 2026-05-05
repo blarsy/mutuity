@@ -19,6 +19,7 @@ export const CLAIM_NEED_MUTATION = gql`
 
 export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
   query ViewerClaimOverview {
+    currentTokenBalance
     allNeedClaims(first: 100) {
       nodes {
         id

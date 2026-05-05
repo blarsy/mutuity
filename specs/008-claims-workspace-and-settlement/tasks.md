@@ -32,7 +32,7 @@
 ### Tests (US1)
 
 - [ ] T010 [P] [US1] Add backend integration tests for sent/received claim ordering and tri-state filtering in `backend/tests/integration/claims-workspace.spec.ts`
-- [ ] T011 [P] [US1] Add frontend tests for `ClaimsPage` rendering, tri-state filters, and pagination in `frontend/tests/claims/claims-page.spec.tsx`
+- [x] T011 [P] [US1] Add frontend tests for `ClaimsPage` rendering, tri-state filters, and pagination in `frontend/tests/claims/claims-page.spec.tsx`
 
 ### Implementation (US1)
 
@@ -49,7 +49,7 @@
 ### Tests (US2)
 
 - [ ] T015 [P] [US2] Add backend integration tests for claimer-side cancellation, explicit decline, settlement auto-decline side effects, and insufficient-balance settlement failures in `backend/tests/integration/claims-settlement.spec.ts`
-- [ ] T016 [P] [US2] Add frontend tests for cancel/decline/settle controls, settlement disabled-state messaging, and final-confirmation messaging in `frontend/tests/claims/claim-actions.spec.tsx`
+- [x] T016 [P] [US2] Add frontend tests for cancel/decline/settle controls, settlement disabled-state messaging, and final-confirmation messaging in `frontend/tests/claims/claim-actions.spec.tsx`
 
 ### Implementation (US2)
 
@@ -88,14 +88,14 @@
 
 ### Implementation (US4)
 
-- [ ] T028 [US4] Wire the expired-needs worker into the current worker schedule and task registry for claim auto-declines
-- [ ] T029 [US4] Apply the notification matrix for need-expiry declines, need-deactivation declines, and creator-triggered declines in SQL-owned claim lifecycle functions
+- [x] T028 [US4] Wire the expired-needs worker into the current worker schedule and task registry for claim auto-declines
+- [x] T029 [US4] Apply the notification matrix for need-expiry declines, need-deactivation declines, and creator-triggered declines in SQL-owned claim lifecycle functions
 - [ ] T030 [US4] Ensure the claims workspace refreshes and presents the correct decline reasons after automatic need-driven claim closure
 
 ## Phase 7: Polish & Validation
 
-- [ ] T031 [P] Ensure claim-related copy remains i18n-backed, including decline reasons and insufficient-balance messaging, in `frontend/src/i18n/messages/`
-- [ ] T032 [P] Add responsive layout polish for the side-by-side sent/received claims workspace on small screens in `frontend/src/pages/claims.tsx`
+- [x] T031 [P] Ensure claim-related copy remains i18n-backed, including decline reasons and insufficient-balance messaging, in `frontend/src/i18n/messages/`
+- [x] T032 [P] Add responsive layout polish for the side-by-side sent/received claims workspace on small screens in `frontend/src/pages/claims.tsx`
 - [ ] T033 Run end-to-end verification for claim browsing, lifecycle actions, settlement guards, auto-declines, and conversation links
 - [ ] T034 Capture any remaining differences between the old claims workflow and the rebuilt MVP in `specs/008-claims-workspace-and-settlement/spec.md`
 
