@@ -31,6 +31,21 @@
     "manageThread": "Gérer le fil",
     "reviewClaim": "Examiner la demande",
     "viewClaimer": "Voir l'aidant",
-    "chat": "Discussion"
+    "chat": "Discussion",
+    "cancel": "Annuler la demande",
+    "decline": "Refuser",
+    "settle": "Clôturer"
+  },
+  "inactive": {
+    "settled": "Clôturée le {{date}}",
+    "declined": "Refusée le {{date}}",
+    "withdrawn": "Annulée le {{date}}",
+    "expired": "Expirée le {{date}}"
+  },
+  "settleConfirm": {
+    "title": "Clôturer cette demande ?",
+    "message": "Clôturer confirme que le besoin a été satisfait. Les Topes proposés seront transférés à l'aidant. Cette action est irréversible.",
+    "cancel": "Annuler",
+    "confirm": "Clôturer"
   }
 }

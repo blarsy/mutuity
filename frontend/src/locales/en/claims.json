@@ -31,6 +31,21 @@
     "manageThread": "Manage thread",
     "reviewClaim": "Review claim",
     "viewClaimer": "View claimer",
-    "chat": "Chat"
+    "chat": "Chat",
+    "cancel": "Cancel claim",
+    "decline": "Decline",
+    "settle": "Settle"
+  },
+  "inactive": {
+    "settled": "Settled on {{date}}",
+    "declined": "Declined on {{date}}",
+    "withdrawn": "Cancelled on {{date}}",
+    "expired": "Expired on {{date}}"
+  },
+  "settleConfirm": {
+    "title": "Settle this claim?",
+    "message": "Settling confirms the need has been fulfilled. Any Topes offered will be transferred to the claimer. This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Settle"
   }
 }

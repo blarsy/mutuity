@@ -121,3 +121,27 @@ export const SETTLE_NEED_CLAIM_MUTATION = gql`
     }
   }
 `;
+
+export const CANCEL_NEED_CLAIM_MUTATION = gql`
+  mutation CancelNeedClaim($input: CancelNeedClaimInput!) {
+    cancelNeedClaim(input: $input) {
+      needClaim {
+        id
+        status
+        updatedAt
+      }
+    }
+  }
+`;
+
+export const DECLINE_NEED_CLAIM_MUTATION = gql`
+  mutation DeclineNeedClaim($input: DeclineNeedClaimInput!) {
+    declineNeedClaim(input: $input) {
+      needClaim {
+        id
+        status
+        updatedAt
+      }
+    }
+  }
+`;

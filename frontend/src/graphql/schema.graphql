@@ -1883,6 +1883,39 @@ enum CampaignsOrderBy {
   START_AT_DESC
 }
 
+"""All input for the `cancelNeedClaim` mutation."""
+input CancelNeedClaimInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  needClaimId: UUID
+}
+
+"""The output of our `cancelNeedClaim` mutation."""
+type CancelNeedClaimPayload {
+  """Reads a single `Account` that is related to this `NeedClaim`."""
+  accountByClaimerAccountId: Account
+  """Reads a single `Account` that is related to this `NeedClaim`."""
+  accountBySettledByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `Need` that is related to this `NeedClaim`."""
+  needByNeedId: Need
+  needClaim: NeedClaim
+  """An edge for our `NeedClaim`. May be used by Relay 1."""
+  needClaimEdge(
+    """The method to use when ordering `NeedClaim`."""
+    orderBy: [NeedClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): NeedClaimsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
+
 """All input for the `cancelResourceBid` mutation."""
 input CancelResourceBidInput {
   """
@@ -3529,6 +3562,39 @@ A point in time as described by the [ISO
 8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
 """
 scalar Datetime
+
+"""All input for the `declineNeedClaim` mutation."""
+input DeclineNeedClaimInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  needClaimId: UUID
+}
+
+"""The output of our `declineNeedClaim` mutation."""
+type DeclineNeedClaimPayload {
+  """Reads a single `Account` that is related to this `NeedClaim`."""
+  accountByClaimerAccountId: Account
+  """Reads a single `Account` that is related to this `NeedClaim`."""
+  accountBySettledByAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `Need` that is related to this `NeedClaim`."""
+  needByNeedId: Need
+  needClaim: NeedClaim
+  """An edge for our `NeedClaim`. May be used by Relay 1."""
+  needClaimEdge(
+    """The method to use when ordering `NeedClaim`."""
+    orderBy: [NeedClaimsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): NeedClaimsEdge
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
 
 """All input for the `deleteAccountByExternalSubject` mutation."""
 input DeleteAccountByExternalSubjectInput {
@@ -5769,6 +5835,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: AuthLogoutInput!
   ): AuthLogoutPayload
+  cancelNeedClaim(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: CancelNeedClaimInput!
+  ): CancelNeedClaimPayload
   cancelResourceBid(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CancelResourceBidInput!
@@ -5960,6 +6030,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: CreateTokenMovementInput!
   ): CreateTokenMovementPayload
+  declineNeedClaim(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: DeclineNeedClaimInput!
+  ): DeclineNeedClaimPayload
   """Deletes a single `Account` using its globally unique id."""
   deleteAccount(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""

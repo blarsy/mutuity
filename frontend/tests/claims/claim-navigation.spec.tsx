@@ -10,6 +10,7 @@ type ClaimNode = {
   createdAt: string;
   updatedAt: string;
   settledAt: string | null;
+  settledByAccountId: string | null;
   needByNeedId: {
     id: string;
     title: string;
@@ -40,11 +41,15 @@ jest.mock("next/router", () => ({
 }));
 
 jest.mock("@apollo/client/react", () => ({
-  useQuery: mockUseQuery
+  useQuery: mockUseQuery,
+  useMutation: jest.fn(() => [jest.fn(), { loading: false }])
 }));
 
 jest.mock("../../src/features/needs/needClaims.queries", () => ({
-  VIEWER_CLAIM_OVERVIEW_QUERY: CLAIM_OVERVIEW_QUERY_DOC
+  VIEWER_CLAIM_OVERVIEW_QUERY: CLAIM_OVERVIEW_QUERY_DOC,
+  CANCEL_NEED_CLAIM_MUTATION: {},
+  DECLINE_NEED_CLAIM_MUTATION: {},
+  SETTLE_NEED_CLAIM_MUTATION: {}
 }));
 
 jest.mock("../../src/features/auth/AuthProvider", () => ({
@@ -138,6 +143,7 @@ function buildClaim(overrides: Partial<ClaimNode> & { id: string; needId: string
     createdAt: overrides.createdAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
     settledAt: overrides.settledAt ?? null,
+    settledByAccountId: overrides.settledByAccountId ?? null,
     needByNeedId: overrides.needByNeedId ?? {
       id: overrides.needId,
       title: `Need ${overrides.id}`,
