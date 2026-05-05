@@ -21,7 +21,7 @@
   "bidNote": "Note de l'offre : {{message}}",
   "bidFrom": "Offre de {{bidder}}",
   "chips": {
-    "tokens": "{{value}} jetons",
+    "tokens": "{{value}} Topes",
     "exchangeable": "échangeable"
   },
   "filters": {

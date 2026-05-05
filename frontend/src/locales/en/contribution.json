@@ -62,9 +62,9 @@
     "sendingButton": "Sending…"
   },
   "movements": {
-    "resource_bid_reserved": "Bid created / tokens reserved",
+    "resource_bid_reserved": "Bid created / Topes reserved",
     "resource_bid_refunded": "Bid refunded",
-    "resource_bid_settled": "Bid accepted / tokens settled",
+    "resource_bid_settled": "Bid accepted / Topes settled",
     "claim_settlement_credit": "Claim settled in your favor",
     "claim_settlement_debit": "You settled a claim on your need",
     "profile_first_avatar_reward": "First profile avatar added",

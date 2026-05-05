@@ -90,6 +90,7 @@
     "deleteDialog": {
       "title": "Delete resource?",
       "body": "This will archive \"{{title}}\" from active listings.",
+      "openBidsWarning": "This resource has {{count}} open bid(s). Deactivating it will automatically cancel all of them and return the reserved Topes to each bidder.",
       "deleting": "Deleting…"
     }
   },

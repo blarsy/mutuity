@@ -77,11 +77,11 @@
 
 ## Phase 6: Polish & Validation
 
-- [ ] T025 [P] Ensure bid-related copy remains i18n-backed and uses negotiation-friendly Topes wording in `frontend/src/i18n/messages/`
-- [ ] T026 [P] Add responsive layout polish for the side-by-side sent/received workspace on small screens in `frontend/src/pages/bids.tsx`
-- [ ] T027 Add the resource-deactivation confirmation flow when open bids exist in the relevant resource management UI and mutation path
-- [ ] T028 Run end-to-end verification for bid browsing, actions, settlement effects, resource-expiry/deactivation auto-cancellation, and chat deep links
-- [ ] T029 Capture any differences between legacy Tope-là bid behavior and the rebuilt MVP back into `specs/007-bids-workspace-and-settlement/spec.md`
+- [x] T025 [P] Ensure bid-related copy remains i18n-backed and uses negotiation-friendly Topes wording in `frontend/src/i18n/messages/`
+- [x] T026 [P] Add responsive layout polish for the side-by-side sent/received workspace on small screens in `frontend/src/pages/bids.tsx`
+- [x] T027 Add the resource-deactivation confirmation flow when open bids exist in the relevant resource management UI and mutation path
+- [x] T028 Run end-to-end verification for bid browsing, actions, settlement effects, resource-expiry/deactivation auto-cancellation, and chat deep links
+- [x] T029 Capture any differences between legacy Tope-là bid behavior and the rebuilt MVP back into `specs/007-bids-workspace-and-settlement/spec.md`
 
 ## Dependencies & Execution Order
 

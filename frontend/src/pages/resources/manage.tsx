@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useRequireAuth } from "../../features/auth/requireAuth";
-import { MY_RESOURCES_CONNECTION_QUERY, SOFT_DELETE_RESOURCE_MUTATION } from "../../features/resources/resources.queries";
+import { MY_RESOURCES_CONNECTION_QUERY, RESOURCE_OPEN_BID_COUNT_QUERY, SOFT_DELETE_RESOURCE_MUTATION } from "../../features/resources/resources.queries";
 import { ResourceCard } from "../../features/ui/ResourceCard";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
@@ -92,6 +92,12 @@ export default function ManageResourcesPage() {
     }
   });
   const [softDeleteResource, { loading: deleting, error: deleteError }] = useMutation(SOFT_DELETE_RESOURCE_MUTATION);
+
+  const { data: openBidData, loading: openBidLoading } = useQuery<{ allResourceBids: { totalCount: number } }, { resourceId: string }>(
+    RESOURCE_OPEN_BID_COUNT_QUERY,
+    { skip: !resourcePendingDelete, variables: { resourceId: resourcePendingDelete?.id ?? "" }, fetchPolicy: "network-only" }
+  );
+  const openBidCount = openBidData?.allResourceBids.totalCount ?? 0;
 
   const hasNextPage = data?.allResources.pageInfo.hasNextPage ?? false;
   const endCursor = data?.allResources.pageInfo.endCursor ?? null;
@@ -272,12 +278,17 @@ export default function ManageResourcesPage() {
           <Typography variant="body2">
             {t("manage.deleteDialog.body", { title: resourcePendingDelete?.title ?? "" })}
           </Typography>
+          {!openBidLoading && openBidCount > 0 ? (
+            <Alert severity="warning" sx={{ mt: 1.5 }}>
+              {t("manage.deleteDialog.openBidsWarning", { count: openBidCount })}
+            </Alert>
+          ) : null}
         </DialogContent>
         <DialogActions>
           <Button disabled={deleting} onClick={() => setResourcePendingDelete(null)}>
             {t("actions.cancel", { ns: "common" })}
           </Button>
-          <Button color="error" disabled={deleting} onClick={() => void confirmSoftDelete()} variant="contained">
+          <Button color="error" disabled={deleting || openBidLoading} onClick={() => void confirmSoftDelete()} variant="contained">
             {deleting ? t("manage.deleteDialog.deleting") : t("actions.delete", { ns: "common" })}
           </Button>
         </DialogActions>

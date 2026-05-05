@@ -466,7 +466,7 @@ export default function BidsPage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack spacing={4}>
         <Box>
           <Typography variant="h4">{t("workspaceTitle")}</Typography>
@@ -475,31 +475,33 @@ export default function BidsPage() {
 
         {actionError ? <Alert onClose={() => { setActionError(null); }} severity="error">{actionError}</Alert> : null}
 
-        <BidSection
-          activeOnly={sentActiveOnly}
-          bids={sentBids}
-          emptyKey="sentEmpty"
-          errorMessage={sentError ? getUserFacingGraphQLErrorMessage(sentError) : null}
-          hasNextPage={sentHasMore}
-          loading={sentLoading}
-          onLoadMore={handleLoadMoreSent}
-          onToggleActiveOnly={setSentActiveOnly}
-          renderBidCard={renderSentBidCard}
-          title={t("sections.sent")}
-        />
+        <Box sx={{ display: "grid", gap: 4, gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" } }}>
+          <BidSection
+            activeOnly={sentActiveOnly}
+            bids={sentBids}
+            emptyKey="sentEmpty"
+            errorMessage={sentError ? getUserFacingGraphQLErrorMessage(sentError) : null}
+            hasNextPage={sentHasMore}
+            loading={sentLoading}
+            onLoadMore={handleLoadMoreSent}
+            onToggleActiveOnly={setSentActiveOnly}
+            renderBidCard={renderSentBidCard}
+            title={t("sections.sent")}
+          />
 
-        <BidSection
-          activeOnly={receivedActiveOnly}
-          bids={receivedBids}
-          emptyKey="receivedEmpty"
-          errorMessage={receivedError ? getUserFacingGraphQLErrorMessage(receivedError) : null}
-          hasNextPage={receivedHasMore}
-          loading={receivedLoading}
-          onLoadMore={handleLoadMoreReceived}
-          onToggleActiveOnly={setReceivedActiveOnly}
-          renderBidCard={renderReceivedBidCard}
-          title={t("sections.received")}
-        />
+          <BidSection
+            activeOnly={receivedActiveOnly}
+            bids={receivedBids}
+            emptyKey="receivedEmpty"
+            errorMessage={receivedError ? getUserFacingGraphQLErrorMessage(receivedError) : null}
+            hasNextPage={receivedHasMore}
+            loading={receivedLoading}
+            onLoadMore={handleLoadMoreReceived}
+            onToggleActiveOnly={setReceivedActiveOnly}
+            renderBidCard={renderReceivedBidCard}
+            title={t("sections.received")}
+          />
+        </Box>
       </Stack>
 
       <Dialog maxWidth="xs" open={acceptConfirmBidId !== null} onClose={() => { setAcceptConfirmBidId(null); }}>

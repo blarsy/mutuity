@@ -87,8 +87,7 @@
     "tokensChip": "{{amount}} jetons",
     "deleteDialog": {
       "title": "Supprimer la ressource ?",
-      "body": "Cela archivera « {{title}} » des annonces actives.",
-      "deleting": "Suppression…"
+      "body": "Cela archivera « {{title}} » des annonces actives.",      "openBidsWarning": "Cette ressource a {{count}} offre(s) ouverte(s). La désactiver annulera automatiquement toutes ces offres et restituera les Topes réservés à chaque offreur.",      "deleting": "Suppression…"
     }
   },
   "filters": {

@@ -196,6 +196,14 @@ export const SOFT_DELETE_RESOURCE_MUTATION = gql`
   }
 `;
 
+export const RESOURCE_OPEN_BID_COUNT_QUERY = gql`
+  query ResourceOpenBidCount($resourceId: UUID!) {
+    allResourceBids(condition: { resourceId: $resourceId, status: OPEN }) {
+      totalCount
+    }
+  }
+`;
+
 export const RESOURCE_BIDS_OVERVIEW_QUERY = gql`
   query ResourceBidsOverview($first: Int = 100) {
     allResourceBids(first: $first) {

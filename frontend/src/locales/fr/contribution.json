@@ -62,9 +62,9 @@
     "sendingButton": "Envoi…"
   },
   "movements": {
-    "resource_bid_reserved": "Offre créée / jetons réservés",
+    "resource_bid_reserved": "Offre créée / Topes réservés",
     "resource_bid_refunded": "Offre remboursée",
-    "resource_bid_settled": "Offre acceptée / jetons réglés",
+    "resource_bid_settled": "Offre acceptée / Topes réglés",
     "claim_settlement_credit": "Demande réglée en votre faveur",
     "claim_settlement_debit": "Vous avez réglé une demande sur votre besoin",
     "profile_first_avatar_reward": "Premier avatar de profil ajouté",
