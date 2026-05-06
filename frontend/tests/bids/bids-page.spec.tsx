@@ -14,7 +14,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
-  resourceConversationByConversationId: { id: string } | null;
+  resourceConversationsByResourceBidId: { nodes: Array<{ id: string }> };
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -200,7 +200,7 @@ describe("BidsPage", () => {
               updatedAt: sharedNow,
               respondedAt: sharedNow,
               respondedByAccountId: "acct-owner-2",
-              resourceConversationByConversationId: null,
+              resourceConversationsByResourceBidId: { nodes: [] },
               accountByBidderAccountId: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" },
               resourceByResourceId: {
                 id: "resource-2",
@@ -232,7 +232,7 @@ describe("BidsPage", () => {
               updatedAt: sharedNow,
               respondedAt: null,
               respondedByAccountId: null,
-              resourceConversationByConversationId: null,
+              resourceConversationsByResourceBidId: { nodes: [] },
               accountByBidderAccountId: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" },
               resourceByResourceId: {
                 id: "resource-1",
@@ -277,7 +277,7 @@ describe("BidsPage", () => {
               updatedAt: sharedNow,
               respondedAt: null,
               respondedByAccountId: null,
-              resourceConversationByConversationId: null,
+              resourceConversationsByResourceBidId: { nodes: [] },
               accountByBidderAccountId: { id: "acct-bidder-1", displayName: "Bidder One", externalSubject: "bidder-one" },
               resourceByResourceId: {
                 id: "resource-3",

@@ -10,6 +10,10 @@
     "noConversationsHint": "Les conversations démarrent lorsque vous répondez à une demande ou échangez des messages sur une offre de ressource.",
     "noResults": "Aucune conversation ne correspond à votre recherche."
   },
+  "list": {
+    "draftChip": "Brouillon {{kind}}",
+    "draftPreview": "Aucun message pour l'instant. Cette conversation sera créée lorsque vous enverrez le premier message."
+  },
   "loading": "Chargement des conversations…",
   "unread": "{{count}} non lu",
   "kind": {

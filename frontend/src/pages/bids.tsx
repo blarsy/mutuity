@@ -49,7 +49,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
-  resourceConversationByConversationId: { id: string } | null;
+  resourceConversationsByResourceBidId: { nodes: Array<{ id: string }> };
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -391,10 +391,10 @@ export default function BidsPage() {
             <Button component={NextLink} href={`/accounts/${resource.creatorAccountId}`} size="small" variant="text">
               {t("actions.viewCreator")}
             </Button>
-            {bid.resourceConversationByConversationId ? (
+            {bid.resourceConversationsByResourceBidId.nodes[0]?.id ? (
               <Button
                 component={NextLink}
-                href={conversationThreadUrl("resource", bid.resourceConversationByConversationId.id)}
+                href={conversationThreadUrl("resource", bid.resourceConversationsByResourceBidId.nodes[0].id)}
                 size="small"
                 variant="text"
               >
@@ -434,10 +434,10 @@ export default function BidsPage() {
             <Button component={NextLink} href={`/accounts/${bid.bidderAccountId}`} size="small" variant="text">
               {t("actions.viewBidder")}
             </Button>
-            {bid.resourceConversationByConversationId ? (
+            {bid.resourceConversationsByResourceBidId.nodes[0]?.id ? (
               <Button
                 component={NextLink}
-                href={conversationThreadUrl("resource", bid.resourceConversationByConversationId.id)}
+                href={conversationThreadUrl("resource", bid.resourceConversationsByResourceBidId.nodes[0].id)}
                 size="small"
                 variant="text"
               >

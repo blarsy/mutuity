@@ -157,11 +157,13 @@ export function ClaimNotificationsPanel({
       </Card>
 
       {selectedClaimId ? (
-        <NeedClaimManagementPage
-          claimId={selectedClaimId}
-          currentAccountId={currentAccountId}
-          onClaimsChanged={onClaimsChanged}
-        />
+        <Box id="claim-management-panel" sx={{ scrollMarginTop: 24 }}>
+          <NeedClaimManagementPage
+            claimId={selectedClaimId}
+            currentAccountId={currentAccountId}
+            onClaimsChanged={onClaimsChanged}
+          />
+        </Box>
       ) : null}
     </Stack>
   );

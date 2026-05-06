@@ -7,9 +7,9 @@ export const TOKEN_BALANCE_QUERY = gql`
 `;
 
 export const CONTRIBUTION_OVERVIEW_QUERY = gql`
-  query ContributionOverview($first: Int = 10, $after: Cursor) {
+  query ContributionOverview($viewerId: UUID!, $first: Int = 10, $after: Cursor) {
     currentTokenBalance
-    allTokenMovements(first: $first, after: $after) {
+    allTokenMovements(first: $first, after: $after, condition: { accountId: $viewerId }) {
       edges {
         cursor
         node {

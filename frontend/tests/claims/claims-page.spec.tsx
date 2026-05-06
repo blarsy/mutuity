@@ -185,13 +185,16 @@ function buildClaim(overrides: Partial<ClaimNode> & {
 }
 
 function makeQueryResult(claims: ClaimNode[], balance: number | null = 100) {
+  const sent = claims.filter(claim => claim.claimerAccountId === "acct-me");
+  const received = claims.filter(claim => claim.needByNeedId.creatorAccountId === "acct-me");
   return {
     loading: false,
     error: undefined,
     refetch: jest.fn(),
     data: {
       currentTokenBalance: balance,
-      allNeedClaims: { nodes: claims },
+      sentNeedClaims: { nodes: sent },
+      receivedNeedClaims: { nodes: received },
       allNeedClaimNotifications: { nodes: [] }
     }
   };

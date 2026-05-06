@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { CONTRIBUTION_OVERVIEW_QUERY, GIFT_TOKENS_MUTATION } from "../features/contribution/contribution.queries";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
@@ -99,6 +100,7 @@ const TOPES_EARNING_OPPORTUNITIES = [
 ] as const;
 
 export default function ContributionPage() {
+  const { session } = useAuth();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const { t } = useTranslation("contribution");
   const { data, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
@@ -106,7 +108,7 @@ export default function ContributionPage() {
     nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
     notifyOnNetworkStatusChange: true,
-    variables: { first: PAGE_SIZE }
+    variables: { first: PAGE_SIZE, viewerId: session.account?.id ?? "" }
   });
 
   useAccountEventSignal(() => { void refetch(); }, isAuthenticated);

@@ -13,6 +13,57 @@ export function conversationThreadUrl(kind: ChatContextKind, conversationId: str
 }
 
 /**
+ * Build the URL used to open a draft chat thread before a
+ * conversation exists. The real conversation is created on first message send.
+ */
+export function conversationDraftUrl(params: {
+  kind: "need" | "resource";
+  contextId: string;
+  otherAccountId?: string | null;
+  title?: string | null;
+}): string {
+  const query = new URLSearchParams({
+    kind: params.kind,
+    draft: "1",
+    contextId: params.contextId
+  });
+
+  if (params.otherAccountId?.trim()) {
+    query.set("otherAccountId", params.otherAccountId.trim());
+  }
+
+  if (params.title?.trim()) {
+    query.set("title", params.title.trim());
+  }
+
+  return `/chat?${query.toString()}`;
+}
+
+export function conversationDraftResourceUrl(params: {
+  resourceId: string;
+  otherAccountId: string;
+  title?: string | null;
+}): string {
+  return conversationDraftUrl({
+    kind: "resource",
+    contextId: params.resourceId,
+    otherAccountId: params.otherAccountId,
+    title: params.title
+  });
+}
+
+export function conversationDraftNeedUrl(params: {
+  needId: string;
+  title?: string | null;
+}): string {
+  return conversationDraftUrl({
+    kind: "need",
+    contextId: params.needId,
+    title: params.title
+  });
+}
+
+/**
  * Build the URL for the context entity (need or resource) linked from a
  * conversation header. Used for the "back-to-context" navigation link.
  */

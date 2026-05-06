@@ -10,6 +10,10 @@
     "noConversationsHint": "Conversations start when you reply to a claim or exchange messages on a resource bid.",
     "noResults": "No conversations match your search."
   },
+  "list": {
+    "draftChip": "{{kind}} draft",
+    "draftPreview": "No message yet. This conversation will be created when you send the first message."
+  },
   "loading": "Loading conversations…",
   "unread": "{{count}} unread",
   "kind": {

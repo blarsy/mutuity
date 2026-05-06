@@ -14,7 +14,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
-  resourceConversationByConversationId: { id: string } | null;
+  resourceConversationsByResourceBidId: { nodes: Array<{ id: string }> };
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -150,7 +150,7 @@ function buildBid(overrides: Partial<BidNode> & { id: string; status: BidNode["s
     updatedAt: overrides.updatedAt ?? now,
     respondedAt: overrides.respondedAt ?? null,
     respondedByAccountId: overrides.respondedByAccountId ?? null,
-    resourceConversationByConversationId: overrides.resourceConversationByConversationId ?? null,
+    resourceConversationsByResourceBidId: overrides.resourceConversationsByResourceBidId ?? { nodes: [] },
     accountByBidderAccountId: overrides.accountByBidderAccountId ?? {
       id: "acct-bidder",
       displayName: "Bidder",

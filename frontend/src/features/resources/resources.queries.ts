@@ -341,8 +341,10 @@ const BID_WORKSPACE_FIELDS = gql`
       displayName
       externalSubject
     }
-    resourceConversationByConversationId {
-      id
+    resourceConversationsByResourceBidId(first: 1) {
+      nodes {
+        id
+      }
     }
     resourceByResourceId {
       id

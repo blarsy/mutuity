@@ -20,7 +20,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useTranslation } from "react-i18next";
 
 import { LIST_CHAT_CONVERSATIONS_QUERY, COUNT_CHAT_CONVERSATIONS_QUERY } from "./chat.queries";
-import { conversationThreadUrl } from "./chatRouting";
+import { conversationDraftUrl, conversationThreadUrl } from "./chatRouting";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
@@ -49,11 +49,22 @@ type CountChatConversationsData = {
 const PAGE_SIZE = 25;
 
 export function ConversationListPanel({
+  draftThread,
   selectedConversationId,
-  isAuthenticated
+  isAuthenticated,
+  listRefreshToken,
+  selectedDraft
 }: {
+  draftThread?: {
+    kind: "need" | "resource";
+    contextId: string;
+    otherAccountId: string | null;
+    title: string | null;
+  } | null;
   selectedConversationId?: string | null;
   isAuthenticated: boolean;
+  listRefreshToken?: number;
+  selectedDraft?: boolean;
 }) {
   const { t } = useTranslation("chat");
   const [search, setSearch] = useState("");
@@ -84,7 +95,33 @@ export function ConversationListPanel({
     void refetchCount();
   }, isAuthenticated);
 
-  const conversations = data?.listChatConversations.nodes ?? [];
+  useEffect(() => {
+    if (!isAuthenticated || !listRefreshToken) {
+      return;
+    }
+
+    void refetch();
+    void refetchCount();
+  }, [isAuthenticated, listRefreshToken, refetch, refetchCount]);
+
+  const draftConversation: ConversationNode | null =
+    draftThread && !debouncedSearch
+      ? {
+          conversationKind: draftThread.kind,
+          conversationId: `draft-${draftThread.kind}-${draftThread.contextId}-${draftThread.otherAccountId ?? "none"}`,
+          contextId: draftThread.contextId,
+          contextTitle: draftThread.title,
+          otherAccountId: draftThread.otherAccountId ?? "",
+          otherAccountDisplayName: null,
+          lastMessagePreview: null,
+          unreadCount: 0,
+          lastActivityAt: null
+        }
+      : null;
+
+  const conversations = draftConversation
+    ? [draftConversation, ...(data?.listChatConversations.nodes ?? [])]
+    : (data?.listChatConversations.nodes ?? []);
   const totalCount = countData?.countChatConversations ?? 0;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
@@ -140,7 +177,12 @@ export function ConversationListPanel({
           <ConversationListItem
             key={conv.conversationId}
             conversation={conv}
-            isSelected={conv.conversationId === selectedConversationId}
+            isDraft={Boolean(draftConversation && conv.conversationId === draftConversation.conversationId)}
+            isSelected={Boolean(
+              draftConversation && conv.conversationId === draftConversation.conversationId
+                ? selectedDraft
+                : conv.conversationId === selectedConversationId
+            )}
           />
         ))}
       </List>
@@ -158,16 +200,25 @@ export function ConversationListPanel({
 
 function ConversationListItem({
   conversation: conv,
+  isDraft = false,
   isSelected
 }: {
   conversation: ConversationNode;
+  isDraft?: boolean;
   isSelected: boolean;
 }) {
   const { t } = useTranslation("chat");
-  const threadUrl = conversationThreadUrl(
-    conv.conversationKind as "need" | "resource",
-    conv.conversationId
-  );
+  const threadUrl = isDraft
+    ? conversationDraftUrl({
+        kind: conv.conversationKind as "need" | "resource",
+        contextId: conv.contextId,
+        otherAccountId: conv.otherAccountId || null,
+        title: conv.contextTitle
+      })
+    : conversationThreadUrl(
+        conv.conversationKind as "need" | "resource",
+        conv.conversationId
+      );
   const displayName =
     conv.otherAccountDisplayName ||
     t("kind." + conv.conversationKind, { defaultValue: conv.conversationKind });
@@ -191,7 +242,7 @@ function ConversationListItem({
           primary={
             <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
               <Chip
-                label={t("kind." + conv.conversationKind)}
+                label={isDraft ? t("list.draftChip", { kind: t("kind." + conv.conversationKind) }) : t("kind." + conv.conversationKind)}
                 size="small"
                 sx={{ fontSize: "0.65rem", height: 18 }}
                 variant="outlined"
@@ -226,6 +277,17 @@ function ConversationListItem({
                   variant="caption"
                 >
                   {conv.lastMessagePreview}
+                </Typography>
+              )}
+              {isDraft && !conv.lastMessagePreview && (
+                <Typography
+                  color="text.secondary"
+                  component="span"
+                  display="block"
+                  noWrap
+                  variant="caption"
+                >
+                  {t("list.draftPreview")}
                 </Typography>
               )}
               {conv.lastActivityAt && (

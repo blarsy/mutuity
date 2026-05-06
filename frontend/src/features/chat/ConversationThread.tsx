@@ -73,6 +73,22 @@ type ClaimConversationData = {
   } | null;
 };
 
+type SendResourceMessageDirectMutationData = {
+  sendResourceMessageDirect: {
+    resourceMessage: {
+      conversationId: string;
+    } | null;
+  } | null;
+};
+
+type SendNeedMessageMutationData = {
+  sendNeedMessage: {
+    claimMessage: {
+      conversationId: string;
+    } | null;
+  } | null;
+};
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const NEAR_BOTTOM_THRESHOLD_PX = 80;
@@ -81,10 +97,19 @@ const NEAR_BOTTOM_THRESHOLD_PX = 80;
 export function ConversationThread({
   kind,
   conversationId,
+  draftThread,
+  onConversationCreated,
   onBack
 }: {
   kind: "need" | "resource";
-  conversationId: string;
+  conversationId: string | null;
+  draftThread?: {
+    kind: "need" | "resource";
+    contextId: string;
+    otherAccountId: string | null;
+    title: string | null;
+  } | null;
+  onConversationCreated?: (kind: "need" | "resource", conversationId: string) => void | Promise<void>;
   onBack?: () => void;
 }) {
   const { t } = useTranslation("chat");
@@ -92,13 +117,14 @@ export function ConversationThread({
   const myAccountId = session?.account?.id ?? null;
 
   const isResource = kind === "resource";
+  const isDraftThread = Boolean(draftThread) && !conversationId;
 
   const { data: resourceData, loading: resourceLoading, error: resourceError, refetch: resourceRefetch } =
     useQuery<ResourceConversationData>(RESOURCE_CONVERSATION_QUERY, {
       fetchPolicy: "cache-and-network",
       nextFetchPolicy: "cache-first",
       variables: { conversationId },
-      skip: !isResource
+      skip: !isResource || !conversationId
     });
 
   const { data: claimData, loading: claimLoading, error: claimError, refetch: claimRefetch } =
@@ -106,14 +132,14 @@ export function ConversationThread({
       fetchPolicy: "cache-and-network",
       nextFetchPolicy: "cache-first",
       variables: { conversationId },
-      skip: isResource
+      skip: isResource || !conversationId
     });
 
   const [markResourceRead] = useMutation(MARK_RESOURCE_MESSAGES_READ_MUTATION);
   const [markClaimRead] = useMutation(MARK_CLAIM_MESSAGES_READ_MUTATION);
 
-  const loading = isResource ? resourceLoading : claimLoading;
-  const queryError = isResource ? resourceError : claimError;
+  const loading = isDraftThread ? false : (isResource ? resourceLoading : claimLoading);
+  const queryError = isDraftThread ? null : (isResource ? resourceError : claimError);
   const errorMessage = getUserFacingGraphQLErrorMessage(queryError);
 
   // Extract data from whichever conversation type is active
@@ -130,18 +156,20 @@ export function ConversationThread({
         images: m.claimMessageImagesByMessageId.nodes
       }));
 
-  const contextId = isResource ? (resourceConv?.resourceId ?? null) : (claimConv?.needId ?? null);
+  const contextId = isResource
+    ? (resourceConv?.resourceId ?? (draftThread?.kind === "resource" ? draftThread.contextId : null) ?? null)
+    : (claimConv?.needId ?? (draftThread?.kind === "need" ? draftThread.contextId : null) ?? null);
   const contextTitle = isResource
-    ? (resourceConv?.resourceByResourceId?.title ?? null)
-    : claimConv?.needByNeedId?.title ?? null;
+    ? (resourceConv?.resourceByResourceId?.title ?? draftThread?.title ?? null)
+    : claimConv?.needByNeedId?.title ?? draftThread?.title ?? null;
 
   const otherAccountId: string | null = isResource
     ? myAccountId === resourceConv?.ownerAccountId
       ? (resourceConv?.bidderAccountId ?? null)
-      : (resourceConv?.ownerAccountId ?? null)
+      : (resourceConv?.ownerAccountId ?? draftThread?.otherAccountId ?? null)
     : myAccountId === claimConv?.creatorAccountId
       ? (claimConv?.claimerAccountId ?? null)
-      : (claimConv?.creatorAccountId ?? null);
+      : (claimConv?.creatorAccountId ?? draftThread?.otherAccountId ?? null);
 
   useAccountEventSignal(() => {
     if (isResource) {
@@ -204,13 +232,13 @@ export function ConversationThread({
   // ─── Read receipts ─────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || isDraftThread) return;
     if (isResource) {
       markResourceRead({ variables: { input: { pConversationId: conversationId } } }).catch(() => {});
     } else {
       markClaimRead({ variables: { input: { conversationId } } }).catch(() => {});
     }
-  }, [conversationId, isResource, markResourceRead, markClaimRead]);
+  }, [conversationId, isResource, isDraftThread, markResourceRead, markClaimRead]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -279,11 +307,13 @@ export function ConversationThread({
       <Divider />
 
       {/* Composer */}
-      {(resourceConv || claimConv) && (
+      {(resourceConv || claimConv || isDraftThread) && (
         <MessageComposer
           claimConv={claimConv}
+          draftThread={isDraftThread ? draftThread ?? null : null}
           isResource={isResource}
           myAccountId={myAccountId}
+          onConversationCreated={onConversationCreated}
           onSent={() => {
             if (isResource) resourceRefetch();
             else claimRefetch();
@@ -413,14 +443,18 @@ function MessageComposer({
   isResource,
   resourceConv,
   claimConv,
+  draftThread,
   myAccountId,
+  onConversationCreated,
   onSent,
   t
 }: {
   isResource: boolean;
   resourceConv: ResourceConv;
   claimConv: ClaimConv;
+  draftThread?: { kind: "need" | "resource"; contextId: string; otherAccountId: string | null } | null;
   myAccountId: string | null;
+  onConversationCreated?: (kind: "need" | "resource", conversationId: string) => void | Promise<void>;
   onSent: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
@@ -429,8 +463,8 @@ function MessageComposer({
   const [sendError, setSendError] = useState<string | null>(null);
 
   const [sendResourceMessage] = useMutation(SEND_RESOURCE_MESSAGE_MUTATION);
-  const [sendResourceMessageDirect] = useMutation(SEND_RESOURCE_MESSAGE_DIRECT_MUTATION);
-  const [sendNeedMessage] = useMutation(SEND_NEED_MESSAGE_MUTATION);
+  const [sendResourceMessageDirect] = useMutation<SendResourceMessageDirectMutationData>(SEND_RESOURCE_MESSAGE_DIRECT_MUTATION);
+  const [sendNeedMessage] = useMutation<SendNeedMessageMutationData>(SEND_NEED_MESSAGE_MUTATION);
   const [sendClaimMessage] = useMutation(SEND_CLAIM_MESSAGE_MUTATION);
 
   const handleSend = async () => {
@@ -459,6 +493,37 @@ function MessageComposer({
               }
             }
           });
+        }
+      } else if (isResource && draftThread?.kind === "resource" && draftThread.otherAccountId) {
+        const result = await sendResourceMessageDirect({
+          variables: {
+            input: {
+              pResourceId: draftThread.contextId,
+              pOtherAccountId: draftThread.otherAccountId,
+              pBody: trimmed,
+              pImageUrls: []
+            }
+          }
+        });
+
+        const conversationId = result.data?.sendResourceMessageDirect?.resourceMessage?.conversationId;
+        if (conversationId && onConversationCreated) {
+          await onConversationCreated("resource", conversationId);
+        }
+      } else if (!isResource && draftThread?.kind === "need") {
+        const result = await sendNeedMessage({
+          variables: {
+            input: {
+              pNeedId: draftThread.contextId,
+              pBody: trimmed,
+              pImageUrls: []
+            }
+          }
+        });
+
+        const conversationId = result.data?.sendNeedMessage?.claimMessage?.conversationId;
+        if (conversationId && onConversationCreated) {
+          await onConversationCreated("need", conversationId);
         }
       } else if (!isResource && claimConv) {
         if (claimConv.needClaimId) {

@@ -1,25 +1,10 @@
-import { useState } from "react";
-import { useMutation } from "@apollo/client/react";
 import {
-  Alert,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Stack,
-  TextField,
   Typography
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { useTranslation } from "react-i18next";
-
-import {
-  SEND_NEED_MESSAGE_MUTATION,
-  SEND_RESOURCE_MESSAGE_DIRECT_MUTATION
-} from "./chat.queries";
-import { conversationThreadUrl } from "./chatRouting";
-import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { conversationDraftNeedUrl, conversationDraftResourceUrl, conversationThreadUrl } from "./chatRouting";
 
 type StartConversationDialogProps =
   | {
@@ -42,35 +27,8 @@ type StartConversationDialogProps =
     disabledReason?: string | null;
   };
 
-type SendNeedMessageMutationData = {
-  sendNeedMessage: {
-    claimMessage: {
-      conversationId: string;
-    } | null;
-  } | null;
-};
-
-type SendResourceMessageDirectMutationData = {
-  sendResourceMessageDirect: {
-    resourceMessage: {
-      conversationId: string;
-    } | null;
-  } | null;
-};
-
 export function StartConversationDialog(props: StartConversationDialogProps) {
   const router = useRouter();
-  const { t } = useTranslation("chat");
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [sendNeedMessage, { loading: needLoading, error: needError }] =
-    useMutation<SendNeedMessageMutationData>(SEND_NEED_MESSAGE_MUTATION);
-  const [sendResourceMessageDirect, { loading: resourceLoading, error: resourceError }] =
-    useMutation<SendResourceMessageDirectMutationData>(SEND_RESOURCE_MESSAGE_DIRECT_MUTATION);
-
-  const loading = needLoading || resourceLoading;
-  const errorMessage = getUserFacingGraphQLErrorMessage(needError)
-    ?? getUserFacingGraphQLErrorMessage(resourceError);
   const canOpenExistingConversation = Boolean(props.existingConversationId);
   const resolvedDisabled = props.disabled && !canOpenExistingConversation;
 
@@ -80,53 +38,21 @@ export function StartConversationDialog(props: StartConversationDialogProps) {
       return;
     }
 
-    setOpen(true);
-  };
-
-  const handleSubmit = async () => {
-    const trimmed = message.trim();
-
-    if (!trimmed) {
+    if (props.kind === "resource") {
+      await router.push(conversationDraftResourceUrl({
+        resourceId: props.resourceId,
+        otherAccountId: props.creatorAccountId,
+        title: props.title
+      }));
       return;
     }
 
     if (props.kind === "need") {
-      const result = await sendNeedMessage({
-        variables: {
-          input: {
-            pNeedId: props.needId,
-            pBody: trimmed,
-            pImageUrls: []
-          }
-        }
-      });
-
-      const conversationId = result.data?.sendNeedMessage?.claimMessage?.conversationId;
-      if (conversationId) {
-        setOpen(false);
-        setMessage("");
-        await router.push(conversationThreadUrl("need", conversationId));
-      }
-
+      await router.push(conversationDraftNeedUrl({
+        needId: props.needId,
+        title: props.title
+      }));
       return;
-    }
-
-    const result = await sendResourceMessageDirect({
-      variables: {
-        input: {
-          pResourceId: props.resourceId,
-          pOtherAccountId: props.creatorAccountId,
-          pBody: trimmed,
-          pImageUrls: []
-        }
-      }
-    });
-
-    const conversationId = result.data?.sendResourceMessageDirect?.resourceMessage?.conversationId;
-    if (conversationId) {
-      setOpen(false);
-      setMessage("");
-      await router.push(conversationThreadUrl("resource", conversationId));
     }
   };
 
@@ -148,38 +74,6 @@ export function StartConversationDialog(props: StartConversationDialogProps) {
           </Typography>
         ) : null}
       </Stack>
-
-      <Dialog fullWidth maxWidth="sm" onClose={() => setOpen(false)} open={open}>
-        <DialogTitle>{t("composer.startTitle", { title: props.title })}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography color="text.secondary" variant="body2">
-              {t("composer.startHint")}
-            </Typography>
-
-            {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
-
-            <TextField
-              autoFocus
-              fullWidth
-              label={t("composer.messageLabel")}
-              minRows={4}
-              multiline
-              onChange={event => setMessage(event.target.value)}
-              placeholder={t("composer.messagePlaceholder")}
-              value={message}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={loading} onClick={() => setOpen(false)}>
-            {t("actions.cancel", { ns: "common" })}
-          </Button>
-          <Button disabled={loading || !message.trim()} onClick={() => void handleSubmit()} variant="contained">
-            {loading ? t("composer.sending") : t("composer.sendAndOpen")}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

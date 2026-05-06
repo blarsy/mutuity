@@ -61,7 +61,10 @@ type ClaimNotificationNode = {
 
 type ViewerClaimOverviewData = {
   currentTokenBalance: number | null;
-  allNeedClaims: {
+  sentNeedClaims: {
+    nodes: ClaimOverviewNode[];
+  };
+  receivedNeedClaims: {
     nodes: ClaimOverviewNode[];
   };
   allNeedClaimNotifications: {
@@ -97,10 +100,24 @@ export default function ClaimsPage() {
   const [receivedFilter, setReceivedFilter] = useState<"active" | "inactive" | "all">("active");
   const [sentPageSize, setSentPageSize] = useState(5);
   const [receivedPageSize, setReceivedPageSize] = useState(5);
+
+  const selectClaim = (claimId: string) => {
+    setSelectedClaimId(claimId);
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.setTimeout(() => {
+      const panel = document.getElementById("claim-management-panel");
+      panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  };
+
   const { data, loading, error, refetch } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
-    skip: !isAuthenticated
+    skip: !isAuthenticated,
+    variables: { viewerId: session.account?.id ?? "" }
   });
 
   const [cancelClaim, { loading: cancelling }] = useMutation(CANCEL_NEED_CLAIM_MUTATION, {
@@ -128,10 +145,12 @@ export default function ClaimsPage() {
   const currentAccountId = session.account?.id ?? null;
   const viewerBalance = data?.currentTokenBalance ?? null;
   const allClaims = useMemo(() => {
-    return [...(data?.allNeedClaims.nodes ?? [])].sort(
+    const sent = data?.sentNeedClaims.nodes ?? [];
+    const received = data?.receivedNeedClaims.nodes ?? [];
+    return [...sent, ...received].sort(
       (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
     );
-  }, [data?.allNeedClaims.nodes]);
+  }, [data?.sentNeedClaims.nodes, data?.receivedNeedClaims.nodes]);
   const notifications = data?.allNeedClaimNotifications.nodes ?? [];
 
   const applyFilter = (claims: ClaimOverviewNode[], filter: "active" | "inactive" | "all") => {
@@ -193,7 +212,7 @@ export default function ClaimsPage() {
               void refetch();
             }}
             onSelectClaim={claimId => {
-              setSelectedClaimId(claimId);
+              selectClaim(claimId);
             }}
             selectedClaimId={selectedClaimId}
           />
@@ -253,7 +272,7 @@ export default function ClaimsPage() {
                           ) : null}
                           <Button
                             onClick={() => {
-                              setSelectedClaimId(claim.id);
+                              selectClaim(claim.id);
                             }}
                             variant="contained"
                           >
@@ -299,7 +318,7 @@ export default function ClaimsPage() {
                       }
                       key={claim.id}
                       onClick={() => {
-                        setSelectedClaimId(claim.id);
+                        selectClaim(claim.id);
                       }}
                       onCreatorClick={() => {
                         void router.push(`/accounts/${need.creatorAccountId}`);
@@ -396,7 +415,7 @@ export default function ClaimsPage() {
                           ) : null}
                           <Button
                             onClick={() => {
-                              setSelectedClaimId(claim.id);
+                              selectClaim(claim.id);
                             }}
                             variant={isOpen ? "outlined" : "contained"}
                           >
@@ -443,7 +462,7 @@ export default function ClaimsPage() {
                       }
                       key={claim.id}
                       onClick={() => {
-                        setSelectedClaimId(claim.id);
+                        selectClaim(claim.id);
                       }}
                       onCreatorClick={() => {
                         void router.push(`/accounts/${claim.claimerAccountId}`);

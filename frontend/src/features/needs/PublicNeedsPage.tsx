@@ -96,7 +96,10 @@ type ClaimNotificationNode = {
 };
 
 type ViewerClaimOverviewData = {
-  allNeedClaims: {
+  sentNeedClaims: {
+    nodes: ClaimOverviewNode[];
+  };
+  receivedNeedClaims: {
     nodes: ClaimOverviewNode[];
   };
   allNeedClaimNotifications: {
@@ -196,20 +199,21 @@ export default function PublicNeedsPage() {
     refetch: refetchClaimOverview
   } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
     skip: !session.authenticated,
-    pollInterval: session.authenticated ? 15000 : 0
+    pollInterval: session.authenticated ? 15000 : 0,
+    variables: { viewerId: session.account?.id ?? "" }
   });
 
   const needs = data?.searchNeeds.nodes ?? [];
-  const claims = claimOverviewData?.allNeedClaims.nodes ?? [];
+  const sentClaims = claimOverviewData?.sentNeedClaims.nodes ?? [];
+  const receivedClaims = claimOverviewData?.receivedNeedClaims.nodes ?? [];
+  const claims = [...sentClaims, ...receivedClaims];
   const notifications = claimOverviewData?.allNeedClaimNotifications.nodes ?? [];
   const myClaimsByNeedId = new Map(
-    claims
-      .filter(claim => claim.claimerAccountId === session.account?.id)
-      .map(claim => [claim.needId, claim] as const)
+    sentClaims.map(claim => [claim.needId, claim] as const)
   );
   const incomingClaimCountsByNeedId = new Map<string, number>();
 
-  claims
+  receivedClaims
     .filter(claim => claim.needByNeedId.creatorAccountId === session.account?.id)
     .forEach(claim => {
       incomingClaimCountsByNeedId.set(

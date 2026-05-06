@@ -33,6 +33,7 @@ Cadence: update at least once per workday
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
+| P9 | Listing visual identity | 009 | NOT STARTED | 0% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -210,6 +211,25 @@ Checkpoints:
 Definition of Done:
 
 - [x] Support, audit, and troubleshooting workflows are production-ready.
+
+### P9 - Listing Visual Identity (009)
+
+Status: NOT STARTED
+Goal: give needs visual parity with resources (image upload + storage), then unify all card and thread header surfaces under a single `ListingHeader` component.
+
+Checkpoints:
+
+- [ ] Need `image_urls` column added, mutations updated, GraphQL type exposes `imageUrls`.
+- [ ] Need creation and editing forms include image upload control.
+- [ ] `ListingHeader` component created and tested.
+- [ ] `ResourceCard` and `NeedCard` delegate header row to `ListingHeader`.
+- [ ] Bids workspace `BidCard` and claims workspace claim card use `ListingHeader`.
+- [ ] `ConversationThread` header enriched with counterparty avatar and listing thumbnail.
+
+Definition of Done:
+
+- [ ] All card and thread header surfaces display a consistent listing identity strip for both resources and needs.
+- [ ] No surface shows a broken image element when a listing has no images.
 
 ## Active Work Queue
 

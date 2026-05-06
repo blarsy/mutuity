@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { Alert, Box, Container, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -6,6 +7,7 @@ import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { ConversationListPanel } from "../features/chat/ConversationListPanel";
 import { ConversationThread } from "../features/chat/ConversationThread";
+import { conversationThreadUrl } from "../features/chat/chatRouting";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -19,11 +21,38 @@ export default function ChatPage() {
     typeof router.query.kind === "string"
       ? (router.query.kind.toLowerCase() as "need" | "resource")
       : null;
+  const isDraft = router.query.draft === "1";
+  const draftContextId = typeof router.query.contextId === "string" ? router.query.contextId : null;
+  const draftOtherAccountId = typeof router.query.otherAccountId === "string" ? router.query.otherAccountId : null;
+  const draftTitle = typeof router.query.title === "string" ? router.query.title : null;
 
-  const hasThread = Boolean(selectedConversationId && selectedKind);
+  const draftThread =
+    isDraft && selectedKind === "resource" && draftContextId && draftOtherAccountId
+      ? {
+          kind: "resource" as const,
+          contextId: draftContextId,
+          otherAccountId: draftOtherAccountId,
+          title: draftTitle
+        }
+      : isDraft && selectedKind === "need" && draftContextId
+        ? {
+            kind: "need" as const,
+            contextId: draftContextId,
+            otherAccountId: null,
+            title: draftTitle
+          }
+      : null;
+  const [listRefreshToken, setListRefreshToken] = useState(0);
+
+  const hasThread = Boolean((selectedConversationId && selectedKind) || draftThread);
 
   const handleBack = () => {
     router.push("/chat");
+  };
+
+  const handleConversationCreated = async (kind: "need" | "resource", conversationId: string) => {
+    setListRefreshToken(current => current + 1);
+    await router.replace(conversationThreadUrl(kind, conversationId));
   };
 
   if (!isAuthenticated) {
@@ -69,7 +98,10 @@ export default function ChatPage() {
           }}
         >
           <ConversationListPanel
+            draftThread={draftThread}
             isAuthenticated={isAuthenticated && Boolean(session.account)}
+            listRefreshToken={listRefreshToken}
+            selectedDraft={Boolean(draftThread)}
             selectedConversationId={selectedConversationId}
           />
         </Box>
@@ -86,10 +118,12 @@ export default function ChatPage() {
             position: "relative"
           }}
         >
-          {hasThread && selectedConversationId && selectedKind ? (
+          {hasThread && selectedKind ? (
             <ConversationThread
               conversationId={selectedConversationId}
+              draftThread={draftThread}
               kind={selectedKind}
+              onConversationCreated={handleConversationCreated}
               onBack={handleBack}
             />
           ) : (

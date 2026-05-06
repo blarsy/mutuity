@@ -176,7 +176,8 @@ describe("ClaimsPage navigation links", () => {
           error: undefined,
           refetch: jest.fn(),
           data: {
-            allNeedClaims: { nodes: [sentClaim] },
+            sentNeedClaims: { nodes: [sentClaim] },
+            receivedNeedClaims: { nodes: [] },
             allNeedClaimNotifications: { nodes: [] }
           }
         };
@@ -207,7 +208,8 @@ describe("ClaimsPage navigation links", () => {
           error: undefined,
           refetch: jest.fn(),
           data: {
-            allNeedClaims: { nodes: [sentClaim] },
+            sentNeedClaims: { nodes: [sentClaim] },
+            receivedNeedClaims: { nodes: [] },
             allNeedClaimNotifications: { nodes: [] }
           }
         };
@@ -237,7 +239,8 @@ describe("ClaimsPage navigation links", () => {
           error: undefined,
           refetch: jest.fn(),
           data: {
-            allNeedClaims: { nodes: [receivedClaim] },
+            sentNeedClaims: { nodes: [] },
+            receivedNeedClaims: { nodes: [receivedClaim] },
             allNeedClaimNotifications: { nodes: [] }
           }
         };
@@ -268,7 +271,8 @@ describe("ClaimsPage navigation links", () => {
           error: undefined,
           refetch: jest.fn(),
           data: {
-            allNeedClaims: { nodes: [receivedClaim] },
+            sentNeedClaims: { nodes: [] },
+            receivedNeedClaims: { nodes: [receivedClaim] },
             allNeedClaimNotifications: { nodes: [] }
           }
         };

@@ -5,24 +5,6 @@
 **Status**: Draft  
 **Input**: User direction plus audit of Tope-là bid surfaces in `symmetrical-broccoli/backoffice/src/components/bids/BidsList.tsx`, `BidSent.tsx`, and `BidReceived.tsx`.
 
-## Differences from Legacy Tope-là Behavior
-
-The following intentional changes and enhancements were made during the rebuild, diverging from the original Tope-là implementation:
-
-1. **Single unified workspace**: Tope-là split sent and received bids across separate component files (`BidSent.tsx`, `BidReceived.tsx`). The rebuilt app consolidates both sections into a single `/bids` page with a responsive two-column layout on wider screens.
-
-2. **Enforced bid validity window**: Tope-là did not constrain bid validity to a specific duration. The rebuilt system enforces a 12–48 hour validity window (default 24 h), expressed in `valid_until` and computed by a scheduled background worker that auto-expires and refunds when the window lapses.
-
-3. **Immediate Topes reservation at creation**: Tope-là did not visibly surface that the proposed Topes were unavailable until resolution. The rebuilt system reserves the amount immediately on `submit_resource_bid`, shows a "Topes reserved" chip on active sent bids, and surfaces `resource_bid_reserved` / `resource_bid_refunded` ledger entries to the bidder via the Contribution page.
-
-4. **Acceptance confirmation step**: Tope-là did not include a pre-acceptance warning. The rebuilt app inserts an explicit confirmation dialog reminding the receiver to handle logistics before confirming because the Topes transfer is immediate and irreversible.
-
-5. **Auto-cancellation on resource deactivation with UI gate**: Tope-là's resource deactivation did not surface a warning when open bids existed. The rebuilt manage-resources page now queries the open bid count and shows a warning alert in the confirmation dialog before proceeding, with the confirm button disabled until the count check completes.
-
-6. **Direct chat shortcut on bid cards**: Tope-là's bid workspace did not provide a direct link to the focused resource conversation. The rebuilt app adds a Chat action button on each bid card that deep-links to the resource-bound conversation thread when one exists.
-
-7. **Notification routing rule for resource deactivation**: Tope-là sent notifications to all parties. The rebuilt notification logic (FR-021) explicitly skips notifying the resource owner who manually triggered a deactivation while sending the bid-cancelled notification only to the affected bidder(s).
-
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Account Browses Sent And Received Bids (Priority: P1)

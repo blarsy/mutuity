@@ -36,8 +36,11 @@ export const CREATE_CAMPAIGN_MUTATION = gql`
 `;
 
 export const MY_CAMPAIGNS_QUERY = gql`
-  query MyCampaigns {
-    allCampaigns(orderBy: CREATED_AT_DESC) {
+  query MyCampaigns($creatorAccountId: UUID!) {
+    allCampaigns(
+      condition: { creatorAccountId: $creatorAccountId }
+      orderBy: CREATED_AT_DESC
+    ) {
       nodes {
         id
         title

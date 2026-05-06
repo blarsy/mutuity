@@ -14,7 +14,7 @@ type BidNode = {
   updatedAt: string;
   respondedAt: string | null;
   respondedByAccountId: string | null;
-  resourceConversationByConversationId: { id: string } | null;
+  resourceConversationsByResourceBidId: { nodes: Array<{ id: string }> };
   accountByBidderAccountId: {
     id: string;
     displayName: string | null;
@@ -192,7 +192,7 @@ describe("BidsPage navigation links", () => {
       updatedAt: NOW,
       respondedAt: null,
       respondedByAccountId: null,
-      resourceConversationByConversationId: { id: CONVERSATION_ID },
+      resourceConversationsByResourceBidId: { nodes: [{ id: CONVERSATION_ID }] },
       accountByBidderAccountId: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" },
       resourceByResourceId: makeResource(CREATOR_ACCOUNT_ID)
     };
@@ -222,7 +222,7 @@ describe("BidsPage navigation links", () => {
       updatedAt: NOW,
       respondedAt: null,
       respondedByAccountId: null,
-      resourceConversationByConversationId: null,
+      resourceConversationsByResourceBidId: { nodes: [] },
       accountByBidderAccountId: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" },
       resourceByResourceId: makeResource(CREATOR_ACCOUNT_ID)
     };
@@ -249,7 +249,7 @@ describe("BidsPage navigation links", () => {
       updatedAt: NOW,
       respondedAt: null,
       respondedByAccountId: null,
-      resourceConversationByConversationId: { id: CONVERSATION_ID },
+      resourceConversationsByResourceBidId: { nodes: [{ id: CONVERSATION_ID }] },
       accountByBidderAccountId: { id: BIDDER_ACCOUNT_ID, displayName: "Bidder", externalSubject: "bidder-sub" },
       resourceByResourceId: makeResource("acct-me")
     };
@@ -279,7 +279,7 @@ describe("BidsPage navigation links", () => {
       updatedAt: NOW,
       respondedAt: null,
       respondedByAccountId: null,
-      resourceConversationByConversationId: null,
+      resourceConversationsByResourceBidId: { nodes: [] },
       accountByBidderAccountId: { id: BIDDER_ACCOUNT_ID, displayName: "Bidder", externalSubject: "bidder-sub" },
       resourceByResourceId: makeResource("acct-me")
     };
