@@ -245,7 +245,7 @@ begin
     where r.id = publish_resource.resource_id
       and (
         r.creator_account_id = v_account_id
-        or app_private.is_manager()
+        or app_private.is_admin()
       )
     returning * into v_resource;
 

@@ -67,26 +67,6 @@ type NotificationsOverviewData = {
   allAccountNotifications: {
     nodes: AccountNotificationNode[];
   };
-  allNeedClaims: {
-    nodes: Array<{
-      id: string;
-      needId: string;
-      needByNeedId: {
-        id: string;
-        title: string;
-      } | null;
-    }>;
-  };
-  allResourceBids: {
-    nodes: Array<{
-      id: string;
-      resourceId: string;
-      resourceByResourceId: {
-        id: string;
-        title: string;
-      } | null;
-    }>;
-  };
 };
 
 type UnifiedNotification = {
@@ -199,19 +179,12 @@ export default function NotificationsPage() {
   const [markAllRead, { loading: markAllLoading }] = useMutation(MARK_ALL_NOTIFICATIONS_READ_MUTATION);
 
   const items = useMemo<UnifiedNotification[]>(() => {
-    const needTitleByClaimId = new Map(
-      (data?.allNeedClaims.nodes ?? []).map(claim => [claim.id, claim.needByNeedId?.title ?? null] as const)
-    );
-    const resourceTitleByBidId = new Map(
-      (data?.allResourceBids.nodes ?? []).map(bid => [bid.id, bid.resourceByResourceId?.title ?? null] as const)
-    );
-
     const needItems: UnifiedNotification[] = (data?.allNeedClaimNotifications.nodes ?? []).map(notification => {
       const payload = notification.payload ?? {};
-      const needTitle = needTitleByClaimId.get(notification.needClaimId) ?? null;
       const normalizedPayload = {
         ...payload,
-        needName: asText(payload.needName) ?? needTitle
+        needClaimId: notification.needClaimId,
+        needName: asText(payload.needName)
       };
       const baseNotification: UnifiedNotification = {
         id: notification.id,
@@ -233,10 +206,9 @@ export default function NotificationsPage() {
 
     const resourceItems: UnifiedNotification[] = (data?.allResourceBidNotifications.nodes ?? []).map(notification => {
       const payload = notification.payload ?? {};
-      const resourceTitle = resourceTitleByBidId.get(notification.resourceBidId) ?? null;
       const normalizedPayload = {
         ...payload,
-        resourceName: asText(payload.resourceName) ?? resourceTitle
+        resourceName: asText(payload.resourceName)
       };
       const baseNotification: UnifiedNotification = {
         id: notification.id,
@@ -283,8 +255,6 @@ export default function NotificationsPage() {
     data?.allNeedClaimNotifications.nodes,
     data?.allResourceBidNotifications.nodes,
     data?.allAccountNotifications.nodes,
-    data?.allNeedClaims.nodes,
-    data?.allResourceBids.nodes,
     t
   ]);
 

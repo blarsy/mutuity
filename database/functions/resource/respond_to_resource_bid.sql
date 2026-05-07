@@ -42,7 +42,7 @@ begin
     raise exception using message = 'Resource bid not found';
   end if;
 
-  if not app_private.is_manager() and v_context.resource_creator_account_id <> v_account_id then
+  if not app_private.is_admin() and v_context.resource_creator_account_id <> v_account_id then
     raise exception using message = 'Only the resource creator can respond to bids';
   end if;
 

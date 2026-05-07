@@ -10,8 +10,8 @@ declare
   v_manager_account_id uuid;
   v_campaign_status app_public.campaign_moderation_status;
 begin
-  if not app_private.is_manager() then
-    raise exception using message = 'Only managers can add moderation notes';
+  if not app_private.is_admin() then
+    raise exception using message = 'Only admins can add moderation notes';
   end if;
 
   v_manager_account_id := app_private.current_account_id();

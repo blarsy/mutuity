@@ -5,7 +5,6 @@
   "loading": "Loading your claims…",
   "sentCount": "{{count}} sent",
   "receivedCount": "{{count}} received",
-  "notificationsCount": "{{count}} notifications",
   "noDateYet": "No update yet",
   "sentSection": "Claims you sent",
   "receivedSection": "Claims on your needs",

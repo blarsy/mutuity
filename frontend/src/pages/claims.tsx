@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -8,13 +8,13 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/AuthProvider";
 import { conversationThreadUrl } from "../features/chat/chatRouting";
 import { useRequireAuth } from "../features/auth/requireAuth";
-import { ClaimNotificationsPanel } from "../features/needs/ClaimNotificationsPanel";
 import {
   CANCEL_NEED_CLAIM_MUTATION,
   DECLINE_NEED_CLAIM_MUTATION,
   SETTLE_NEED_CLAIM_MUTATION,
   VIEWER_CLAIM_OVERVIEW_QUERY
 } from "../features/needs/needClaims.queries";
+import { NeedClaimManagementPage } from "../features/needs/NeedClaimManagementPage";
 import { NeedClaimStatusChip } from "../features/needs/NeedClaimStatusChip";
 import { NeedCard } from "../features/ui/NeedCard";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
@@ -46,19 +46,6 @@ type ClaimOverviewNode = {
   };
 };
 
-type ClaimNotificationNode = {
-  id: string;
-  needClaimId: string;
-  eventType: string;
-  payload: {
-    needId?: string;
-    claimerAccountId?: string;
-    status?: string;
-  };
-  createdAt: string;
-  readAt: string | null;
-};
-
 type ViewerClaimOverviewData = {
   currentTokenBalance: number | null;
   sentNeedClaims: {
@@ -66,9 +53,6 @@ type ViewerClaimOverviewData = {
   };
   receivedNeedClaims: {
     nodes: ClaimOverviewNode[];
-  };
-  allNeedClaimNotifications: {
-    nodes: ClaimNotificationNode[];
   };
 };
 
@@ -151,7 +135,21 @@ export default function ClaimsPage() {
       (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
     );
   }, [data?.sentNeedClaims.nodes, data?.receivedNeedClaims.nodes]);
-  const notifications = data?.allNeedClaimNotifications.nodes ?? [];
+
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
+    const claimId = typeof router.query.claimId === "string" ? router.query.claimId : null;
+    if (!claimId) {
+      return;
+    }
+
+    if (allClaims.some(claim => claim.id === claimId)) {
+      selectClaim(claimId);
+    }
+  }, [allClaims, router.isReady, router.query.claimId]);
 
   const applyFilter = (claims: ClaimOverviewNode[], filter: "active" | "inactive" | "all") => {
     if (filter === "active") return claims.filter(c => c.status === "OPEN");
@@ -198,24 +196,22 @@ export default function ClaimsPage() {
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Chip color="primary" label={t("sentCount", { count: sentAll.length })} />
             <Chip color="secondary" label={t("receivedCount", { count: receivedAll.length })} />
-            <Chip color="info" label={t("notificationsCount", { count: notifications.length })} />
           </Stack>
 
           {loading && !data ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
-          <ClaimNotificationsPanel
-            claims={allClaims}
-            currentAccountId={currentAccountId ?? ""}
-            notifications={notifications}
-            onClaimsChanged={() => {
-              void refetch();
-            }}
-            onSelectClaim={claimId => {
-              selectClaim(claimId);
-            }}
-            selectedClaimId={selectedClaimId}
-          />
+          {selectedClaimId ? (
+            <Box id="claim-management-panel" sx={{ scrollMarginTop: 24 }}>
+              <NeedClaimManagementPage
+                claimId={selectedClaimId}
+                currentAccountId={currentAccountId ?? ""}
+                onClaimsChanged={() => {
+                  void refetch();
+                }}
+              />
+            </Box>
+          ) : null}
 
           <Stack spacing={2}>
             <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>

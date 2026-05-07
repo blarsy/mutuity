@@ -65,10 +65,6 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({
   useAccountEventSignal: jest.fn()
 }));
 
-jest.mock("../../src/features/needs/ClaimNotificationsPanel", () => ({
-  ClaimNotificationsPanel: () => createElement("div", null, "notifications")
-}));
-
 jest.mock("../../src/features/ui/NeedCard", () => ({
   NeedCard: ({ title, actions, footer }: { title: string; actions: ReactNode; footer: ReactNode }) =>
     createElement("section", { "data-testid": "need-card" },

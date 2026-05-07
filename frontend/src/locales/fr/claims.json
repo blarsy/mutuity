@@ -5,7 +5,6 @@
   "loading": "Chargement de vos demandes…",
   "sentCount": "{{count}} envoyées",
   "receivedCount": "{{count}} reçues",
-  "notificationsCount": "{{count}} notifications",
   "noDateYet": "Pas encore de mise à jour",
   "sentSection": "Demandes envoyées",
   "receivedSection": "Demandes sur vos besoins",

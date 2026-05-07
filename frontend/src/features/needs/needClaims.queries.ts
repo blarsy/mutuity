@@ -56,16 +56,6 @@ export const VIEWER_SENT_CLAIMS_QUERY = gql`
         }
       }
     }
-    allNeedClaimNotifications(first: 30) {
-      nodes {
-        id
-        needClaimId
-        eventType
-        payload
-        createdAt
-        readAt
-      }
-    }
   }
 `;
 
@@ -183,16 +173,6 @@ export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
           createdAt
           settledByAccountId
         }
-      }
-    }
-    allNeedClaimNotifications(first: 30) {
-      nodes {
-        id
-        needClaimId
-        eventType
-        payload
-        createdAt
-        readAt
       }
     }
   }

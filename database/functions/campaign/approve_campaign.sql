@@ -6,8 +6,8 @@ declare
   v_campaign app_public.campaign;
   v_manager_account_id uuid;
 begin
-  if not app_private.is_manager() then
-    raise exception using message = 'Only managers can approve campaigns';
+  if not app_private.is_admin() then
+    raise exception using message = 'Only admins can approve campaigns';
   end if;
 
   v_manager_account_id := app_private.current_account_id();

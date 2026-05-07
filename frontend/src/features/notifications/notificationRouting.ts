@@ -7,11 +7,12 @@ function asText(value: unknown) {
 export function notificationUrlForEvent(eventType: string, payload: NotificationPayload) {
   const campaignId = asText(payload.campaignId);
   const creatorName = asText(payload.creatorName);
+  const needClaimId = asText(payload.needClaimId);
 
   switch (eventType) {
     case "claim_created":
     case "claim_settled":
-      return "/claims";
+      return needClaimId ? `/claims?claimId=${encodeURIComponent(needClaimId)}` : "/claims";
     case "resource_bid_created":
     case "resource_bid_expiring_soon":
     case "resource_bid_accepted":

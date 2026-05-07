@@ -9,8 +9,8 @@ declare
   v_deleted_resource integer := 0;
   v_deleted_account integer := 0;
 begin
-  if not app_private.is_manager() then
-    raise exception using message = 'Only managers can trigger notification cleanup';
+  if not app_private.is_admin() then
+    raise exception using message = 'Only admins can trigger notification cleanup';
   end if;
 
   delete from app_public.need_claim_notification

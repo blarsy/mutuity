@@ -5,6 +5,10 @@
 **Status**: Draft  
 **Input**: User direction plus audit of the existing claims workspace and the already implemented need-claim lifecycle.
 
+## Notification Semantics
+
+In this specification, the term `notification` means an in-app notification persisted in the app-wide notification system and visible from the notifications page (notification center). It does not mean email-only or push-only delivery.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Account Browses Sent And Received Claims (Priority: P1)
@@ -136,6 +140,12 @@ As a claimer or need creator, I want open claims to be closed consistently when 
 - **NeedClaimWorkspaceFilter**: A section-scoped tri-state filter with values `active`, `inactive`, and `all`.
 - **NeedClaimSettlementEffect**: The one-time token transfer that occurs only when a claim is settled.
 - **NeedClaimNotificationRule**: A deterministic notification rule describing who gets notified for explicit and automatic claim lifecycle events.
+
+## Notification Delivery Scope
+
+- Unless explicitly stated otherwise, every claim-related notification in this feature MUST be created in the app-wide in-app notification center data model.
+- Notifications created by this feature MUST be visible from the notifications page for the targeted recipient account.
+- Additional channels (email/push) are optional complements and are out of scope for satisfying notification requirements in this spec.
 
 ## Success Criteria *(mandatory)*
 

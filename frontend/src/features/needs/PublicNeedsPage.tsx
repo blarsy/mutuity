@@ -10,7 +10,6 @@ import {
   CardContent,
   Chip,
   Container,
-  Divider,
   Stack,
   TextField,
   Typography
@@ -18,11 +17,9 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
-import { LogoutButton } from "../auth/LogoutButton";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
-import { ClaimNotificationsPanel } from "./ClaimNotificationsPanel";
 import { NeedClaimDialog } from "./NeedClaimDialog";
 import { getBrowserLocation } from "./locationFallback";
 import { VIEWER_CLAIM_OVERVIEW_QUERY } from "./needClaims.queries";
@@ -82,28 +79,12 @@ type ClaimOverviewNode = {
   } | null;
 };
 
-type ClaimNotificationNode = {
-  id: string;
-  needClaimId: string;
-  eventType: string;
-  payload: {
-    needId?: string;
-    claimerAccountId?: string;
-    status?: string;
-  };
-  createdAt: string;
-  readAt: string | null;
-};
-
 type ViewerClaimOverviewData = {
   sentNeedClaims: {
     nodes: ClaimOverviewNode[];
   };
   receivedNeedClaims: {
     nodes: ClaimOverviewNode[];
-  };
-  allNeedClaimNotifications: {
-    nodes: ClaimNotificationNode[];
   };
 };
 
@@ -155,12 +136,8 @@ export default function PublicNeedsPage() {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t } = useTranslation("needs");
-  const createNeedHref = session.authenticated
-    ? "/needs/create"
-    : "/login?next=%2Fneeds%2Fcreate";
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
-  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [locationStatus, setLocationStatus] = useState(
     "browse.locationFallbackStatus"
   );
@@ -195,7 +172,6 @@ export default function PublicNeedsPage() {
   );
   const {
     data: claimOverviewData,
-    error: claimOverviewError,
     refetch: refetchClaimOverview
   } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
     skip: !session.authenticated,
@@ -206,8 +182,6 @@ export default function PublicNeedsPage() {
   const needs = data?.searchNeeds.nodes ?? [];
   const sentClaims = claimOverviewData?.sentNeedClaims.nodes ?? [];
   const receivedClaims = claimOverviewData?.receivedNeedClaims.nodes ?? [];
-  const claims = [...sentClaims, ...receivedClaims];
-  const notifications = claimOverviewData?.allNeedClaimNotifications.nodes ?? [];
   const myClaimsByNeedId = new Map(
     sentClaims.map(claim => [claim.needId, claim] as const)
   );
@@ -223,7 +197,6 @@ export default function PublicNeedsPage() {
     });
 
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
-  const claimOverviewMessage = getUserFacingGraphQLErrorMessage(claimOverviewError);
 
   const toggleFilter = (key: ToggleFilterKey) => {
     setFilters(current => ({
@@ -232,8 +205,7 @@ export default function PublicNeedsPage() {
     }));
   };
 
-  const handleClaimed = (claimId: string) => {
-    setSelectedClaimId(claimId);
+  const handleClaimed = (_claimId: string) => {
     void refetchClaimOverview();
   };
 
@@ -250,15 +222,9 @@ export default function PublicNeedsPage() {
             <Typography component="h1" gutterBottom variant="h4">
               {t("browse.title")}
             </Typography>
-            <Typography color="text.secondary">
-              {t("browse.subtitle")}
-            </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href={createNeedHref} variant="contained">
-              {t("browse.addButton")}
-            </Button>
             {!session.authenticated &&(
               <Button component={NextLink} href="/login?next=%2Fneeds" variant="contained">
                 {t("browse.signInButton")}
@@ -273,32 +239,9 @@ export default function PublicNeedsPage() {
           </Alert>
         )}
 
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t("browse.sortDescription")}
-        </Alert>
-
         <Alert severity="info" sx={{ mb: 3 }}>
           {t(locationStatus)}
         </Alert>
-
-        {claimOverviewMessage ? (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {claimOverviewMessage}
-          </Alert>
-        ) : null}
-
-        {session.authenticated && session.account?.id ? (
-          <ClaimNotificationsPanel
-            claims={claims}
-            currentAccountId={session.account.id}
-            notifications={notifications}
-            selectedClaimId={selectedClaimId}
-            onClaimsChanged={() => {
-              void refetchClaimOverview();
-            }}
-            onSelectClaim={claimId => setSelectedClaimId(claimId)}
-          />
-        ) : null}
 
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
@@ -353,39 +296,42 @@ export default function PublicNeedsPage() {
             const ownClaim = myClaimsByNeedId.get(need.id);
             const isCreator = session.account?.id === need.creatorAccountId;
             const incomingClaimCount = incomingClaimCountsByNeedId.get(need.id) ?? 0;
-            const firstIncomingClaim = claims.find(
-              claim => claim.needId === need.id && claim.needByNeedId.creatorAccountId === session.account?.id
-            );
 
             return (
               <NeedCard
                 actions={
-                  session.authenticated ? (
-                    isCreator ? (
-                      <Button
-                        disabled={!firstIncomingClaim}
-                        onClick={() => setSelectedClaimId(firstIncomingClaim?.id ?? null)}
-                        variant="outlined"
-                      >
-                        {firstIncomingClaim ? t("browse.manageIncomingClaims") : t("browse.noClaimsYet")}
-                      </Button>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                    {session.authenticated ? (
+                      isCreator ? (
+                        <Button
+                          component={NextLink}
+                          disabled={incomingClaimCount === 0}
+                          href="/claims"
+                          variant="outlined"
+                        >
+                          {incomingClaimCount > 0 ? t("browse.manageIncomingClaims") : t("browse.noClaimsYet")}
+                        </Button>
+                      ) : (
+                        <NeedClaimDialog
+                          existingClaim={ownClaim}
+                          needId={need.id}
+                          needTitle={need.title}
+                          onClaimed={handleClaimed}
+                        />
+                      )
                     ) : (
-                      <NeedClaimDialog
-                        existingClaim={ownClaim}
-                        needId={need.id}
-                        needTitle={need.title}
-                        onClaimed={handleClaimed}
-                      />
-                    )
-                  ) : (
-                    <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
-                      {t("browse.signInToClaim")}
+                      <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
+                        {t("browse.signInToClaim")}
+                      </Button>
+                    )}
+                    <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
+                      {t("browse.viewDetails")}
                     </Button>
-                  )
+                  </Stack>
                 }
                 chips={
                   <>
-                    {buildNeedTags(need, t).map(tag => (
+                    {buildNeedTags(need, t).filter(tag => tag.trim().length > 0).map(tag => (
                       <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                     ))}
                     {need.proposedTopesAmount ? (
@@ -415,15 +361,6 @@ export default function PublicNeedsPage() {
                         ) : null}
                       </Box>
                     ) : null}
-
-                    <Divider />
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                      <Typography variant="body2">{t("browse.weightedScore")}: {need.weightedScore}</Typography>
-                      <Typography variant="body2">{t("browse.closeness")}: {need.closenessScore}</Typography>
-                      <Typography variant="body2">{t("browse.ease")}: {need.easeOfSetupScore}</Typography>
-                      <Typography variant="body2">{t("browse.expiry")}: {need.expirationScore}</Typography>
-                    </Stack>
 
                     <Typography color="text.secondary" variant="caption">
                       {need.location} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))} • {t("browse.queryOrigin")}: {need.queryLatitude}, {need.queryLongitude}

@@ -31,26 +31,6 @@ export const NOTIFICATIONS_OVERVIEW_QUERY = gql`
         readAt
       }
     }
-    allNeedClaims(first: $first) {
-      nodes {
-        id
-        needId
-        needByNeedId {
-          id
-          title
-        }
-      }
-    }
-    allResourceBids(first: $first) {
-      nodes {
-        id
-        resourceId
-        resourceByResourceId {
-          id
-          title
-        }
-      }
-    }
   }
 `;
 
