@@ -188,9 +188,6 @@ export default function ClaimsPage() {
             <Typography component="h1" gutterBottom variant="h4">
               {t("workspaceTitle")}
             </Typography>
-            <Typography color="text.secondary">
-              {t("workspaceSubtitle")}
-            </Typography>
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
