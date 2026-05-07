@@ -90,14 +90,14 @@
 
 - [x] T028 [US4] Wire the expired-needs worker into the current worker schedule and task registry for claim auto-declines
 - [x] T029 [US4] Apply the notification matrix for need-expiry declines, need-deactivation declines, and creator-triggered declines in SQL-owned claim lifecycle functions
-- [ ] T030 [US4] Ensure the claims workspace refreshes and presents the correct decline reasons after automatic need-driven claim closure
+- [x] T030 [US4] Ensure the claims workspace refreshes and presents the correct decline reasons after automatic need-driven claim closure
 
 ## Phase 7: Polish & Validation
 
 - [x] T031 [P] Ensure claim-related copy remains i18n-backed, including decline reasons and insufficient-balance messaging, in `frontend/src/i18n/messages/`
 - [x] T032 [P] Add responsive layout polish for the side-by-side sent/received claims workspace on small screens in `frontend/src/pages/claims.tsx`
-- [ ] T033 Run end-to-end verification for claim browsing, lifecycle actions, settlement guards, auto-declines, and conversation links
-- [ ] T034 Capture any remaining differences between the old claims workflow and the rebuilt MVP in `specs/008-claims-workspace-and-settlement/spec.md`
+- [x] T033 Run end-to-end verification for claim browsing, lifecycle actions, settlement guards, auto-declines, and conversation links
+- [x] T034 Capture any remaining differences between the old claims workflow and the rebuilt MVP in `specs/008-claims-workspace-and-settlement/spec.md`
 
 ## Dependencies & Execution Order
 

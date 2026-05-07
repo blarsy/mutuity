@@ -46,6 +46,8 @@
   "inactive": {
     "settled": "Settled on {{date}}",
     "declined": "Declined on {{date}}",
+    "declinedNeedDeactivated": "Declined on {{date}} — need was deactivated",
+    "declinedNeedExpired": "Declined on {{date}} — need expired",
     "withdrawn": "Cancelled on {{date}}",
     "expired": "Expired — need no longer active"
   },

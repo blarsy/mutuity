@@ -46,6 +46,8 @@
   "inactive": {
     "settled": "Clôturée le {{date}}",
     "declined": "Refusée le {{date}}",
+    "declinedNeedDeactivated": "Refusée le {{date}} — besoin désactivé",
+    "declinedNeedExpired": "Refusée le {{date}} — besoin expiré",
     "withdrawn": "Annulée le {{date}}",
     "expired": "Expirée — besoin inactif"
   },

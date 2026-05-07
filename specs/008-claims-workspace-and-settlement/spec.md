@@ -147,6 +147,13 @@ As a claimer or need creator, I want open claims to be closed consistently when 
 - Notifications created by this feature MUST be visible from the notifications page for the targeted recipient account.
 - Additional channels (email/push) are optional complements and are out of scope for satisfying notification requirements in this spec.
 
+## Legacy Workflow Differences (Captured)
+
+- The old inline claim notification panel on `/claims` has been removed; claim lifecycle notifications are now centralized in the global notifications center and deep-link back into focused claim management.
+- Need-driven automatic closures are now surfaced via explicit inactive reasons in the rebuilt workspace (`need deactivated` and `need expired`) using in-app notification event context.
+- For historical records where legacy decline notifications lack an automatic-closure reason payload, the workspace falls back to the generic declined inactive explanation.
+- Legacy `expired` claim status remains supported as an inactive compatibility state; new claim inactivity still follows the product rule (withdrawn/declined/settled or need-driven closure).
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes

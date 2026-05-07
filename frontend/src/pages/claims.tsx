@@ -46,6 +46,17 @@ type ClaimOverviewNode = {
   };
 };
 
+type ClaimNotificationNode = {
+  id: string;
+  needClaimId: string;
+  eventType: string;
+  payload: {
+    reason?: string;
+  } | null;
+  createdAt: string;
+  readAt: string | null;
+};
+
 type ViewerClaimOverviewData = {
   currentTokenBalance: number | null;
   sentNeedClaims: {
@@ -54,7 +65,46 @@ type ViewerClaimOverviewData = {
   receivedNeedClaims: {
     nodes: ClaimOverviewNode[];
   };
+  allNeedClaimNotifications: {
+    nodes: ClaimNotificationNode[];
+  };
 };
+
+type AutoClosureReason = "need_deactivated" | "need_expired";
+
+export function buildAutoClosureReasonByClaimId(notifications: ClaimNotificationNode[]): Map<string, AutoClosureReason> {
+  const latestByClaimId = new Map<string, { createdAt: string; reason: AutoClosureReason }>();
+
+  for (const notification of notifications) {
+    let reason: AutoClosureReason | null = null;
+    if (notification.eventType === "claim_need_deactivated") {
+      reason = "need_deactivated";
+    } else if (notification.eventType === "claim_expired") {
+      reason = "need_expired";
+    } else if (
+      notification.eventType === "claim_declined"
+      && (notification.payload?.reason === "need_deactivated" || notification.payload?.reason === "need_expired")
+    ) {
+      reason = notification.payload.reason;
+    }
+
+    if (!reason) {
+      continue;
+    }
+
+    const previous = latestByClaimId.get(notification.needClaimId);
+    if (!previous || new Date(notification.createdAt).getTime() >= new Date(previous.createdAt).getTime()) {
+      latestByClaimId.set(notification.needClaimId, { createdAt: notification.createdAt, reason });
+    }
+  }
+
+  const mapped = new Map<string, AutoClosureReason>();
+  for (const [claimId, value] of latestByClaimId.entries()) {
+    mapped.set(claimId, value.reason);
+  }
+
+  return mapped;
+}
 
 function formatDate(value: string | null, noDateLabel: string) {
   if (!value) {
@@ -64,11 +114,36 @@ function formatDate(value: string | null, noDateLabel: string) {
   return new Date(value).toLocaleString();
 }
 
-function InactiveExplanation({ claim, t }: { claim: ClaimOverviewNode; t: (k: string, opts?: Record<string, unknown>) => string }) {
+function InactiveExplanation({
+  claim,
+  t,
+  autoClosureReason
+}: {
+  claim: ClaimOverviewNode;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  autoClosureReason?: AutoClosureReason;
+}) {
   const { status } = claim;
   const key = status.toLowerCase() as "settled" | "declined" | "withdrawn" | "expired";
   const decisionDate = claim.settledAt ?? claim.updatedAt;
   const severity = status === "SETTLED" ? "success" : status === "DECLINED" ? "error" : "warning";
+
+  if (key === "declined" && autoClosureReason === "need_deactivated") {
+    return (
+      <Alert severity={severity} sx={{ py: 0.5 }}>
+        {t("inactive.declinedNeedDeactivated", { date: formatDate(decisionDate, "") })}
+      </Alert>
+    );
+  }
+
+  if (key === "declined" && autoClosureReason === "need_expired") {
+    return (
+      <Alert severity={severity} sx={{ py: 0.5 }}>
+        {t("inactive.declinedNeedExpired", { date: formatDate(decisionDate, "") })}
+      </Alert>
+    );
+  }
+
   const opts = key === "expired" ? {} : { date: formatDate(decisionDate, "") };
   return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, opts)}</Alert>;
 }
@@ -159,6 +234,10 @@ export default function ClaimsPage() {
 
   const sentAll = allClaims.filter(claim => claim.claimerAccountId === currentAccountId);
   const receivedAll = allClaims.filter(claim => claim.needByNeedId.creatorAccountId === currentAccountId);
+  const autoClosureReasonByClaimId = useMemo(
+    () => buildAutoClosureReasonByClaimId(data?.allNeedClaimNotifications?.nodes ?? []),
+    [data?.allNeedClaimNotifications?.nodes]
+  );
   const sentFiltered = applyFilter(sentAll, sentFilter);
   const receivedFiltered = applyFilter(receivedAll, receivedFilter);
   const sentClaims = sentFiltered.slice(0, sentPageSize);
@@ -302,7 +381,13 @@ export default function ClaimsPage() {
                       }
                       footer={
                         <Stack spacing={0.5}>
-                          {!isOpen ? <InactiveExplanation claim={claim} t={t} /> : null}
+                          {!isOpen ? (
+                            <InactiveExplanation
+                              autoClosureReason={autoClosureReasonByClaimId.get(claim.id)}
+                              claim={claim}
+                              t={t}
+                            />
+                          ) : null}
                           <Typography color="text.secondary" variant="body2">
                             {t("sent")}: {formatDate(claim.createdAt, t("noDateYet"))}
                             {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"))}` : ""}
@@ -446,7 +531,13 @@ export default function ClaimsPage() {
                       }
                       footer={
                         <Stack spacing={0.5}>
-                          {!isOpen ? <InactiveExplanation claim={claim} t={t} /> : null}
+                            {!isOpen ? (
+                              <InactiveExplanation
+                                autoClosureReason={autoClosureReasonByClaimId.get(claim.id)}
+                                claim={claim}
+                                t={t}
+                              />
+                            ) : null}
                           <Typography color="text.secondary" variant="body2">
                             {t("received")}: {formatDate(claim.createdAt, t("noDateYet"))}
                             {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"))}` : ""}

@@ -199,7 +199,62 @@ function setupMocks(claims: ClaimNode[], balance = 200) {
   });
 }
 
-import ClaimsPage from "../../src/pages/claims";
+import ClaimsPage, { buildAutoClosureReasonByClaimId } from "../../src/pages/claims";
+
+describe("buildAutoClosureReasonByClaimId", () => {
+  it("maps claim_need_deactivated to need_deactivated", () => {
+    const reasons = buildAutoClosureReasonByClaimId([
+      {
+        id: "n1",
+        needClaimId: "claim-1",
+        eventType: "claim_need_deactivated",
+        payload: { reason: "need_deactivated" },
+        createdAt: "2026-05-06T10:00:00.000Z",
+        readAt: null
+      }
+    ]);
+
+    expect(reasons.get("claim-1")).toBe("need_deactivated");
+  });
+
+  it("prefers the latest relevant auto-closure notification", () => {
+    const reasons = buildAutoClosureReasonByClaimId([
+      {
+        id: "n1",
+        needClaimId: "claim-2",
+        eventType: "claim_need_deactivated",
+        payload: { reason: "need_deactivated" },
+        createdAt: "2026-05-06T10:00:00.000Z",
+        readAt: null
+      },
+      {
+        id: "n2",
+        needClaimId: "claim-2",
+        eventType: "claim_expired",
+        payload: { reason: "need_expired" },
+        createdAt: "2026-05-06T11:00:00.000Z",
+        readAt: null
+      }
+    ]);
+
+    expect(reasons.get("claim-2")).toBe("need_expired");
+  });
+
+  it("ignores manual claim_declined notifications without automatic reason", () => {
+    const reasons = buildAutoClosureReasonByClaimId([
+      {
+        id: "n1",
+        needClaimId: "claim-3",
+        eventType: "claim_declined",
+        payload: {},
+        createdAt: "2026-05-06T10:00:00.000Z",
+        readAt: null
+      }
+    ]);
+
+    expect(reasons.has("claim-3")).toBe(false);
+  });
+});
 
 describe("ClaimsPage: auto-declined sent claims (DECLINED from need deactivation/expiry)", () => {
   it("auto-declined sent claim is hidden under default active filter (sentFilterEmpty shown)", () => {

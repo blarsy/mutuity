@@ -175,6 +175,16 @@ export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
         }
       }
     }
+    allNeedClaimNotifications(first: 100) {
+      nodes {
+        id
+        needClaimId
+        eventType
+        payload
+        createdAt
+        readAt
+      }
+    }
   }
 `;
 

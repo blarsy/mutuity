@@ -29,7 +29,7 @@ Cadence: update at least once per workday
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
-| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 65% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 80% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
@@ -157,7 +157,7 @@ Goal: ensure token movement correctness for claims and bids lifecycle.
 Checkpoints:
 
 - [x] Bid workspace and settlement actions implemented.
-- [ ] Claim workspace and settlement actions implemented.
+- [x] Claim workspace and settlement actions implemented.
 - [ ] Ledger movements are auditable and idempotent.
 - [ ] Concurrency safety validated for settlement-sensitive operations.
 
@@ -238,9 +238,9 @@ Current milestone: P5-M2 - Claims workspace parity and settlement correctness (0
 
 This week priorities:
 
-1. Complete claims workspace action parity (cancel/decline/settle) directly from `/claims` cards.
-2. Add backend/frontend coverage for need-driven automatic claim declines (need expiry/deactivation paths).
-3. Validate settlement/refund ledger correctness and concurrency behavior for claim lifecycle operations.
+1. Validate settlement/refund ledger correctness and idempotency behavior for claim lifecycle operations.
+2. Add/expand concurrency verification for settlement-sensitive claim operations.
+3. Prepare P5 closeout evidence and decide P6 conversation-layer kickoff scope.
 
 ## Session Log
 
@@ -277,6 +277,8 @@ This week priorities:
 | 2026-04-20 | P4 execution | Completed T032 by replacing the resources workspace placeholder with an authenticated paginated list (page size 10), infinite-scroll loading, and most-recently-updated-first presentation in UI, validated by frontend GraphQL codegen + typecheck. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | GraphQL schema currently does not expose `ResourcesOrderBy.UPDATED_AT_DESC`; UI enforces updated-time descending after each page load while backend pagination uses available ordering. | Implement T033 (resource workspace Edit/Delete actions with soft-delete confirmation). |
 | 2026-04-20 | P4 execution | Completed T033 by adding workspace card actions for Edit and Delete: Edit now opens the resource form in modification mode with pre-populated values, while Delete opens a confirmation dialog and performs a soft delete (`isActive=false`) before refetching the workspace list. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/CreateResourcePage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C frontend run graphql:schema; npm -C frontend run typecheck | None | Implement T034 fixed Add resource action on resources workspace page. |
 | 2026-04-20 | P4 execution | Completed T034 by adding a fixed-position `Add resource` button on the resources workspace page so creation entry remains visible at all scroll positions and links directly to `/resources/create`. | frontend/src/pages/resources/manage.tsx; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Begin Phase 7 with T035 (rename create-need page to edit-need page for create+modify mode). |
+| 2026-05-07 | P5 execution | Completed T030 by wiring claim notification-driven auto-closure reasons into `/claims` so need-driven closures now show explicit inactive reasons, with refreshed query coverage and passing frontend tests. | frontend/src/pages/claims.tsx; frontend/src/features/needs/needClaims.queries.ts; frontend/src/locales/en/claims.json; frontend/src/locales/fr/claims.json; frontend/tests/claims/claim-auto-decline.spec.tsx; npm --workspace frontend run typecheck; npm --workspace frontend test -- --runInBand tests/claims/claim-auto-decline.spec.tsx | None | Execute T033 end-to-end verification sweep for claim browsing/actions/auto-declines/conversation links, then close T034 spec delta capture. |
+| 2026-05-07 | P5 execution | Completed T033 verification sweep and T034 legacy-vs-MVP delta capture for claims workspace: backend and frontend claim lifecycle suites are green, and remaining workflow differences are now codified in the feature spec. | npm --workspace backend test -- --runInBand tests/integration/claims-workspace.spec.ts tests/integration/claims-settlement.spec.ts tests/integration/claim-auto-decline.spec.ts; npm --workspace frontend test -- --runInBand tests/claims/claims-page.spec.tsx tests/claims/claim-actions.spec.tsx tests/claims/claim-navigation.spec.tsx tests/claims/claim-auto-decline.spec.tsx; specs/008-claims-workspace-and-settlement/spec.md; specs/008-claims-workspace-and-settlement/tasks.md | None | Shift to remaining P5 ledger idempotency/concurrency closure tasks. |
 | 2026-04-20 | P4 execution | Completed T035 by converting the need creation surface into an edit-capable page (`Edit need`) that supports both creation and modification modes: edit mode now preloads need data via `needById`, submits through `updateNeedById`, and keeps creation mode on the same route with mode-specific copy and actions. | frontend/src/features/needs/CreateNeedPage.tsx; frontend/src/features/needs/needs.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | Updating campaign linkage is intentionally create-only for now because campaign linking is modeled in the campaign-need relation rather than direct need patch fields. | Implement T036 (`updatedAt` propagation for need linked-property changes). |
 | 2026-04-21 | P4 execution | Completed T036 by adding need `updated_at` propagation for linked campaign-need updates and validating with integration coverage; resolved a surfaced runtime permission regression by hardening `is_account_email_verified` as `SECURITY DEFINER` so authenticated need creation no longer fails under RLS-restricted credentials access. | database/migrations/042_need_updated_at_linked_properties.sql; database/migrations/043_is_account_email_verified_security_definer.sql; backend/tests/integration/need-create.spec.ts; docker compose -f docker-compose.yml run --rm migrate; npm -C backend test -- --runInBand tests/integration/need-create.spec.ts | None | Start T037 (`Needs` workspace page with auth guard, pagination, infinite scroll, and updatedAt-desc ordering). |
 | 2026-04-21 | P4 execution | Completed T037 by replacing the needs workspace placeholder with an authenticated paginated list (page size 10), infinite-scroll loading, and most-recently-updated-first presentation in UI, validated by frontend GraphQL codegen + typecheck. | frontend/src/pages/needs/manage.tsx; frontend/src/features/needs/needs.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | GraphQL schema currently does not expose `NeedsOrderBy.UPDATED_AT_DESC`; UI enforces updated-time descending after each page load while backend pagination uses available ordering. | Implement T038 (needs workspace Edit/Delete actions with soft-delete confirmation). |
