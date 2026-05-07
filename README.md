@@ -56,6 +56,19 @@ createdb mutuity
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/mutuity ./database/migrate.sh
 ```
 
+Optional fast-path bootstrap (for fresh environments):
+
+```bash
+# 1) Export a consolidated schema snapshot from an up-to-date database
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/mutuity ./database/export_bootstrap_schema.sh database/bootstrap/schema.sql
+
+# 2) Initialize a fresh database from that snapshot and mark migrations as applied
+createdb mutuity_bootstrap
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/mutuity_bootstrap ./database/migrate.sh --bootstrap-file database/bootstrap/schema.sql
+```
+
+After bootstrap, keep using the normal migration flow for future changes.
+
 ### 4. Start services (3 terminals)
 
 Terminal A:
@@ -149,6 +162,16 @@ docker compose up --build -d postgres
 
 ```bash
 docker compose run --rm migrate
+```
+
+Optional bootstrap mode (fresh DB only):
+
+```bash
+# Export schema snapshot from a source DB
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/mutuity ./database/export_bootstrap_schema.sh database/bootstrap/schema.sql
+
+# Apply snapshot instead of replaying all historical migrations
+docker compose run --rm -e DATABASE_URL=postgres://postgres:postgres@postgres:5432/mutuity migrate --bootstrap-file database/bootstrap/schema.sql
 ```
 
 ### 3. Start API, worker, and frontend
