@@ -242,6 +242,17 @@ This week priorities:
 2. Add/expand concurrency verification for settlement-sensitive claim operations.
 3. Prepare P5 closeout evidence and decide P6 conversation-layer kickoff scope.
 
+## E2E Scenario Matrix (Manual Sanity)
+
+| Scenario ID | Spec Story | Scope | Suite | Test File | Status |
+|---|---|---|---|---|---|
+| E2E-002-US1 | 002 / US1 (needs discovery baseline) | Authenticated browse of active need listing | smoke | e2e/specs/002-needs-query-claiming/us1-needs-discovery.smoke.spec.ts | READY |
+| E2E-008-US1 | 008 / US1 (claims workspace browse) | Sent + received claim visibility on `/claims` | smoke | e2e/specs/008-claims-workspace-and-settlement/us1-claims-workspace.smoke.spec.ts | READY |
+
+Manual trigger command:
+
+`npm run test:e2e:sanity`
+
 ## Session Log
 
 | Date | Phase | What Was Done | Evidence (PR/Commit/Test) | Blockers | Next Step |

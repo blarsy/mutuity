@@ -7,3 +7,5 @@ coverage/
 frontend/tsconfig.tsbuildinfo
 .vscode/
 .DS_Store
+playwright-report/
+test-results/

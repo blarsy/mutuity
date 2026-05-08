@@ -274,6 +274,34 @@ npm test
 
 `npm run typecheck` now includes frontend GraphQL document validation via codegen.
 
+## Scripted E2E Scenarios (Manual Sanity)
+
+Mutuity now includes Playwright-based end-to-end scenarios tied to spec user stories.
+
+Install browser runtime once:
+
+```bash
+npm run test:e2e:install
+```
+
+Run smoke scenarios only:
+
+```bash
+npm run test:e2e:smoke
+```
+
+Run full E2E suite:
+
+```bash
+npm run test:e2e:full
+```
+
+One-command manual sanity run (starts local services, migrates, seeds deterministic smoke users/data, then runs smoke scenarios):
+
+```bash
+npm run test:e2e:sanity
+```
+
 ## Notes
 
 - GraphQL role/account simulation headers are supported in backend: `x-role`, `x-account-id`.
