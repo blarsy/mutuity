@@ -2,7 +2,11 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { ConversationHeader } from "../../src/features/chat/ConversationHeader";
-import { isComposerBodyReady } from "../../src/features/chat/ConversationThread";
+import {
+  isComposerBodyReady,
+  parseImageUrls,
+  MAX_IMAGE_ATTACHMENTS
+} from "../../src/features/chat/ConversationThread";
 
 // Minimal translation stub that echoes back the key.
 const t = (key: string) => key;
@@ -110,5 +114,39 @@ describe("isComposerBodyReady", () => {
   it("returns true for any non-blank text", () => {
     expect(isComposerBodyReady("Hello")).toBe(true);
     expect(isComposerBodyReady("  Hi  ")).toBe(true);
+  });
+});
+
+describe("parseImageUrls", () => {
+  it("parses newline-separated URLs", () => {
+    expect(parseImageUrls("https://a.com/1.png\nhttps://b.com/2.png")).toEqual([
+      "https://a.com/1.png",
+      "https://b.com/2.png"
+    ]);
+  });
+
+  it("parses comma-separated URLs", () => {
+    expect(parseImageUrls("https://a.com/1.png, https://b.com/2.png")).toEqual([
+      "https://a.com/1.png",
+      "https://b.com/2.png"
+    ]);
+  });
+
+  it("strips blank entries", () => {
+    expect(parseImageUrls("https://a.com/1.png\n\nhttps://b.com/2.png")).toEqual([
+      "https://a.com/1.png",
+      "https://b.com/2.png"
+    ]);
+  });
+
+  it(`caps output at ${MAX_IMAGE_ATTACHMENTS} entries`, () => {
+    const input = Array.from({ length: MAX_IMAGE_ATTACHMENTS + 3 }, (_, i) => `https://a.com/${i}.png`).join("\n");
+    const result = parseImageUrls(input);
+    expect(result).toHaveLength(MAX_IMAGE_ATTACHMENTS);
+  });
+
+  it("returns an empty array for blank input", () => {
+    expect(parseImageUrls("")).toEqual([]);
+    expect(parseImageUrls("   \n   ")).toEqual([]);
   });
 });

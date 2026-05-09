@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   CircularProgress,
+  Collapse,
   Divider,
   Fab,
   IconButton,
@@ -12,6 +13,7 @@ import {
   Tooltip,
   Typography
 } from "@mui/material";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useTranslation } from "react-i18next";
@@ -36,6 +38,20 @@ import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMe
 /** Returns true when the composer body is non-blank and a send can be attempted. */
 export function isComposerBodyReady(body: string): boolean {
   return body.trim().length > 0;
+}
+
+/**
+ * Parses a newline- or comma-separated image URL string into an ordered list.
+ * Returns at most MAX_IMAGE_ATTACHMENTS entries.
+ */
+export const MAX_IMAGE_ATTACHMENTS = 5;
+
+export function parseImageUrls(input: string): string[] {
+  return input
+    .split(/[\n,]/g)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .slice(0, MAX_IMAGE_ATTACHMENTS);
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -411,6 +427,8 @@ function MessageComposer({
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const [body, setBody] = useState("");
+  const [imageUrlsInput, setImageUrlsInput] = useState("");
+  const [showImageInput, setShowImageInput] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
@@ -419,16 +437,21 @@ function MessageComposer({
   const [sendNeedMessage] = useMutation<SendNeedMessageMutationData>(SEND_NEED_MESSAGE_MUTATION);
   const [sendClaimMessage] = useMutation(SEND_CLAIM_MESSAGE_MUTATION);
 
+  const parsedImageUrls = parseImageUrls(imageUrlsInput);
+  const tooManyImages = parsedImageUrls.length > MAX_IMAGE_ATTACHMENTS;
+  const canSend = isComposerBodyReady(body) && !tooManyImages;
+
   const handleSend = async () => {
     const trimmed = body.trim();
-    if (!trimmed) return;
+    if (!trimmed || tooManyImages) return;
+    const imageUrls = parsedImageUrls;
     setSending(true);
     setSendError(null);
     try {
       if (isResource && resourceConv) {
         if (resourceConv.resourceBidId) {
           await sendResourceMessage({
-            variables: { input: { resourceBidId: resourceConv.resourceBidId, body: trimmed, imageUrls: [] } }
+            variables: { input: { resourceBidId: resourceConv.resourceBidId, body: trimmed, imageUrls } }
           });
         } else {
           const otherAccountId =
@@ -441,7 +464,7 @@ function MessageComposer({
                 pResourceId: resourceConv.resourceId,
                 pOtherAccountId: otherAccountId,
                 pBody: trimmed,
-                pImageUrls: []
+                pImageUrls: imageUrls
               }
             }
           });
@@ -453,7 +476,7 @@ function MessageComposer({
               pResourceId: draftThread.contextId,
               pOtherAccountId: draftThread.otherAccountId,
               pBody: trimmed,
-              pImageUrls: []
+              pImageUrls: imageUrls
             }
           }
         });
@@ -468,7 +491,7 @@ function MessageComposer({
             input: {
               pNeedId: draftThread.contextId,
               pBody: trimmed,
-              pImageUrls: []
+              pImageUrls: imageUrls
             }
           }
         });
@@ -480,15 +503,17 @@ function MessageComposer({
       } else if (!isResource && claimConv) {
         if (claimConv.needClaimId) {
           await sendClaimMessage({
-            variables: { input: { needClaimId: claimConv.needClaimId, body: trimmed, imageUrls: [] } }
+            variables: { input: { needClaimId: claimConv.needClaimId, body: trimmed, imageUrls } }
           });
         } else {
           await sendNeedMessage({
-            variables: { input: { pNeedId: claimConv.needId, pBody: trimmed, pImageUrls: [] } }
+            variables: { input: { pNeedId: claimConv.needId, pBody: trimmed, pImageUrls: imageUrls } }
           });
         }
       }
       setBody("");
+      setImageUrlsInput("");
+      setShowImageInput(false);
       onSent();
     } catch (err: unknown) {
       setSendError(getUserFacingGraphQLErrorMessage(err as Error) ?? t("thread.sendError"));
@@ -500,7 +525,7 @@ function MessageComposer({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 
@@ -523,12 +548,21 @@ function MessageComposer({
           size="small"
           value={body}
         />
+        <Tooltip title={t("thread.attachImages")}>
+          <IconButton
+            color={showImageInput ? "primary" : "default"}
+            onClick={() => setShowImageInput(v => !v)}
+            size="small"
+          >
+            <AttachFileIcon />
+          </IconButton>
+        </Tooltip>
         <Tooltip title={t("thread.send")}>
           <span>
             <IconButton
               color="primary"
-              disabled={sending || !body.trim()}
-              onClick={handleSend}
+              disabled={sending || !canSend}
+              onClick={() => void handleSend()}
               size="small"
             >
               {sending ? <CircularProgress size={20} /> : <SendIcon />}
@@ -536,6 +570,26 @@ function MessageComposer({
           </span>
         </Tooltip>
       </Stack>
+      <Collapse in={showImageInput}>
+        <Box sx={{ mt: 1 }}>
+          <TextField
+            disabled={sending}
+            error={tooManyImages}
+            fullWidth
+            helperText={
+              tooManyImages
+                ? t("thread.tooManyImages", { max: MAX_IMAGE_ATTACHMENTS })
+                : t("thread.imageUrlsHint", { max: MAX_IMAGE_ATTACHMENTS })
+            }
+            maxRows={3}
+            multiline
+            onChange={e => setImageUrlsInput(e.target.value)}
+            placeholder={t("thread.imageUrlsPlaceholder")}
+            size="small"
+            value={imageUrlsInput}
+          />
+        </Box>
+      </Collapse>
       <Typography color="text.secondary" sx={{ mt: 0.5 }} variant="caption">
         {t("thread.sendHint")}
       </Typography>
