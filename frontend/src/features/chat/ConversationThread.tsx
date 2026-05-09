@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import NextLink from "next/link";
 import { useQuery, useMutation } from "@apollo/client/react";
 import {
   Alert,
@@ -8,13 +7,11 @@ import {
   Divider,
   Fab,
   IconButton,
-  Link,
   Stack,
   TextField,
   Tooltip,
   Typography
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useTranslation } from "react-i18next";
@@ -30,9 +27,16 @@ import {
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
   MARK_CLAIM_MESSAGES_READ_MUTATION
 } from "./chat.queries";
-import { conversationContextUrl } from "./chatRouting";
+import { ConversationHeader } from "./ConversationHeader";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
+
+/** Returns true when the composer body is non-blank and a send can be attempted. */
+export function isComposerBodyReady(body: string): boolean {
+  return body.trim().length > 0;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -245,7 +249,7 @@ export function ConversationThread({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
-      <ThreadHeader
+      <ConversationHeader
         contextId={contextId}
         contextTitle={contextTitle}
         kind={kind}
@@ -324,58 +328,6 @@ export function ConversationThread({
           t={t}
         />
       )}
-    </Box>
-  );
-}
-
-// ─── Thread header ────────────────────────────────────────────────────────────
-
-function ThreadHeader({
-  kind,
-  contextId,
-  contextTitle,
-  onBack,
-  t
-}: {
-  kind: "need" | "resource";
-  contextId: string | null;
-  contextTitle: string | null;
-  onBack?: () => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
-}) {
-  const contextUrl = contextId ? conversationContextUrl(kind, contextId) : null;
-
-  return (
-    <Box sx={{ alignItems: "center", display: "flex", gap: 1, minHeight: 56, px: 1.5, py: 1 }}>
-      {onBack && (
-        <Tooltip title={t("thread.back")}>
-          <IconButton onClick={onBack} size="small" sx={{ display: { sm: "none" } }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-      <Box sx={{ flex: 1, overflow: "hidden" }}>
-        {contextTitle && contextUrl ? (
-          <Link
-            color="text.primary"
-            component={NextLink}
-            href={contextUrl}
-            noWrap
-            sx={{ display: "block", fontWeight: 600 }}
-            underline="hover"
-            variant="subtitle2"
-          >
-            {contextTitle}
-          </Link>
-        ) : (
-          <Typography fontWeight={600} noWrap variant="subtitle2">
-            {contextTitle ?? t("thread.loadingHeader")}
-          </Typography>
-        )}
-        <Typography color="text.secondary" noWrap variant="caption">
-          {t("kind." + kind)}
-        </Typography>
-      </Box>
     </Box>
   );
 }

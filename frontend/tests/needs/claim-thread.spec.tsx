@@ -58,7 +58,8 @@ describe("claim thread helpers", () => {
 
     expect(markup.indexOf("Initial claimer note")).toBeLessThan(markup.indexOf("Second reply"));
     expect(markup).toContain("Attachment 1");
-    expect(markup).toContain("read");
+    // "read" indicator renders as locale-dependent text ("read" EN / "lu" FR)
+    expect(markup).toMatch(/read|lu/);
   });
 
   it("renders the settlement summary with the recorded Topes amount", () => {
