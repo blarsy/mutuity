@@ -1,7 +1,23 @@
 export const E2E_CLAIMER_IDENTIFIER = process.env.E2E_CLAIMER_IDENTIFIER ?? "e2e-claimer@example.com";
 export const E2E_CREATOR_IDENTIFIER = process.env.E2E_CREATOR_IDENTIFIER ?? "e2e-creator@example.com";
+export const E2E_SECOND_CLAIMER_IDENTIFIER = process.env.E2E_SECOND_CLAIMER_IDENTIFIER ?? "e2e-claimer-2@example.com";
 export const E2E_PASSWORD = process.env.E2E_PASSWORD ?? "password123";
 
 export const E2E_NEED_ID = "11111111-1111-4111-8111-111111111111";
 export const E2E_CLAIM_ID = "22222222-2222-4222-8222-222222222222";
 export const E2E_NEED_TITLE = "E2E Smoke Need - Core Flow";
+
+export const E2E_ACTION_NEED_ID = "33333333-3333-4333-8333-333333333333";
+export const E2E_ACTION_CLAIM_ID = "44444444-4444-4444-8444-444444444444";
+export const E2E_ACTION_NEED_TITLE = "E2E Smoke Need - Cancel Claim Flow";
+
+export const E2E_RESOURCE_ID = "55555555-5555-4555-8555-555555555555";
+export const E2E_RESOURCE_TITLE = "E2E Smoke Resource - Bid Lifecycle";
+
+export const E2E_DECLINE_RESOURCE_ID = "66666666-6666-4666-8666-666666666666";
+export const E2E_DECLINE_RESOURCE_TITLE = "E2E Smoke Resource - Bid Decline";
+
+export const E2E_SETTLEMENT_NEED_ID = "77777777-7777-4777-8777-777777777777";
+export const E2E_SETTLEMENT_NEED_TITLE = "E2E Smoke Need - Settlement Side Effects";
+export const E2E_SETTLEMENT_PRIMARY_CLAIM_ID = "88888888-8888-4888-8888-888888888888";
+export const E2E_SETTLEMENT_SIBLING_CLAIM_ID = "99999999-9999-4999-8999-999999999999";

@@ -447,4 +447,270 @@ describe("claim settlement integration", () => {
       }
     });
   });
+
+  it("handles concurrent settlement attempts safely with a single settlement event and no duplicate ledger side-effects", async () => {
+    const stamp = Date.now();
+    const creator = await seedDemoAccount({
+      identifier: `settle-concurrent-creator-${stamp}@example.com`,
+      displayName: "Concurrent Settlement Creator"
+    });
+    const claimerA = await seedDemoAccount({
+      identifier: `settle-concurrent-a-${stamp}@example.com`,
+      displayName: "Concurrent Claimer A"
+    });
+    const claimerB = await seedDemoAccount({
+      identifier: `settle-concurrent-b-${stamp}@example.com`,
+      displayName: "Concurrent Claimer B"
+    });
+
+    const need = await seedNeed({
+      creatorAccount: creator,
+      title: `US5 Concurrent Need ${stamp}`,
+      proposedTopesAmount: 190,
+      expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString()
+    });
+
+    const claimA = await seedNeedClaim({
+      needId: need.id,
+      claimerAccount: claimerA,
+      message: "Concurrent candidate A"
+    });
+    const claimB = await seedNeedClaim({
+      needId: need.id,
+      claimerAccount: claimerB,
+      message: "Concurrent candidate B"
+    });
+
+    const creatorCookie = await loginWithGraphqlSessionCookie(creator.identifier, creator.password);
+
+    const settleMutation = (needClaimId: string, clientMutationId: string) => fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: creatorCookie
+      },
+      body: JSON.stringify({
+        query: `
+          mutation SettleNeedClaim($input: SettleNeedClaimInput!) {
+            settleNeedClaim(input: $input) {
+              needClaim {
+                id
+                status
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            needClaimId,
+            clientMutationId
+          }
+        }
+      })
+    });
+
+    const [responseA, responseB] = await Promise.all([
+      settleMutation(claimA.id, "settle-concurrent-a"),
+      settleMutation(claimB.id, "settle-concurrent-b")
+    ]);
+
+    expect(responseA.status).toBe(200);
+    expect(responseB.status).toBe(200);
+
+    const payloadA = (await responseA.json()) as {
+      data?: { settleNeedClaim: { needClaim: { id: string; status: string } } };
+      errors?: Array<{ message: string }>;
+    };
+    const payloadB = (await responseB.json()) as {
+      data?: { settleNeedClaim: { needClaim: { id: string; status: string } } };
+      errors?: Array<{ message: string }>;
+    };
+
+    const successful = [payloadA, payloadB].filter(payload => payload.errors == null);
+    const failed = [payloadA, payloadB].filter(payload => payload.errors != null);
+
+    expect(successful).toHaveLength(1);
+    expect(failed).toHaveLength(1);
+    expect(failed[0]?.errors?.[0]?.message).toBe("Need claim is no longer open");
+
+    const stateResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: creatorCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query ConcurrentSettlementState($needId: UUID!) {
+            allNeedClaims(condition: { needId: $needId }) {
+              nodes {
+                id
+                status
+              }
+            }
+            allNeedClaimSettlementEvents(condition: { needId: $needId }) {
+              nodes {
+                id
+                needClaimId
+                topesAmount
+              }
+            }
+          }
+        `,
+        variables: {
+          needId: need.id
+        }
+      })
+    });
+
+    expect(stateResponse.status).toBe(200);
+
+    const statePayload = (await stateResponse.json()) as {
+      data?: {
+        allNeedClaims: {
+          nodes: Array<{ id: string; status: string }>;
+        };
+        allNeedClaimSettlementEvents: {
+          nodes: Array<{ id: string; needClaimId: string; topesAmount: number }>;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(statePayload.errors).toBeUndefined();
+
+    const claims = statePayload.data?.allNeedClaims.nodes ?? [];
+    expect(claims).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: claimA.id }),
+        expect.objectContaining({ id: claimB.id })
+      ])
+    );
+
+    const settledClaims = claims.filter(claim => claim.status === "SETTLED");
+    const declinedClaims = claims.filter(claim => claim.status === "DECLINED");
+    expect(settledClaims).toHaveLength(1);
+    expect(declinedClaims).toHaveLength(1);
+
+    const settledClaimId = settledClaims[0]?.id;
+    const settlementEvents = statePayload.data?.allNeedClaimSettlementEvents.nodes ?? [];
+    expect(settlementEvents).toHaveLength(1);
+    expect(settlementEvents[0]).toMatchObject({
+      needClaimId: settledClaimId,
+      topesAmount: 190
+    });
+
+    const creatorLedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: creatorCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query CreatorLedger {
+            allTokenMovements(first: 100) {
+              nodes {
+                eventType
+                amountDelta
+                referenceId
+              }
+            }
+          }
+        `
+      })
+    });
+
+    const claimerACookie = await loginWithGraphqlSessionCookie(claimerA.identifier, claimerA.password);
+    const claimerALedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: claimerACookie
+      },
+      body: JSON.stringify({
+        query: `
+          query ClaimerLedger {
+            allTokenMovements(first: 100) {
+              nodes {
+                eventType
+                amountDelta
+                referenceId
+              }
+            }
+          }
+        `
+      })
+    });
+
+    const claimerBCookie = await loginWithGraphqlSessionCookie(claimerB.identifier, claimerB.password);
+    const claimerBLedgerResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: claimerBCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query ClaimerLedger {
+            allTokenMovements(first: 100) {
+              nodes {
+                eventType
+                amountDelta
+                referenceId
+              }
+            }
+          }
+        `,
+      })
+    });
+
+    expect(creatorLedgerResponse.status).toBe(200);
+    expect(claimerALedgerResponse.status).toBe(200);
+    expect(claimerBLedgerResponse.status).toBe(200);
+
+    const creatorLedgerPayload = (await creatorLedgerResponse.json()) as {
+      data?: {
+        allTokenMovements: {
+          nodes: Array<{ eventType: string; amountDelta: number; referenceId: string | null }>;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+    const claimerALedgerPayload = (await claimerALedgerResponse.json()) as {
+      data?: {
+        allTokenMovements: {
+          nodes: Array<{ eventType: string; amountDelta: number; referenceId: string | null }>;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+    const claimerBLedgerPayload = (await claimerBLedgerResponse.json()) as {
+      data?: {
+        allTokenMovements: {
+          nodes: Array<{ eventType: string; amountDelta: number; referenceId: string | null }>;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(creatorLedgerPayload.errors).toBeUndefined();
+    expect(claimerALedgerPayload.errors).toBeUndefined();
+    expect(claimerBLedgerPayload.errors).toBeUndefined();
+
+    const creatorSettlementDebits = (creatorLedgerPayload.data?.allTokenMovements.nodes ?? []).filter(
+      movement => movement.eventType === "claim_settlement_debit" && movement.referenceId === settledClaimId
+    );
+    expect(creatorSettlementDebits).toHaveLength(1);
+    expect(creatorSettlementDebits[0]?.amountDelta).toBe(-190);
+
+    const totalCreditsByReference = [
+      ...(claimerALedgerPayload.data?.allTokenMovements.nodes ?? []),
+      ...(claimerBLedgerPayload.data?.allTokenMovements.nodes ?? [])
+    ].filter(
+      movement => movement.eventType === "claim_settlement_credit" && movement.referenceId === settledClaimId
+    );
+    expect(totalCreditsByReference).toHaveLength(1);
+    expect(totalCreditsByReference[0]?.amountDelta).toBe(190);
+  });
 });

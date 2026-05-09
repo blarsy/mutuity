@@ -286,6 +286,61 @@ describe("bid settlement integration", () => {
     );
   });
 
+  it("keeps acceptance idempotent under concurrent retries without duplicate settlement movements", async () => {
+    const stamp = Date.now();
+    const creator = await seedDemoAccount({
+      identifier: `settlement-concurrent-accept-creator-${stamp}@example.com`,
+      displayName: "Settlement Concurrent Accept Creator"
+    });
+    const bidder = await seedDemoAccount({
+      identifier: `settlement-concurrent-accept-bidder-${stamp}@example.com`,
+      displayName: "Settlement Concurrent Accept Bidder"
+    });
+
+    const resource = await seedResource({
+      creatorAccount: creator,
+      title: `Settlement concurrent accept resource ${stamp}`,
+      defaultTokenAmount: 205,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      categoryCodes: [10]
+    });
+
+    const bidderCookie = await loginAs(bidder);
+    const creatorCookie = await loginAs(creator);
+
+    const bidId = await submitBid(bidderCookie, resource.id, 205, "Concurrent accept retry coverage bid");
+
+    await Promise.all([
+      respondToBid(creatorCookie, bidId, "ACCEPTED"),
+      respondToBid(creatorCookie, bidId, "ACCEPTED")
+    ]);
+
+    await expect(bidStatus(creatorCookie, bidId)).resolves.toBe("ACCEPTED");
+
+    const bidderMovements = await tokenMovementsFor(bidderCookie, bidId);
+    const creatorMovements = await tokenMovementsFor(creatorCookie, bidId);
+
+    const bidderReservations = bidderMovements.filter(movement => movement.eventType === "resource_bid_reserved");
+    const bidderRefunds = bidderMovements.filter(movement => movement.eventType === "resource_bid_refunded");
+    const creatorSettlements = creatorMovements.filter(movement => movement.eventType === "resource_bid_settled");
+
+    expect(bidderReservations).toHaveLength(1);
+    expect(bidderReservations[0]?.amountDelta).toBe(-205);
+    expect(bidderRefunds).toHaveLength(0);
+
+    expect(creatorSettlements).toHaveLength(1);
+    expect(creatorSettlements[0]?.amountDelta).toBe(205);
+
+    // A subsequent retry should stay idempotent and keep settlement side-effects single.
+    await respondToBid(creatorCookie, bidId, "ACCEPTED");
+
+    const creatorMovementsAfterRetry = await tokenMovementsFor(creatorCookie, bidId);
+    const creatorSettlementsAfterRetry = creatorMovementsAfterRetry.filter(
+      movement => movement.eventType === "resource_bid_settled"
+    );
+    expect(creatorSettlementsAfterRetry).toHaveLength(1);
+  });
+
   it("refunds reserved Topes when bid validity expires", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({

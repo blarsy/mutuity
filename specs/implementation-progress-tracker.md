@@ -29,7 +29,7 @@ Cadence: update at least once per workday
 | P2 | Core needs loop | 001, 002 | DONE | 100% | 2026-04-18 to 2026-05-02 (proposed) |
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
-| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | IN PROGRESS | 80% | TBD |
+| P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | DONE | 100% | TBD |
 | P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
@@ -151,19 +151,19 @@ Definition of Done:
 
 ### P5 - Settlement And Ledger Consistency (007, 008)
 
-Status: IN PROGRESS
+Status: DONE
 Goal: ensure token movement correctness for claims and bids lifecycle.
 
 Checkpoints:
 
 - [x] Bid workspace and settlement actions implemented.
 - [x] Claim workspace and settlement actions implemented.
-- [ ] Ledger movements are auditable and idempotent.
-- [ ] Concurrency safety validated for settlement-sensitive operations.
+- [x] Ledger movements are auditable and idempotent.
+- [x] Concurrency safety validated for settlement-sensitive operations.
 
 Definition of Done:
 
-- [ ] Token-impacting operations are correct under retries/concurrency.
+- [x] Token-impacting operations are correct under retries/concurrency.
 
 ### P6 - Conversation Layer (006)
 
@@ -233,14 +233,14 @@ Definition of Done:
 
 ## Active Work Queue
 
-Current phase: P5
-Current milestone: P5-M2 - Claims workspace parity and settlement correctness (008)
+Current phase: P6
+Current milestone: P6-M1 - Conversation layer kickoff and access-rule hardening (006)
 
 This week priorities:
 
-1. Validate settlement/refund ledger correctness and idempotency behavior for claim lifecycle operations.
-2. Add/expand concurrency verification for settlement-sensitive claim operations.
-3. Prepare P5 closeout evidence and decide P6 conversation-layer kickoff scope.
+1. Define and implement conversation creation/access rules for accepted claim and bid flows.
+2. Add backend integration coverage for conversation ownership/participant visibility and routing.
+3. Deliver first end-to-end chat workflow handoff from claims and bids to conversation threads.
 
 ## E2E Scenario Matrix (Manual Sanity)
 
@@ -248,6 +248,10 @@ This week priorities:
 |---|---|---|---|---|---|
 | E2E-002-US1 | 002 / US1 (needs discovery baseline) | Authenticated browse of active need listing | smoke | e2e/specs/002-needs-query-claiming/us1-needs-discovery.smoke.spec.ts | READY |
 | E2E-008-US1 | 008 / US1 (claims workspace browse) | Sent + received claim visibility on `/claims` | smoke | e2e/specs/008-claims-workspace-and-settlement/us1-claims-workspace.smoke.spec.ts | READY |
+| E2E-008-US2 | 008 / US2 (claims action baseline) | Claimer cancels an open sent claim from `/claims` workspace | smoke | e2e/specs/008-claims-workspace-and-settlement/us2-claims-actions.smoke.spec.ts | READY |
+| E2E-008-US2-SETTLE | 008 / US2 (claim settlement side-effects) | Creator settles one claim; sibling claimer sees auto-declined state | smoke | e2e/specs/008-claims-workspace-and-settlement/us2-claim-settlement-side-effects.smoke.spec.ts | READY |
+| E2E-007-US1 | 007 / US1 (bids lifecycle baseline) | Bidder creates a bid and creator accepts it in `/bids` | smoke | e2e/specs/007-bids-workspace-and-settlement/us1-bid-lifecycle.smoke.spec.ts | READY |
+| E2E-007-US2 | 007 / US2 (bid decline branch) | Bidder creates bid; creator declines; bidder sees declined state | smoke | e2e/specs/007-bids-workspace-and-settlement/us2-bid-decline-refund.smoke.spec.ts | READY |
 
 Manual trigger command:
 
@@ -338,6 +342,11 @@ Manual trigger command:
 | 2026-05-03 | P5 execution | Completed US3 navigation/deep-link (T020-T024): added `resourceConversationByConversationId { id }` to BID_WORKSPACE_FIELDS fragment, added Chat/View-resource/View-creator/View-bidder action buttons in sent and received bid cards with EN/FR i18n keys, added `next/router` and `accountEvents` mocks to existing bid test files, created `bid-navigation.spec.tsx` with 4 tests covering chat presence/absence for sent and received bids. T021 covered by existing PostGraphile schema relation. | frontend/src/pages/bids.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/locales/en/bids.json; frontend/src/locales/fr/bids.json; frontend/tests/bids/bid-navigation.spec.tsx; frontend/tests/bids/bid-actions.spec.tsx; frontend/tests/bids/bids-page.spec.tsx | None | Continue with T025-T029 (i18n polish, responsive layout, resource-deactivation flow, e2e sweep). |
 | 2026-05-05 | P5 execution | Completed Phase 6 Polish & Validation (T025-T029): T025 — changed `chips.tokens` from "tokens"/"jetons" to "Topes" in bids.json EN/FR and updated `resource_bid_reserved`/`resource_bid_settled` movement labels in contribution.json EN/FR; T026 — replaced single-column Stack with responsive two-column CSS grid (`gridTemplateColumns: {xs:"1fr", md:"1fr 1fr"}`) and widened container from "md" to "lg"; T027 — added `RESOURCE_OPEN_BID_COUNT_QUERY`, wired it into manage.tsx with `skip:!resourcePendingDelete`, and added warning Alert in delete dialog plus `openBidsWarning` i18n key in resources.json EN/FR; T028 — typecheck clean, 8 bid tests pass; T029 — added "Differences from Legacy Tope-là Behavior" section to spec.md with 7 documented intentional divergences. | frontend/src/locales/en/bids.json; frontend/src/locales/fr/bids.json; frontend/src/locales/en/contribution.json; frontend/src/locales/fr/contribution.json; frontend/src/pages/bids.tsx; frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/locales/en/resources.json; frontend/src/locales/fr/resources.json; specs/007-bids-workspace-and-settlement/spec.md; specs/007-bids-workspace-and-settlement/tasks.md | None | P5 Feature 007 fully complete. Proceed to next P5 feature or P6. |
 | 2026-05-05 | P5 execution | Started Feature 008 US3 navigation/deep-link (T021-T025): added claim conversation relation (`claimConversationsByNeedClaimId(first: 1) { nodes { id } }`) to viewer claims overview query; added explicit need/account/chat navigation affordances to sent and received claim cards on `/claims`; added EN/FR i18n action keys for need-owner and chat; created frontend navigation coverage with 4 tests (sent/received chat present/absent and need/account deep links). T022 required no new API because claim conversation relation already exists in schema. | frontend/src/features/needs/needClaims.queries.ts; frontend/src/pages/claims.tsx; frontend/src/locales/en/claims.json; frontend/src/locales/fr/claims.json; frontend/tests/claims/claim-navigation.spec.tsx; specs/008-claims-workspace-and-settlement/tasks.md; npm -C frontend test -- --runInBand frontend/tests/claims/claim-navigation.spec.tsx | Existing `frontend/tests/needs/claim-thread.spec.tsx` has a locale-sensitive expectation (`"read"`) that currently fails independently of this slice. | Continue Feature 008 US2 workspace-action parity (T017-T020: cancel/decline/settle controls + inactive explanations). |
+| 2026-05-09 | P5 execution | Added explicit claim-settlement race coverage for Phase 5: two concurrent `settleNeedClaim` attempts on sibling open claims now validated to produce exactly one settled claim, one declined claim, one settlement event, and exactly one debit/credit ledger pair for the settled claim reference (no duplicate token side-effects). | backend/tests/integration/claim-settlement.spec.ts; npm -C backend test -- tests/integration/claim-settlement.spec.ts | None | Add equivalent concurrency/ledger safety validation for bids settlement path, then reassess P5 closeout readiness. |
+| 2026-05-09 | P5 execution | Added bids-side concurrent idempotency coverage: concurrent duplicate `respondToResourceBid(status: ACCEPTED)` retries now validate single accepted state, no bidder refund emission, and exactly one `resource_bid_settled` movement for the bid reference across retries. | backend/tests/integration/bids-settlement.spec.ts; npm -C backend test -- tests/integration/bids-settlement.spec.ts | None | Execute consolidated P5 verification sweep (claims + bids + smoke sanity) and prepare closeout decision. |
+| 2026-05-09 | P5 execution | Ran consolidated P5 verification sweep: claim settlement integration and bid settlement integration suites both green (7 tests), and smoke E2E matrix green (5 tests including new claims-action and bid-lifecycle scenarios). | npm -C backend test -- tests/integration/claim-settlement.spec.ts tests/integration/bids-settlement.spec.ts; npm run test:e2e:smoke | Backend Jest reported a forced worker exit/open-handle hint after settlement integration run (non-failing). | Triage open-handle warning (`--detectOpenHandles`) and decide if P5 can be marked DONE immediately after leak hardening check. |
+| 2026-05-09 | P5 execution | Expanded Phase 5 smoke coverage with two new end-to-end scenarios: bids decline branch (`@spec-007-us2`) and claims settlement side-effects (`@spec-008-us2-settle`) using isolated seeded fixtures; full smoke matrix now passes 7/7 in parallel mode. | e2e/scripts/seed-smoke-users.mjs; e2e/helpers/testUsers.ts; e2e/specs/007-bids-workspace-and-settlement/us2-bid-decline-refund.smoke.spec.ts; e2e/specs/008-claims-workspace-and-settlement/us2-claim-settlement-side-effects.smoke.spec.ts; npm run test:e2e:smoke | None | Keep this expanded smoke set as baseline while starting P6 conversation-layer implementation. |
+| 2026-05-09 | P5 closeout | Completed P5 closeout verification by re-running settlement suites with `--detectOpenHandles --runInBand`; no persistent handle leak reproduced, and all settlement + smoke evidence remains green. Marked Phase 5 as DONE. | npm -C backend test -- --detectOpenHandles --runInBand tests/integration/claim-settlement.spec.ts tests/integration/bids-settlement.spec.ts; specs/implementation-progress-tracker.md | None | Kick off P6 conversation-layer implementation (006). |
 
 ## Decisions Log
 
@@ -357,7 +366,7 @@ Manual trigger command:
 
 Use this section for quick day-level oversight.
 
-- Overall progress: P1–P4 complete, P7 complete, P8 complete; P5 (bids/claims settlement) in progress with Feature 007 complete and Feature 008 US3 navigation/deep-link delivered.
+- Overall progress: P1–P5 complete, P7 complete, P8 complete; P6 (conversation layer) is now the active phase.
 - Current health: GREEN
-- Main risk: Remaining P5 scope is now concentrated in Feature 008 US2/US4 action parity and automatic need-driven claim-decline paths, plus concurrency validation for claim settlement.
+- Main risk: Conversation-layer access rules and handoff consistency between accepted claim/bid states and chat thread entry points (P6 kickoff risk).
 - Requested supervisor input: none.
