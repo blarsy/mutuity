@@ -47,15 +47,15 @@
 
 ### Tests (US2)
 
-- [ ] T014 [P] [US2] Add backend integration tests for message validation, participant-only access, and one-conversation-per-pair/context behavior in `backend/tests/integration/chat-message-composer.spec.ts`
-- [ ] T015 [P] [US2] Add frontend tests for the unified conversation header and mandatory-text composer behavior in `frontend/tests/chat/conversation-thread.spec.tsx`
+- [x] T014 [P] [US2] Add backend integration tests for message validation, participant-only access, and one-conversation-per-pair/context behavior in `backend/tests/integration/chat-message-composer.spec.ts`
+- [x] T015 [P] [US2] Add frontend tests for the unified conversation header and mandatory-text composer behavior in `frontend/tests/chat/conversation-thread.spec.tsx`
 
 ### Implementation (US2)
 
-- [ ] T016 [US2] Build the shared `ConversationHeader` for both need and resource contexts in `frontend/src/features/chat/`
-- [ ] T017 [US2] Build the normalized `ConversationThread` and `MessageComposer` with support for up to 5 images per message in `frontend/src/features/chat/`
-- [ ] T018 [US2] Reuse or refactor the existing need conversation UI in `frontend/src/features/needs/ClaimConversationPanel.tsx` so the top-level chat workspace and inline claim messaging stay aligned
-- [ ] T019 [US2] Wire header navigation to `frontend/src/pages/accounts/[accountId].tsx`, `frontend/src/pages/needs/[needId].tsx`, and `frontend/src/pages/resources/[resourceId].tsx`
+- [x] T016 [US2] Build the shared `ConversationHeader` for both need and resource contexts in `frontend/src/features/chat/`
+- [x] T017 [US2] Build the normalized `ConversationThread` and `MessageComposer` with support for up to 5 images per message in `frontend/src/features/chat/`
+- [x] T018 [US2] Reuse or refactor the existing need conversation UI in `frontend/src/features/needs/ClaimConversationPanel.tsx` so the top-level chat workspace and inline claim messaging stay aligned
+- [x] T019 [US2] Wire header navigation to `frontend/src/pages/accounts/[accountId].tsx`, `frontend/src/pages/needs/[needId].tsx`, and `frontend/src/pages/resources/[resourceId].tsx`
 
 ## Phase 5: User Story 3 - Read Receipts, Typing Awareness, And Global Alerts (Priority: P2)
 
@@ -65,7 +65,7 @@
 
 ### Tests (US3)
 
-- [ ] T020 [P] [US3] Add backend integration tests for read-state transitions, typing-signal timeout behavior, and new-message notification payloads in `backend/tests/integration/chat-realtime-feedback.spec.ts`
+- [x] T020 [P] [US3] Add backend integration tests for read-state transitions, typing-signal timeout behavior, and new-message notification payloads in `backend/tests/integration/chat-realtime-feedback.spec.ts`
 - [ ] T021 [P] [US3] Add frontend tests for seen markers, typing indicator rendering, and snackbar behavior in `frontend/tests/chat/chat-alerts.spec.tsx`
 
 ### Implementation (US3)
