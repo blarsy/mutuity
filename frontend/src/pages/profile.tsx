@@ -8,6 +8,7 @@ import { useRequireAuth } from "../features/auth/requireAuth";
 import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "../features/profile/profile.queries";
 import { LocationPicker } from "../components/LocationPicker";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { ZoomableImage } from "../components/ZoomableImage";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 type ProfileLinkType = "website" | "facebook" | "instagram" | "x";
@@ -165,11 +166,25 @@ export default function ProfilePage() {
           </Box>
 
           <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Avatar
-              alt={displayName || session.account?.displayName || "Profile avatar"}
-              src={avatarUrl || undefined}
-              sx={{ height: 300, width: 300 }}
-            />
+            {avatarUrl ? (
+              <ZoomableImage
+                alt={displayName || session.account?.displayName || "Profile avatar"}
+                src={avatarUrl}
+                sx={{
+                  borderRadius: "50%",
+                  height: 300,
+                  maxHeight: "min(300px, 75vw)",
+                  maxWidth: "min(300px, 75vw)",
+                  objectFit: "cover",
+                  width: 300
+                }}
+              />
+            ) : (
+              <Avatar
+                alt={displayName || session.account?.displayName || "Profile avatar"}
+                sx={{ height: 300, width: 300 }}
+              />
+            )}
           </Box>
 
           {loading ? <Alert severity="info">{t("loading")}</Alert> : null}

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { RichTextContent } from "../../components/richText/RichTextContent";
+import { ZoomableImage } from "../../components/ZoomableImage";
 import { AvatarIconButton } from "./AvatarIconButton";
 
 type ResourceCardProps = {
@@ -120,44 +121,40 @@ export function ResourceCard({
         }}
       >
         {/* Image or placeholder */}
-        <ButtonBase
-          disabled={!onClick}
-          onClick={() => onClick?.()}
+        <Box
           sx={{
+            alignItems: "center",
+            bgcolor: currentImage ? "grey.100" : "grey.50",
+            borderRadius: 1,
             bottom: 0,
+            color: "text.secondary",
+            display: "flex",
+            height: "100%",
+            justifyContent: "center",
             left: 0,
+            overflow: "hidden",
             position: "absolute",
             right: 0,
             top: 0,
             width: "100%",
           }}
         >
-          <Box
-            sx={{
-              alignItems: "center",
-              bgcolor: currentImage ? "grey.100" : "grey.50",
-              backgroundImage: currentImage ? `url(${currentImage})` : "none",
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-              borderRadius: 1,
-              bottom: 0,
-              color: "text.secondary",
-              display: "flex",
-              height: "100%",
-              justifyContent: "center",
-              left: 0,
-              overflow: "hidden",
-              position: "absolute",
-              right: 0,
-              top: 0,
-              width: "100%",
-            }}
-          >
-            {!currentImage ? (
-              <Typography variant="body2">{t("card.noImageYet")}</Typography>
-            ) : null}
-          </Box>
-        </ButtonBase>
+          {currentImage ? (
+            <ZoomableImage
+              alt={title}
+              src={currentImage}
+              stopPropagation
+              sx={{
+                display: "block",
+                height: "100%",
+                objectFit: "cover",
+                width: "100%"
+              }}
+            />
+          ) : (
+            <Typography variant="body2">{t("card.noImageYet")}</Typography>
+          )}
+        </Box>
 
         {/* Left arrow */}
         {images.length > 1 && imageIndex > 0 ? (
