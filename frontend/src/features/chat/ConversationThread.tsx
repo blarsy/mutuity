@@ -77,6 +77,8 @@ type ResourceConversationData = {
     bidderAccountId: string;
     createdAt: string;
     resourceByResourceId?: { id: string; title: string } | null;
+    accountByOwnerAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
+    accountByBidderAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
     resourceMessagesByConversationId: { nodes: (Message & { resourceMessageImagesByMessageId: { nodes: MessageImage[] } })[] };
   } | null;
 };
@@ -89,6 +91,8 @@ type ClaimConversationData = {
     claimerAccountId: string;
     createdAt: string;
     needByNeedId?: { id: string; title: string } | null;
+    accountByCreatorAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
+    accountByClaimerAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
     claimMessagesByConversationId: { nodes: (Message & { claimMessageImagesByMessageId: { nodes: MessageImage[] } })[] };
   } | null;
 };
@@ -191,6 +195,17 @@ export function ConversationThread({
       ? (claimConv?.claimerAccountId ?? null)
       : (claimConv?.creatorAccountId ?? draftThread?.otherAccountId ?? null);
 
+  const otherAccount = isResource
+    ? (myAccountId === resourceConv?.ownerAccountId
+        ? resourceConv?.accountByBidderAccountId
+        : resourceConv?.accountByOwnerAccountId)
+    : (myAccountId === claimConv?.creatorAccountId
+        ? claimConv?.accountByClaimerAccountId
+        : claimConv?.accountByCreatorAccountId);
+
+  const otherAccountDisplayName =
+    otherAccount?.displayName ?? otherAccount?.externalSubject ?? null;
+
   useAccountEventSignal(() => {
     if (isResource) {
       void resourceRefetch();
@@ -270,6 +285,8 @@ export function ConversationThread({
         contextTitle={contextTitle}
         kind={kind}
         onBack={onBack}
+        otherAccountId={otherAccountId}
+        otherAccountDisplayName={otherAccountDisplayName}
         t={t}
       />
       <Divider />

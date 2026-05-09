@@ -7,6 +7,7 @@ import {
   parseImageUrls,
   MAX_IMAGE_ATTACHMENTS
 } from "../../src/features/chat/ConversationThread";
+import { conversationParticipantUrl } from "../../src/features/chat/chatRouting";
 
 // Minimal translation stub that echoes back the key.
 const t = (key: string) => key;
@@ -86,6 +87,35 @@ describe("ConversationHeader", () => {
     expect(markup).not.toContain("thread.back");
   });
 
+  it("renders the participant display name as a link to their account page", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ConversationHeader, {
+        kind: "resource",
+        contextId: "res-001",
+        contextTitle: "3D printer",
+        otherAccountId: "account-xyz",
+        otherAccountDisplayName: "Alice",
+        t
+      })
+    );
+
+    expect(markup).toContain("/accounts/account-xyz");
+    expect(markup).toContain("Alice");
+  });
+
+  it("omits participant link when otherAccountId is not provided", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ConversationHeader, {
+        kind: "need",
+        contextId: "need-001",
+        contextTitle: "Tool sharing",
+        t
+      })
+    );
+
+    expect(markup).not.toContain("/accounts/");
+  });
+
   it("builds the resource context link correctly", () => {
     const markup = renderToStaticMarkup(
       createElement(ConversationHeader, {
@@ -148,5 +178,11 @@ describe("parseImageUrls", () => {
   it("returns an empty array for blank input", () => {
     expect(parseImageUrls("")).toEqual([]);
     expect(parseImageUrls("   \n   ")).toEqual([]);
+  });
+});
+
+describe("conversationParticipantUrl", () => {
+  it("builds the account page URL for a participant", () => {
+    expect(conversationParticipantUrl("account-abc")).toBe("/accounts/account-abc");
   });
 });

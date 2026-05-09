@@ -2,7 +2,7 @@ import NextLink from "next/link";
 import { Box, IconButton, Link, Tooltip, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-import { conversationContextUrl } from "./chatRouting";
+import { conversationContextUrl, conversationParticipantUrl } from "./chatRouting";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,16 +20,21 @@ export function ConversationHeader({
   kind,
   contextId,
   contextTitle,
+  otherAccountId,
+  otherAccountDisplayName,
   onBack,
   t
 }: {
   kind: ConversationKind;
   contextId: string | null;
   contextTitle: string | null;
+  otherAccountId?: string | null;
+  otherAccountDisplayName?: string | null;
   onBack?: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const contextUrl = contextId ? conversationContextUrl(kind, contextId) : null;
+  const participantUrl = otherAccountId ? conversationParticipantUrl(otherAccountId) : null;
 
   return (
     <Box sx={{ alignItems: "center", display: "flex", gap: 1, minHeight: 56, px: 1.5, py: 1 }}>
@@ -58,9 +63,26 @@ export function ConversationHeader({
             {contextTitle ?? t("thread.loadingHeader")}
           </Typography>
         )}
-        <Typography color="text.secondary" noWrap variant="caption">
-          {t("kind." + kind)}
-        </Typography>
+        <Box sx={{ alignItems: "center", display: "flex", gap: 0.5 }}>
+          <Typography color="text.secondary" noWrap variant="caption">
+            {t("kind." + kind)}
+          </Typography>
+          {participantUrl && otherAccountDisplayName && (
+            <>
+              <Typography color="text.secondary" variant="caption">{"·"}</Typography>
+              <Link
+                color="text.secondary"
+                component={NextLink}
+                href={participantUrl}
+                noWrap
+                underline="hover"
+                variant="caption"
+              >
+                {otherAccountDisplayName}
+              </Link>
+            </>
+          )}
+        </Box>
       </Box>
     </Box>
   );

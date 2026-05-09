@@ -48,6 +48,16 @@ export const RESOURCE_CONVERSATION_QUERY = gql`
         id
         title
       }
+      accountByOwnerAccountId {
+        id
+        displayName
+        externalSubject
+      }
+      accountByBidderAccountId {
+        id
+        displayName
+        externalSubject
+      }
       resourceMessagesByConversationId(orderBy: PRIMARY_KEY_ASC) {
         nodes {
           id
@@ -147,6 +157,16 @@ export const CLAIM_CONVERSATION_QUERY = gql`
       needByNeedId {
         id
         title
+      }
+      accountByCreatorAccountId {
+        id
+        displayName
+        externalSubject
+      }
+      accountByClaimerAccountId {
+        id
+        displayName
+        externalSubject
       }
       claimMessagesByConversationId(orderBy: PRIMARY_KEY_ASC) {
         nodes {

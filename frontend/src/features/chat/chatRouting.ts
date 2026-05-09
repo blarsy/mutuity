@@ -74,3 +74,11 @@ export function conversationContextUrl(kind: ChatContextKind, contextId: string)
   }
   return `/resources/${contextId}`;
 }
+
+/**
+ * Build the URL to the other participant's public account page.
+ * Used for the participant navigation link in the conversation header.
+ */
+export function conversationParticipantUrl(accountId: string): string {
+  return `/accounts/${accountId}`;
+}

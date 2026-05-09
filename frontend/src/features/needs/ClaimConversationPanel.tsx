@@ -23,6 +23,7 @@ import {
 } from "./claimConversation.queries";
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
 import { logBackofficeError } from "../logging/operationalLogger";
+import { parseImageUrls, MAX_IMAGE_ATTACHMENTS } from "../chat/ConversationThread";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -89,11 +90,9 @@ type ClaimConversationByPartiesData = {
   } | null;
 };
 
+/** @deprecated Use parseImageUrls from ConversationThread for new code. */
 export function parseImageMetadataInput(value: string) {
-  return value
-    .split(/[\n,]/g)
-    .map(entry => entry.trim())
-    .filter(Boolean);
+  return parseImageUrls(value);
 }
 
 export function sortConversationMessages(messages: ClaimConversationViewMessage[]) {
@@ -260,7 +259,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
         input: {
           needClaimId: claim.id,
           body: draftBody.trim(),
-          imageUrls: parseImageMetadataInput(draftImageUrls)
+          imageUrls: parseImageUrls(draftImageUrls)
         }
       }
     });
@@ -341,7 +340,12 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             <TextField
               fullWidth
               disabled={!canSend || sendLoading}
-              helperText={t("claimConversation.imageHelper")}
+              error={parseImageUrls(draftImageUrls).length > MAX_IMAGE_ATTACHMENTS}
+              helperText={
+                parseImageUrls(draftImageUrls).length > MAX_IMAGE_ATTACHMENTS
+                  ? t("claimConversation.tooManyImages", { max: MAX_IMAGE_ATTACHMENTS })
+                  : t("claimConversation.imageHelper")
+              }
               label={t("claimConversation.imageMetadata")}
               minRows={2}
               multiline
@@ -350,7 +354,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
               onChange={event => setDraftImageUrls(event.target.value)}
             />
             <Box>
-              <Button disabled={!canSend || sendLoading || !draftBody.trim()} onClick={() => void handleSendMessage()} variant="contained">
+              <Button disabled={!canSend || sendLoading || !draftBody.trim() || parseImageUrls(draftImageUrls).length > MAX_IMAGE_ATTACHMENTS} onClick={() => void handleSendMessage()} variant="contained">
                 {sendLoading ? t("claimConversation.sending") : conversation ? t("claimConversation.sendMessage") : t("claimConversation.startConversation")}
               </Button>
             </Box>
