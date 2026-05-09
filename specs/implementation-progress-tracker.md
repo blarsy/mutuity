@@ -30,7 +30,7 @@ Cadence: update at least once per workday
 | P3 | Local auth completion (no social) | 005 (Auth subset) | DONE | 100% | TBD |
 | P4 | Resource loop MVP | 005 (Slices 1-4) | DONE | 100% | TBD |
 | P5 | Settlement and ledger consistency | 007, 008 (+ token consistency) | DONE | 100% | TBD |
-| P6 | Conversation layer | 006 | NOT STARTED | 0% | TBD |
+| P6 | Conversation layer | 006 | DONE | 100% | 2026-05-09 |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
 | P9 | Listing visual identity | 009 | NOT STARTED | 0% | TBD |
@@ -167,18 +167,18 @@ Definition of Done:
 
 ### P6 - Conversation Layer (006)
 
-Status: NOT STARTED
+Status: DONE
 Goal: connect accepted claim/bid outcomes to reliable conversation workflows.
 
 Checkpoints:
 
-- [ ] Conversation creation and access rules implemented.
-- [ ] Chat UI supports ongoing thread usage.
-- [ ] Bid/claim flows link to conversation surfaces correctly.
+- [x] Conversation creation and access rules implemented via backend integration tests.
+- [x] Chat UI supports ongoing thread usage with text-required messages and up to 5 image attachments.
+- [x] Bid/claim flows link to conversation surfaces correctly with shared messenger.
 
 Definition of Done:
 
-- [ ] Users can reliably transition from transaction flow to conversation.
+- [x] Users can reliably transition from transaction flow to conversation with navigable headers.
 
 ### P7 - Engagement And Delivery Controls (005 extended)
 
@@ -233,8 +233,8 @@ Definition of Done:
 
 ## Active Work Queue
 
-Current phase: P6
-Current milestone: P6-M1 - Conversation layer kickoff and access-rule hardening (006)
+Current phase: P7 (or next priority)
+Current milestone: Post-P6 roadmap assessment
 
 This week priorities:
 
@@ -293,7 +293,12 @@ Manual trigger command:
 | 2026-04-20 | P4 execution | Completed T033 by adding workspace card actions for Edit and Delete: Edit now opens the resource form in modification mode with pre-populated values, while Delete opens a confirmation dialog and performs a soft delete (`isActive=false`) before refetching the workspace list. | frontend/src/pages/resources/manage.tsx; frontend/src/features/resources/CreateResourcePage.tsx; frontend/src/features/resources/resources.queries.ts; frontend/src/graphql/schema.graphql; frontend/src/graphql/generated.ts; npm -C frontend run graphql:schema; npm -C frontend run typecheck | None | Implement T034 fixed Add resource action on resources workspace page. |
 | 2026-04-20 | P4 execution | Completed T034 by adding a fixed-position `Add resource` button on the resources workspace page so creation entry remains visible at all scroll positions and links directly to `/resources/create`. | frontend/src/pages/resources/manage.tsx; specs/005-resource-discovery-and-publishing/tasks.md; npm -C frontend run typecheck | None | Begin Phase 7 with T035 (rename create-need page to edit-need page for create+modify mode). |
 | 2026-05-07 | P5 execution | Completed T030 by wiring claim notification-driven auto-closure reasons into `/claims` so need-driven closures now show explicit inactive reasons, with refreshed query coverage and passing frontend tests. | frontend/src/pages/claims.tsx; frontend/src/features/needs/needClaims.queries.ts; frontend/src/locales/en/claims.json; frontend/src/locales/fr/claims.json; frontend/tests/claims/claim-auto-decline.spec.tsx; npm --workspace frontend run typecheck; npm --workspace frontend test -- --runInBand tests/claims/claim-auto-decline.spec.tsx | None | Execute T033 end-to-end verification sweep for claim browsing/actions/auto-declines/conversation links, then close T034 spec delta capture. |
-| 2026-05-07 | P5 execution | Completed T033 verification sweep and T034 legacy-vs-MVP delta capture for claims workspace: backend and frontend claim lifecycle suites are green, and remaining workflow differences are now codified in the feature spec. | npm --workspace backend test -- --runInBand tests/integration/claims-workspace.spec.ts tests/integration/claims-settlement.spec.ts tests/integration/claim-auto-decline.spec.ts; npm --workspace frontend test -- --runInBand tests/claims/claims-page.spec.tsx tests/claims/claim-actions.spec.tsx tests/claims/claim-navigation.spec.tsx tests/claims/claim-auto-decline.spec.tsx; specs/008-claims-workspace-and-settlement/spec.md; specs/008-claims-workspace-and-settlement/tasks.md | None | Shift to remaining P5 ledger idempotency/concurrency closure tasks. |
+| 2026-05-09 | P6 kickoff | Marked P6 as in progress and added phase scope T014-T019. | specs/006-chat-and-conversations/tasks.md; specs/implementation-progress-tracker.md | None | Execute T014 resource-side composer integration test coverage. |
+| 2026-05-09 | P6 execution | Completed T014 resource-side composer coverage by extending chat-message-composer.spec.ts with 3 resource-side invariant tests (blank body rejection, non-participant block, one-conversation-per-bid) and fixed pre-existing mutations to use correct GraphQL payload shape. | backend/tests/integration/chat-message-composer.spec.ts; backend/tests/integration/chat-conversations.spec.ts; commit c7d1a70 | sendResourceMessage GraphQL mutation payload was documented as { resourceMessage { id } } not { uuid } in existing code; aligned across both files. | Execute T015 frontend conversation-thread tests and T016 ConversationHeader component extraction. |
+| 2026-05-09 | P6 execution | Completed T015/T016 by extracting ConversationHeader component with context/kind labels and back-button, adding 9 frontend tests for header rendering, and exporting isComposerBodyReady helper for composer validation. | frontend/src/features/chat/ConversationHeader.tsx; frontend/tests/chat/conversation-thread.spec.tsx; commit 5323793 | None | Execute T017 MessageComposer image attachment support (collapsible URL input, up-to-5 cap). |
+| 2026-05-09 | P6 execution | Completed T017 by adding collapsible image URL input field to MessageComposer with parseImageUrls and MAX_IMAGE_ATTACHMENTS=5 helpers, validation errors, and extended tests for all code paths (5 test cases). | frontend/src/features/chat/ConversationThread.tsx; frontend/tests/chat/conversation-thread.spec.tsx; commit d35482e | None | Execute T018 ClaimConversationPanel alignment to use shared helpers. |
+| 2026-05-09 | P6 execution | Completed T018/T019 by aligning ClaimConversationPanel to use shared parseImageUrls and MAX_IMAGE_ATTACHMENTS, adding conversationParticipantUrl routing helper, extending GraphQL queries to include account displayNames/externalSubjects, computing otherAccountDisplayName in ConversationThread, and rendering participant links in ConversationHeader. | frontend/src/features/chat/chatRouting.ts; frontend/src/features/chat/chat.queries.ts; frontend/src/features/chat/ConversationThread.tsx; frontend/src/features/chat/ConversationHeader.tsx; frontend/src/features/needs/ClaimConversationPanel.tsx; frontend/tests/chat/conversation-thread.spec.tsx; commit e2fc306 | None | Mark P6 complete and update tracker. |
+| 2026-05-09 | P6 closeout | Closed P6 conversation-layer phase after validating all checkpoints and definition-of-done items: message validation with mandatory text and up-to-5 images, participant-access guards, one-conversation-per-context semantics, shared ConversationHeader with navigable context/participant links, and aligned ClaimConversationPanel with shared messenger. | specs/implementation-progress-tracker.md; npm -C backend test -- tests/integration/chat-message-composer.spec.ts tests/integration/chat-conversations.spec.ts; npm -C frontend test 2>&1 | All 81+ frontend tests pass, all backend integration tests pass, clean commit sweep. | Kick off P7 (or next priority phase based on roadmap). |
 | 2026-04-20 | P4 execution | Completed T035 by converting the need creation surface into an edit-capable page (`Edit need`) that supports both creation and modification modes: edit mode now preloads need data via `needById`, submits through `updateNeedById`, and keeps creation mode on the same route with mode-specific copy and actions. | frontend/src/features/needs/CreateNeedPage.tsx; frontend/src/features/needs/needs.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | Updating campaign linkage is intentionally create-only for now because campaign linking is modeled in the campaign-need relation rather than direct need patch fields. | Implement T036 (`updatedAt` propagation for need linked-property changes). |
 | 2026-04-21 | P4 execution | Completed T036 by adding need `updated_at` propagation for linked campaign-need updates and validating with integration coverage; resolved a surfaced runtime permission regression by hardening `is_account_email_verified` as `SECURITY DEFINER` so authenticated need creation no longer fails under RLS-restricted credentials access. | database/migrations/042_need_updated_at_linked_properties.sql; database/migrations/043_is_account_email_verified_security_definer.sql; backend/tests/integration/need-create.spec.ts; docker compose -f docker-compose.yml run --rm migrate; npm -C backend test -- --runInBand tests/integration/need-create.spec.ts | None | Start T037 (`Needs` workspace page with auth guard, pagination, infinite scroll, and updatedAt-desc ordering). |
 | 2026-04-21 | P4 execution | Completed T037 by replacing the needs workspace placeholder with an authenticated paginated list (page size 10), infinite-scroll loading, and most-recently-updated-first presentation in UI, validated by frontend GraphQL codegen + typecheck. | frontend/src/pages/needs/manage.tsx; frontend/src/features/needs/needs.queries.ts; frontend/src/graphql/generated.ts; npm -C frontend run typecheck | GraphQL schema currently does not expose `NeedsOrderBy.UPDATED_AT_DESC`; UI enforces updated-time descending after each page load while backend pagination uses available ordering. | Implement T038 (needs workspace Edit/Delete actions with soft-delete confirmation). |
