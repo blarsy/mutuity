@@ -39,18 +39,18 @@ async function sendResourceMessage(cookie: string, resourceBidId: string, body: 
     body: JSON.stringify({
       query: `
         mutation SendResourceMessage($input: SendResourceMessageInput!) {
-          sendResourceMessage(input: $input) { uuid }
+          sendResourceMessage(input: $input) { resourceMessage { id } }
         }
       `,
       variables: { input: { resourceBidId, body, imageUrls: [] } }
     })
   });
   const json = await res.json() as {
-    data?: { sendResourceMessage: { uuid: string } };
+    data?: { sendResourceMessage: { resourceMessage: { id: string } } };
     errors?: Array<{ message: string }>;
   };
   expect(json.errors).toBeUndefined();
-  return json.data!.sendResourceMessage.uuid;
+  return json.data!.sendResourceMessage.resourceMessage.id;
 }
 
 async function listConversations(
@@ -165,12 +165,12 @@ describe("chat conversations integration", () => {
     const creatorList = await listConversations(creatorCookie);
     const resourceConvForCreator = creatorList.find(c => c.contextId === resource.id);
     expect(resourceConvForCreator).toBeDefined();
-    expect(resourceConvForCreator?.conversationKind).toBe("resource");
+    expect(resourceConvForCreator?.conversationKind).toBe("RESOURCE");
     expect(resourceConvForCreator?.contextTitle).toBe(resource.title);
     expect(resourceConvForCreator?.otherAccountId).toBe(bidder.accountId);
     expect(resourceConvForCreator?.lastMessagePreview).toBe("Thanks for your interest!");
-    // Message was sent BY the creator, so unread count for creator is 0
-    expect(resourceConvForCreator?.unreadCount).toBe(0);
+    // Bid's initial message from bidder was inserted into the thread, so creator has 1 unread
+    expect(resourceConvForCreator?.unreadCount).toBe(1);
 
     const bidderList = await listConversations(bidderCookie);
     const resourceConvForBidder = bidderList.find(c => c.contextId === resource.id);
@@ -227,8 +227,8 @@ describe("chat conversations integration", () => {
 
     // The claimer/bidder should see both conversations: the need thread and the resource thread
     const claimerList = await listConversations(claimerCookie);
-    const needConv = claimerList.find(c => c.conversationKind === "need" && c.contextId === need.id);
-    const resourceConv = claimerList.find(c => c.conversationKind === "resource" && c.contextId === resource.id);
+    const needConv = claimerList.find(c => c.conversationKind === "NEED" && c.contextId === need.id);
+    const resourceConv = claimerList.find(c => c.conversationKind === "RESOURCE" && c.contextId === resource.id);
 
     expect(needConv).toBeDefined();
     expect(resourceConv).toBeDefined();
@@ -318,7 +318,7 @@ describe("chat conversations integration", () => {
             markResourceMessagesRead(input: $input) { integer }
           }
         `,
-        variables: { input: { conversationId: convId } }
+        variables: { input: { pConversationId: convId } }
       })
     });
     const markJson = await markRes.json() as {
@@ -368,7 +368,7 @@ describe("chat conversations integration", () => {
       body: JSON.stringify({
         query: `
           mutation SendResourceMessage($input: SendResourceMessageInput!) {
-            sendResourceMessage(input: $input) { uuid }
+            sendResourceMessage(input: $input) { resourceMessage { id } }
           }
         `,
         variables: { input: { resourceBidId: bidId, body: "Sneaky message", imageUrls: [] } }
