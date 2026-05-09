@@ -363,7 +363,7 @@ export default function PublicNeedsPage() {
                     ) : null}
 
                     <Typography color="text.secondary" variant="caption">
-                      {need.location} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))} • {t("browse.queryOrigin")}: {need.queryLatitude}, {need.queryLongitude}
+                      {need.location} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))}
                     </Typography>
                   </Stack>
                 }

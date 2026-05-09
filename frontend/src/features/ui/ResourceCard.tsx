@@ -160,16 +160,20 @@ export function ResourceCard({
         {images.length > 1 && imageIndex > 0 ? (
           <IconButton
             onClick={prevImage}
-            size="small"
-            sx={{
-              bgcolor: "rgba(255,255,255,0.8)",
-              bottom: 8,
-              left: 8,
+            size="medium"
+            sx={(theme) => ({
+              bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.95)",
+              border: `1px solid ${theme.palette.divider}`,
+              color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
+              bottom: 10,
+              left: -18,
               position: "absolute",
-              "&:hover": { bgcolor: "rgba(255,255,255,0.95)" },
-            }}
+              "&:hover": {
+                bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.92)" : "rgba(255, 255, 255, 1)"
+              },
+            })}
           >
-            <ArrowBackIosNewIcon fontSize="small" />
+            <ArrowBackIosNewIcon fontSize="medium" />
           </IconButton>
         ) : null}
 
@@ -177,16 +181,20 @@ export function ResourceCard({
         {images.length > 1 && imageIndex < images.length - 1 ? (
           <IconButton
             onClick={nextImage}
-            size="small"
-            sx={{
-              bgcolor: "rgba(255,255,255,0.8)",
-              bottom: 8,
+            size="medium"
+            sx={(theme) => ({
+              bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.95)",
+              border: `1px solid ${theme.palette.divider}`,
+              color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
+              bottom: 10,
               position: "absolute",
-              right: 8,
-              "&:hover": { bgcolor: "rgba(255,255,255,0.95)" },
-            }}
+              right: -18,
+              "&:hover": {
+                bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.92)" : "rgba(255, 255, 255, 1)"
+              },
+            })}
           >
-            <ArrowForwardIosIcon fontSize="small" />
+            <ArrowForwardIosIcon fontSize="medium" />
           </IconButton>
         ) : null}
 

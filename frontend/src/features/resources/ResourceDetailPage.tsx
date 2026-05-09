@@ -328,11 +328,20 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 <IconButton
                   disabled={currentImageIndex === 0 || imageUrls.length <= 1}
                   onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 1))}
-                  sx={{
-                    visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible"
-                  }}
+                  size="large"
+                  sx={(theme) => ({
+                    visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible",
+                    bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.78)" : "rgba(255, 255, 255, 0.94)",
+                    border: `1px solid ${theme.palette.divider}`,
+                    color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
+                    height: 56,
+                    width: 56,
+                    "&:hover": {
+                      bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 1)"
+                    }
+                  })}
                 >
-                  <ArrowBackIosNewIcon fontSize="small" />
+                  <ArrowBackIosNewIcon fontSize="medium" />
                 </IconButton>
 
                 <Box
@@ -358,11 +367,20 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 <IconButton
                   disabled={currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1}
                   onClick={() => setCurrentImageIndex((prev) => Math.min(imageUrls.length - 1, prev + 1))}
-                  sx={{
-                    visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible"
-                  }}
+                  size="large"
+                  sx={(theme) => ({
+                    visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible",
+                    bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.78)" : "rgba(255, 255, 255, 0.94)",
+                    border: `1px solid ${theme.palette.divider}`,
+                    color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
+                    height: 56,
+                    width: 56,
+                    "&:hover": {
+                      bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 1)"
+                    }
+                  })}
                 >
-                  <ArrowForwardIosIcon fontSize="small" />
+                  <ArrowForwardIosIcon fontSize="medium" />
                 </IconButton>
               </Box>
 

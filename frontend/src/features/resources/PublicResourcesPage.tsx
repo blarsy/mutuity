@@ -79,7 +79,7 @@ function buildResourceTags(resource: PublicResourceCard, t: (key: string) => str
     tags.push(t("tags.deliveryAvailable"));
   }
 
-  return tags;
+  return tags.filter((tag): tag is string => Boolean(tag && tag.trim()));
 }
 
 export default function PublicResourcesPage() {
@@ -287,7 +287,7 @@ export default function PublicResourcesPage() {
                       {buildResourceTags(resource, t).map(tag => (
                         <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
                       ))}
-                      {resource.categoryLabels.map(label => (
+                      {resource.categoryLabels.filter((label): label is string => Boolean(label && label.trim())).map(label => (
                         <Chip
                           key={`${resource.id}-category-${label}`}
                           color="primary"
