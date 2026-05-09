@@ -33,6 +33,7 @@ import type { ResourceBidStatus } from "../features/resources/types";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { conversationThreadUrl } from "../features/chat/chatRouting";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
+import { ListingHeader } from "../features/ui/ListingHeader";
 
 const PAGE_SIZE = 5;
 
@@ -141,6 +142,17 @@ function BidCard({
         p: 2
       }}
     >
+      <ListingHeader
+        creatorName={counterpartyLabel}
+        expiresAt={bid.validUntil}
+        expiresLabel="Valid until"
+        noDateLabel="No date"
+        noImageLabel="No image"
+        onCreatorClick={undefined}
+        thumbnailAlt={resource.title}
+        thumbnailUrl={resource.imageUrls?.[0] ?? null}
+      />
+
       <Stack alignItems="flex-start" direction="row" justifyContent="space-between" spacing={1}>
         <Typography
           component={NextLink}

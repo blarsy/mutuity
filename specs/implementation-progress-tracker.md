@@ -33,7 +33,7 @@ Cadence: update at least once per workday
 | P6 | Conversation layer | 006 | DONE | 100% | 2026-05-09 |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
-| P9 | Listing visual identity | 009 | IN PROGRESS | 60% | TBD |
+| P9 | Listing visual identity | 009 | DONE | 100% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -214,7 +214,7 @@ Definition of Done:
 
 ### P9 - Listing Visual Identity (009)
 
-Status: IN PROGRESS
+Status: DONE
 Goal: give needs visual parity with resources (image upload + storage), then unify all card and thread header surfaces under a single `ListingHeader` component.
 
 Checkpoints:
@@ -223,18 +223,18 @@ Checkpoints:
 - [x] Need creation and editing forms include image upload control.
 - [x] `ListingHeader` component created and tested.
 - [x] `ResourceCard` and `NeedCard` delegate header row to `ListingHeader`.
-- [ ] Bids workspace `BidCard` and claims workspace claim card use `ListingHeader`.
-- [ ] `ConversationThread` header enriched with counterparty avatar and listing thumbnail.
+- [x] Bids workspace `BidCard` and claims workspace claim card use `ListingHeader`.
+- [x] `ConversationThread` header enriched with counterparty avatar and listing thumbnail.
 
 Definition of Done:
 
-- [ ] All card and thread header surfaces display a consistent listing identity strip for both resources and needs.
-- [ ] No surface shows a broken image element when a listing has no images.
+- [x] All card and thread header surfaces display a consistent listing identity strip for both resources and needs.
+- [x] No surface shows a broken image element when a listing has no images.
 
 ## Active Work Queue
 
-Current phase: P9
-Current milestone: Listing identity shared component rollout
+Current phase: Completed through P9
+Current milestone: Awaiting definition of next roadmap phase
 
 This week priorities:
 

@@ -35,6 +35,7 @@ type ClaimOverviewNode = {
     title: string;
     creatorAccountId: string;
     proposedTopesAmount: number | null;
+    imageUrls: string[];
   };
   accountByClaimerAccountId: {
     id: string;
@@ -379,6 +380,7 @@ export default function ClaimsPage() {
                           ? t("yourNote", { message: claim.message })
                           : isOpen ? t("openClaimHint") : null
                       }
+                      imageUrls={need.imageUrls}
                       footer={
                         <Stack spacing={0.5}>
                           {!isOpen ? (
@@ -529,6 +531,7 @@ export default function ClaimsPage() {
                           ? t("helperNote", { message: claim.message })
                           : isOpen ? t("reviewClaimHint") : null
                       }
+                      imageUrls={need.imageUrls}
                       footer={
                         <Stack spacing={0.5}>
                             {!isOpen ? (

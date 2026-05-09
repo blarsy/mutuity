@@ -3,6 +3,7 @@ import { Box, IconButton, Link, Tooltip, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { conversationContextUrl, conversationParticipantUrl } from "./chatRouting";
+import { AvatarIconButton } from "../ui/AvatarIconButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,7 +21,9 @@ export function ConversationHeader({
   kind,
   contextId,
   contextTitle,
+  listingThumbnailUrl,
   otherAccountId,
+  otherAccountAvatarUrl,
   otherAccountDisplayName,
   onBack,
   t
@@ -28,7 +31,9 @@ export function ConversationHeader({
   kind: ConversationKind;
   contextId: string | null;
   contextTitle: string | null;
+  listingThumbnailUrl?: string | null;
   otherAccountId?: string | null;
+  otherAccountAvatarUrl?: string | null;
   otherAccountDisplayName?: string | null;
   onBack?: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -45,6 +50,41 @@ export function ConversationHeader({
           </IconButton>
         </Tooltip>
       )}
+      <Box
+        sx={{
+          alignItems: "center",
+          bgcolor: listingThumbnailUrl ? "grey.100" : "grey.50",
+          border: theme => `1px solid ${theme.palette.divider}`,
+          borderRadius: 1,
+          color: "text.secondary",
+          display: "flex",
+          flexShrink: 0,
+          height: 32,
+          justifyContent: "center",
+          overflow: "hidden",
+          width: 32
+        }}
+      >
+        {listingThumbnailUrl ? (
+          <Box
+            component="img"
+            alt={contextTitle ?? "Listing"}
+            src={listingThumbnailUrl}
+            sx={{ display: "block", height: "100%", objectFit: "cover", width: "100%" }}
+          />
+        ) : (
+          <Typography variant="caption">•</Typography>
+        )}
+      </Box>
+
+      {otherAccountDisplayName ? (
+        <AvatarIconButton
+          displayName={otherAccountDisplayName}
+          imageUrl={otherAccountAvatarUrl ?? null}
+          onClick={undefined}
+        />
+      ) : null}
+
       <Box sx={{ flex: 1, overflow: "hidden" }}>
         {contextTitle && contextUrl ? (
           <Link

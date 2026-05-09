@@ -77,9 +77,9 @@ type ResourceConversationData = {
     ownerAccountId: string;
     bidderAccountId: string;
     createdAt: string;
-    resourceByResourceId?: { id: string; title: string } | null;
-    accountByOwnerAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
-    accountByBidderAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
+    resourceByResourceId?: { id: string; title: string; imageUrls?: string[] | null } | null;
+    accountByOwnerAccountId?: { id: string; displayName: string | null; externalSubject: string; avatarUrl?: string | null } | null;
+    accountByBidderAccountId?: { id: string; displayName: string | null; externalSubject: string; avatarUrl?: string | null } | null;
     resourceMessagesByConversationId: { nodes: (Message & { resourceMessageImagesByMessageId: { nodes: MessageImage[] } })[] };
   } | null;
 };
@@ -91,9 +91,9 @@ type ClaimConversationData = {
     creatorAccountId: string;
     claimerAccountId: string;
     createdAt: string;
-    needByNeedId?: { id: string; title: string } | null;
-    accountByCreatorAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
-    accountByClaimerAccountId?: { id: string; displayName: string | null; externalSubject: string } | null;
+    needByNeedId?: { id: string; title: string; imageUrls?: string[] | null } | null;
+    accountByCreatorAccountId?: { id: string; displayName: string | null; externalSubject: string; avatarUrl?: string | null } | null;
+    accountByClaimerAccountId?: { id: string; displayName: string | null; externalSubject: string; avatarUrl?: string | null } | null;
     claimMessagesByConversationId: { nodes: (Message & { claimMessageImagesByMessageId: { nodes: MessageImage[] } })[] };
   } | null;
 };
@@ -238,6 +238,10 @@ export function ConversationThread({
 
   const otherAccountDisplayName =
     otherAccount?.displayName ?? otherAccount?.externalSubject ?? null;
+  const otherAccountAvatarUrl = otherAccount?.avatarUrl ?? null;
+  const listingThumbnailUrl = isResource
+    ? (resourceConv?.resourceByResourceId?.imageUrls?.[0] ?? null)
+    : (claimConv?.needByNeedId?.imageUrls?.[0] ?? null);
 
   useAccountEventSignal(() => {
     if (isResource) {
@@ -349,8 +353,10 @@ export function ConversationThread({
         contextId={contextId}
         contextTitle={contextTitle}
         kind={kind}
+        listingThumbnailUrl={listingThumbnailUrl}
         onBack={onBack}
         otherAccountId={otherAccountId}
+        otherAccountAvatarUrl={otherAccountAvatarUrl}
         otherAccountDisplayName={otherAccountDisplayName}
         t={t}
       />
