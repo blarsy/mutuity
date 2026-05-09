@@ -36,7 +36,21 @@
     "back": "Retour aux conversations",
     "messagePlaceholder": "Écrivez un message…",
     "send": "Envoyer",
+    "attachImages": "Joindre des images",
     "sendHint": "Ctrl+Entrée pour envoyer",
-    "sendError": "Échec de l'envoi du message. Veuillez réessayer."
+    "sendError": "Échec de l'envoi du message. Veuillez réessayer.",
+    "imagesAttached": "{{count}} image(s) jointe(s) (max {{max}})"
+  },
+  "imageUpload": {
+    "title": "Ajouter des images au message",
+    "selectFile": "Sélectionner un fichier",
+    "dragHint": "ou glissez des images ici",
+    "cropHint": "Tracez une zone de recadrage carrée sur l'image",
+    "uploadImage": "Recadrer et télécharger",
+    "uploadedImages": "Téléchargé {{count}} sur {{max}} image(s)",
+    "removeImage": "Supprimer l'image",
+    "fileFormatError": "Fichier non reconnu comme image. Utilisez PNG, JPEG, GIF ou WebP.",
+    "maxImagesReached": "Vous avez atteint le maximum de {{max}} images par message.",
+    "uploadError": "Le téléchargement a échoué. Veuillez réessayer."
   }
 }

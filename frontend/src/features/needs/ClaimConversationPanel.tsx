@@ -6,11 +6,14 @@ import {
   Button,
   Card,
   CardContent,
+  IconButton,
   Link,
   Stack,
   TextField,
+  Tooltip,
   Typography
 } from "@mui/material";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -24,6 +27,7 @@ import {
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
 import { logBackofficeError } from "../logging/operationalLogger";
 import { parseImageUrls, MAX_IMAGE_ATTACHMENTS } from "../chat/ConversationThread";
+import { ChatImageUploadDialog } from "../chat/ChatImageUploadDialog";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -160,7 +164,8 @@ export function ClaimConversationThreadView({
 export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConversationPanelProps) {
   const { t } = useTranslation("needs");
   const [draftBody, setDraftBody] = useState("");
-  const [draftImageUrls, setDraftImageUrls] = useState("");
+  const [draftImageUrls, setDraftImageUrls] = useState<string[]>([]);
+  const [showImageDialog, setShowImageDialog] = useState(false);
 
   const [sendClaimMessage, { loading: sendLoading, error: sendError }] = useMutation(
     SEND_CLAIM_MESSAGE_MUTATION
@@ -259,13 +264,13 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
         input: {
           needClaimId: claim.id,
           body: draftBody.trim(),
-          imageUrls: parseImageUrls(draftImageUrls)
+          imageUrls: draftImageUrls
         }
       }
     });
 
     setDraftBody("");
-    setDraftImageUrls("");
+    setDraftImageUrls([]);
     await refetchConv();
   };
 
@@ -337,28 +342,37 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
               value={draftBody}
               onChange={event => setDraftBody(event.target.value)}
             />
-            <TextField
-              fullWidth
-              disabled={!canSend || sendLoading}
-              error={parseImageUrls(draftImageUrls).length > MAX_IMAGE_ATTACHMENTS}
-              helperText={
-                parseImageUrls(draftImageUrls).length > MAX_IMAGE_ATTACHMENTS
-                  ? t("claimConversation.tooManyImages", { max: MAX_IMAGE_ATTACHMENTS })
-                  : t("claimConversation.imageHelper")
-              }
-              label={t("claimConversation.imageMetadata")}
-              minRows={2}
-              multiline
-              placeholder={t("claimConversation.imagePlaceholder")}
-              value={draftImageUrls}
-              onChange={event => setDraftImageUrls(event.target.value)}
-            />
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Tooltip title={t("claimConversation.attachImages")}>
+                <IconButton
+                  disabled={!canSend || sendLoading}
+                  color={draftImageUrls.length > 0 ? "primary" : "default"}
+                  onClick={() => setShowImageDialog(true)}
+                  size="small"
+                >
+                  <AttachFileIcon />
+                </IconButton>
+              </Tooltip>
+              {draftImageUrls.length > 0 && (
+                <Typography color="text.secondary" variant="caption">
+                  {t("claimConversation.imagesAttached", { count: draftImageUrls.length, max: MAX_IMAGE_ATTACHMENTS })}
+                </Typography>
+              )}
+            </Stack>
             <Box>
-              <Button disabled={!canSend || sendLoading || !draftBody.trim() || parseImageUrls(draftImageUrls).length > MAX_IMAGE_ATTACHMENTS} onClick={() => void handleSendMessage()} variant="contained">
+              <Button disabled={!canSend || sendLoading || !draftBody.trim() || draftImageUrls.length > MAX_IMAGE_ATTACHMENTS} onClick={() => void handleSendMessage()} variant="contained">
                 {sendLoading ? t("claimConversation.sending") : conversation ? t("claimConversation.sendMessage") : t("claimConversation.startConversation")}
               </Button>
             </Box>
           </Stack>
+
+          <ChatImageUploadDialog
+            open={showImageDialog}
+            onClose={() => setShowImageDialog(false)}
+            onImagesAdded={(newUrls) => setDraftImageUrls([...draftImageUrls, ...newUrls])}
+            maxImages={MAX_IMAGE_ATTACHMENTS}
+            currentImageUrls={draftImageUrls}
+          />
         </Stack>
       </CardContent>
     </Card>

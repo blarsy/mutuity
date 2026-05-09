@@ -36,7 +36,21 @@
     "back": "Back to conversations",
     "messagePlaceholder": "Write a message…",
     "send": "Send",
+    "attachImages": "Attach images",
     "sendHint": "Ctrl+Enter to send",
-    "sendError": "Failed to send message. Please try again."
+    "sendError": "Failed to send message. Please try again.",
+    "imagesAttached": "{{count}} image(s) attached (max {{max}})"
+  },
+  "imageUpload": {
+    "title": "Add images to message",
+    "selectFile": "Select a file",
+    "dragHint": "or drag images here",
+    "cropHint": "Draw a square crop area on the image",
+    "uploadImage": "Crop and upload",
+    "uploadedImages": "Uploaded {{count}} of {{max}} image(s)",
+    "removeImage": "Remove image",
+    "fileFormatError": "File not recognised as an image. Use PNG, JPEG, GIF or WebP.",
+    "maxImagesReached": "You've reached the maximum of {{max}} images per message.",
+    "uploadError": "Upload failed. Please try again."
   }
 }

@@ -4,7 +4,6 @@ import {
   Alert,
   Box,
   CircularProgress,
-  Collapse,
   Divider,
   Fab,
   IconButton,
@@ -30,6 +29,7 @@ import {
   MARK_CLAIM_MESSAGES_READ_MUTATION
 } from "./chat.queries";
 import { ConversationHeader } from "./ConversationHeader";
+import { ChatImageUploadDialog } from "./ChatImageUploadDialog";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
@@ -444,8 +444,8 @@ function MessageComposer({
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const [body, setBody] = useState("");
-  const [imageUrlsInput, setImageUrlsInput] = useState("");
-  const [showImageInput, setShowImageInput] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [showImageDialog, setShowImageDialog] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
@@ -454,14 +454,12 @@ function MessageComposer({
   const [sendNeedMessage] = useMutation<SendNeedMessageMutationData>(SEND_NEED_MESSAGE_MUTATION);
   const [sendClaimMessage] = useMutation(SEND_CLAIM_MESSAGE_MUTATION);
 
-  const parsedImageUrls = parseImageUrls(imageUrlsInput);
-  const tooManyImages = parsedImageUrls.length > MAX_IMAGE_ATTACHMENTS;
+  const tooManyImages = imageUrls.length > MAX_IMAGE_ATTACHMENTS;
   const canSend = isComposerBodyReady(body) && !tooManyImages;
 
   const handleSend = async () => {
     const trimmed = body.trim();
     if (!trimmed || tooManyImages) return;
-    const imageUrls = parsedImageUrls;
     setSending(true);
     setSendError(null);
     try {
@@ -529,12 +527,11 @@ function MessageComposer({
         }
       }
       setBody("");
-      setImageUrlsInput("");
-      setShowImageInput(false);
+      setImageUrls([]);
+      setSending(false);
       onSent();
     } catch (err: unknown) {
       setSendError(getUserFacingGraphQLErrorMessage(err as Error) ?? t("thread.sendError"));
-    } finally {
       setSending(false);
     }
   };
@@ -567,8 +564,8 @@ function MessageComposer({
         />
         <Tooltip title={t("thread.attachImages")}>
           <IconButton
-            color={showImageInput ? "primary" : "default"}
-            onClick={() => setShowImageInput(v => !v)}
+            color={imageUrls.length > 0 ? "primary" : "default"}
+            onClick={() => setShowImageDialog(true)}
             size="small"
           >
             <AttachFileIcon />
@@ -587,29 +584,22 @@ function MessageComposer({
           </span>
         </Tooltip>
       </Stack>
-      <Collapse in={showImageInput}>
-        <Box sx={{ mt: 1 }}>
-          <TextField
-            disabled={sending}
-            error={tooManyImages}
-            fullWidth
-            helperText={
-              tooManyImages
-                ? t("thread.tooManyImages", { max: MAX_IMAGE_ATTACHMENTS })
-                : t("thread.imageUrlsHint", { max: MAX_IMAGE_ATTACHMENTS })
-            }
-            maxRows={3}
-            multiline
-            onChange={e => setImageUrlsInput(e.target.value)}
-            placeholder={t("thread.imageUrlsPlaceholder")}
-            size="small"
-            value={imageUrlsInput}
-          />
-        </Box>
-      </Collapse>
+      {imageUrls.length > 0 && (
+        <Typography color="text.secondary" sx={{ mt: 1 }} variant="caption">
+          {t("thread.imagesAttached", { count: imageUrls.length, max: MAX_IMAGE_ATTACHMENTS })}
+        </Typography>
+      )}
       <Typography color="text.secondary" sx={{ mt: 0.5 }} variant="caption">
         {t("thread.sendHint")}
       </Typography>
+
+      <ChatImageUploadDialog
+        open={showImageDialog}
+        onClose={() => setShowImageDialog(false)}
+        onImagesAdded={(newUrls) => setImageUrls([...imageUrls, ...newUrls])}
+        maxImages={MAX_IMAGE_ATTACHMENTS}
+        currentImageUrls={imageUrls}
+      />
     </Box>
   );
 }

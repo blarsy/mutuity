@@ -152,9 +152,8 @@
     "firstReply": "First reply",
     "replyPlaceholder": "Write your next coordination message",
     "firstReplyPlaceholder": "Write the first message that will open the conversation",
-    "imageHelper": "Optional image URLs, separated by commas or new lines.",
-    "imageMetadata": "Image metadata",
-    "imagePlaceholder": "https://example.com/photo-1.png",
+    "attachImages": "Attach images",
+    "imagesAttached": "{{count}} image(s) attached (max {{max}})",
     "sending": "Sending…",
     "sendMessage": "Send message",
     "startConversation": "Start conversation"
