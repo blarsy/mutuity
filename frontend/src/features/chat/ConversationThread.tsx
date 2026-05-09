@@ -114,16 +114,35 @@ type SendNeedMessageMutationData = {
   } | null;
 };
 
+type MarkResourceMessagesReadMutationData = {
+  markResourceMessagesRead: {
+    integer: number | null;
+  } | null;
+};
+
+type MarkClaimMessagesReadMutationData = {
+  markClaimMessagesRead: {
+    integer: number | null;
+  } | null;
+};
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const NEAR_BOTTOM_THRESHOLD_PX = 80;
 // ─── Main component ──────────────────────────────────────────────────────────
+
+export function sortMessagesByCreatedAtDesc<T extends { createdAt: string }>(messages: T[]): T[] {
+  return [...messages].sort(
+    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+  );
+}
 
 export function ConversationThread({
   kind,
   conversationId,
   draftThread,
   onConversationCreated,
+  onMessagesRead,
   onBack
 }: {
   kind: "need" | "resource";
@@ -135,6 +154,7 @@ export function ConversationThread({
     title: string | null;
   } | null;
   onConversationCreated?: (kind: "need" | "resource", conversationId: string) => void | Promise<void>;
+  onMessagesRead?: () => void;
   onBack?: () => void;
 }) {
   const { t } = useTranslation("chat");
@@ -160,8 +180,12 @@ export function ConversationThread({
       skip: isResource || !conversationId
     });
 
-  const [markResourceRead] = useMutation(MARK_RESOURCE_MESSAGES_READ_MUTATION);
-  const [markClaimRead] = useMutation(MARK_CLAIM_MESSAGES_READ_MUTATION);
+  const [markResourceRead] = useMutation<MarkResourceMessagesReadMutationData>(
+    MARK_RESOURCE_MESSAGES_READ_MUTATION
+  );
+  const [markClaimRead] = useMutation<MarkClaimMessagesReadMutationData>(
+    MARK_CLAIM_MESSAGES_READ_MUTATION
+  );
 
   const loading = isDraftThread ? false : (isResource ? resourceLoading : claimLoading);
   const queryError = isDraftThread ? null : (isResource ? resourceError : claimError);
@@ -172,14 +196,22 @@ export function ConversationThread({
   const claimConv = claimData?.claimConversationById ?? null;
 
   const messages: Message[] = isResource
-    ? (resourceConv?.resourceMessagesByConversationId.nodes ?? []).map(m => ({
-        ...m,
-        images: m.resourceMessageImagesByMessageId.nodes
-      }))
-    : (claimConv?.claimMessagesByConversationId.nodes ?? []).map(m => ({
-        ...m,
-        images: m.claimMessageImagesByMessageId.nodes
-      }));
+    ? sortMessagesByCreatedAtDesc(
+        (resourceConv?.resourceMessagesByConversationId.nodes ?? []).map(m => ({
+          ...m,
+          images: m.resourceMessageImagesByMessageId.nodes
+        }))
+      )
+    : sortMessagesByCreatedAtDesc(
+        (claimConv?.claimMessagesByConversationId.nodes ?? []).map(m => ({
+          ...m,
+          images: m.claimMessageImagesByMessageId.nodes
+        }))
+      );
+
+  const unreadIncomingCount = messages.filter(
+    msg => msg.senderAccountId !== myAccountId && !msg.readAt
+  ).length;
 
   const contextId = isResource
     ? (resourceConv?.resourceId ?? (draftThread?.kind === "resource" ? draftThread.contextId : null) ?? null)
@@ -223,40 +255,40 @@ export function ConversationThread({
   const isInitialLoad = useRef(true);
   const prevMessageCount = useRef(0);
 
-  const isNearBottom = useCallback(() => {
+  const isNearTop = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return true;
-    return el.scrollHeight - el.scrollTop - el.clientHeight <= NEAR_BOTTOM_THRESHOLD_PX;
+    return el.scrollTop <= NEAR_BOTTOM_THRESHOLD_PX;
   }, []);
 
-  const scrollToBottom = useCallback((smooth = false) => {
+  const scrollToTop = useCallback((smooth = false) => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "instant" });
+    el.scrollTo({ top: 0, behavior: smooth ? "smooth" : "instant" });
   }, []);
 
   const handleScroll = useCallback(() => {
-    setShowScrollDown(!isNearBottom());
-  }, [isNearBottom]);
+    setShowScrollDown(!isNearTop());
+  }, [isNearTop]);
 
   // Scroll on initial load; conditionally on new messages
   useEffect(() => {
     if (messages.length === 0) return;
     if (isInitialLoad.current) {
-      scrollToBottom(false);
+      scrollToTop(false);
       isInitialLoad.current = false;
       prevMessageCount.current = messages.length;
       return;
     }
     if (messages.length > prevMessageCount.current) {
       prevMessageCount.current = messages.length;
-      if (isNearBottom()) {
-        scrollToBottom(true);
+      if (isNearTop()) {
+        scrollToTop(true);
       } else {
         setShowScrollDown(true);
       }
     }
-  }, [messages.length, scrollToBottom, isNearBottom]);
+  }, [messages.length, scrollToTop, isNearTop]);
 
   // Reset on conversation change
   useEffect(() => {
@@ -268,13 +300,45 @@ export function ConversationThread({
   // ─── Read receipts ─────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!conversationId || isDraftThread) return;
-    if (isResource) {
-      markResourceRead({ variables: { input: { pConversationId: conversationId } } }).catch(() => {});
-    } else {
-      markClaimRead({ variables: { input: { conversationId } } }).catch(() => {});
-    }
-  }, [conversationId, isResource, isDraftThread, markResourceRead, markClaimRead]);
+    if (!conversationId || isDraftThread || !myAccountId || unreadIncomingCount === 0) return;
+
+    let isActive = true;
+
+    const markAsRead = async () => {
+      try {
+        let markedCount = 0;
+
+        if (isResource) {
+          const result = await markResourceRead({ variables: { input: { pConversationId: conversationId } } });
+          markedCount = result.data?.markResourceMessagesRead?.integer ?? 0;
+        } else {
+          const result = await markClaimRead({ variables: { input: { conversationId } } });
+          markedCount = result.data?.markClaimMessagesRead?.integer ?? 0;
+        }
+
+        if (isActive && markedCount > 0) {
+          onMessagesRead?.();
+        }
+      } catch {
+        // Keep thread usable if read-marking fails transiently.
+      }
+    };
+
+    void markAsRead();
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    conversationId,
+    isResource,
+    isDraftThread,
+    myAccountId,
+    unreadIncomingCount,
+    markResourceRead,
+    markClaimRead,
+    onMessagesRead
+  ]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -329,12 +393,12 @@ export function ConversationThread({
         </Stack>
       </Box>
 
-      {/* Jump-to-bottom FAB */}
+      {/* Jump-to-latest FAB */}
       {showScrollDown && (
         <Box sx={{ bottom: 80, position: "absolute", right: 16, zIndex: 10 }}>
           <Fab
             color="primary"
-            onClick={() => scrollToBottom(true)}
+            onClick={() => scrollToTop(true)}
             size="small"
           >
             <KeyboardDoubleArrowDownIcon />
@@ -355,8 +419,8 @@ export function ConversationThread({
           onSent={() => {
             if (isResource) resourceRefetch();
             else claimRefetch();
-            // After sending, scroll to bottom
-            setTimeout(() => scrollToBottom(true), 100);
+            // After sending, keep the latest message visible at the top.
+            setTimeout(() => scrollToTop(true), 100);
           }}
           resourceConv={resourceConv}
           t={t}
@@ -383,14 +447,20 @@ function MessageBubble({ message, isMine }: { message: Message; isMine: boolean 
       }}
     >
       <Box
-        sx={{
-          backgroundColor: isMine ? "primary.main" : "grey.200",
+        sx={(theme) => ({
+          backgroundColor: isMine
+            ? theme.palette.primary.main
+            : theme.palette.mode === "dark"
+              ? theme.palette.grey[800]
+              : theme.palette.grey[200],
           borderRadius: 2,
-          color: isMine ? "primary.contrastText" : "text.primary",
+          color: isMine
+            ? theme.palette.primary.contrastText
+            : theme.palette.text.primary,
           maxWidth: "65%",
           px: 1.5,
           py: 0.75
-        }}
+        })}
       >
         <Typography sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }} variant="body2">
           {message.body}

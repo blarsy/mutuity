@@ -5,7 +5,8 @@ import { ConversationHeader } from "../../src/features/chat/ConversationHeader";
 import {
   isComposerBodyReady,
   parseImageUrls,
-  MAX_IMAGE_ATTACHMENTS
+  MAX_IMAGE_ATTACHMENTS,
+  sortMessagesByCreatedAtDesc
 } from "../../src/features/chat/ConversationThread";
 import { conversationParticipantUrl } from "../../src/features/chat/chatRouting";
 
@@ -178,6 +179,18 @@ describe("parseImageUrls", () => {
   it("returns an empty array for blank input", () => {
     expect(parseImageUrls("")).toEqual([]);
     expect(parseImageUrls("   \n   ")).toEqual([]);
+  });
+});
+
+describe("sortMessagesByCreatedAtDesc", () => {
+  it("orders the newest messages first", () => {
+    expect(
+      sortMessagesByCreatedAtDesc([
+        { createdAt: "2024-01-01T10:00:00.000Z", id: "older" },
+        { createdAt: "2024-01-01T12:00:00.000Z", id: "newer" },
+        { createdAt: "2024-01-01T11:00:00.000Z", id: "middle" }
+      ]).map(message => message.id)
+    ).toEqual(["newer", "middle", "older"]);
   });
 });
 

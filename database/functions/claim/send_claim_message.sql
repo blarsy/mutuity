@@ -120,6 +120,15 @@ begin
     end if;
   end loop;
 
+  -- Emit account events for real-time UI updates
+  perform pg_notify('account_events_' || v_account_id::text, '');
+  if v_account_id <> v_claim.creator_account_id then
+    perform pg_notify('account_events_' || v_claim.creator_account_id::text, '');
+  end if;
+  if v_account_id <> v_claim.claimer_account_id then
+    perform pg_notify('account_events_' || v_claim.claimer_account_id::text, '');
+  end if;
+
   return v_message;
 end;
 $$;

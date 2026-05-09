@@ -111,6 +111,15 @@ begin
     end if;
   end loop;
 
+  -- Emit account events for real-time UI updates
+  perform pg_notify('account_events_' || v_account_id::text, '');
+  if v_account_id <> v_bid.owner_account_id then
+    perform pg_notify('account_events_' || v_bid.owner_account_id::text, '');
+  end if;
+  if v_account_id <> v_bid.bidder_account_id then
+    perform pg_notify('account_events_' || v_bid.bidder_account_id::text, '');
+  end if;
+
   return v_message;
 end;
 $$;

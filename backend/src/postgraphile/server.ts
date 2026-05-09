@@ -14,8 +14,11 @@ import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
 
 const app = express();
-// PgPubSub is a CJS default export; unwrap the .default when imported as ESM.
-const PgPubSubPlugin = (PgPubSub as unknown as { default: typeof PgPubSub }).default ?? PgPubSub;
+// PgPubSub is published as CJS and can appear as default.default under ESM interop.
+const PgPubSubPlugin =
+  ((PgPubSub as unknown as { default?: { default?: unknown } }).default?.default as object | undefined) ??
+  ((PgPubSub as unknown as { default?: unknown }).default as object | undefined) ??
+  (PgPubSub as unknown as object);
 const pluginHook = makePluginHook([PgPubSubPlugin]);
 const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "admin"]);
 const AUTHENTICATION_ERROR_MESSAGE = "You must sign in to continue.";
@@ -306,6 +309,9 @@ const postgraphileMiddleware = postgraphile(
     pluginHook,
     subscriptions: true,
     simpleSubscriptions: true,
+    graphileBuildOptions: {
+      pgSubscriptionPrefix: ""
+    },
     // Subscriptions share the same session/cookie middleware as HTTP requests.
     websocketMiddlewares: [
       cookieParser(sessionSecret),

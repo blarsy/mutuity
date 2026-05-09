@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
-import { ConversationListPanel } from "../features/chat/ConversationListPanel";
+import { ConversationListPanel, type ConversationNode } from "../features/chat/ConversationListPanel";
 import { ConversationThread } from "../features/chat/ConversationThread";
 import { conversationThreadUrl } from "../features/chat/chatRouting";
 
@@ -55,6 +55,20 @@ export default function ChatPage() {
     await router.replace(conversationThreadUrl(kind, conversationId));
   };
 
+  const handleMessagesRead = () => {
+    setListRefreshToken(current => current + 1);
+  };
+
+  const handleAutoOpenConversation = async (conversation: ConversationNode) => {
+    if (selectedConversationId || draftThread) {
+      return;
+    }
+
+    await router.replace(
+      conversationThreadUrl(conversation.conversationKind as "need" | "resource", conversation.conversationId)
+    );
+  };
+
   if (!isAuthenticated) {
     return (
       <Container maxWidth="md">
@@ -101,6 +115,7 @@ export default function ChatPage() {
             draftThread={draftThread}
             isAuthenticated={isAuthenticated && Boolean(session.account)}
             listRefreshToken={listRefreshToken}
+            onAutoOpenConversation={handleAutoOpenConversation}
             selectedDraft={Boolean(draftThread)}
             selectedConversationId={selectedConversationId}
           />
@@ -124,6 +139,7 @@ export default function ChatPage() {
               draftThread={draftThread}
               kind={selectedKind}
               onConversationCreated={handleConversationCreated}
+              onMessagesRead={handleMessagesRead}
               onBack={handleBack}
             />
           ) : (

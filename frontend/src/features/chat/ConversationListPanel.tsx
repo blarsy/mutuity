@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import NextLink from "next/link";
 import { useQuery } from "@apollo/client/react";
 import {
@@ -24,8 +24,8 @@ import { conversationDraftUrl, conversationThreadUrl } from "./chatRouting";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
-type ConversationNode = {
-  conversationKind: string;
+export type ConversationNode = {
+  conversationKind: "need" | "resource";
   conversationId: string;
   contextId: string;
   contextTitle: string | null;
@@ -48,12 +48,26 @@ type CountChatConversationsData = {
 
 const PAGE_SIZE = 25;
 
+export function getAutoOpenConversation(
+  conversations: ConversationNode[],
+  selectedConversationId: string | null | undefined,
+  selectedDraft: boolean | undefined,
+  search: string
+): ConversationNode | null {
+  if (selectedConversationId || selectedDraft || search) {
+    return null;
+  }
+
+  return conversations[0] ?? null;
+}
+
 export function ConversationListPanel({
   draftThread,
   selectedConversationId,
   isAuthenticated,
   listRefreshToken,
-  selectedDraft
+  selectedDraft,
+  onAutoOpenConversation
 }: {
   draftThread?: {
     kind: "need" | "resource";
@@ -65,10 +79,12 @@ export function ConversationListPanel({
   isAuthenticated: boolean;
   listRefreshToken?: number;
   selectedDraft?: boolean;
+  onAutoOpenConversation?: (conversation: ConversationNode) => void | Promise<void>;
 }) {
   const { t } = useTranslation("chat");
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounced(search, 300);
+  const autoOpenedConversationId = useRef<string | null>(null);
 
   const { data, loading, error, refetch } = useQuery<ListChatConversationsData>(
     LIST_CHAT_CONVERSATIONS_QUERY,
@@ -124,6 +140,21 @@ export function ConversationListPanel({
     : (data?.listChatConversations.nodes ?? []);
   const totalCount = countData?.countChatConversations ?? 0;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
+
+  useEffect(() => {
+    if (!onAutoOpenConversation) return;
+    const topConversation = getAutoOpenConversation(
+      conversations,
+      selectedConversationId,
+      selectedDraft,
+      debouncedSearch
+    );
+    if (!topConversation) return;
+    if (autoOpenedConversationId.current === topConversation.conversationId) return;
+
+    autoOpenedConversationId.current = topConversation.conversationId;
+    void onAutoOpenConversation(topConversation);
+  }, [conversations, debouncedSearch, onAutoOpenConversation, selectedConversationId, selectedDraft]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -208,6 +239,7 @@ function ConversationListItem({
   isSelected: boolean;
 }) {
   const { t } = useTranslation("chat");
+  const effectiveUnreadCount = isSelected ? 0 : conv.unreadCount;
   const threadUrl = isDraft
     ? conversationDraftUrl({
         kind: conv.conversationKind as "need" | "resource",
@@ -227,8 +259,8 @@ function ConversationListItem({
     <ListItem
       disablePadding
       secondaryAction={
-        conv.unreadCount > 0 ? (
-          <Badge badgeContent={conv.unreadCount} color="primary" max={99} />
+        effectiveUnreadCount > 0 ? (
+          <Badge badgeContent={effectiveUnreadCount} color="primary" max={99} />
         ) : null
       }
     >
@@ -236,9 +268,10 @@ function ConversationListItem({
         component={NextLink}
         href={threadUrl}
         selected={isSelected}
-        sx={{ pr: conv.unreadCount > 0 ? 6 : 2 }}
+        sx={{ pr: effectiveUnreadCount > 0 ? 6 : 2 }}
       >
         <ListItemText
+          secondaryTypographyProps={{ component: "div" }}
           primary={
             <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
               <Chip
@@ -249,7 +282,7 @@ function ConversationListItem({
               />
               <Typography
                 component="span"
-                fontWeight={conv.unreadCount > 0 ? 700 : 400}
+                fontWeight={effectiveUnreadCount > 0 ? 700 : 400}
                 noWrap
                 variant="body2"
               >

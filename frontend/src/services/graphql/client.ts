@@ -34,7 +34,7 @@ const wsLink =
     ? new GraphQLWsLink(
         createClient({
           url: graphqlWsUrl,
-          retryAttempts: 3,
+          retryAttempts: 5,
           shouldRetry: () => true
         })
       )

@@ -52,13 +52,18 @@ export function AccountEventSubscriptionProvider({ children }: { children: React
     }
   }, []);
 
-  useSubscription(ACCOUNT_EVENTS_SUBSCRIPTION, {
-    variables: {
-      topic: session.account?.id ? accountEventsTopic(session.account.id) : ""
-    },
-    skip: !session.authenticated || !session.account?.id,
-    onData: emit
-  });
+  useSubscription<{ listen: { relatedNodeId: string } }>(
+    ACCOUNT_EVENTS_SUBSCRIPTION,
+    {
+      variables: {
+        topic: session.account?.id ? accountEventsTopic(session.account.id) : ""
+      },
+      skip: !session.authenticated || !session.account?.id,
+      onData: () => {
+        emit();
+      }
+    }
+  );
 
   const value = useMemo(() => ({ subscribe }), [subscribe]);
 
