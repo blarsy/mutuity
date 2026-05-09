@@ -29,6 +29,12 @@ export const COUNT_CHAT_CONVERSATIONS_QUERY = gql`
   }
 `;
 
+export const COUNT_UNREAD_CHAT_CONVERSATIONS_QUERY = gql`
+  query CountUnreadChatConversations {
+    countUnreadChatConversations
+  }
+`;
+
 /**
  * Load the full thread for a resource-bid-based conversation.
  * Messages are ordered by createdAt ascending so the oldest message

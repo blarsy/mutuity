@@ -34,6 +34,12 @@ export const NOTIFICATIONS_OVERVIEW_QUERY = gql`
   }
 `;
 
+export const COUNT_UNREAD_NOTIFICATIONS_QUERY = gql`
+  query CountUnreadNotifications {
+    countUnreadNotifications
+  }
+`;
+
 export const MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION = gql`
   mutation MarkNeedClaimNotificationRead($input: MarkNeedClaimNotificationReadInput!) {
     markNeedClaimNotificationRead(input: $input) {

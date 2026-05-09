@@ -18,7 +18,8 @@
     "openProfileMenu": "Ouvrir le menu profil",
     "openSignInDialog": "Ouvrir la fenêtre de connexion",
     "profileFallback": "Profil",
-    "signInFallback": "Se connecter"
+    "signInFallback": "Se connecter",
+    "newNotification": "Nouvelle notification reçue"
   },
   "menu": {
     "preferences": "Préférences",
