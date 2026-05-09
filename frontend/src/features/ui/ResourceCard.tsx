@@ -168,9 +168,15 @@ export function ResourceCard({
               bottom: 10,
               left: -18,
               position: "absolute",
+              transition: "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease",
               "&:hover": {
-                bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.92)" : "rgba(255, 255, 255, 1)"
+                bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.92)" : "rgba(255, 255, 255, 1)",
+                boxShadow: theme.shadows[4],
+                transform: "translateY(-1px) scale(1.08)"
               },
+              "&:active": {
+                transform: "scale(0.96)"
+              }
             })}
           >
             <ArrowBackIosNewIcon fontSize="medium" />
@@ -189,9 +195,15 @@ export function ResourceCard({
               bottom: 10,
               position: "absolute",
               right: -18,
+              transition: "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease",
               "&:hover": {
-                bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.92)" : "rgba(255, 255, 255, 1)"
+                bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.92)" : "rgba(255, 255, 255, 1)",
+                boxShadow: theme.shadows[4],
+                transform: "translateY(-1px) scale(1.08)"
               },
+              "&:active": {
+                transform: "scale(0.96)"
+              }
             })}
           >
             <ArrowForwardIosIcon fontSize="medium" />
