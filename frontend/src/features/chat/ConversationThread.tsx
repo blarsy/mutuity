@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   CircularProgress,
+  Dialog,
   Divider,
   Fab,
   IconButton,
@@ -13,6 +14,7 @@ import {
   Typography
 } from "@mui/material";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useTranslation } from "react-i18next";
@@ -368,6 +370,7 @@ export function ConversationThread({
 // ─── Message bubble ───────────────────────────────────────────────────────────
 
 function MessageBubble({ message, isMine }: { message: Message; isMine: boolean }) {
+  const [zoomedImageUrl, setZoomedImageUrl] = useState<string | null>(null);
   const dateStr = new Date(message.createdAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit"
@@ -402,8 +405,17 @@ function MessageBubble({ message, isMine }: { message: Message; isMine: boolean 
                 alt=""
                 component="img"
                 key={img.id}
+                onClick={() => setZoomedImageUrl(img.imageUrl)}
                 src={img.imageUrl}
-                sx={{ borderRadius: 1, maxWidth: "100%", width: "100%" }}
+                sx={{
+                  borderRadius: 1,
+                  cursor: "zoom-in",
+                  display: "block",
+                  height: "auto",
+                  maxHeight: 400,
+                  maxWidth: "min(100%, 400px)",
+                  width: "auto"
+                }}
               />
             ))}
           </Stack>
@@ -415,6 +427,54 @@ function MessageBubble({ message, isMine }: { message: Message; isMine: boolean 
           {dateStr}
         </Typography>
       </Box>
+
+      <Dialog
+        fullScreen
+        onClose={() => setZoomedImageUrl(null)}
+        open={Boolean(zoomedImageUrl)}
+      >
+        <Box
+          sx={{
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.92)",
+            display: "flex",
+            height: "100%",
+            justifyContent: "center",
+            p: 2,
+            position: "relative",
+            width: "100%"
+          }}
+        >
+          <IconButton
+            aria-label="Close image viewer"
+            onClick={() => setZoomedImageUrl(null)}
+            sx={{
+              color: "common.white",
+              position: "absolute",
+              right: 12,
+              top: 12,
+              zIndex: 1
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {zoomedImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <Box
+              alt=""
+              component="img"
+              onClick={() => setZoomedImageUrl(null)}
+              src={zoomedImageUrl}
+              sx={{
+                cursor: "zoom-out",
+                maxHeight: "100%",
+                maxWidth: "100%",
+                objectFit: "contain"
+              }}
+            />
+          )}
+        </Box>
+      </Dialog>
     </Box>
   );
 }

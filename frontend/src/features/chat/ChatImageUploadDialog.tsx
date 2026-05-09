@@ -297,7 +297,7 @@ export function ChatImageUploadDialog({
             onClick={handleConfirm}
             disabled={uploadedUrls.length === 0}
           >
-            {tCommon("actions.close")}
+            Ok
           </Button>
         )}
       </DialogActions>
