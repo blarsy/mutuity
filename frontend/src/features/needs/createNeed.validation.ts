@@ -5,6 +5,7 @@ export type NeedIntensityValue = "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CON
 export type CreateNeedValues = {
   title: string;
   description: string;
+  imageUrls: string[];
   location: string;
   intensity: NeedIntensityValue;
   proposedTopesAmount: number | "";
@@ -22,6 +23,7 @@ export type CreateNeedValues = {
 export const createNeedInitialValues: CreateNeedValues = {
   title: "",
   description: "",
+  imageUrls: [],
   location: "",
   intensity: "SHARING",
   proposedTopesAmount: "",
@@ -55,6 +57,7 @@ function isWithinTopesRange(intensity: NeedIntensityValue, value: number) {
 export const createNeedValidationSchema = Yup.object({
   title: Yup.string().trim().required("Title is required"),
   description: Yup.string().max(8000).optional(),
+  imageUrls: Yup.array().of(Yup.string().url().required()).default([]),
   location: Yup.string().trim().required("Location is required"),
   intensity: Yup.mixed<NeedIntensityValue>()
     .oneOf(["LEG_UP", "SHARING", "COMMITMENT", "RARE_CONTRIBUTION"])

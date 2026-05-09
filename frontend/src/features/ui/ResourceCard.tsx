@@ -1,13 +1,13 @@
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Box, ButtonBase, Card, CardContent, Chip, IconButton, Stack, Typography } from "@mui/material";
+import { Box, ButtonBase, Card, CardContent, IconButton, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
-import { AvatarIconButton } from "./AvatarIconButton";
+import { ListingHeader } from "./ListingHeader";
 
 type ResourceCardProps = {
   title: string;
@@ -24,14 +24,6 @@ type ResourceCardProps = {
   onClick?: () => void;
   onCreatorClick?: () => void;
 };
-
-function formatExpiry(value: string | null | undefined, noDateLabel: string) {
-  if (!value) {
-    return noDateLabel;
-  }
-
-  return new Date(value).toLocaleDateString();
-}
 
 export function ResourceCard({
   title,
@@ -75,39 +67,17 @@ export function ResourceCard({
       })}
       variant="outlined"
     >
-      {/* Header: creator + expiry */}
-      <Stack
-        alignItems="center"
-        direction="row"
-        justifyContent="space-between"
-        spacing={1}
-        sx={{ px: 2, pt: 2 }}
-      >
-        <Stack alignItems="center" direction="row" spacing={1}>
-          <AvatarIconButton
-            displayName={creatorName}
-            imageUrl={creatorImageUrl}
-            onClick={onCreatorClick}
-          />
-          <ButtonBase
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreatorClick?.();
-            }}
-            sx={{ borderRadius: 1, typography: "body2" }}
-          >
-            <Typography color="text.secondary" variant="body2">
-              {creatorName}
-            </Typography>
-          </ButtonBase>
-        </Stack>
-
-        <Chip
-          label={`${t("card.expires")}: ${formatExpiry(expiresAt, t("card.permanent"))}`}
-          size="small"
-          variant="outlined"
-        />
-      </Stack>
+      <ListingHeader
+        creatorImageUrl={creatorImageUrl}
+        creatorName={creatorName}
+        expiresAt={expiresAt}
+        expiresLabel={t("card.expires")}
+        noDateLabel={t("card.permanent")}
+        noImageLabel={t("card.noImageYet")}
+        onCreatorClick={onCreatorClick}
+        thumbnailAlt={title}
+        thumbnailUrl={currentImage}
+      />
 
       {/* Square image gallery */}
       <Box

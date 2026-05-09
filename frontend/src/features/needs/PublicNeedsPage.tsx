@@ -33,6 +33,7 @@ type NeedNode = {
   creatorDisplayName: string;
   title: string;
   description: string | null;
+  imageUrls: string[];
   location: string;
   intensity: string;
   proposedTopesAmount: number | null;
@@ -349,6 +350,7 @@ export default function PublicNeedsPage() {
                 creatorName={need.creatorDisplayName}
                 description={need.description}
                 expiresAt={need.expiresAt}
+                imageUrls={need.imageUrls}
                 footer={
                   <Stack spacing={1}>
                     {(need.requiredToolingText || need.requiredCompetenceText) ? (

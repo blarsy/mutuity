@@ -14,6 +14,7 @@ create or replace function app_public.create_need(
   campaign_id uuid default null,
   latitude numeric default null,
   longitude numeric default null,
+  image_urls text[] default array[]::text[],
   expires_at timestamptz default null
 )
 returns app_public.need
@@ -23,6 +24,7 @@ declare
   v_account_id uuid;
   v_account_latitude numeric;
   v_account_longitude numeric;
+  v_image_urls text[];
   v_need app_public.need;
 begin
   v_account_id := app_private.current_account_id();
@@ -40,6 +42,8 @@ begin
   from app_public.account a
   where a.id = v_account_id;
 
+  v_image_urls := app_private.normalize_text_array(create_need.image_urls);
+
   insert into app_public.need (
     creator_account_id,
     title,
@@ -56,6 +60,7 @@ begin
     required_competence_text,
     required_tooling_text,
     required_people_count,
+    image_urls,
     is_active,
     expires_at
   )
@@ -75,6 +80,7 @@ begin
     nullif(btrim(create_need.required_competence_text), ''),
     nullif(btrim(create_need.required_tooling_text), ''),
     create_need.required_people_count,
+    v_image_urls,
     true,
     create_need.expires_at
   )
@@ -117,8 +123,9 @@ grant execute on function app_public.create_need(
   uuid,
   numeric,
   numeric,
+  text[],
   timestamptz
-) to identified_account, manager, admin;
+) to identified_account, admin;
 
 comment on function app_public.create_need(
   text,
@@ -136,5 +143,6 @@ comment on function app_public.create_need(
   uuid,
   numeric,
   numeric,
+  text[],
   timestamptz
 ) is '@name createNeed';

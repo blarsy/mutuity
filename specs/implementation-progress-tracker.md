@@ -33,7 +33,7 @@ Cadence: update at least once per workday
 | P6 | Conversation layer | 006 | DONE | 100% | 2026-05-09 |
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
-| P9 | Listing visual identity | 009 | NOT STARTED | 0% | TBD |
+| P9 | Listing visual identity | 009 | IN PROGRESS | 60% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -214,15 +214,15 @@ Definition of Done:
 
 ### P9 - Listing Visual Identity (009)
 
-Status: NOT STARTED
+Status: IN PROGRESS
 Goal: give needs visual parity with resources (image upload + storage), then unify all card and thread header surfaces under a single `ListingHeader` component.
 
 Checkpoints:
 
-- [ ] Need `image_urls` column added, mutations updated, GraphQL type exposes `imageUrls`.
-- [ ] Need creation and editing forms include image upload control.
-- [ ] `ListingHeader` component created and tested.
-- [ ] `ResourceCard` and `NeedCard` delegate header row to `ListingHeader`.
+- [x] Need `image_urls` column added, mutations updated, GraphQL type exposes `imageUrls`.
+- [x] Need creation and editing forms include image upload control.
+- [x] `ListingHeader` component created and tested.
+- [x] `ResourceCard` and `NeedCard` delegate header row to `ListingHeader`.
 - [ ] Bids workspace `BidCard` and claims workspace claim card use `ListingHeader`.
 - [ ] `ConversationThread` header enriched with counterparty avatar and listing thumbnail.
 
@@ -233,8 +233,8 @@ Definition of Done:
 
 ## Active Work Queue
 
-Current phase: P7 (or next priority)
-Current milestone: Post-P6 roadmap assessment
+Current phase: P9
+Current milestone: Listing identity shared component rollout
 
 This week priorities:
 

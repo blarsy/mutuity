@@ -1,8 +1,9 @@
-import { Box, ButtonBase, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
+import { Box, ButtonBase, Card, CardContent, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
 
+import { ListingHeader } from "./ListingHeader";
+
 import { RichTextContent } from "../../components/richText/RichTextContent";
-import { AvatarIconButton } from "./AvatarIconButton";
 
 type NeedCardProps = {
   title: string;
@@ -10,6 +11,7 @@ type NeedCardProps = {
   creatorImageUrl?: string | null;
   description?: string | null;
   expiresAt?: string | null;
+  imageUrls?: string[] | null;
   chips?: ReactNode;
   footer?: ReactNode;
   actions?: ReactNode;
@@ -17,46 +19,34 @@ type NeedCardProps = {
   onCreatorClick?: () => void;
 };
 
-function formatExpiry(value?: string | null) {
-  if (!value) {
-    return "No expiry set";
-  }
-
-  return new Date(value).toLocaleDateString();
-}
-
 export function NeedCard({
   title,
   creatorName,
   creatorImageUrl,
   description,
   expiresAt,
+  imageUrls,
   chips,
   footer,
   actions,
   onClick,
   onCreatorClick
 }: NeedCardProps) {
+  const thumbnailUrl = imageUrls?.[0] ?? null;
+
   return (
     <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }} variant="outlined">
-      <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={1} sx={{ px: 2, pt: 2 }}>
-        <Stack alignItems="center" direction="row" spacing={1}>
-          <AvatarIconButton displayName={creatorName} imageUrl={creatorImageUrl} onClick={onCreatorClick} />
-          <ButtonBase
-            onClick={event => {
-              event.stopPropagation();
-              onCreatorClick?.();
-            }}
-            sx={{ borderRadius: 1, typography: "body2" }}
-          >
-            <Typography color="text.secondary" variant="body2">
-              {creatorName}
-            </Typography>
-          </ButtonBase>
-        </Stack>
-
-        <Chip label={`Expires: ${formatExpiry(expiresAt)}`} size="small" variant="outlined" />
-      </Stack>
+      <ListingHeader
+        creatorImageUrl={creatorImageUrl}
+        creatorName={creatorName}
+        expiresAt={expiresAt}
+        expiresLabel="Expires"
+        noDateLabel="No expiry set"
+        noImageLabel="No image"
+        onCreatorClick={onCreatorClick}
+        thumbnailAlt={title}
+        thumbnailUrl={thumbnailUrl}
+      />
 
       <ButtonBase onClick={() => onClick?.()} sx={{ alignItems: "stretch", display: "block", flexGrow: 1, textAlign: "left" }}>
         <CardContent>

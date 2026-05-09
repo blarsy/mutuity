@@ -17,6 +17,7 @@ import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
+import { ImageUploadField } from "../../components/ImageUploadField";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { IntensityPicker } from "../../components/IntensityPicker";
 import { LocationPicker } from "../../components/LocationPicker";
@@ -48,6 +49,7 @@ type CreateNeedMutationData = {
 type CreateNeedMutationVariables = {
   title: string;
   description?: string;
+  imageUrls?: string[];
   location: string;
   intensity: NeedIntensityValue;
   proposedTopesAmount?: number;
@@ -77,6 +79,7 @@ type UpdateNeedMutationVariables = {
   id: string;
   title: string;
   description?: string;
+  imageUrls?: string[];
   location: string;
   intensity: NeedIntensityValue;
   proposedTopesAmount?: number;
@@ -106,6 +109,7 @@ type NeedEditDetailData = {
     id: string;
     title: string;
     description: string | null;
+    imageUrls: string[];
     location: string;
     intensity: NeedIntensityValue;
     proposedTopesAmount: number | null;
@@ -184,6 +188,7 @@ export default function EditNeedPage() {
     return {
       title: editNeed.title,
       description: editNeed.description ?? "",
+      imageUrls: editNeed.imageUrls ?? [],
       location: editNeed.location,
       intensity: editNeed.intensity,
       proposedTopesAmount: editNeed.proposedTopesAmount ?? "",
@@ -203,6 +208,7 @@ export default function EditNeedPage() {
     const normalizedVariables = {
       title: values.title.trim(),
       description: values.description.trim() || undefined,
+      imageUrls: values.imageUrls,
       location: values.location.trim(),
       intensity: values.intensity,
       proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
@@ -339,6 +345,19 @@ export default function EditNeedPage() {
                   }}
                   placeholder={t("form.descriptionLabel")}
                   value={values.description}
+                />
+
+                <ImageUploadField
+                  imageUrls={values.imageUrls}
+                  onImageAdded={(url) => {
+                    void setFieldValue("imageUrls", [...values.imageUrls, url]);
+                  }}
+                  onImageRemoved={(index) => {
+                    void setFieldValue(
+                      "imageUrls",
+                      values.imageUrls.filter((_, i) => i !== index),
+                    );
+                  }}
                 />
 
                 <LocationPicker

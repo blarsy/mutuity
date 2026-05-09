@@ -15,6 +15,7 @@ export const CREATE_NEED_MUTATION = gql`
     $requiredToolingText: String
     $requiredPeopleCount: Int
     $campaignId: UUID
+    $imageUrls: [String!]
     $expiresAt: Datetime
   ) {
     createNeed(
@@ -32,6 +33,7 @@ export const CREATE_NEED_MUTATION = gql`
         requiredToolingText: $requiredToolingText
         requiredPeopleCount: $requiredPeopleCount
         campaignId: $campaignId
+        imageUrls: $imageUrls
         expiresAt: $expiresAt
       }
     ) {
@@ -60,6 +62,7 @@ export const UPDATE_NEED_MUTATION = gql`
     $requiredCompetenceText: String
     $requiredToolingText: String
     $requiredPeopleCount: Int
+    $imageUrls: [String!]
     $expiresAt: Datetime
   ) {
     updateNeedById(
@@ -78,6 +81,7 @@ export const UPDATE_NEED_MUTATION = gql`
           requiredCompetenceText: $requiredCompetenceText
           requiredToolingText: $requiredToolingText
           requiredPeopleCount: $requiredPeopleCount
+          imageUrls: $imageUrls
           expiresAt: $expiresAt
         }
       }
@@ -108,6 +112,7 @@ export const NEED_EDIT_DETAIL_QUERY = gql`
       requiredCompetenceText
       requiredToolingText
       requiredPeopleCount
+      imageUrls
       expiresAt
       campaignNeedsByNeedId(first: 1, orderBy: CREATED_AT_DESC) {
         nodes {
@@ -174,6 +179,7 @@ export const PUBLIC_NEEDS_QUERY = gql`
         requiredCompetenceText
         requiredToolingText
         requiredPeopleCount
+        imageUrls
         expiresAt
         createdAt
         closenessScore
@@ -208,6 +214,7 @@ export const MY_NEEDS_CONNECTION_QUERY = gql`
         toolingRequired
         multiplePeopleRequired
         requiredPeopleCount
+        imageUrls
         expiresAt
         createdAt
         updatedAt
