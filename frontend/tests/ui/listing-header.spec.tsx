@@ -8,6 +8,7 @@ describe("ListingHeader", () => {
     const html = renderToStaticMarkup(
       createElement(ListingHeader, {
         creatorName: "Alice",
+        listingTitle: "Resource title",
         expiresAt: "2026-06-01T10:00:00.000Z",
         expiresLabel: "Expires",
         noDateLabel: "No expiry set",
@@ -15,6 +16,7 @@ describe("ListingHeader", () => {
     );
 
     expect(html).toContain("Alice");
+    expect(html).toContain("Resource title");
     expect(html).toContain("Expires:");
   });
 
@@ -22,6 +24,7 @@ describe("ListingHeader", () => {
     const html = renderToStaticMarkup(
       createElement(ListingHeader, {
         creatorName: "Bob",
+        listingTitle: "Need title",
         expiresAt: null,
         expiresLabel: "Expires",
         noDateLabel: "No expiry set",

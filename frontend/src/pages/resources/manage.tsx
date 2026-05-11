@@ -257,6 +257,7 @@ export default function ManageResourcesPage() {
                   onCreatorClick={() => {
                     void router.push(`/accounts/${resource.creatorAccountId}`);
                   }}
+                  showListingHeader={false}
                   title={resource.title}
                 />
               );

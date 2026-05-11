@@ -5,6 +5,8 @@ export const CREATE_NEED_MUTATION = gql`
     $title: String!
     $description: String
     $location: String!
+    $latitude: BigFloat
+    $longitude: BigFloat
     $intensity: NeedIntensity!
     $proposedTopesAmount: Int
     $objectRequired: Boolean
@@ -23,6 +25,8 @@ export const CREATE_NEED_MUTATION = gql`
         title: $title
         description: $description
         location: $location
+        latitude: $latitude
+        longitude: $longitude
         intensity: $intensity
         proposedTopesAmount: $proposedTopesAmount
         objectRequired: $objectRequired
@@ -53,6 +57,8 @@ export const UPDATE_NEED_MUTATION = gql`
     $title: String!
     $description: String
     $location: String!
+    $latitude: BigFloat
+    $longitude: BigFloat
     $intensity: NeedIntensity!
     $proposedTopesAmount: Int
     $objectRequired: Boolean
@@ -72,6 +78,8 @@ export const UPDATE_NEED_MUTATION = gql`
           title: $title
           description: $description
           location: $location
+          latitude: $latitude
+          longitude: $longitude
           intensity: $intensity
           proposedTopesAmount: $proposedTopesAmount
           objectRequired: $objectRequired
@@ -103,6 +111,8 @@ export const NEED_EDIT_DETAIL_QUERY = gql`
       title
       description
       location
+      latitude
+      longitude
       intensity
       proposedTopesAmount
       objectRequired

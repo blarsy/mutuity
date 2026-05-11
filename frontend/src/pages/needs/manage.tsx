@@ -30,6 +30,7 @@ type ManageNeedNode = {
   title: string;
   description: string | null;
   location: string;
+  imageUrls: string[];
   intensity: string;
   proposedTopesAmount: number | null;
   objectRequired: boolean;
@@ -156,7 +157,7 @@ export default function ManageNeedsPage() {
       (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
     );
   }, [data?.allNeeds?.nodes]);
-
+  
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(deleteError);
 
   const confirmSoftDelete = async () => {
@@ -261,6 +262,7 @@ export default function ManageNeedsPage() {
                     </Typography>
                   )}
                   key={need.id}
+                  imageUrls={need.imageUrls}
                   onClick={() => {
                     void router.push(`/needs/${need.id}`);
                   }}

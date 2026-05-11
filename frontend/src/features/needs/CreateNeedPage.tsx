@@ -51,6 +51,8 @@ type CreateNeedMutationVariables = {
   description?: string;
   imageUrls?: string[];
   location: string;
+  latitude: number;
+  longitude: number;
   intensity: NeedIntensityValue;
   proposedTopesAmount?: number;
   objectRequired?: boolean;
@@ -111,6 +113,8 @@ type NeedEditDetailData = {
     description: string | null;
     imageUrls: string[];
     location: string;
+    latitude: number | null;
+    longitude: number | null;
     intensity: NeedIntensityValue;
     proposedTopesAmount: number | null;
     objectRequired: boolean;
@@ -190,6 +194,8 @@ export default function EditNeedPage() {
       description: editNeed.description ?? "",
       imageUrls: editNeed.imageUrls ?? [],
       location: editNeed.location,
+      latitude: editNeed.latitude ?? 50.6072,
+      longitude: editNeed.longitude ?? 3.3889,
       intensity: editNeed.intensity,
       proposedTopesAmount: editNeed.proposedTopesAmount ?? "",
       objectRequired: editNeed.objectRequired,
@@ -210,6 +216,8 @@ export default function EditNeedPage() {
       description: values.description.trim() || undefined,
       imageUrls: values.imageUrls,
       location: values.location.trim(),
+      latitude: Number(values.latitude),
+      longitude: Number(values.longitude),
       intensity: values.intensity,
       proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
       objectRequired: values.objectRequired,
@@ -363,11 +371,13 @@ export default function EditNeedPage() {
                 <LocationPicker
                   value={{
                     address: values.location,
-                    latitude: 50.6072,
-                    longitude: 3.3889,
+                    latitude: Number(values.latitude) || 50.6072,
+                    longitude: Number(values.longitude) || 3.3889,
                   }}
                   onChange={(loc) => {
                     void setFieldValue("location", loc.address);
+                    void setFieldValue("latitude", loc.latitude);
+                    void setFieldValue("longitude", loc.longitude);
                   }}
                   onBlur={() => {
                     void setFieldTouched("location", true, true);

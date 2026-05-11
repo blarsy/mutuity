@@ -21,6 +21,8 @@ type ResourceCardProps = {
   chips?: ReactNode;
   footer?: ReactNode;
   actions?: ReactNode;
+  showListingHeader?: boolean;
+  showCreatorAvatarInHeader?: boolean;
   onClick?: () => void;
   onCreatorClick?: () => void;
 };
@@ -36,6 +38,8 @@ export function ResourceCard({
   chips,
   footer,
   actions,
+  showListingHeader = true,
+  showCreatorAvatarInHeader = true,
   onClick,
   onCreatorClick,
 }: ResourceCardProps) {
@@ -67,17 +71,21 @@ export function ResourceCard({
       })}
       variant="outlined"
     >
-      <ListingHeader
-        creatorImageUrl={creatorImageUrl}
-        creatorName={creatorName}
-        expiresAt={expiresAt}
-        expiresLabel={t("card.expires")}
-        noDateLabel={t("card.permanent")}
-        noImageLabel={t("card.noImageYet")}
-        onCreatorClick={onCreatorClick}
-        thumbnailAlt={title}
-        thumbnailUrl={currentImage}
-      />
+      {showListingHeader ? (
+        <ListingHeader
+          creatorImageUrl={creatorImageUrl}
+          creatorName={creatorName}
+          expiresAt={expiresAt}
+          expiresLabel={t("card.expires")}
+          listingTitle={title}
+          noDateLabel={t("card.permanent")}
+          noImageLabel={t("card.noImageYet")}
+          onCreatorClick={onCreatorClick}
+          showCreatorAvatar={showCreatorAvatarInHeader}
+          thumbnailAlt={title}
+          thumbnailUrl={images[0] ?? null}
+        />
+      ) : null}
 
       {/* Square image gallery */}
       <Box
@@ -217,9 +225,11 @@ export function ResourceCard({
         <CardContent>
           <Stack spacing={1.5}>
             <Box>
-              <Typography gutterBottom variant="h6">
-                {title}
-              </Typography>
+              {!showListingHeader ? (
+                <Typography gutterBottom variant="h6">
+                  {title}
+                </Typography>
+              ) : null}
               {location ? (
                 <Typography color="text.secondary" variant="body2">
                   {location}

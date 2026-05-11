@@ -7,6 +7,8 @@ export type CreateNeedValues = {
   description: string;
   imageUrls: string[];
   location: string;
+  latitude: number;
+  longitude: number;
   intensity: NeedIntensityValue;
   proposedTopesAmount: number | "";
   objectRequired: boolean;
@@ -25,6 +27,8 @@ export const createNeedInitialValues: CreateNeedValues = {
   description: "",
   imageUrls: [],
   location: "",
+  latitude: 50.6072,
+  longitude: 3.3889,
   intensity: "SHARING",
   proposedTopesAmount: "",
   objectRequired: true,
@@ -59,6 +63,8 @@ export const createNeedValidationSchema = Yup.object({
   description: Yup.string().max(8000).optional(),
   imageUrls: Yup.array().of(Yup.string().url().required()).default([]),
   location: Yup.string().trim().required("Location is required"),
+  latitude: Yup.number().required("Latitude is required"),
+  longitude: Yup.number().required("Longitude is required"),
   intensity: Yup.mixed<NeedIntensityValue>()
     .oneOf(["LEG_UP", "SHARING", "COMMITMENT", "RARE_CONTRIBUTION"])
     .required("Intensity is required"),

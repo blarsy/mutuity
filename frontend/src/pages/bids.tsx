@@ -146,6 +146,7 @@ function BidCard({
         creatorName={counterpartyLabel}
         expiresAt={bid.validUntil}
         expiresLabel="Valid until"
+        listingTitle={resource.title}
         noDateLabel="No date"
         noImageLabel="No image"
         onCreatorClick={undefined}
@@ -154,14 +155,6 @@ function BidCard({
       />
 
       <Stack alignItems="flex-start" direction="row" justifyContent="space-between" spacing={1}>
-        <Typography
-          component={NextLink}
-          href={`/resources/${resource.id}`}
-          sx={{ fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
-          variant="subtitle1"
-        >
-          {resource.title}
-        </Typography>
         <Chip color={bidChipColor(bid.status)} label={t(`statuses.${bid.status}`)} size="small" />
       </Stack>
 

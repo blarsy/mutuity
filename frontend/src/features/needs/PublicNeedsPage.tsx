@@ -168,6 +168,8 @@ export default function PublicNeedsPage() {
   const { data, loading, error } = useQuery<PublicNeedsQueryData, NeedSearchQueryVariables>(
     PUBLIC_NEEDS_QUERY,
     {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
       variables
     }
   );

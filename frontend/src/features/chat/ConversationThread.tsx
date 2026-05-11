@@ -28,11 +28,11 @@ import {
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
   MARK_CLAIM_MESSAGES_READ_MUTATION
 } from "./chat.queries";
-import { ConversationHeader } from "./ConversationHeader";
 import { ChatImageUploadDialog } from "./ChatImageUploadDialog";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { ZoomableImage } from "../../components/ZoomableImage";
+import { ListingHeader } from "../ui/ListingHeader";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -349,16 +349,16 @@ export function ConversationThread({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
-      <ConversationHeader
-        contextId={contextId}
-        contextTitle={contextTitle}
-        kind={kind}
-        listingThumbnailUrl={listingThumbnailUrl}
-        onBack={onBack}
-        otherAccountId={otherAccountId}
-        otherAccountAvatarUrl={otherAccountAvatarUrl}
-        otherAccountDisplayName={otherAccountDisplayName}
-        t={t}
+      <ListingHeader
+        creatorName={otherAccountDisplayName ?? "Unknown"}
+        creatorImageUrl={otherAccountAvatarUrl}
+        expiresLabel={t("thread.listing")}
+        noDateLabel={t("common.nolimit")}
+        expiresAt={undefined}
+        listingTitle={contextTitle ?? "Listing"}
+        thumbnailUrl={listingThumbnailUrl}
+        thumbnailAlt={contextTitle ?? undefined}
+        noImageLabel={t("common.noimage")}
       />
       <Divider />
 
