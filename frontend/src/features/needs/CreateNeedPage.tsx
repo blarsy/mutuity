@@ -145,10 +145,10 @@ export default function EditNeedPage() {
   const { t } = useTranslation("needs");
   const needId = typeof router.query.needId === "string" ? router.query.needId : null;
   const isEditMode = Boolean(needId);
-  const [createNeed, { loading, error, data }] = useMutation<CreateNeedMutationData, CreateNeedMutationVariables>(
+  const [createNeed, { loading, error }] = useMutation<CreateNeedMutationData, CreateNeedMutationVariables>(
     CREATE_NEED_MUTATION
   );
-  const [updateNeedById, { loading: updateLoading, error: updateError, data: updateData }] = useMutation<
+  const [updateNeedById, { loading: updateLoading, error: updateError }] = useMutation<
     UpdateNeedMutationData,
     UpdateNeedMutationVariables
   >(UPDATE_NEED_MUTATION);
@@ -237,6 +237,8 @@ export default function EditNeedPage() {
           ...normalizedVariables
         }
       });
+
+      await router.push("/needs/manage");
       return;
     }
 
@@ -246,6 +248,8 @@ export default function EditNeedPage() {
         campaignId: values.campaignId || undefined
       }
     });
+
+    await router.push("/needs/manage");
   };
 
   if (isEditMode && editNeedLoading) {
@@ -303,16 +307,6 @@ export default function EditNeedPage() {
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
         {campaignOptionsErrorMessage ? <Alert severity="error">{campaignOptionsErrorMessage}</Alert> : null}
-        {data?.createNeed?.need ? (
-          <Alert sx={{ mb: 2 }} severity="success">
-            {t("form.createSuccess", { title: data.createNeed.need.title })}
-          </Alert>
-        ) : null}
-        {updateData?.updateNeedById?.need ? (
-          <Alert sx={{ mb: 2 }} severity="success">
-            {t("form.updateSuccess", { title: updateData.updateNeedById.need.title })}
-          </Alert>
-        ) : null}
 
         <Formik
           enableReinitialize
@@ -320,9 +314,6 @@ export default function EditNeedPage() {
           onSubmit={async (values, helpers) => {
             try {
               await submit(values);
-              if (!isEditMode) {
-                helpers.resetForm();
-              }
             } finally {
               helpers.setSubmitting(false);
             }

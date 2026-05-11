@@ -38,6 +38,7 @@ export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
     $pStartAt: Datetime!
     $pAirdropAt: Datetime!
     $pEndAt: Datetime!
+    $pImageUrl: String
   ) {
     updateCampaignForModeration(
       input: {
@@ -50,12 +51,14 @@ export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
         pStartAt: $pStartAt
         pAirdropAt: $pAirdropAt
         pEndAt: $pEndAt
+        pImageUrl: $pImageUrl
       }
     ) {
       campaign {
         id
         title
         theme
+        imageUrl
         managerNoteFromCreator
         rewardsMultiplier
         airdropAmount
@@ -75,6 +78,7 @@ export const CAMPAIGN_MODERATION_DETAILS_QUERY = gql`
       id
       title
       theme
+      imageUrl
       managerNoteFromCreator
       rewardsMultiplier
       airdropAmount

@@ -6,7 +6,8 @@ create or replace function app_public.create_campaign(
   airdrop_amount integer,
   start_at timestamptz,
   airdrop_at timestamptz,
-  end_at timestamptz
+  end_at timestamptz,
+  image_url text
 )
 returns app_public.campaign
 language plpgsql
@@ -14,8 +15,10 @@ as $$
 declare
   v_account_id uuid;
   v_campaign app_public.campaign;
+  v_image_url text;
 begin
   v_account_id := app_private.current_account_id();
+  v_image_url := nullif(btrim(create_campaign.image_url), '');
 
   if v_account_id is null then
     raise exception using message = 'Authentication required';
@@ -33,6 +36,7 @@ begin
     start_at,
     airdrop_at,
     end_at,
+    image_url,
     moderation_status
   )
   values (
@@ -45,6 +49,7 @@ begin
     create_campaign.start_at,
     create_campaign.airdrop_at,
     create_campaign.end_at,
+    v_image_url,
     'pending'
   )
   returning * into v_campaign;
@@ -61,5 +66,6 @@ comment on function app_public.create_campaign(
   integer,
   timestamptz,
   timestamptz,
-  timestamptz
+  timestamptz,
+  text
 ) is '@name createCampaign';

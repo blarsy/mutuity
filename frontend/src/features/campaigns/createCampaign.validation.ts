@@ -11,6 +11,7 @@ function plainTextFromRichText(value: string) {
 export type CreateCampaignValues = {
   title: string;
   theme: string;
+  imageUrls: string[];
   managerNoteFromCreator: string;
   rewardsMultiplier: number;
   airdropAmount: number;
@@ -22,6 +23,7 @@ export type CreateCampaignValues = {
 export const createCampaignInitialValues: CreateCampaignValues = {
   title: "",
   theme: "",
+  imageUrls: [],
   managerNoteFromCreator: "",
   rewardsMultiplier: 5,
   airdropAmount: 3000,
@@ -35,6 +37,7 @@ export const createCampaignValidationSchema = Yup.object({
   theme: Yup.string()
     .required("Theme is required")
     .test("non-empty-rich-text", "Theme is required", value => plainTextFromRichText(value ?? "").length > 0),
+  imageUrls: Yup.array().of(Yup.string().url()).default([]),
   managerNoteFromCreator: Yup.string().optional(),
   rewardsMultiplier: Yup.number().integer().min(5).max(10).required(),
   airdropAmount: Yup.number().integer().min(3000).max(8000).required(),

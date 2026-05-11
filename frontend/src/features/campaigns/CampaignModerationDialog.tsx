@@ -40,6 +40,7 @@ type CampaignModerationDetailsData = {
     id: string;
     title: string;
     theme: string;
+    imageUrl: string | null;
     managerNoteFromCreator: string | null;
     rewardsMultiplier: number;
     airdropAmount: number;
@@ -68,6 +69,7 @@ type UpdateCampaignForModerationVariables = {
   pCampaignId: string;
   pTitle: string;
   pTheme: string;
+  pImageUrl?: string;
   pManagerNoteFromCreator?: string;
   pRewardsMultiplier: number;
   pAirdropAmount: number;
@@ -110,6 +112,7 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
     return {
       title: campaign.title,
       theme: campaign.theme,
+      imageUrls: campaign.imageUrl ? [campaign.imageUrl] : [],
       managerNoteFromCreator: campaign.managerNoteFromCreator ?? "",
       rewardsMultiplier: campaign.rewardsMultiplier,
       airdropAmount: campaign.airdropAmount,
@@ -127,6 +130,7 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
         pCampaignId: campaignId,
         pTitle: values.title.trim(),
         pTheme: values.theme.trim(),
+        pImageUrl: values.imageUrls[0] ?? undefined,
         pManagerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
         pRewardsMultiplier: values.rewardsMultiplier,
         pAirdropAmount: values.airdropAmount,

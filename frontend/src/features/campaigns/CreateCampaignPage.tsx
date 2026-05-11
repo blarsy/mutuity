@@ -6,6 +6,7 @@ import { CREATE_CAMPAIGN_MUTATION } from "./campaigns.queries";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
+import { ImageUploadField } from "../../components/ImageUploadField";
 import {
   createCampaignInitialValues,
   createCampaignValidationSchema,
@@ -25,6 +26,7 @@ type CreateCampaignMutationData = {
 type CreateCampaignMutationVariables = {
   title: string;
   theme: string;
+  imageUrl?: string;
   managerNoteFromCreator?: string;
   rewardsMultiplier: number;
   airdropAmount: number;
@@ -47,6 +49,7 @@ export default function CreateCampaignPage() {
       variables: {
         title: values.title.trim(),
         theme: values.theme.trim(),
+        imageUrl: values.imageUrls[0] ?? undefined,
         managerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
         rewardsMultiplier: values.rewardsMultiplier,
         airdropAmount: values.airdropAmount,
@@ -126,6 +129,18 @@ export default function CreateCampaignPage() {
                   }}
                   placeholder={t("create.fields.theme")}
                   value={values.theme}
+                />
+                <ImageUploadField
+                  imageUrls={values.imageUrls}
+                  onImageAdded={(url) => {
+                    void setFieldValue("imageUrls", [url]);
+                  }}
+                  onImageRemoved={(index) => {
+                    void setFieldValue(
+                      "imageUrls",
+                      values.imageUrls.filter((_, i) => i !== index),
+                    );
+                  }}
                 />
                 <TextField
                   name="managerNoteFromCreator"

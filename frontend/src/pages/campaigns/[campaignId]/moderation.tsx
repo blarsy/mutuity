@@ -32,12 +32,14 @@ import {
   UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION
 } from "../../../features/campaigns/campaignModeration.queries";
 import { CampaignModerationHistory } from "../../../features/campaigns/CampaignModerationHistory";
+import { ImageUploadField } from "../../../components/ImageUploadField";
 
 type CampaignModerationDetailsData = {
   campaignById: {
     id: string;
     title: string;
     theme: string;
+    imageUrl: string | null;
     managerNoteFromCreator: string | null;
     rewardsMultiplier: number;
     airdropAmount: number;
@@ -66,6 +68,7 @@ type UpdateCampaignForModerationVariables = {
   pCampaignId: string;
   pTitle: string;
   pTheme: string;
+  pImageUrl?: string;
   pManagerNoteFromCreator?: string;
   pRewardsMultiplier: number;
   pAirdropAmount: number;
@@ -112,6 +115,7 @@ export default function CampaignModerationPage() {
     return {
       title: campaign.title,
       theme: campaign.theme,
+      imageUrls: campaign.imageUrl ? [campaign.imageUrl] : [],
       managerNoteFromCreator: campaign.managerNoteFromCreator ?? "",
       rewardsMultiplier: campaign.rewardsMultiplier,
       airdropAmount: campaign.airdropAmount,
@@ -131,6 +135,7 @@ export default function CampaignModerationPage() {
         pCampaignId: campaignId as string,
         pTitle: values.title.trim(),
         pTheme: values.theme.trim(),
+        pImageUrl: values.imageUrls[0] ?? undefined,
         pManagerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
         pRewardsMultiplier: values.rewardsMultiplier,
         pAirdropAmount: values.airdropAmount,
@@ -180,6 +185,30 @@ export default function CampaignModerationPage() {
             </Stack>
 
             <CampaignModerationHistory campaignId={campaignId as string} />
+
+            {campaign.imageUrl ? (
+              <Box
+                sx={{
+                  borderRadius: 1,
+                  maxWidth: 320,
+                  overflow: "hidden",
+                  width: "100%"
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <Box
+                  alt={campaign.title}
+                  component="img"
+                  src={campaign.imageUrl}
+                  sx={{
+                    aspectRatio: "1 / 1",
+                    display: "block",
+                    objectFit: "cover",
+                    width: "100%"
+                  }}
+                />
+              </Box>
+            ) : null}
 
             {updateSuccess ? (
               <Alert severity="success">{t("moderationNotes.updateSuccess")}</Alert>
@@ -232,6 +261,18 @@ export default function CampaignModerationPage() {
                             }}
                             placeholder={t("create.fields.theme")}
                             value={values.theme}
+                          />
+                          <ImageUploadField
+                            imageUrls={values.imageUrls}
+                            onImageAdded={(url) => {
+                              void setFieldValue("imageUrls", [url]);
+                            }}
+                            onImageRemoved={(index) => {
+                              void setFieldValue(
+                                "imageUrls",
+                                values.imageUrls.filter((_, i) => i !== index),
+                              );
+                            }}
                           />
                           <TextField
                             label={t("create.fields.noteForManager")}

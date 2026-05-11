@@ -85,7 +85,7 @@
     "addButton": "Ajouter"
   },
   "manage": {
-    "title": "Espace de gestion des besoins",
+    "title": "Mes besoins",
     "subtitle": "Vos besoins sont affichés en commençant par les plus récemment modifiés.",
     "empty": "Vous n'avez pas encore créé de besoins.",
     "loading": "Chargement de vos besoins…",

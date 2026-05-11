@@ -1,4 +1,3 @@
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
@@ -15,7 +14,7 @@ import {
   Typography
 } from "@mui/material";
 import { Form, Formik } from "formik";
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../auth/requireAuth";
@@ -140,7 +139,7 @@ export default function CreateResourcePage() {
   const { t, i18n } = useTranslation("resources");
   const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
   const isEditMode = Boolean(resourceId);
-  const [publishResource, { loading, error, data }] = useMutation<
+  const [publishResource, { loading, error }] = useMutation<
     PublishResourceMutationData,
     PublishResourceMutationVariables
   >(PUBLISH_RESOURCE_MUTATION);
@@ -157,16 +156,10 @@ export default function CreateResourcePage() {
     }
   });
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const successRef = useRef<HTMLDivElement>(null);
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const editResourceErrorMessage = getUserFacingGraphQLErrorMessage(editResourceError);
 
-  useEffect(() => {
-    if (data?.publishResource?.resource) {
-      successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }, [data]);
   const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
   const editResource = editData?.resourceById ?? null;
 
@@ -217,6 +210,8 @@ export default function CreateResourcePage() {
         expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : undefined
       }
     });
+
+    await router.push("/resources/manage");
   };
 
   if (!isAuthenticated) {
@@ -292,30 +287,6 @@ export default function CreateResourcePage() {
           </Alert>
         ) : null}
 
-        {data?.publishResource?.resource ? (
-          <Alert ref={successRef} severity="success" sx={{ mb: 2 }}>
-            <Stack spacing={1}>
-              <span>
-                {t("form.publishedSuccess", {
-                  title: data.publishResource.resource.title,
-                  action: t(isEditMode ? "form.publishedActionUpdated" : "form.publishedActionCreated")
-                })}
-              </span>
-              <Box>
-                <Button
-                  color="success"
-                  component={NextLink}
-                  href={`/resources/${data.publishResource.resource.id}`}
-                  size="small"
-                  variant="outlined"
-                >
-                  {t("form.viewResource")}
-                </Button>
-              </Box>
-            </Stack>
-          </Alert>
-        ) : null}
-
         <Formik
           enableReinitialize
           initialValues={initialValues}
@@ -323,9 +294,6 @@ export default function CreateResourcePage() {
           onSubmit={async (values, helpers) => {
             try {
               await submit(values);
-              if (!isEditMode) {
-                helpers.resetForm();
-              }
             } finally {
               helpers.setSubmitting(false);
             }

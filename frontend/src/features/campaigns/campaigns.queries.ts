@@ -10,6 +10,7 @@ export const CREATE_CAMPAIGN_MUTATION = gql`
     $startAt: Datetime!
     $airdropAt: Datetime!
     $endAt: Datetime!
+    $imageUrl: String
   ) {
     createCampaign(
       input: {
@@ -21,11 +22,13 @@ export const CREATE_CAMPAIGN_MUTATION = gql`
         startAt: $startAt
         airdropAt: $airdropAt
         endAt: $endAt
+        imageUrl: $imageUrl
       }
     ) {
       campaign {
         id
         title
+        imageUrl
         moderationStatus
         startAt
         airdropAt

@@ -85,7 +85,7 @@
     "addButton": "Add"
   },
   "manage": {
-    "title": "Needs workspace",
+    "title": "My needs",
     "subtitle": "Your needs are shown with the most recently modified items first.",
     "empty": "You have not created any needs yet.",
     "loading": "Loading your needs…",
