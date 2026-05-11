@@ -20,6 +20,39 @@ export type CreateCampaignValues = {
   endAt: string;
 };
 
+function formatDatetimeLocal(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  const hours = String(value.getHours()).padStart(2, "0");
+  const minutes = String(value.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function buildDefaultCampaignDates() {
+  const now = new Date();
+
+  const startAt = new Date(now);
+  startAt.setDate(startAt.getDate() + 4);
+  startAt.setHours(8, 0, 0, 0);
+
+  const airdropAt = new Date(now);
+  airdropAt.setDate(airdropAt.getDate() + 14);
+  airdropAt.setHours(8, 0, 0, 0);
+
+  const endAt = new Date(now);
+  endAt.setDate(endAt.getDate() + 24);
+  endAt.setHours(8, 0, 0, 0);
+
+  return {
+    startAt: formatDatetimeLocal(startAt),
+    airdropAt: formatDatetimeLocal(airdropAt),
+    endAt: formatDatetimeLocal(endAt)
+  };
+}
+
+const defaultCampaignDates = buildDefaultCampaignDates();
+
 export const createCampaignInitialValues: CreateCampaignValues = {
   title: "",
   theme: "",
@@ -27,9 +60,9 @@ export const createCampaignInitialValues: CreateCampaignValues = {
   managerNoteFromCreator: "",
   rewardsMultiplier: 5,
   airdropAmount: 3000,
-  startAt: "",
-  airdropAt: "",
-  endAt: ""
+  startAt: defaultCampaignDates.startAt,
+  airdropAt: defaultCampaignDates.airdropAt,
+  endAt: defaultCampaignDates.endAt
 };
 
 export const createCampaignValidationSchema = Yup.object({

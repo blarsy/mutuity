@@ -2,7 +2,7 @@ import { useMutation } from "@apollo/client/react";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
-import { CREATE_CAMPAIGN_MUTATION } from "./campaigns.queries";
+import { CREATE_CAMPAIGN_MUTATION, CREATE_CAMPAIGN_MUTATION_LEGACY } from "./campaigns.queries";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
@@ -35,29 +35,64 @@ type CreateCampaignMutationVariables = {
   endAt: string;
 };
 
+function isUnsupportedCampaignImageFieldError(error: unknown) {
+  const maybeError = error as {
+    graphQLErrors?: Array<{
+      message?: string;
+    }>;
+  };
+  const messages = maybeError.graphQLErrors?.map(item => item.message ?? "") ?? [];
+  return messages.some(message =>
+    message.includes('Field "imageUrl" is not defined by type "CreateCampaignInput"')
+    || message.includes('Cannot query field "imageUrl" on type "Campaign"')
+  );
+}
+
 export default function CreateCampaignPage() {
   const { t } = useTranslation("campaigns");
   const [createCampaign, { loading, error, data }] = useMutation<
     CreateCampaignMutationData,
     CreateCampaignMutationVariables
   >(CREATE_CAMPAIGN_MUTATION);
+  const [createCampaignLegacy, {
+    loading: legacyLoading,
+    error: legacyError,
+    data: legacyData
+  }] = useMutation<
+    CreateCampaignMutationData,
+    Omit<CreateCampaignMutationVariables, "imageUrl">
+  >(CREATE_CAMPAIGN_MUTATION_LEGACY);
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const createdCampaign = data?.createCampaign?.campaign ?? legacyData?.createCampaign?.campaign;
+  const mutationError = createdCampaign ? null : (legacyError ?? error);
+  const errorMessage = getUserFacingGraphQLErrorMessage(mutationError);
 
   const submit = async (values: CreateCampaignValues) => {
-    await createCampaign({
-      variables: {
-        title: values.title.trim(),
-        theme: values.theme.trim(),
-        imageUrl: values.imageUrls[0] ?? undefined,
-        managerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
-        rewardsMultiplier: values.rewardsMultiplier,
-        airdropAmount: values.airdropAmount,
-        startAt: new Date(values.startAt).toISOString(),
-        airdropAt: new Date(values.airdropAt).toISOString(),
-        endAt: new Date(values.endAt).toISOString()
+    const baseVariables = {
+      title: values.title.trim(),
+      theme: values.theme.trim(),
+      managerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
+      rewardsMultiplier: values.rewardsMultiplier,
+      airdropAmount: values.airdropAmount,
+      startAt: new Date(values.startAt).toISOString(),
+      airdropAt: new Date(values.airdropAt).toISOString(),
+      endAt: new Date(values.endAt).toISOString()
+    };
+
+    try {
+      await createCampaign({
+        variables: {
+          ...baseVariables,
+          imageUrl: values.imageUrls[0] ?? undefined
+        }
+      });
+    } catch (submitError) {
+      if (!isUnsupportedCampaignImageFieldError(submitError)) {
+        throw submitError;
       }
-    });
+
+      await createCampaignLegacy({ variables: baseVariables });
+    }
   };
 
   if (!isAuthenticated) {
@@ -86,9 +121,9 @@ export default function CreateCampaignPage() {
         </Typography>
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
-        {data?.createCampaign?.campaign ? (
+        {createdCampaign ? (
           <Alert sx={{ mb: 2 }} severity="success">
-            {t("create.success", { status: data.createCampaign.campaign.moderationStatus })}
+            {t("create.success", { status: createdCampaign.moderationStatus })}
           </Alert>
         ) : null}
 
@@ -212,7 +247,7 @@ export default function CreateCampaignPage() {
                   InputLabelProps={{ shrink: true }}
                 />
 
-                <Button type="submit" variant="contained" disabled={isSubmitting || loading}>
+                <Button type="submit" variant="contained" disabled={isSubmitting || loading || legacyLoading}>
                   {t("create.submitButton")}
                 </Button>
               </Stack>
