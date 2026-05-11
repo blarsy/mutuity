@@ -305,7 +305,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>

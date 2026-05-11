@@ -25,6 +25,7 @@ import { getBrowserLocation } from "./locationFallback";
 import { VIEWER_CLAIM_OVERVIEW_QUERY } from "./needClaims.queries";
 import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { NeedCard } from "../ui/NeedCard";
+import { listingCardGridSx } from "../ui/listingCardGrid";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
 
 type NeedNode = {
@@ -287,14 +288,7 @@ export default function PublicNeedsPage() {
           <Alert severity="warning">{t("browse.empty")}</Alert>
         ) : null}
 
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            mt: 3
-          }}
-        >
+        <Box sx={{ ...listingCardGridSx, mt: 3 }}>
           {needs.map(need => {
             const ownClaim = myClaimsByNeedId.get(need.id);
             const isCreator = session.account?.id === need.creatorAccountId;

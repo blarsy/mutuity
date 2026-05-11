@@ -24,6 +24,7 @@ import {
 } from "./types";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { ResourceCard } from "../ui/ResourceCard";
+import { listingCardGridSx } from "../ui/listingCardGrid";
 import { PUBLIC_RESOURCES_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
 
 type PublicResourcesQueryData = {
@@ -257,13 +258,7 @@ export default function PublicResourcesPage() {
         ) : resources.length === 0 ? (
           <Alert severity="warning">{t("browse.empty")}</Alert>
         ) : (
-          <Box
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
-            }}
-          >
+          <Box sx={listingCardGridSx}>
             {resources.map(resource => {
               const isCreator = session.account?.id === resource.creatorAccountId;
 

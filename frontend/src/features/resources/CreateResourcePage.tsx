@@ -256,7 +256,7 @@ export default function CreateResourcePage() {
   }
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
           <Box>

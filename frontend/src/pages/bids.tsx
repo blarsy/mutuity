@@ -490,7 +490,7 @@ export default function BidsPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container maxWidth="md" sx={{ py: 3 }}>
       <Stack spacing={4}>
         <Box>
           <Typography variant="h4">{t("workspaceTitle")}</Typography>

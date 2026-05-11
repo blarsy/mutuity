@@ -22,6 +22,7 @@ import { useRequireAuth } from "../../features/auth/requireAuth";
 import { MY_NEEDS_CONNECTION_QUERY, SOFT_DELETE_NEED_MUTATION } from "../../features/needs/needs.queries";
 import { getDisplayIntensityLabel } from "../../features/shared/displayIntensity";
 import { NeedCard } from "../../features/ui/NeedCard";
+import { listingCardGridSx } from "../../features/ui/listingCardGrid";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
 type ManageNeedNode = {
@@ -191,15 +192,12 @@ export default function ManageNeedsPage() {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" gutterBottom variant="h4">
               {t("manage.title")}
-            </Typography>
-            <Typography color="text.secondary">
-              {t("manage.subtitle")}
             </Typography>
           </Box>
 
@@ -210,13 +208,7 @@ export default function ManageNeedsPage() {
             <Alert severity="info">{t("manage.empty")}</Alert>
           ) : null}
 
-          <Box
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))"
-            }}
-          >
+          <Box sx={listingCardGridSx}>
             {sortedNeeds.map(need => {
               const creatorLabel = need.accountByCreatorAccountId?.displayName
                 ?? need.accountByCreatorAccountId?.externalSubject

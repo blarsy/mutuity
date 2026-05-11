@@ -203,7 +203,7 @@ export default function ContributionPage() {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>

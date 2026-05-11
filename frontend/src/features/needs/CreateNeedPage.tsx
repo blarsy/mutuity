@@ -254,7 +254,7 @@ export default function EditNeedPage() {
 
   if (isEditMode && editNeedLoading) {
     return (
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
@@ -267,7 +267,7 @@ export default function EditNeedPage() {
 
   if (isEditMode && !editNeedData?.needById && !editNeedLoading) {
     return (
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
@@ -280,7 +280,7 @@ export default function EditNeedPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
@@ -294,7 +294,7 @@ export default function EditNeedPage() {
   }
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("form.title")}

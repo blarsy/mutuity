@@ -17,6 +17,7 @@ import {
 import { NeedClaimManagementPage } from "../features/needs/NeedClaimManagementPage";
 import { NeedClaimStatusChip } from "../features/needs/NeedClaimStatusChip";
 import { NeedCard } from "../features/ui/NeedCard";
+import { listingCardGridSx } from "../features/ui/listingCardGrid";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
@@ -261,7 +262,7 @@ export default function ClaimsPage() {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -315,13 +316,7 @@ export default function ClaimsPage() {
               <Alert severity="info">{t("sentFilterEmpty")}</Alert>
             ) : (
               <>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
-                  }}
-                >
+                <Box sx={listingCardGridSx}>
                   {sentClaims.map(claim => {
                     const need = claim.needByNeedId;
                     const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
@@ -442,13 +437,7 @@ export default function ClaimsPage() {
               <Alert severity="info">{t("receivedFilterEmpty")}</Alert>
             ) : (
               <>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
-                  }}
-                >
+                <Box sx={listingCardGridSx}>
                   {receivedClaims.map(claim => {
                     const need = claim.needByNeedId;
                     const claimerLabel = claim.accountByClaimerAccountId?.displayName

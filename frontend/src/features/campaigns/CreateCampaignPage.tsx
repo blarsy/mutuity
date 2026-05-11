@@ -62,7 +62,7 @@ export default function CreateCampaignPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("create.title")}
@@ -76,7 +76,7 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           {t("create.title")}

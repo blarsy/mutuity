@@ -22,6 +22,7 @@ import { useRequireAuth } from "../../features/auth/requireAuth";
 import { MY_RESOURCES_CONNECTION_QUERY, RESOURCE_OPEN_BID_COUNT_QUERY, SOFT_DELETE_RESOURCE_MUTATION } from "../../features/resources/resources.queries";
 import { ResourceCard } from "../../features/ui/ResourceCard";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { listingCardGridSx } from "../../features/ui/listingCardGrid";
 
 type ManageResourceNode = {
   id: string;
@@ -181,7 +182,7 @@ export default function ManageResourcesPage() {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -198,11 +199,7 @@ export default function ManageResourcesPage() {
           ) : null}
 
           <Box
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"
-            }}
+              sx={listingCardGridSx}
           >
             {sortedResources.map(resource => {
               const creatorLabel = resource.accountByCreatorAccountId?.displayName
