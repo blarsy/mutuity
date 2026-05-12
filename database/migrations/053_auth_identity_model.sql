@@ -190,7 +190,8 @@ begin
   end if;
 
   if p_provider_email_verified = true and v_email_normalized <> '' then
-    select count(distinct ai.account_id), min(ai.account_id)
+    -- min(uuid) is not directly recognised by plpgsql_check, so cast through text.
+    select count(distinct ai.account_id), min(ai.account_id::text)::uuid
     into v_email_match_count, v_email_match_account_id
     from app_private.account_identity ai
     where ai.provider_email_verified = true

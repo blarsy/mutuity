@@ -43,7 +43,9 @@ drop function if exists app_public.search_needs(
   integer
 );
 
+-- search_needs is NOT recreated here because its return type (app_public.search_need_result)
+-- is introduced in migration 106. Recreating it at that point avoids forward-dependency
+-- errors when applying migrations on a fresh database.
 \ir ../functions/need/create_need.sql
-\ir ../functions/need/search_needs.sql
 
 commit;
