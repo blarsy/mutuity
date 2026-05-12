@@ -28,7 +28,8 @@
   },
   "activationBanner": {
     "text": "Votre compte n'est pas encore activé. Tant que l'activation n'est pas effectuée, aucune ressource ni besoin créés par votre compte ne seront visibles par les autres utilisateurs.",
-    "resendButton": "Renvoyer le mail d'activation"
+    "resendButton": "Renvoyer le mail d'activation",
+    "resendSuccess": "Si un compte existe pour cet email, les instructions de vérification ont été envoyées."
   },
   "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, demandes, discussions et à votre espace de gestion."
 }

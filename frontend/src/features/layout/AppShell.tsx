@@ -51,25 +51,35 @@ export function AppShell({
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
       <AppTopBar colorMode={colorMode} onToggleColorMode={onToggleColorMode} />
       {shouldShowActivationBanner ? (
-        <Alert
-          action={(
-            <Button
-              color="inherit"
-              disabled={resendLoading}
-              onClick={() => void handleResendActivationMail()}
-              size="small"
-              variant="text"
-            >
-              {t("activationBanner.resendButton")}
-            </Button>
-          )}
-          severity="warning"
-          sx={{ borderRadius: 0, py: 0.5 }}
-        >
-          {t("activationBanner.text")}
-          {resendMessage ? ` ${resendMessage}` : ""}
-          {resendError ? ` ${resendError}` : ""}
-        </Alert>
+        <>
+          <Alert
+            action={(
+              <Button
+                color="inherit"
+                disabled={resendLoading}
+                onClick={() => void handleResendActivationMail()}
+                size="small"
+                variant="text"
+              >
+                {t("activationBanner.resendButton")}
+              </Button>
+            )}
+            severity="warning"
+            sx={{ borderRadius: 0, py: 0.5 }}
+          >
+            {t("activationBanner.text")}
+          </Alert>
+          {resendMessage ? (
+            <Alert severity="success" sx={{ borderRadius: 0, py: 0.5 }}>
+              {t("activationBanner.resendSuccess")}
+            </Alert>
+          ) : null}
+          {resendError ? (
+            <Alert severity="error" sx={{ borderRadius: 0, py: 0.5 }}>
+              {resendError}
+            </Alert>
+          ) : null}
+        </>
       ) : null}
       <Box component="main">{children}</Box>
     </Box>
