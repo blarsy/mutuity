@@ -27,7 +27,7 @@ import { IntensityDisplay } from "../../components/IntensityPicker";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { StartConversationDialog } from "../chat/StartConversationDialog";
 import { ResourceBidDialog } from "./ResourceBidDialog";
-import { RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
+import { RESOURCE_BIDS_FOR_RESOURCE_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
 import type { ResourceCategoryOption } from "./types";
 
@@ -65,10 +65,13 @@ type ResourceDetailData = {
       displayName: string | null;
       externalSubject: string;
     } | null;
-    resourceBidsByResourceId: {
-      nodes: ResourceBidSummary[];
-    };
   } | null;
+};
+
+type ResourceBidsForResourceData = {
+  resourceBidsByResourceId: {
+    nodes: ResourceBidSummary[];
+  };
 };
 
 type ResourceCategoryOptionsQueryData = {
@@ -104,6 +107,12 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     variables: { resourceId }
   });
   const resource = data?.resourceById ?? null;
+  const isCreatorEarly = resource?.creatorAccountId === currentAccountId;
+  const isAdmin = session.authenticated && session.role === "admin";
+  const { data: bidsData } = useQuery<ResourceBidsForResourceData>(RESOURCE_BIDS_FOR_RESOURCE_QUERY, {
+    skip: !resource || !currentAccountId || isAdmin,
+    variables: { resourceId }
+  });
   const { data: categoryData } = useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
   const { data: conversationData } = useQuery<ResourceConversationLookupData>(RESOURCE_CONVERSATION_LOOKUP_QUERY, {
     skip: !resource || !currentAccountId || !resource.creatorAccountId || resource.creatorAccountId === currentAccountId,
@@ -114,8 +123,8 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     }
   });
 
-  const isCreator = resource?.creatorAccountId === currentAccountId;
-  const resourceBids = [...(resource?.resourceBidsByResourceId.nodes ?? [])].sort(
+  const isCreator = isCreatorEarly;
+  const resourceBids = [...(bidsData?.resourceBidsByResourceId.nodes ?? [])].sort(
     (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
   const latestReceivedBid = isCreator ? resourceBids[0] ?? null : null;

@@ -33,6 +33,9 @@
     "fields": {
       "title": "Titre de la campagne",
       "theme": "Thème",
+      "themeHelper": "Le thème est un contenu riche pour les personnes qui consultent la campagne. Il présente la campagne en détail pour les lecteurs humains.",
+      "description": "Description (texte brut)",
+      "descriptionHelper": "La description est un texte brut utilisé dans les métadonnées pour les bots et les aperçus. Elle doit résumer le même thème de campagne pour les robots externes.",
       "noteForManager": "Note pour l'administrateur",
       "rewardsMultiplier": "Multiplicateur de récompense",
       "airdropAmount": "Montant de l'airdrop",

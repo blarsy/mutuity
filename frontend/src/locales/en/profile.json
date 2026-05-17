@@ -32,5 +32,21 @@
     "facebook": "Facebook",
     "instagram": "Instagram",
     "x": "X"
+  },
+  "dangerZone": {
+    "title": "Danger zone",
+    "description": "Delete your account and anonymize your profile data. This action is irreversible.",
+    "deleteAccountButton": "Delete account",
+    "dialogTitle": "Delete your account?",
+    "dialogDescription": "Before continuing, review the consequences below.",
+    "confirmLabel": "I understand this action is irreversible.",
+    "cancelButton": "Cancel",
+    "confirmDeleteButton": "Yes, delete my account",
+    "deletingButton": "Deleting account…",
+    "consequences": {
+      "signOut": "You will be signed out immediately.",
+      "anonymization": "Your profile identity fields will be anonymized.",
+      "irreversible": "This action cannot be undone from the app."
+    }
   }
 }

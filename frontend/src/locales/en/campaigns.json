@@ -33,6 +33,9 @@
     "fields": {
       "title": "Campaign title",
       "theme": "Theme",
+      "themeHelper": "Theme is rich content for people on the campaign page. It explains the campaign in detail for human readers.",
+      "description": "Description (plain text)",
+      "descriptionHelper": "Description is plain text used in metadata for bots and previews. It should summarize the same campaign theme for external crawlers.",
       "noteForManager": "Note for administrator",
       "rewardsMultiplier": "Rewards multiplier",
       "airdropAmount": "Airdrop amount",

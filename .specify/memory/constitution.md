@@ -3,7 +3,7 @@
 **Created**: 2026-03-23  
 **Scope**: All development on the Mutuity platform
 **Purpose**: Governing principles that guide every specification, plan, and implementation decision.
-**Document version**: 1.1.0
+**Document version**: 1.2.0
 
 ## 1. Mission & Product Principles
 
@@ -68,6 +68,8 @@ Tope-là already helps users offer underused resources. Mutuity provides the mis
 - Components must be either pure presentational or connected-to-data — avoid mixing concerns in the same component.
 - Storybook stories required for all reusable UI components.
 - Internationalise all user-facing strings at creation time; never retrofit i18n later.
+- Any user-authored rich HTML rendered in the UI must be sanitized through a shared allowlist-based sanitization utility before rendering.
+- Direct rendering of unsanitized HTML is forbidden.
 
 ## 4. UX Consistency
 
@@ -107,7 +109,7 @@ A feature is done when the repository owner has verified the following:
 	- minor for new principles or materially expanded requirements,
 	- patch for wording clarifications that do not change meaning.
 - The document version must be updated whenever this constitution is amended.
-- Last amended: 2026-04-19 (added explicit prohibition of dynamic SQL by default).
+- Last amended: 2026-05-12 (added mandatory HTML sanitization rule for rendered rich content).
 - Each amendment must also update the `Created` or amendment metadata as appropriate so the current governing version is visible at a glance.
 - If an implementation cannot comply with this constitution, the pull request must explicitly document the exception, the reason, and the follow-up plan.
 - Temporary exceptions are allowed only when they are time-boxed and tracked as follow-up work.

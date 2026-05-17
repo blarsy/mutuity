@@ -162,22 +162,30 @@ export const RESOURCE_DETAIL_QUERY = gql`
         displayName
         externalSubject
       }
-      resourceBidsByResourceId {
-        nodes {
+    }
+  }
+`;
+
+export const RESOURCE_BIDS_FOR_RESOURCE_QUERY = gql`
+  query ResourceBidsForResource($resourceId: UUID!) {
+    resourceBidsByResourceId: allResourceBids(
+      condition: { resourceId: $resourceId }
+      orderBy: CREATED_AT_DESC
+    ) {
+      nodes {
+        id
+        resourceId
+        bidderAccountId
+        message
+        proposedTokenAmount
+        status
+        createdAt
+        respondedAt
+        respondedByAccountId
+        accountByBidderAccountId {
           id
-          resourceId
-          bidderAccountId
-          message
-          proposedTokenAmount
-          status
-          createdAt
-          respondedAt
-          respondedByAccountId
-          accountByBidderAccountId {
-            id
-            displayName
-            externalSubject
-          }
+          displayName
+          externalSubject
         }
       }
     }

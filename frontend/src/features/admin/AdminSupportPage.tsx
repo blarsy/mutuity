@@ -43,6 +43,7 @@ import {
 import { CampaignModerationHistory } from "../campaigns/CampaignModerationHistory";
 import {
   ADMIN_CREATE_GRANT_MUTATION,
+  ADMIN_GET_CAMPAIGN_DETAILS_QUERY,
   ADMIN_GET_MAIL_CONTENT_MUTATION,
   ADMIN_LIST_ACCOUNTS_QUERY,
   ADMIN_LIST_BIDS_QUERY,
@@ -148,6 +149,19 @@ function renderJson(value: unknown) {
   }
 }
 
+function renderCampaignField(label: string, value: unknown) {
+  return (
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { xs: "flex-start", sm: "baseline" } }}>
+      <Typography sx={{ minWidth: 180 }} variant="subtitle2">
+        {label}
+      </Typography>
+      <Typography sx={{ wordBreak: "break-word" }} variant="body2">
+        {typeof value === "string" && value.trim() === "" ? "-" : renderJson(value)}
+      </Typography>
+    </Stack>
+  );
+}
+
 function MailRowActions({ row }: { row: AdminRecord }) {
   const mailId = asString(row.id);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -229,16 +243,42 @@ function MailRowActions({ row }: { row: AdminRecord }) {
 
 function CampaignRowActions({ row }: { row: AdminRecord }) {
   const campaignId = asString(row.id);
-  const description = asString(row.description);
   const summary = asString(row.summary);
   const moderationStatus = asString(row.moderationStatus);
 
-  const [descOpen, setDescOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [moderateOpen, setModerateOpen] = useState(false);
   const [confirmApproveOpen, setConfirmApproveOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
   const [approveSuccess, setApproveSuccess] = useState(false);
   const [noteSent, setNoteSent] = useState(false);
+
+  const {
+    data: campaignDetailsData,
+    loading: campaignDetailsLoading,
+    error: campaignDetailsError
+  } = useQuery<{
+    campaignById: {
+      creatorAccountId: string;
+      title: string;
+      theme: string;
+      description: string | null;
+      imageUrl: string | null;
+      managerNoteFromCreator: string | null;
+      rewardsMultiplier: number;
+      airdropAmount: number;
+      startAt: string;
+      airdropAt: string;
+      endAt: string;
+      moderationStatus: string;
+      createdAt: string;
+      updatedAt: string;
+    } | null;
+  }, { campaignId: string }>(ADMIN_GET_CAMPAIGN_DETAILS_QUERY, {
+    fetchPolicy: "network-only",
+    skip: !infoOpen,
+    variables: { campaignId }
+  });
 
   const [addNote, { loading: noteLoading, error: noteError }] = useMutation(
     ADD_CAMPAIGN_MODERATION_NOTE_MUTATION
@@ -249,7 +289,10 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
 
   const noteErrorMessage = getUserFacingGraphQLErrorMessage(noteError);
   const approveErrorMessage = getUserFacingGraphQLErrorMessage(approveError);
+  const campaignDetailsErrorMessage = getUserFacingGraphQLErrorMessage(campaignDetailsError);
   const isAlreadyApproved = moderationStatus === "APPROVED" || approveSuccess;
+  const campaign = campaignDetailsData?.campaignById ?? null;
+  const campaignCreatorName = asString(row.creatorName) || "-";
 
   async function handleSendNote() {
     if (!noteBody.trim()) return;
@@ -281,24 +324,107 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
   return (
     <>
       <Stack direction="row" spacing={1}>
-        <Button size="small" variant="outlined" onClick={() => { setDescOpen(true); }}>
-          View description
+        <Button size="small" variant="outlined" onClick={() => { setInfoOpen(true); }}>
+          View info
         </Button>
         <Button size="small" variant="outlined" onClick={() => { setModerateOpen(true); }}>
           Moderate
         </Button>
       </Stack>
 
-      {/* Fullscreen description dialog */}
-      <Dialog fullScreen open={descOpen} onClose={() => { setDescOpen(false); }}>
+      {/* Fullscreen campaign info dialog */}
+      <Dialog fullScreen open={infoOpen} onClose={() => { setInfoOpen(false); }}>
         <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          Campaign description — {summary || campaignId}
-          <IconButton aria-label="close" onClick={() => { setDescOpen(false); }}>
+          Campaign info — {campaign?.title || summary || campaignId}
+          <IconButton aria-label="close" onClick={() => { setInfoOpen(false); }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <RichTextContent emptyFallback="No description stored." html={description} />
+          {campaignDetailsLoading ? <CircularProgress /> : null}
+          {campaignDetailsErrorMessage ? <Alert severity="error">{campaignDetailsErrorMessage}</Alert> : null}
+          {!campaignDetailsLoading && !campaignDetailsErrorMessage && campaign ? (
+            <Stack spacing={3} sx={{ pt: 1 }}>
+              <Box>
+                <Typography sx={{ mb: 1 }} variant="subtitle1">Overview</Typography>
+                <Stack spacing={1.25}>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ alignItems: { xs: "flex-start", sm: "baseline" } }}>
+                    <Typography sx={{ minWidth: 180 }} variant="subtitle2">
+                      Creator
+                    </Typography>
+                    <Typography
+                      component="a"
+                      href={`/accounts/${campaign.creatorAccountId}`}
+                      rel="noopener noreferrer"
+                      sx={{ color: "primary.main", textDecoration: "underline" }}
+                      target="_blank"
+                      variant="body2"
+                    >
+                      {campaignCreatorName}
+                    </Typography>
+                  </Stack>
+                  {renderCampaignField("Moderation status", campaign.moderationStatus)}
+                  {renderCampaignField("Created at", renderDate(campaign.createdAt))}
+                  {renderCampaignField("Updated at", renderDate(campaign.updatedAt))}
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography sx={{ mb: 1 }} variant="subtitle1">Content</Typography>
+                <Stack spacing={1.25}>
+                  {renderCampaignField("Title", campaign.title)}
+                  {campaign.imageUrl ? (
+                    <Box
+                      sx={{
+                        borderRadius: 1,
+                        maxWidth: 360,
+                        overflow: "hidden",
+                        width: "100%"
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <Box
+                        alt={campaign.title}
+                        component="img"
+                        src={campaign.imageUrl}
+                        sx={{
+                          aspectRatio: "16 / 9",
+                          display: "block",
+                          objectFit: "cover",
+                          width: "100%"
+                        }}
+                      />
+                    </Box>
+                  ) : null}
+                  <Box>
+                    <Typography sx={{ mb: 1 }} variant="subtitle2">Theme</Typography>
+                    <RichTextContent emptyFallback="No theme stored." html={campaign.theme} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ mb: 1 }} variant="subtitle2">Description</Typography>
+                    <Typography color={campaign.description ? "text.primary" : "text.secondary"} variant="body2">
+                      {campaign.description || "No description stored."}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ mb: 1 }} variant="subtitle2">Manager note from creator</Typography>
+                    <RichTextContent emptyFallback="No manager note stored." html={campaign.managerNoteFromCreator ?? ""} />
+                  </Box>
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography sx={{ mb: 1 }} variant="subtitle1">Scheduling</Typography>
+                <Stack spacing={1.25}>
+                  {renderCampaignField("Rewards multiplier", campaign.rewardsMultiplier)}
+                  {renderCampaignField("Airdrop amount", campaign.airdropAmount)}
+                  {renderCampaignField("Start at", renderDate(campaign.startAt))}
+                  {renderCampaignField("Airdrop at", renderDate(campaign.airdropAt))}
+                  {renderCampaignField("End at", renderDate(campaign.endAt))}
+                </Stack>
+              </Box>
+            </Stack>
+          ) : null}
         </DialogContent>
       </Dialog>
 

@@ -39,6 +39,7 @@ type CampaignModerationDetailsData = {
     id: string;
     title: string;
     theme: string;
+    description: string | null;
     imageUrl: string | null;
     managerNoteFromCreator: string | null;
     rewardsMultiplier: number;
@@ -68,6 +69,7 @@ type UpdateCampaignForModerationVariables = {
   pCampaignId: string;
   pTitle: string;
   pTheme: string;
+  pDescription: string;
   pImageUrl?: string;
   pManagerNoteFromCreator?: string;
   pRewardsMultiplier: number;
@@ -115,6 +117,7 @@ export default function CampaignModerationPage() {
     return {
       title: campaign.title,
       theme: campaign.theme,
+      description: campaign.description ?? "",
       imageUrls: campaign.imageUrl ? [campaign.imageUrl] : [],
       managerNoteFromCreator: campaign.managerNoteFromCreator ?? "",
       rewardsMultiplier: campaign.rewardsMultiplier,
@@ -135,6 +138,7 @@ export default function CampaignModerationPage() {
         pCampaignId: campaignId as string,
         pTitle: values.title.trim(),
         pTheme: values.theme.trim(),
+        pDescription: values.description.trim(),
         pImageUrl: values.imageUrls[0] ?? undefined,
         pManagerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
         pRewardsMultiplier: values.rewardsMultiplier,
@@ -251,7 +255,7 @@ export default function CampaignModerationPage() {
                           />
                           <RichTextEditor
                             error={Boolean(touched.theme && errors.theme)}
-                            helperText={touched.theme ? errors.theme : ""}
+                            helperText={touched.theme ? errors.theme : t("create.fields.themeHelper")}
                             label={t("create.fields.theme")}
                             onBlur={() => {
                               void setFieldTouched("theme", true, true);
@@ -261,6 +265,18 @@ export default function CampaignModerationPage() {
                             }}
                             placeholder={t("create.fields.theme")}
                             value={values.theme}
+                          />
+                          <TextField
+                            error={Boolean(touched.description && errors.description)}
+                            helperText={touched.description ? errors.description : t("create.fields.descriptionHelper")}
+                            label={t("create.fields.description")}
+                            minRows={2}
+                            multiline
+                            name="description"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            required
+                            value={values.description}
                           />
                           <ImageUploadField
                             imageUrls={values.imageUrls}

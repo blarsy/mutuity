@@ -11,6 +11,7 @@ function plainTextFromRichText(value: string) {
 export type CreateCampaignValues = {
   title: string;
   theme: string;
+  description: string;
   imageUrls: string[];
   managerNoteFromCreator: string;
   rewardsMultiplier: number;
@@ -56,6 +57,7 @@ const defaultCampaignDates = buildDefaultCampaignDates();
 export const createCampaignInitialValues: CreateCampaignValues = {
   title: "",
   theme: "",
+  description: "",
   imageUrls: [],
   managerNoteFromCreator: "",
   rewardsMultiplier: 5,
@@ -70,6 +72,7 @@ export const createCampaignValidationSchema = Yup.object({
   theme: Yup.string()
     .required("Theme is required")
     .test("non-empty-rich-text", "Theme is required", value => plainTextFromRichText(value ?? "").length > 0),
+  description: Yup.string().trim().max(500, "Description must be 500 characters or fewer").required("Description is required"),
   imageUrls: Yup.array().of(Yup.string().url()).default([]),
   managerNoteFromCreator: Yup.string().optional(),
   rewardsMultiplier: Yup.number().integer().min(5).max(10).required(),

@@ -32,6 +32,7 @@ export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
     $pCampaignId: UUID!
     $pTitle: String!
     $pTheme: String!
+    $pDescription: String!
     $pManagerNoteFromCreator: String
     $pRewardsMultiplier: Int!
     $pAirdropAmount: Int!
@@ -45,6 +46,7 @@ export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
         pCampaignId: $pCampaignId
         pTitle: $pTitle
         pTheme: $pTheme
+        pDescription: $pDescription
         pManagerNoteFromCreator: $pManagerNoteFromCreator
         pRewardsMultiplier: $pRewardsMultiplier
         pAirdropAmount: $pAirdropAmount
@@ -58,6 +60,7 @@ export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
         id
         title
         theme
+        description
         imageUrl
         managerNoteFromCreator
         rewardsMultiplier
@@ -78,6 +81,7 @@ export const CAMPAIGN_MODERATION_DETAILS_QUERY = gql`
       id
       title
       theme
+      description
       imageUrl
       managerNoteFromCreator
       rewardsMultiplier

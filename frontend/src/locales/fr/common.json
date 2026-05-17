@@ -37,5 +37,17 @@
   "locationPicker": {
     "addressLabel": "Localisation",
     "loadError": "Échec du chargement de la recherche d'adresse"
+  },
+  "publicAccount": {
+    "fallbackName": "Compte",
+    "unavailable": "Ce compte n'est pas publiquement accessible.",
+    "activeNeeds": "Besoins actifs",
+    "activeResources": "Ressources actives",
+    "noNeeds": "Aucun besoin actif n'est visible pour le moment.",
+    "noResources": "Aucune ressource active n'est visible pour le moment.",
+    "needsCount_one": "{{count}} besoin",
+    "needsCount_other": "{{count}} besoins",
+    "resourcesCount_one": "{{count}} ressource",
+    "resourcesCount_other": "{{count}} ressources"
   }
 }

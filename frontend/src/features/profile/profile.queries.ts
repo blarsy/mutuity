@@ -33,3 +33,11 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
     }
   }
 `;
+
+export const DELETE_MY_ACCOUNT_MUTATION = gql`
+  mutation DeleteMyAccount {
+    deleteMyAccount(input: {}) {
+      boolean
+    }
+  }
+`;

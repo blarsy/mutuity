@@ -1,11 +1,34 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Alert, Avatar, Box, Button, Card, CardContent, Container, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { useRouter } from "next/router";
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
-import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "../features/profile/profile.queries";
+import {
+  ACCOUNT_PROFILE_QUERY,
+  DELETE_MY_ACCOUNT_MUTATION,
+  UPDATE_ACCOUNT_PROFILE_MUTATION
+} from "../features/profile/profile.queries";
 import { LocationPicker } from "../components/LocationPicker";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { ZoomableImage } from "../components/ZoomableImage";
@@ -51,7 +74,8 @@ function createEmptyProfileLink(): ProfileLink {
 }
 
 export default function ProfilePage() {
-  const { session, refreshSession } = useAuth();
+  const router = useRouter();
+  const { session, refreshSession, signOut } = useAuth();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const { t, i18n } = useTranslation("profile");
   const accountId = session.account?.id ?? null;
@@ -60,6 +84,7 @@ export default function ProfilePage() {
     variables: { accountId }
   });
   const [updateProfile, { loading: saving, error: saveError }] = useMutation(UPDATE_ACCOUNT_PROFILE_MUTATION);
+  const [deleteMyAccount, { loading: deleting, error: deleteError }] = useMutation(DELETE_MY_ACCOUNT_MUTATION);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
@@ -69,7 +94,10 @@ export default function ProfilePage() {
   const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>("fr");
   const [profileLinks, setProfileLinks] = useState<ProfileLink[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(saveError);
+  const deleteErrorMessage = getUserFacingGraphQLErrorMessage(deleteError);
 
   useEffect(() => {
     const profile = data?.accountById;
@@ -135,6 +163,12 @@ export default function ProfilePage() {
 
     await Promise.all([refetch(), refreshSession()]);
     setSuccessMessage(t("successUpdated"));
+  };
+
+  const handleDeleteAccount = async () => {
+    await deleteMyAccount();
+    await signOut();
+    await router.replace("/");
   };
 
   if (!isAuthenticated) {
@@ -316,8 +350,89 @@ export default function ProfilePage() {
               </Stack>
             </CardContent>
           </Card>
+
+          <Card sx={{ borderColor: "error.main" }} variant="outlined">
+            <CardContent>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography color="error.main" variant="h6">
+                    {t("dangerZone.title")}
+                  </Typography>
+                  <Typography color="text.secondary" variant="body2">
+                    {t("dangerZone.description")}
+                  </Typography>
+                </Box>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button
+                    color="error"
+                    onClick={() => {
+                      setDeleteConfirmChecked(false);
+                      setDeleteDialogOpen(true);
+                    }}
+                    variant="outlined"
+                  >
+                    {t("dangerZone.deleteAccountButton")}
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
         </Stack>
       </Box>
+
+      <Dialog
+        fullWidth
+        maxWidth="sm"
+        onClose={() => {
+          if (!deleting) {
+            setDeleteDialogOpen(false);
+          }
+        }}
+        open={deleteDialogOpen}
+      >
+        <DialogTitle>{t("dangerZone.dialogTitle")}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography variant="body2">{t("dangerZone.dialogDescription")}</Typography>
+            <Typography component="ul" sx={{ m: 0, pl: 3 }} variant="body2">
+              <li>{t("dangerZone.consequences.signOut")}</li>
+              <li>{t("dangerZone.consequences.anonymization")}</li>
+              <li>{t("dangerZone.consequences.irreversible")}</li>
+            </Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={deleteConfirmChecked}
+                  disabled={deleting}
+                  onChange={event => setDeleteConfirmChecked(event.target.checked)}
+                />
+              }
+              label={t("dangerZone.confirmLabel")}
+            />
+            {deleteErrorMessage ? <Alert severity="error">{deleteErrorMessage}</Alert> : null}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            disabled={deleting}
+            onClick={() => {
+              setDeleteDialogOpen(false);
+            }}
+          >
+            {t("dangerZone.cancelButton")}
+          </Button>
+          <Button
+            color="error"
+            disabled={!deleteConfirmChecked || deleting}
+            onClick={() => {
+              void handleDeleteAccount();
+            }}
+            variant="contained"
+          >
+            {deleting ? t("dangerZone.deletingButton") : t("dangerZone.confirmDeleteButton")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

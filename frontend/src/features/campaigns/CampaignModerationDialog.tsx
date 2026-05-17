@@ -22,6 +22,7 @@ import {
   createCampaignValidationSchema,
   type CreateCampaignValues
 } from "./createCampaign.validation";
+import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import {
   CAMPAIGN_MODERATION_DETAILS_QUERY,
   UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION
@@ -40,6 +41,7 @@ type CampaignModerationDetailsData = {
     id: string;
     title: string;
     theme: string;
+    description: string | null;
     imageUrl: string | null;
     managerNoteFromCreator: string | null;
     rewardsMultiplier: number;
@@ -69,6 +71,7 @@ type UpdateCampaignForModerationVariables = {
   pCampaignId: string;
   pTitle: string;
   pTheme: string;
+  pDescription: string;
   pImageUrl?: string;
   pManagerNoteFromCreator?: string;
   pRewardsMultiplier: number;
@@ -112,6 +115,7 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
     return {
       title: campaign.title,
       theme: campaign.theme,
+      description: campaign.description ?? "",
       imageUrls: campaign.imageUrl ? [campaign.imageUrl] : [],
       managerNoteFromCreator: campaign.managerNoteFromCreator ?? "",
       rewardsMultiplier: campaign.rewardsMultiplier,
@@ -130,6 +134,7 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
         pCampaignId: campaignId,
         pTitle: values.title.trim(),
         pTheme: values.theme.trim(),
+        pDescription: values.description.trim(),
         pImageUrl: values.imageUrls[0] ?? undefined,
         pManagerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
         pRewardsMultiplier: values.rewardsMultiplier,
@@ -204,7 +209,7 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
                     }}
                     validationSchema={createCampaignValidationSchema}
                   >
-                    {({ values, errors, touched, handleBlur, handleChange, isSubmitting }) => (
+                    {({ values, errors, touched, handleBlur, handleChange, isSubmitting, setFieldTouched, setFieldValue }) => (
                       <Form>
                         <Stack spacing={2} sx={{ pt: 1 }}>
                           <TextField
@@ -217,15 +222,30 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
                             required
                             value={values.title}
                           />
-                          <TextField
+                          <RichTextEditor
                             error={Boolean(touched.theme && errors.theme)}
-                            helperText={touched.theme ? errors.theme : ""}
+                            helperText={touched.theme ? errors.theme : t("create.fields.themeHelper")}
                             label={t("create.fields.theme")}
-                            name="theme"
+                            onBlur={() => {
+                              void setFieldTouched("theme", true, true);
+                            }}
+                            onChange={nextValue => {
+                              void setFieldValue("theme", nextValue, true);
+                            }}
+                            placeholder={t("create.fields.theme")}
+                            value={values.theme}
+                          />
+                          <TextField
+                            error={Boolean(touched.description && errors.description)}
+                            helperText={touched.description ? errors.description : t("create.fields.descriptionHelper")}
+                            label={t("create.fields.description")}
+                            minRows={2}
+                            multiline
+                            name="description"
                             onBlur={handleBlur}
                             onChange={handleChange}
                             required
-                            value={values.theme}
+                            value={values.description}
                           />
                           <TextField
                             label={t("create.fields.noteForManager")}

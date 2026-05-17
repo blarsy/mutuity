@@ -106,6 +106,27 @@ export const ADMIN_LIST_CAMPAIGNS_QUERY = gql`
   }
 `;
 
+export const ADMIN_GET_CAMPAIGN_DETAILS_QUERY = gql`
+  query AdminGetCampaignDetails($campaignId: UUID!) {
+    campaignById(id: $campaignId) {
+      creatorAccountId
+      title
+      theme
+      description
+      imageUrl
+      managerNoteFromCreator
+      rewardsMultiplier
+      airdropAmount
+      startAt
+      airdropAt
+      endAt
+      moderationStatus
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const ADMIN_LIST_GRANTS_QUERY = gql`
   query AdminListGrants($pSearch: String, $pLimit: Int = 25, $pOffset: Int = 0) {
     adminListGrants(pSearch: $pSearch, pLimit: $pLimit, pOffset: $pOffset) {

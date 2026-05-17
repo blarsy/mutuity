@@ -4,6 +4,7 @@ export const CREATE_CAMPAIGN_MUTATION = gql`
   mutation CreateCampaign(
     $title: String!
     $theme: String!
+    $description: String!
     $managerNoteFromCreator: String
     $rewardsMultiplier: Int!
     $airdropAmount: Int!
@@ -16,6 +17,7 @@ export const CREATE_CAMPAIGN_MUTATION = gql`
       input: {
         title: $title
         theme: $theme
+        description: $description
         managerNoteFromCreator: $managerNoteFromCreator
         rewardsMultiplier: $rewardsMultiplier
         airdropAmount: $airdropAmount
@@ -42,6 +44,7 @@ export const CREATE_CAMPAIGN_MUTATION_LEGACY = gql`
   mutation CreateCampaignLegacy(
     $title: String!
     $theme: String!
+    $description: String!
     $managerNoteFromCreator: String
     $rewardsMultiplier: Int!
     $airdropAmount: Int!
@@ -53,6 +56,7 @@ export const CREATE_CAMPAIGN_MUTATION_LEGACY = gql`
       input: {
         title: $title
         theme: $theme
+        description: $description
         managerNoteFromCreator: $managerNoteFromCreator
         rewardsMultiplier: $rewardsMultiplier
         airdropAmount: $airdropAmount
@@ -101,6 +105,28 @@ export const PUBLIC_CAMPAIGNS_QUERY = gql`
         startAt
         airdropAt
         endAt
+      }
+    }
+  }
+`;
+
+export const PUBLIC_CAMPAIGN_DETAIL_QUERY = gql`
+  query PublicCampaignDetail($campaignId: UUID!) {
+    campaignById(id: $campaignId) {
+      id
+      creatorAccountId
+      title
+      description
+      theme
+      moderationStatus
+      imageUrl
+      startAt
+      airdropAt
+      endAt
+      accountByCreatorAccountId {
+        id
+        displayName
+        externalSubject
       }
     }
   }

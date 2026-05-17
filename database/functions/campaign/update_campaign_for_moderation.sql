@@ -2,6 +2,7 @@ create or replace function app_public.update_campaign_for_moderation(
   p_campaign_id uuid,
   p_title text,
   p_theme text,
+  p_description text,
   p_manager_note_from_creator text,
   p_rewards_multiplier integer,
   p_airdrop_amount integer,
@@ -61,6 +62,7 @@ begin
   set
     title = p_title,
     theme = p_theme,
+    description = nullif(btrim(p_description), ''),
     manager_note_from_creator = p_manager_note_from_creator,
     rewards_multiplier = p_rewards_multiplier,
     airdrop_amount = p_airdrop_amount,
@@ -112,6 +114,7 @@ grant execute on function app_public.update_campaign_for_moderation(
   text,
   text,
   text,
+  text,
   integer,
   integer,
   timestamptz,
@@ -125,6 +128,7 @@ revoke all on function app_public.update_campaign_for_moderation(
   text,
   text,
   text,
+  text,
   integer,
   integer,
   timestamptz,
@@ -135,6 +139,7 @@ revoke all on function app_public.update_campaign_for_moderation(
 
 comment on function app_public.update_campaign_for_moderation(
   uuid,
+  text,
   text,
   text,
   text,

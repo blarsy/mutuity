@@ -32,5 +32,21 @@
     "facebook": "Facebook",
     "instagram": "Instagram",
     "x": "X"
+  },
+  "dangerZone": {
+    "title": "Zone sensible",
+    "description": "Supprimez votre compte et anonymisez vos donnees de profil. Cette action est irreversible.",
+    "deleteAccountButton": "Supprimer le compte",
+    "dialogTitle": "Supprimer votre compte ?",
+    "dialogDescription": "Avant de continuer, verifiez les consequences ci-dessous.",
+    "confirmLabel": "Je comprends que cette action est irreversible.",
+    "cancelButton": "Annuler",
+    "confirmDeleteButton": "Oui, supprimer mon compte",
+    "deletingButton": "Suppression du compte…",
+    "consequences": {
+      "signOut": "Vous serez deconnecte immediatement.",
+      "anonymization": "Les champs d'identite de votre profil seront anonymises.",
+      "irreversible": "Cette action ne peut pas etre annulee depuis l'application."
+    }
   }
 }

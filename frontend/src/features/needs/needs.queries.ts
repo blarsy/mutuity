@@ -133,6 +133,28 @@ export const NEED_EDIT_DETAIL_QUERY = gql`
   }
 `;
 
+export const PUBLIC_NEED_DETAIL_QUERY = gql`
+  query PublicNeedDetail($needId: UUID!) {
+    needById(id: $needId) {
+      id
+      creatorAccountId
+      title
+      description
+      location
+      intensity
+      proposedTopesAmount
+      imageUrls
+      expiresAt
+      isActive
+      accountByCreatorAccountId {
+        id
+        displayName
+        externalSubject
+      }
+    }
+  }
+`;
+
 export const LINKABLE_CAMPAIGN_OPTIONS_QUERY = gql`
   query LinkableCampaignOptions {
     allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: START_AT_ASC) {

@@ -26,6 +26,7 @@ type CreateCampaignMutationData = {
 type CreateCampaignMutationVariables = {
   title: string;
   theme: string;
+  description: string;
   imageUrl?: string;
   managerNoteFromCreator?: string;
   rewardsMultiplier: number;
@@ -71,6 +72,7 @@ export default function CreateCampaignPage() {
     const baseVariables = {
       title: values.title.trim(),
       theme: values.theme.trim(),
+      description: values.description.trim(),
       managerNoteFromCreator: values.managerNoteFromCreator.trim() || undefined,
       rewardsMultiplier: values.rewardsMultiplier,
       airdropAmount: values.airdropAmount,
@@ -154,7 +156,7 @@ export default function CreateCampaignPage() {
                 />
                 <RichTextEditor
                   error={Boolean(touched.theme && errors.theme)}
-                  helperText={touched.theme ? errors.theme : ""}
+                  helperText={touched.theme ? errors.theme : t("create.fields.themeHelper")}
                   label={t("create.fields.theme")}
                   onBlur={() => {
                     void setFieldTouched("theme", true, true);
@@ -164,6 +166,18 @@ export default function CreateCampaignPage() {
                   }}
                   placeholder={t("create.fields.theme")}
                   value={values.theme}
+                />
+                <TextField
+                  name="description"
+                  label={t("create.fields.description")}
+                  value={values.description}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={Boolean(touched.description && errors.description)}
+                  helperText={touched.description ? errors.description : t("create.fields.descriptionHelper")}
+                  required
+                  multiline
+                  minRows={2}
                 />
                 <ImageUploadField
                   imageUrls={values.imageUrls}

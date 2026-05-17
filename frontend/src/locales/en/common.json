@@ -37,5 +37,17 @@
   "locationPicker": {
     "addressLabel": "Location",
     "loadError": "Failed to load address search"
+  },
+  "publicAccount": {
+    "fallbackName": "Account",
+    "unavailable": "This account is not publicly available.",
+    "activeNeeds": "Active needs",
+    "activeResources": "Active resources",
+    "noNeeds": "No active needs are currently visible.",
+    "noResources": "No active resources are currently visible.",
+    "needsCount_one": "{{count}} need",
+    "needsCount_other": "{{count}} needs",
+    "resourcesCount_one": "{{count}} resource",
+    "resourcesCount_other": "{{count}} resources"
   }
 }

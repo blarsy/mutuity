@@ -42,7 +42,7 @@ type LoginCandidate = {
   password_hash: string;
   role_name: string;
   email_verified_at: Date | null;
-  preferred_language: string;
+  preferred_language: string | null | undefined;
 };
 
 type PasswordHashRow = {
@@ -268,7 +268,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
               externalSubject: candidate.external_subject,
               avatarUrl: candidate.avatar_url,
               emailVerified: Boolean(candidate.email_verified_at),
-              preferredLanguage: candidate.preferred_language,
+              preferredLanguage: candidate.preferred_language ?? "en",
               expiresAt: nextSession.expiresAt
             };
 

@@ -1,6 +1,7 @@
 create or replace function app_public.create_campaign(
   title text,
   theme text,
+  description text,
   manager_note_from_creator text,
   rewards_multiplier integer,
   airdrop_amount integer,
@@ -30,6 +31,7 @@ begin
     creator_account_id,
     title,
     theme,
+    description,
     manager_note_from_creator,
     rewards_multiplier,
     airdrop_amount,
@@ -43,6 +45,7 @@ begin
     v_account_id,
     create_campaign.title,
     create_campaign.theme,
+    nullif(btrim(create_campaign.description), ''),
     create_campaign.manager_note_from_creator,
     create_campaign.rewards_multiplier,
     create_campaign.airdrop_amount,
@@ -59,6 +62,7 @@ end;
 $$;
 
 comment on function app_public.create_campaign(
+  text,
   text,
   text,
   text,

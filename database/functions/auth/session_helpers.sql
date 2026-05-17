@@ -9,7 +9,8 @@ returns table (
   avatar_url text,
   password_hash text,
   role_name text,
-  email_verified_at timestamptz
+  email_verified_at timestamptz,
+  preferred_language text
 )
 language sql
 stable
@@ -21,7 +22,8 @@ as $$
     a.avatar_url,
     c.password_hash,
     c.role_name,
-    c.email_verified_at
+    c.email_verified_at,
+    a.preferred_language
   from app_private.account_credential c
   join app_public.account a on a.id = c.account_id
   where lower(c.login_identifier) = lower(p_identifier)
@@ -29,34 +31,6 @@ as $$
   limit 1
 $$;
 
-create or replace function app_private.find_account_session(p_session_token_hash text)
-returns table (
-  session_id uuid,
-  account_id uuid,
-  role_name text,
-  expires_at timestamptz,
-  display_name text,
-  external_subject text,
-  avatar_url text
-)
-language sql
-stable
-as $$
-  select
-    s.id,
-    s.account_id,
-    s.role_name,
-    s.expires_at,
-    a.display_name,
-    a.external_subject,
-    a.avatar_url
-  from app_private.account_session s
-  join app_public.account a on a.id = s.account_id
-  where s.session_token_hash = p_session_token_hash
-    and s.revoked_at is null
-    and s.expires_at > now()
-  limit 1
-$$;
 create or replace function app_private.find_account_session(p_session_token_hash text)
 returns table (
   session_id uuid,
