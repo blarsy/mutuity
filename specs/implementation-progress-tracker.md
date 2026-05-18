@@ -259,19 +259,17 @@ Status legend:
 | 006-chat-and-conversations | Conversation handoff and thread access | e2e/specs/006-chat-and-conversations/us1-conversation-thread-access.smoke.spec.ts; e2e/specs/006-chat-and-conversations/us2-message-composition.smoke.spec.ts | READY | Chat page auth guard, conversation list and thread rendering, message composer visibility, and basic interaction flow are covered. |
 | 007-bids-workspace-and-settlement | Bid lifecycle and decline/refund settlement | e2e/specs/007-bids-workspace-and-settlement/us1-bid-lifecycle.smoke.spec.ts; e2e/specs/007-bids-workspace-and-settlement/us2-bid-decline-refund.smoke.spec.ts; e2e/specs/007-bids-workspace-and-settlement/us3-bids-access-and-chat-handoff.smoke.spec.ts | READY | Main bid create/accept and decline/refund paths are smoke-tested, plus workspace access guard and bid-to-chat handoff checks. |
 | 008-claims-workspace-and-settlement | Claims workspace, cancel/settle, side effects | e2e/specs/008-claims-workspace-and-settlement/us1-claims-workspace.smoke.spec.ts; e2e/specs/008-claims-workspace-and-settlement/us2-claims-actions.smoke.spec.ts; e2e/specs/008-claims-workspace-and-settlement/us2-claim-settlement-side-effects.smoke.spec.ts | READY | Workspace browse, cancel, and settlement side effects are covered. |
-| 009-listing-visual-identity | Unified listing header visual identity | None | MISSING | No dedicated smoke spec currently exercises this surface. |
+| 009-listing-visual-identity | Unified listing header visual identity | e2e/specs/009-listing-visual-identity/us1-listing-header-identity.smoke.spec.ts | READY | Needs/resources listing-header strip consistency and no-broken-thumbnail fallback behavior are smoke-tested. |
 | 010-public-pages-and-seo | Public pages, CTA contracts, SSR metadata | e2e/specs/010-public-pages-and-seo/us1-need-cta-flow.smoke.spec.ts; e2e/specs/010-public-pages-and-seo/us2-authenticated-cta.smoke.spec.ts; e2e/specs/010-public-pages-and-seo/us3-public-route-and-metadata.smoke.spec.ts | READY | Public route availability, metadata, and need CTA behavior are covered. |
 | 011-account-deletion-anonymization | Delete-account guard and post-delete public UX | e2e/specs/011-account-deletion-anonymization/us1-delete-guard.smoke.spec.ts | READY | The UI delete-confirmation guard is smoke-tested; deeper deletion outcomes live in backend integration tests. |
 
 Current smoke gaps:
 
 - Feature 003 platform baseline
-- Feature 009 listing visual identity
 
 Current smoke priorities:
 
-1. Feature 009 listing visual identity: verify no broken-image fallback and consistent listing header strip on needs/resources.
-2. Feature 003 platform baseline: keep this at backend/integration level unless a user-facing critical path emerges.
+1. Feature 003 platform baseline: keep this at backend/integration level unless a user-facing critical path emerges.
 
 Manual trigger commands:
 
