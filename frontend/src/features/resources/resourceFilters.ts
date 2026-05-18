@@ -16,6 +16,8 @@ export type ResourceSearchQueryVariables = {
   canBeTakenAway: GraphQLTriStateFilter;
   canBeDelivered: GraphQLTriStateFilter;
   limitCount: number;
+  favorLocalResources: boolean;
+  maxDistanceKm: number;
 };
 
 const NEXT_TRI_STATE: Record<TriStateFilter, TriStateFilter> = {
@@ -66,7 +68,9 @@ export function buildResourceSearchVariables(input: {
     canBeExchanged: GRAPHQL_TRI_STATE[filters.canBeExchanged],
     canBeTakenAway: GRAPHQL_TRI_STATE[filters.canBeTakenAway],
     canBeDelivered: GRAPHQL_TRI_STATE[filters.canBeDelivered],
-    limitCount
+    limitCount,
+    favorLocalResources: filters.favorLocalResources,
+    maxDistanceKm: filters.maxDistanceKm
   };
 
   if (!location) {

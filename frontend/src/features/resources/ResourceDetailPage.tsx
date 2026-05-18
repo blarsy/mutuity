@@ -43,9 +43,9 @@ type ResourceDetailData = {
     creatorAccountId: string;
     title: string;
     description: string | null;
-    location: string;
-    latitude: number;
-    longitude: number;
+    location: string | null;
+    latitude: number | null;
+    longitude: number | null;
     intensity: ResourceIntensity;
     defaultTokenAmount: number | null;
     imageUrls: string[];

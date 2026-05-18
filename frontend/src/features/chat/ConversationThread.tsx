@@ -22,7 +22,6 @@ import {
   CLAIM_CONVERSATION_QUERY,
   RESOURCE_CONVERSATION_QUERY,
   SEND_CLAIM_MESSAGE_MUTATION,
-  SEND_RESOURCE_MESSAGE_MUTATION,
   SEND_RESOURCE_MESSAGE_DIRECT_MUTATION,
   SEND_NEED_MESSAGE_MUTATION,
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
@@ -531,7 +530,6 @@ function MessageComposer({
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
-  const [sendResourceMessage] = useMutation(SEND_RESOURCE_MESSAGE_MUTATION);
   const [sendResourceMessageDirect] = useMutation<SendResourceMessageDirectMutationData>(SEND_RESOURCE_MESSAGE_DIRECT_MUTATION);
   const [sendNeedMessage] = useMutation<SendNeedMessageMutationData>(SEND_NEED_MESSAGE_MUTATION);
   const [sendClaimMessage] = useMutation(SEND_CLAIM_MESSAGE_MUTATION);
@@ -546,26 +544,20 @@ function MessageComposer({
     setSendError(null);
     try {
       if (isResource && resourceConv) {
-        if (resourceConv.resourceBidId) {
-          await sendResourceMessage({
-            variables: { input: { resourceBidId: resourceConv.resourceBidId, body: trimmed, imageUrls } }
-          });
-        } else {
-          const otherAccountId =
-            myAccountId === resourceConv.ownerAccountId
-              ? resourceConv.bidderAccountId
-              : resourceConv.ownerAccountId;
-          await sendResourceMessageDirect({
-            variables: {
-              input: {
-                pResourceId: resourceConv.resourceId,
-                pOtherAccountId: otherAccountId,
-                pBody: trimmed,
-                pImageUrls: imageUrls
-              }
+        const otherAccountId =
+          myAccountId === resourceConv.ownerAccountId
+            ? resourceConv.bidderAccountId
+            : resourceConv.ownerAccountId;
+        await sendResourceMessageDirect({
+          variables: {
+            input: {
+              pResourceId: resourceConv.resourceId,
+              pOtherAccountId: otherAccountId,
+              pBody: trimmed,
+              pImageUrls: imageUrls
             }
-          });
-        }
+          }
+        });
       } else if (isResource && draftThread?.kind === "resource" && draftThread.otherAccountId) {
         const result = await sendResourceMessageDirect({
           variables: {

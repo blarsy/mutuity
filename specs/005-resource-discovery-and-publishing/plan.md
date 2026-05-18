@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement the first concrete Tope-là-native slice in the unified platform: browsing active resources, publishing new offers, capturing the separate resource-response (`bid`) flow, and establishing the first unified notifications inbox foundation. The implementation should reuse the proven search/auth/conversation patterns from Mutuity where they fit, while respecting the fact that `resource` and `bid` are not identical to `need` and `claim`. The current implementation also shares a constrained rich-text editor and sanitized, theme-controlled renderer across campaign, resource, and need description surfaces.
+Implement the first concrete Tope-là-native slice in the unified platform: browsing active resources, publishing new offers, capturing the separate resource-response (`bid`) flow, and establishing the first unified notifications inbox foundation. The implementation should reuse the proven search/auth/conversation patterns from Mutuity where they fit, while respecting the fact that `resource` and `bid` are not identical to `need` and `claim`. The current implementation also shares a constrained rich-text editor and sanitized, theme-controlled renderer across campaign, resource, and need description surfaces. Resource location is optional, and discovery must apply deterministic synthetic-distance behavior for resources without coordinates.
 
 ## Technical Context
 
@@ -15,7 +15,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 **Testing**: Jest/Vitest frontend tests, backend integration and contract tests  
 **Target Platform**: Web first, with mobile parity to follow from the same domain API  
 **Project Type**: Monorepo feature slice building on the existing `frontend/`, `backend/`, and `database/` structure  
-**Constraints**: Preserve Tope-là-style UX, keep `resource` and `bid` distinct from `need` and `claim`, and maintain the repository rule of no business SQL in TypeScript  
+**Constraints**: Preserve Tope-là-style UX, keep `resource` and `bid` distinct from `need` and `claim`, maintain the repository rule of no business SQL in TypeScript, and drive proximity behavior from a configurable local-maximum-distance constant (default `50 km`)  
 **Scale/Scope**: MVP resource discovery, publication, and response foundation
 
 ## Constitution Check
@@ -31,6 +31,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 ### Slice 1 — Public resource discovery (P1)
 - Search active resources
 - sort solely by geographical closeness, with most-recently-created as the deterministic tie-breaker
+- include resources without coordinates with deterministic synthetic distance (`0 km` when include option enabled; local max distance when disabled)
 - respect expiration behavior: dated resources disappear once expired, undated resources remain permanent
 - location/category/text filters
 - six tri-state modality filters (`neutral` / `yes` / `no`)
@@ -39,6 +40,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 ### Slice 2 — Resource publishing (P1)
 - publish/edit form
 - subtype-aware validation
+- optional location fields (`location`, `latitude`, `longitude`)
 - mandatory shared `intensity` field
 - optional negotiated Topes reference amount with the same range mapping used for needs
 - optional rich-text description (max 8000 chars) on resource detail and shared need/campaign authoring/display surfaces
@@ -273,6 +275,7 @@ Admin support page implementation matrix:
 | Commercial wording around the legacy `price` field could misframe the product | UX and regulatory confusion | Use non-commercial, gratitude-driven copy such as suggested/reference Topes amount and keep the field negotiable |
 | Six tri-state flag filters add query and UI complexity | Discovery bugs or confusing filter behavior | Reuse the proven tri-state filter pattern from needs and test each `neutral` / `yes` / `no` branch explicitly |
 | Legacy Tope-là media/location formats vary | Broken migrated cards | Normalize legacy data during import and keep UI tolerant of partial metadata |
+| Optional resource location can reduce geographic relevance in discovery | Nearby offers may be visually drowned by generic offers | Keep sorting deterministic with synthetic distance rules and a configurable local max distance defaulting to 50 km |
 | Bid lifecycle differs from claim lifecycle | Incorrect unification assumptions | Keep `bid` distinct and document the lifecycle rules before implementation |
 | Scope expands into campaigns too early | Delays the first merge slice | Treat campaign coupling as optional unless needed for basic publishing/discovery |
 

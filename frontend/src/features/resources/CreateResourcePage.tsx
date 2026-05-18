@@ -49,9 +49,9 @@ type PublishResourceMutationVariables = {
   resourceId?: string;
   title: string;
   description?: string;
-  location: string;
-  latitude: number;
-  longitude: number;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
   intensity: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
   defaultTokenAmount?: number;
   categoryCodes?: number[];
@@ -76,9 +76,9 @@ type ResourceDetailForEditQueryData = {
     id: string;
     title: string;
     description: string | null;
-    location: string;
-    latitude: number;
-    longitude: number;
+    location: string | null;
+    latitude: number | null;
+    longitude: number | null;
     intensity: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
     defaultTokenAmount: number | null;
     imageUrls: string[];
@@ -103,6 +103,15 @@ function normalizeOptionalInteger(value: number | "") {
   }
 
   return Number.isFinite(Number(value)) ? Number(value) : undefined;
+}
+
+function normalizeOptionalCoordinate(value: number | "") {
+  if (value === "") {
+    return undefined;
+  }
+
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
 }
 
 function fromGraphQLResourceIntensity(value: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION") {
@@ -172,9 +181,9 @@ export default function CreateResourcePage() {
       title: editResource.title,
       description: editResource.description ?? "",
       imageUrls: editResource.imageUrls,
-      location: editResource.location,
-      latitude: editResource.latitude,
-      longitude: editResource.longitude,
+      location: editResource.location ?? "",
+      latitude: editResource.latitude ?? "",
+      longitude: editResource.longitude ?? "",
       intensity: fromGraphQLResourceIntensity(editResource.intensity),
       defaultTokenAmount: editResource.defaultTokenAmount ?? "",
       categoryCodes: editResource.resourceCategoryAssignmentsByResourceId.nodes.map(node => node.categoryCode),
@@ -194,9 +203,9 @@ export default function CreateResourcePage() {
         resourceId: resourceId ?? undefined,
         title: values.title.trim(),
         description: values.description.trim() || undefined,
-        location: values.location.trim(),
-        latitude: Number(values.latitude),
-        longitude: Number(values.longitude),
+        location: values.location.trim() || undefined,
+        latitude: normalizeOptionalCoordinate(values.latitude),
+        longitude: normalizeOptionalCoordinate(values.longitude),
         intensity: toGraphQLResourceIntensity(values.intensity),
         defaultTokenAmount: normalizeOptionalInteger(values.defaultTokenAmount),
         categoryCodes: values.categoryCodes.length > 0 ? values.categoryCodes : undefined,
@@ -400,7 +409,6 @@ export default function CreateResourcePage() {
                       ? errors.longitude
                       : undefined
                   }
-                  required
                 />
 
                 <Box>

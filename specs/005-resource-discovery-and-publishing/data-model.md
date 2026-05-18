@@ -10,7 +10,9 @@ A `resource` is an offer made available by an account or organization. It is dis
 - `title`
 - `description` *(optional, rich-text, max 8000 chars)*
 - `categoryIds` *(one or more categories may apply)*
-- `location` *(human-readable address plus coordinates when available)*
+- `location` *(optional human-readable address)*
+- `latitude` *(optional decimal coordinate)*
+- `longitude` *(optional decimal coordinate)*
 - `createdAt`
 - `updatedAt`
 - `expiresAt` *(optional; null means permanent)*
@@ -76,12 +78,23 @@ A `resourceBid` is a response made by an interested account on a resource.
 
 The resource browse query includes:
 - reference location
+- `favorLocalResources` option
 - optional text search
 - optional category filters
 - six tri-state modality filters
 - any future visibility/campaign constraints
 
+## Proximity constants
+
+- `localMaxDistanceKm` *(system-configurable constant, default `50`)*
+
+This constant defines the maximum distance still treated as local exchange distance and is also used as the synthetic distance for unlocated resources when `favorLocalResources` is enabled.
+
 ## Sorting rule
 Default sorting is:
 1. closest geographical distance first
 2. for equal distance, most recently created first
+
+Unlocated-resource distance assignment:
+- when `favorLocalResources = true`, still include unlocated resources but assign distance `localMaxDistanceKm`
+- when `favorLocalResources = false`, assign distance `0 km`

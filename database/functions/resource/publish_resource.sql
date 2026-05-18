@@ -106,8 +106,8 @@ create or replace function app_public.publish_resource(
   title text,
   description text default null,
   location text default null,
-  latitude numeric default 50.6072,
-  longitude numeric default 3.3889,
+  latitude numeric default null,
+  longitude numeric default null,
   intensity app_public.need_intensity default 'sharing',
   default_token_amount integer default null,
   category_codes integer[] default array[]::integer[],
@@ -148,10 +148,6 @@ begin
 
   if v_title is null then
     raise exception using message = 'Resource title is required';
-  end if;
-
-  if v_location is null then
-    raise exception using message = 'Resource location is required';
   end if;
 
   if v_description is not null and char_length(v_description) > 8000 then
@@ -211,8 +207,8 @@ begin
       v_title,
       v_description,
       v_location,
-      coalesce(publish_resource.latitude, 50.6072),
-      coalesce(publish_resource.longitude, 3.3889),
+      publish_resource.latitude,
+      publish_resource.longitude,
       publish_resource.intensity,
       publish_resource.default_token_amount,
       v_image_urls,
@@ -230,8 +226,8 @@ begin
     set title = v_title,
         description = v_description,
         location = v_location,
-        latitude = coalesce(publish_resource.latitude, 50.6072),
-        longitude = coalesce(publish_resource.longitude, 3.3889),
+      latitude = publish_resource.latitude,
+      longitude = publish_resource.longitude,
         intensity = publish_resource.intensity,
         default_token_amount = publish_resource.default_token_amount,
         image_urls = v_image_urls,

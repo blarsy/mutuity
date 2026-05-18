@@ -2,7 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
-import { Alert, Box, Button, Card, CardContent, Chip, Container, Stack, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Chip,
+  Container,
+  FormControlLabel,
+  Slider,
+  Stack,
+  TextField,
+  Typography
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
@@ -39,7 +53,10 @@ type ResourceCategoryOptionsQueryData = {
   };
 };
 
-type ToggleFilterKey = Exclude<keyof ResourceSearchFilters, "searchText" | "categoryCodes">;
+type ToggleFilterKey = Exclude<
+  keyof ResourceSearchFilters,
+  "searchText" | "categoryCodes" | "favorLocalResources" | "maxDistanceKm"
+>;
 
 function formatDate(value: string | null, noDateLabel: string) {
   if (!value) {
@@ -247,6 +264,46 @@ export default function PublicResourcesPage() {
                   <Button color="primary" onClick={() => toggleFilter("canBeDelivered")} size="small" variant={filterVariant(filters.canBeDelivered)}>
                     {t("filters.canBeDelivered")}: {t(`triState.${describeTriStateFilter(filters.canBeDelivered)}`)}
                   </Button>
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography gutterBottom variant="subtitle2">
+                  {t("browse.proximityLabel")}
+                </Typography>
+                <Stack spacing={1}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.favorLocalResources}
+                        onChange={(_event, checked) => {
+                          setFilters(current => ({
+                            ...current,
+                            favorLocalResources: checked
+                          }));
+                        }}
+                      />
+                    }
+                    label={t("browse.favorLocalResources")}
+                  />
+                  <Box sx={{ px: 1 }}>
+                    <Typography color="text.secondary" variant="body2">
+                      {t("browse.maxDistanceValue", { value: filters.maxDistanceKm })}
+                    </Typography>
+                    <Slider
+                      min={1}
+                      max={50}
+                      step={1}
+                      value={filters.maxDistanceKm}
+                      valueLabelDisplay="auto"
+                      onChange={(_event, value) => {
+                        setFilters(current => ({
+                          ...current,
+                          maxDistanceKm: Array.isArray(value) ? value[0] : value
+                        }));
+                      }}
+                    />
+                  </Box>
                 </Stack>
               </Box>
             </Stack>

@@ -5,9 +5,9 @@ export const PUBLISH_RESOURCE_MUTATION = gql`
     $resourceId: UUID
     $title: String!
     $description: String
-    $location: String!
-    $latitude: BigFloat!
-    $longitude: BigFloat!
+    $location: String
+    $latitude: BigFloat
+    $longitude: BigFloat
     $intensity: NeedIntensity!
     $defaultTokenAmount: Int
     $categoryCodes: [Int!]
@@ -83,6 +83,8 @@ export const PUBLIC_RESOURCES_QUERY = gql`
     $canBeTakenAway: TriStateFilter
     $canBeDelivered: TriStateFilter
     $limitCount: Int
+    $favorLocalResources: Boolean
+    $maxDistanceKm: BigFloat
   ) {
     searchResources(
       latitude: $latitude
@@ -98,6 +100,8 @@ export const PUBLIC_RESOURCES_QUERY = gql`
       canBeTakenAway: $canBeTakenAway
       canBeDelivered: $canBeDelivered
       limitCount: $limitCount
+      favorLocalResources: $favorLocalResources
+      maxDistanceKm: $maxDistanceKm
     ) {
       nodes {
         id
@@ -170,7 +174,6 @@ export const RESOURCE_BIDS_FOR_RESOURCE_QUERY = gql`
   query ResourceBidsForResource($resourceId: UUID!) {
     resourceBidsByResourceId: allResourceBids(
       condition: { resourceId: $resourceId }
-      orderBy: CREATED_AT_DESC
     ) {
       nodes {
         id

@@ -103,17 +103,19 @@ export const createResourceValidationSchema = Yup.object({
   title: Yup.string().trim().required("Title is required"),
   description: Yup.string().max(8000, "Description must be 8000 characters or fewer"),
   imageUrls: Yup.array().of(Yup.string().url().required()).default([]),
-  location: Yup.string().trim().required("Location is required"),
+  location: Yup.string().trim().optional(),
   latitude: Yup.number()
-    .transform((value, originalValue) => (originalValue === "" || originalValue == null ? Number.NaN : value))
+    .transform((value, originalValue) => (originalValue === "" || originalValue == null ? null : value))
+    .nullable()
     .min(-90, "Latitude must be at least -90")
     .max(90, "Latitude must be at most 90")
-    .required("Latitude is required"),
+    .optional(),
   longitude: Yup.number()
-    .transform((value, originalValue) => (originalValue === "" || originalValue == null ? Number.NaN : value))
+    .transform((value, originalValue) => (originalValue === "" || originalValue == null ? null : value))
+    .nullable()
     .min(-180, "Longitude must be at least -180")
     .max(180, "Longitude must be at most 180")
-    .required("Longitude is required"),
+    .optional(),
   intensity: Yup.mixed<ResourceIntensity>()
     .oneOf(["leg_up", "sharing", "commitment", "rare_contribution"])
     .required("Intensity is required"),

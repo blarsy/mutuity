@@ -7,6 +7,8 @@ export type ResourceSearchLocation = NeedSearchLocation;
 export type ResourceSearchFilters = {
   searchText: string;
   categoryCodes: number[];
+  favorLocalResources: boolean;
+  maxDistanceKm: number;
   isProduct: TriStateFilter;
   isService: TriStateFilter;
   canBeGiven: TriStateFilter;
@@ -61,9 +63,9 @@ export type PublicResourceCard = {
   creatorDisplayName: string;
   title: string;
   description: string | null;
-  location: string;
-  latitude: number;
-  longitude: number;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   intensity: ResourceIntensity;
   defaultTokenAmount: number | null;
   categoryLabels: string[];
@@ -84,6 +86,8 @@ export type PublicResourceCard = {
 export const DEFAULT_RESOURCE_SEARCH_FILTERS: ResourceSearchFilters = {
   searchText: "",
   categoryCodes: [],
+  favorLocalResources: true,
+  maxDistanceKm: 50,
   isProduct: "neutral",
   isService: "neutral",
   canBeGiven: "neutral",

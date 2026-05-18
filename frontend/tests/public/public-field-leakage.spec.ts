@@ -31,7 +31,6 @@ describe("public page projections - restricted field exclusion", () => {
         needId: "need-123",
         needTitle: "Help with moving",
         needDescription: "Need help moving to new apartment",
-        creatorDisplayName: "John"
       });
 
       // Verify metadata doesn't contain email

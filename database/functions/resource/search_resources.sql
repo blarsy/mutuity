@@ -81,6 +81,35 @@ as $$
   )
 $$;
 
+create or replace function app_private.get_local_exchange_max_distance_km()
+returns numeric
+language plpgsql
+stable
+security definer
+set search_path = app_public, app_private, public
+as $$
+declare
+  v_value text;
+  v_distance numeric := 50;
+begin
+  select s.value_text
+  into v_value
+  from app_public.system_setting s
+  where s.key = 'local_exchange_max_distance_km';
+
+  begin
+    if v_value is not null then
+      v_distance := greatest(0::numeric, least(v_value::numeric, 500::numeric));
+    end if;
+  exception
+    when invalid_text_representation then
+      v_distance := 50;
+  end;
+
+  return v_distance;
+end;
+$$;
+
 create or replace function app_public.search_resources(
   latitude numeric default null,
   longitude numeric default null,
@@ -94,7 +123,9 @@ create or replace function app_public.search_resources(
   can_be_exchanged app_public.tri_state_filter default 'neutral',
   can_be_taken_away app_public.tri_state_filter default 'neutral',
   can_be_delivered app_public.tri_state_filter default 'neutral',
-  limit_count integer default 50
+  limit_count integer default 50,
+  favor_local_resources boolean default true,
+  max_distance_km numeric default null
 )
 returns table (
   id uuid,
@@ -137,6 +168,18 @@ as $$
       search_resources.browser_longitude
     )
   ),
+  configured_distance as (
+    select app_private.get_local_exchange_max_distance_km() as configured_max_distance_km
+  ),
+  settings as (
+    select
+      cd.configured_max_distance_km,
+      least(
+        cd.configured_max_distance_km,
+        greatest(coalesce(search_resources.max_distance_km, cd.configured_max_distance_km), 0::numeric)
+      ) as effective_max_distance_km
+    from configured_distance cd
+  ),
   normalized_input as (
     select
       nullif(lower(app_private.immutable_unaccent(btrim(coalesce(search_resources.search_text, '')))), '')
@@ -154,16 +197,25 @@ as $$
       coalesce(a.display_name, a.external_subject, 'Unknown account') as creator_display_name,
       rl.query_latitude,
       rl.query_longitude,
+      st.effective_max_distance_km,
       coalesce(category_lookup.category_labels, '{}'::text[]) as category_labels,
-      app_private.calculate_geo_distance_km(
-        coalesce(r.latitude, rl.query_latitude),
-        coalesce(r.longitude, rl.query_longitude),
-        rl.query_latitude,
-        rl.query_longitude
-      ) as distance_km
+      case
+        when r.latitude is null or r.longitude is null then
+          case
+            when coalesce(search_resources.favor_local_resources, true) then st.effective_max_distance_km
+            else 0::numeric
+          end
+        else app_private.calculate_geo_distance_km(
+          r.latitude,
+          r.longitude,
+          rl.query_latitude,
+          rl.query_longitude
+        )
+      end as distance_km
     from app_public.resource r
     join app_public.account a on a.id = r.creator_account_id
     cross join resolved_location rl
+    cross join settings st
     cross join normalized_input ni
     left join lateral (
       select coalesce(array_agg(rc.label order by rc.sort_order, rc.code), '{}'::text[]) as category_labels
@@ -228,6 +280,7 @@ as $$
     fr.query_latitude,
     fr.query_longitude
   from filtered_resources fr
+  where fr.distance_km <= fr.effective_max_distance_km
   order by fr.distance_km asc, fr.created_at desc, fr.id asc
   limit least(greatest(coalesce(search_resources.limit_count, 50), 1), 50)
 $$;
@@ -245,5 +298,7 @@ comment on function app_public.search_resources(
   app_public.tri_state_filter,
   app_public.tri_state_filter,
   app_public.tri_state_filter,
-  integer
+  integer,
+  boolean,
+  numeric
 ) is '@name searchResources';

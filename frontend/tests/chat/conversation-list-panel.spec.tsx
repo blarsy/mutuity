@@ -3,7 +3,7 @@ import { getAutoOpenConversation } from "../../src/features/chat/ConversationLis
 describe("getAutoOpenConversation", () => {
   const conversations = [
     {
-      conversationKind: "resource",
+      conversationKind: "resource" as const,
       conversationId: "conv-1",
       contextId: "res-1",
       contextTitle: "First conversation",
@@ -14,7 +14,7 @@ describe("getAutoOpenConversation", () => {
       lastActivityAt: "2024-01-01T12:00:00.000Z"
     },
     {
-      conversationKind: "need",
+      conversationKind: "need" as const,
       conversationId: "conv-2",
       contextId: "need-1",
       contextTitle: "Second conversation",

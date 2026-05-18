@@ -24,6 +24,8 @@ As a visitor, I can browse active resources near me so I can discover offers of 
 5. **Given** the six modality flags on resources, **When** the visitor leaves their corresponding browse filters at `neutral`, **Then** resources with either `true` or `false` values for each flag remain eligible in the result set.
 6. **Given** the visitor switches any modality filter to `yes` or `no`, **When** the query is re-run, **Then** only resources matching that boolean value for the selected flag are returned.
 7. **Given** a visitor without an explicit saved location, **When** discovery runs, **Then** the location fallback behavior is explicit and deterministic.
+8. **Given** a matching resource has no location coordinates and the `Favor local resources` option is checked, **When** results are ranked, **Then** that resource is still included but is assigned the configured local maximum distance so it appears after closer located resources.
+9. **Given** a matching resource has no location coordinates and the `Favor local resources` option is not checked, **When** results are ranked, **Then** that resource is included with an assigned distance of `0 km`.
 
 ---
 
@@ -33,7 +35,7 @@ As an authenticated user or organization representative, I can publish a resourc
 
 **Why this priority**: Publishing is the core creation flow that powers the resource side of the unified product.
 
-**Independent Test**: Sign in, create a resource with category, location, modality flags, a mandatory intensity value, an optional negotiated Topes reference amount, availability, and optional media, and verify it becomes visible in discovery according to the publication rules.
+**Independent Test**: Sign in, create resources with and without location, each with category, modality flags, a mandatory intensity value, an optional negotiated Topes reference amount, availability, and optional media, and verify both become visible in discovery according to the publication rules.
 
 **Acceptance Scenarios**:
 
@@ -41,6 +43,7 @@ As an authenticated user or organization representative, I can publish a resourc
 2. **Given** a resource with an optional negotiated Topes reference amount (legacy/internal `price` field), **When** the user saves it, **Then** the amount is stored as the default Topes amount for future bids while remaining negotiable in the conversation.
 3. **Given** a resource with optional images or media metadata and a rich-text description, **When** the user saves it, **Then** the description and media references are persisted safely and rendered on the resource detail UI.
 4. **Given** invalid, incomplete, intensity-incompatible, or overlong description input, **When** the user attempts to publish, **Then** the UI shows clear validation feedback without storing a broken listing.
+5. **Given** a resource that represents fully remote or digital work, **When** the publisher omits location fields, **Then** publishing succeeds and discovery ranking applies the unlocated-resource distance rule.
 
 ---
 
@@ -296,6 +299,8 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - A resource with no expiration datetime is considered permanent and remains eligible for browsing until it is withdrawn, closed, or otherwise deactivated.
 - Expired resources are not only hidden from browsing queries; they also reject any new bids or responses.
 - A resource that can both be given and exchanged may still carry an optional Topes reference amount, which applies only as the default for the exchange/bid path and does not prevent a free gift arrangement.
+- A resource location is optional; resources without location coordinates remain discoverable and use a deterministic synthetic distance based on the `Favor local resources` option.
+- The local-exchange maximum distance defaults to `50 km` and is configurable as a system constant to support operational tuning.
 - `bid` behavior is related to `claim` behavior but must remain distinct where outcome rules or extra terms differ.
 - A resource may be visible publicly, organization-only, or under campaign constraints.
 - Older Tope-là records may contain media or location data in formats that need normalization during migration.
@@ -324,6 +329,10 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-002**: Discovery MUST support text, category, location-aware, and modality-flag filtering.
 - **FR-003**: Default resource browsing order MUST sort solely by geographical closeness to the query location, with closer resources shown first.
 - **FR-004**: If two or more matching resources have the same computed distance from the query location, the more recently created resource MUST be shown first.
+- **FR-004a**: Resource publishing MUST allow `location`, `latitude`, and `longitude` to be omitted.
+- **FR-004b**: Discovery MUST expose a `Favor local resources` option; when enabled, matching resources without location coordinates MUST still be included and MUST be assigned the configured local maximum distance so they sort after nearer located resources.
+- **FR-004c**: When `Favor local resources` is disabled, matching resources without location coordinates MUST be included with assigned distance `0 km`.
+- **FR-004d**: The local maximum distance used by discovery MUST be a configurable system constant with default value `50 km`.
 - **FR-005**: Browsing queries MUST return only resources that are active and either not yet expired or not assigned any expiration datetime.
 - **FR-006**: If a resource has an expiration datetime, it MUST become expired at that moment and stop appearing in browsing results.
 - **FR-007**: Expired resources MUST reject any new bids or responses.

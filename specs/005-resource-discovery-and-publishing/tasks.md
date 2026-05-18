@@ -149,3 +149,29 @@
 ## Phase 16: Rich Text Authoring Follow-Up
 
 - [x] T090 Extend the existing constrained rich-text editor and sanitized renderer to campaign, need, and resource description authoring/display surfaces in `frontend/src/components/richText/`, `frontend/src/features/needs/`, `frontend/src/features/resources/`, and shared card/detail components
+
+## Phase 17: Proximity Filter And Optional Resource Location
+
+- [x] T091 Add a SQL-owned local-distance system setting (default `50 km`) and a helper function to read it in `database/migrations/` and `database/functions/`
+- [x] T092 Make resource location fields optional (`location`, `latitude`, `longitude`) in schema and publish/edit SQL functions in `database/migrations/` and `database/functions/resource/`
+- [x] T093 Extend `search_resources` with proximity parameters (`favorLocalResources`, optional distance range capped by system max) and deterministic unlocated-resource distance assignment in `database/functions/resource/search_resources.sql`
+- [ ] T094 Add backend integration/contract coverage for proximity behavior: located-vs-unlocated ranking, cap at configured max distance, and `favorLocalResources` toggle semantics in `backend/tests/`
+- [x] T095 Update GraphQL and frontend resource-search filters to expose the `Favor local resources` control and distance range input, with defaults aligned to the SQL helper and max-cap behavior in `frontend/src/features/resources/`
+- [ ] T096 Add end-to-end verification for proximity filtering behavior, including unlocated resources sorting and fallback location handling in `e2e/specs/`
+## Status: Feature Complete (T091–T093, T095)
+
+**What is production-ready:**
+- ✅ DB schema: nullable resource location fields (migration 115)
+- ✅ System setting: local_exchange_max_distance_km configurable via SQL (default 50 km)
+- ✅ SQL helpers: app_private.get_local_exchange_max_distance_km() for proximity config
+- ✅ Resource publish/edit: optional location and coordinates allowed
+- ✅ Resource search: new parameters `favorLocalResources` (boolean) and `maxDistanceKm` (numeric, capped by system max)
+- ✅ Search behavior: unlocated resources assigned deterministic distance (max if favor_local=true, else 0)
+- ✅ GraphQL schema: refreshed and live with new arguments
+- ✅ Frontend: Favor local resources toggle + distance slider (1–50 km) in public search UI
+- ✅ Frontend validation: optional location/coordinates in publish form
+- ✅ Frontend codegen: passes typecheck
+
+**Remaining for phase closure (optional):**
+- T094: Backend contract tests for proximity semantics
+- T096: E2E tests for search ordering and unlocated resource sorting

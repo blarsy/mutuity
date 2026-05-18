@@ -112,19 +112,21 @@ export const CLAIM_CONVERSATION_LOOKUP_QUERY = gql`
   }
 `;
 
-export const SEND_RESOURCE_MESSAGE_MUTATION = gql`
-  mutation SendResourceMessage($input: SendResourceMessageInput!) {
-    sendResourceMessage(input: $input) {
-      resourceMessage {
-        id
-        conversationId
-        senderAccountId
-        body
-        createdAt
-      }
-    }
-  }
-`;
+// TODO: sendResourceMessage mutation is not properly exposed by PostGraphile due to function overload naming.
+// For now, use sendResourceMessageDirect for all resource messaging.
+// export const SEND_RESOURCE_MESSAGE_MUTATION = gql`
+//   mutation SendResourceMessage($input: SendResourceMessageInput!) {
+//     sendResourceMessage(input: $input) {
+//       resourceMessage {
+//         id
+//         conversationId
+//         senderAccountId
+//         body
+//         createdAt
+//       }
+//     }
+//   }
+// `;
 
 /**
  * Open-contact variant: start a resource conversation without a prior bid.
