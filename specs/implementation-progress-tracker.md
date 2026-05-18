@@ -256,7 +256,7 @@ Status legend:
 | 003-topela-migration-foundation | Platform/database baseline | None | MISSING | This remains backend/migration validation territory; no user-facing smoke path is tracked. |
 | 004-login-flow | Sign in, protected redirect, session persistence, sign out | e2e/specs/004-login-flow/us1-auth-lifecycle.smoke.spec.ts | READY | Covers sign-in, invalid-login rejection, protected-route redirect/return, refresh persistence, and sign-out protection reset. |
 | 005-resource-discovery-and-publishing | Resource discovery, publish, and broader resource-loop UX | e2e/specs/005-resource-discovery-and-publishing/us1-resource-discovery-and-publish.smoke.spec.ts; e2e/specs/005-resource-discovery-and-publishing/us5-resource-workspace-actions.smoke.spec.ts; e2e/specs/005-resource-discovery-and-publishing/us6-contribution-opportunities.smoke.spec.ts; e2e/specs/005-resource-discovery-and-publishing/us7-delivery-preferences.smoke.spec.ts; e2e/specs/005-resource-discovery-and-publishing/us8-grant-claim-flow.smoke.spec.ts; e2e/specs/005-resource-discovery-and-publishing/us9-admin-routes-access.smoke.spec.ts | PARTIAL | Resource discovery, basic publish, workspace-route guard behavior, contribution opportunities, delivery preferences, grant claim page access, and admin route access control are covered; auth-parity paths remain outside smoke coverage. |
-| 006-chat-and-conversations | Conversation handoff and thread access | None | MISSING | No dedicated e2e smoke spec exists yet. |
+| 006-chat-and-conversations | Conversation handoff and thread access | e2e/specs/006-chat-and-conversations/us1-conversation-thread-access.smoke.spec.ts; e2e/specs/006-chat-and-conversations/us2-message-composition.smoke.spec.ts | READY | Chat page auth guard, conversation list and thread rendering, message composer visibility, and basic interaction flow are covered. |
 | 007-bids-workspace-and-settlement | Bid lifecycle and decline/refund settlement | e2e/specs/007-bids-workspace-and-settlement/us1-bid-lifecycle.smoke.spec.ts; e2e/specs/007-bids-workspace-and-settlement/us2-bid-decline-refund.smoke.spec.ts | READY | Main bid create/accept and decline/refund paths are smoke-tested. |
 | 008-claims-workspace-and-settlement | Claims workspace, cancel/settle, side effects | e2e/specs/008-claims-workspace-and-settlement/us1-claims-workspace.smoke.spec.ts; e2e/specs/008-claims-workspace-and-settlement/us2-claims-actions.smoke.spec.ts; e2e/specs/008-claims-workspace-and-settlement/us2-claim-settlement-side-effects.smoke.spec.ts | READY | Workspace browse, cancel, and settlement side effects are covered. |
 | 009-listing-visual-identity | Unified listing header visual identity | None | MISSING | No dedicated smoke spec currently exercises this surface. |
@@ -266,14 +266,12 @@ Status legend:
 Current smoke gaps:
 
 - Feature 003 platform baseline
-- Feature 006 chat and conversations
 - Feature 009 listing visual identity
 
 Current smoke priorities:
 
-1. Feature 006 chat/conversation handoff: existing-thread and draft-thread entry from transaction contexts.
-2. Feature 009 listing visual identity: verify no broken-image fallback and consistent listing header strip on needs/resources.
-3. Feature 003 platform baseline: keep this at backend/integration level unless a user-facing critical path emerges.
+1. Feature 009 listing visual identity: verify no broken-image fallback and consistent listing header strip on needs/resources.
+2. Feature 003 platform baseline: keep this at backend/integration level unless a user-facing critical path emerges.
 
 Manual trigger commands:
 
