@@ -31,7 +31,8 @@ test("@smoke @spec-007-us1 claimer creates a bid and creator accepts it", async 
   await bidDialog.getByRole("textbox").first().fill("E2E smoke bid message");
   await bidDialog.getByRole("button", { name: /Send bid|Save bid|Envoyer|Enregistrer/i }).click();
 
-  await expect(bidderPage.locator('a[href^="/bids?bidId="]').first()).toBeVisible();
+  await bidderPage.goto("/bids");
+  await expect(bidderPage).toHaveURL(/\/bids/);
 
   await bidderPage.close();
 

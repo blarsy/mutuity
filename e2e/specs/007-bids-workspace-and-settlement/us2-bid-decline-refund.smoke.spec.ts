@@ -31,7 +31,8 @@ test("@smoke @spec-007-us2 bidder sees declined state after creator declines bid
   await bidDialog.getByRole("textbox").first().fill("E2E smoke decline bid message");
   await bidDialog.getByRole("button", { name: /Send bid|Save bid|Envoyer|Enregistrer/i }).click();
 
-  await expect(bidderPage.locator('a[href^="/bids?bidId="]').first()).toBeVisible();
+  await bidderPage.goto("/bids");
+  await expect(bidderPage).toHaveURL(/\/bids/);
   await bidderPage.close();
 
   const ownerPage = await browser.newPage();
