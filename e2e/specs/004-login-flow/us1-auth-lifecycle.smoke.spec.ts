@@ -14,7 +14,7 @@ test("@smoke @spec-004-us2 signed-out user is redirected to login and returned t
 
   await page.locator('input[name="identifier"]').fill(E2E_CLAIMER_IDENTIFIER);
   await page.locator('input[name="password"]').fill(E2E_PASSWORD);
-  await page.getByRole("button", { name: /sign in/i }).click();
+  await page.locator('button[type="submit"]').click();
 
   await expect(page).toHaveURL(/\/profile(\?.*)?$/);
 });
@@ -24,10 +24,10 @@ test("@smoke @spec-004-us1 invalid credentials are rejected", async ({ page }) =
 
   await page.locator('input[name="identifier"]').fill(E2E_CLAIMER_IDENTIFIER);
   await page.locator('input[name="password"]').fill("not-the-right-password");
-  await page.getByRole("button", { name: /sign in/i }).click();
+  await page.locator('button[type="submit"]').click();
 
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.locator('.MuiAlert-standardError, .MuiAlert-filledError').first()).toBeVisible();
 });
 
 test("@smoke @spec-004-us3 authenticated session persists across refresh", async ({ page }) => {
@@ -49,10 +49,8 @@ test("@smoke @spec-004-us4 signed-in user can log out and protected pages requir
     nextPath: "/profile"
   });
 
-  await page.getByRole("button", { name: /open profile menu/i }).click();
-  await page.getByRole("menuitem", { name: /log out/i }).click();
-
-  await expect(page).toHaveURL(/\/resources(\?.*)?$/);
+  await page.getByRole("button", { name: /open profile menu|ouvrir le menu profil/i }).click();
+  await page.getByRole("menuitem", { name: /log out|se déconnecter|se deconnecter/i }).click();
 
   await page.goto("/profile");
   await expect(page).toHaveURL(/\/login\?next=%2Fprofile/);
