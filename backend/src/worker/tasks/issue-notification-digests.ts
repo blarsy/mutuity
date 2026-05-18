@@ -31,41 +31,7 @@ type PendingDigestAccount = {
 const GET_PENDING_DIGEST_ACCOUNTS_SQL =
   "select * from app_private.get_pending_delivery_digest_accounts($1::timestamptz, $2::integer);";
 
-const HAS_PENDING_DIGEST_MAIL_SQL = `
-  select exists (
-    select 1
-    from app_private.mail_outbox mo
-    where mo.account_id = $1
-      and mo.mail_kind = 'notification_digest'
-      and mo.status in ('pending', 'processing')
-  ) as has_pending
-`;
-
-const INSERT_DIGEST_MAIL_SQL = `
-  insert into app_private.mail_outbox (
-    account_id,
-    recipient_email,
-    mail_kind,
-    metadata,
-    status,
-    subject,
-    text_body,
-    html_body,
-    locale
-  )
-  values (
-    $1::uuid,
-    lower($2::text),
-    'notification_digest',
-    $3::jsonb,
-    'pending',
-    $4::text,
-    $5::text,
-    $6::text,
-    $7::text
-  )
-  returning id
-`;
+const QUEUE_DIGEST_MAIL_SQL = "select app_private.queue_notification_digest_mail($1::uuid, $2::text, $3::text, $4::text, $5::text, $6::text, $7::jsonb) as mail_id;";
 
 function normalizeStringArray(value: string[] | string): string[] {
   if (Array.isArray(value)) {
@@ -182,15 +148,6 @@ export const issueNotificationDigestsTask: Task = async payload => {
     let skippedCount = 0;
 
     for (const account of result.rows) {
-      const hasPendingDigestResult = await client.query<{ has_pending: boolean }>(HAS_PENDING_DIGEST_MAIL_SQL, [
-        account.account_id
-      ]);
-
-      if (hasPendingDigestResult.rows[0]?.has_pending) {
-        skippedCount += 1;
-        continue;
-      }
-
       const itemIds = normalizeStringArray(account.item_ids);
       const items = normalizeDigestItems(account.items);
 
@@ -200,19 +157,25 @@ export const issueNotificationDigestsTask: Task = async payload => {
       }
 
       const content = buildDigestContent(account.locale, items);
-      await client.query(INSERT_DIGEST_MAIL_SQL, [
+      const queuedDigestMailResult = await client.query<{ mail_id: string | null }>(QUEUE_DIGEST_MAIL_SQL, [
         account.account_id,
         account.recipient_email,
+        content.subject,
+        content.text,
+        content.html,
+        account.locale,
         {
           digest_item_ids: itemIds,
           digest_items: items,
           issued_at: now.toISOString()
-        },
-        content.subject,
-        content.text,
-        content.html,
-        account.locale
+        }
       ]);
+
+      if (!queuedDigestMailResult.rows[0]?.mail_id) {
+        skippedCount += 1;
+        continue;
+      }
+
       queuedCount += 1;
     }
 

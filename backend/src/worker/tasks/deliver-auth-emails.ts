@@ -76,11 +76,7 @@ const MARK_SKIPPED_SQL =
 const MARK_FAILED_SQL =
   "select app_private.mark_mail_outbox_failed($1::uuid, $2::text, $3::text, $4::text, $5::text);";
 
-const GET_RENDERED_MAIL_SQL = `
-  select subject, text_body, html_body, metadata
-  from app_private.mail_outbox
-  where id = $1::uuid
-`;
+const GET_RENDERED_MAIL_SQL = "select * from app_private.get_rendered_mail_outbox($1::uuid);";
 
 const MARK_DIGEST_ITEMS_BROADCASTED_SQL =
   "select app_private.mark_delivery_digest_items_broadcasted($1::uuid[], $2::uuid);";
