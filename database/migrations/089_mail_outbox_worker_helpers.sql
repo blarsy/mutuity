@@ -96,9 +96,9 @@ end;
 $$;
 
 grant execute on function app_private.get_rendered_mail_outbox(uuid)
-  to identified_account, manager, admin;
+  to identified_account, admin;
 grant execute on function app_private.queue_notification_digest_mail(uuid, text, text, text, text, text, jsonb)
-  to identified_account, manager, admin;
+  to identified_account, admin;
 
 comment on function app_private.get_rendered_mail_outbox(uuid) is
   'Returns the rendered subject, text, HTML, and metadata for one mail outbox row.';
