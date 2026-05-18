@@ -14,9 +14,9 @@ export type SeededResource = {
   id: string;
   creatorAccount: SeededAccount;
   title: string;
-  location: string;
-  latitude: number;
-  longitude: number;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   expiresAt: string | null;
   isActive: boolean;
 };
@@ -39,9 +39,9 @@ export async function seedResource(overrides?: {
   creatorAccount?: SeededAccount;
   title?: string;
   description?: string | null;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
+  location?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   intensity?: "leg_up" | "sharing" | "commitment" | "rare_contribution";
   defaultTokenAmount?: number | null;
   isProduct?: boolean;
@@ -58,8 +58,11 @@ export async function seedResource(overrides?: {
   const title = overrides?.title ?? `Resource ${Date.now()}`;
   const description = overrides?.description ?? "Seeded resource for integration tests";
   const location = overrides?.location ?? "Tournai city centre";
-  const latitude = overrides?.latitude ?? 50.6056;
-  const longitude = overrides?.longitude ?? 3.3878;
+  
+  // Handle null explicitly vs. undefined for defaults
+  const latitude = overrides && "latitude" in overrides ? overrides.latitude : 50.6056;
+  const longitude = overrides && "longitude" in overrides ? overrides.longitude : 3.3878;
+  
   const intensity = overrides?.intensity ?? "sharing";
   const defaultTokenAmount = overrides?.defaultTokenAmount ?? null;
   const isProduct = overrides?.isProduct ?? true;
@@ -73,18 +76,21 @@ export async function seedResource(overrides?: {
   const categoryCodes = overrides?.categoryCodes ?? [];
 
   return withClient(async client => {
-    await client.query(UPDATE_ACCOUNT_COORDINATES_SQL, [
-      creatorAccount.accountId,
-      latitude,
-      longitude
-    ]);
+    // Only update account coordinates if latitude and longitude are not both null
+    if (latitude !== null && longitude !== null) {
+      await client.query(UPDATE_ACCOUNT_COORDINATES_SQL, [
+        creatorAccount.accountId,
+        latitude,
+        longitude
+      ]);
+    }
 
     const result = await client.query<{
       id: string;
       title: string;
-      location: string;
-      latitude: number;
-      longitude: number;
+      location: string | null;
+      latitude: number | null;
+      longitude: number | null;
       expires_at: string | null;
       is_active: boolean;
     }>(INSERT_RESOURCE_SQL, [
@@ -125,8 +131,8 @@ export async function seedResource(overrides?: {
       creatorAccount,
       title: row.title,
       location: row.location,
-      latitude: Number(row.latitude),
-      longitude: Number(row.longitude),
+      latitude: row.latitude !== null ? Number(row.latitude) : null,
+      longitude: row.longitude !== null ? Number(row.longitude) : null,
       expiresAt: row.expires_at,
       isActive: row.is_active
     } satisfies SeededResource;

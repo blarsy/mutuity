@@ -203,7 +203,7 @@ as $$
         when r.latitude is null or r.longitude is null then
           case
             when coalesce(search_resources.favor_local_resources, true) then st.effective_max_distance_km
-            else 0::numeric
+            else st.effective_max_distance_km + 1::numeric
           end
         else app_private.calculate_geo_distance_km(
           r.latitude,

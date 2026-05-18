@@ -291,4 +291,385 @@ describe("resource search integration", () => {
     expect(titles).not.toContain(`${prefix} - Transport`);
     expect(nodes[0]?.categoryLabels).toContain("Food & beverage");
   });
+
+  describe("proximity filtering (T094)", () => {
+    it("returns unlocated resources at end when favorLocalResources=true", async () => {
+      const prefix = `US1 Proximity Unlocated ${Date.now()}`;
+      const creator = await seedDemoAccount({
+        identifier: `proximity-unlocated-${Date.now()}@example.com`,
+        displayName: "Proximity Test Creator"
+      });
+
+      // Located resource
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Located`,
+        description: "Located resource in Tournai",
+        location: "Tournai centre",
+        latitude: 50.6072,
+        longitude: 3.3889,
+        expiresAt: null
+      });
+
+      // Unlocated resource (no latitude/longitude)
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Unlocated`,
+        description: "Remote or online-only resource",
+        location: null,
+        latitude: null,
+        longitude: null,
+        expiresAt: null
+      });
+
+      const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: `
+            query SearchResourcesProximity(
+              $searchText: String!
+              $latitude: BigFloat!
+              $longitude: BigFloat!
+              $favorLocalResources: Boolean
+            ) {
+              searchResources(
+                searchText: $searchText
+                latitude: $latitude
+                longitude: $longitude
+                favorLocalResources: $favorLocalResources
+              ) {
+                nodes {
+                  id
+                  title
+                  distanceKm
+                }
+              }
+            }
+          `,
+          variables: {
+            searchText: prefix,
+            latitude: 50.6072,
+            longitude: 3.3889,
+            favorLocalResources: true
+          }
+        })
+      });
+
+      expect(response.status).toBe(200);
+
+      const payload = (await response.json()) as {
+        data?: {
+          searchResources: {
+            nodes: Array<{
+              id: string;
+              title: string;
+              distanceKm: string;
+            }>;
+          };
+        };
+        errors?: Array<{ message: string }>;
+      };
+
+      expect(payload.errors).toBeUndefined();
+
+      const nodes = payload.data?.searchResources.nodes ?? [];
+      expect(nodes).toHaveLength(2);
+      
+      // Located resource should come first
+      expect(nodes[0]?.title).toBe(`${prefix} - Located`);
+      expect(Number(nodes[0]?.distanceKm)).toBeLessThan(1);
+      
+      // Unlocated resource should come last, assigned to max distance (50 km default)
+      expect(nodes[1]?.title).toBe(`${prefix} - Unlocated`);
+      expect(Number(nodes[1]?.distanceKm)).toBe(50);
+    });
+
+    it("filters out unlocated resources when favorLocalResources=false", async () => {
+      const prefix = `US1 Proximity No Local ${Date.now()}`;
+      const creator = await seedDemoAccount({
+        identifier: `proximity-no-local-${Date.now()}@example.com`,
+        displayName: "Proximity No Local Creator"
+      });
+
+      // Located resource
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Located`,
+        description: "Located resource",
+        location: "Tournai centre",
+        latitude: 50.6072,
+        longitude: 3.3889,
+        expiresAt: null
+      });
+
+      // Unlocated resource
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Unlocated`,
+        description: "Unlocated resource",
+        location: null,
+        latitude: null,
+        longitude: null,
+        expiresAt: null
+      });
+
+      const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: `
+            query SearchResourcesNoLocal(
+              $searchText: String!
+              $latitude: BigFloat!
+              $longitude: BigFloat!
+              $favorLocalResources: Boolean
+            ) {
+              searchResources(
+                searchText: $searchText
+                latitude: $latitude
+                longitude: $longitude
+                favorLocalResources: $favorLocalResources
+              ) {
+                nodes {
+                  title
+                  distanceKm
+                }
+              }
+            }
+          `,
+          variables: {
+            searchText: prefix,
+            latitude: 50.6072,
+            longitude: 3.3889,
+            favorLocalResources: false
+          }
+        })
+      });
+
+      expect(response.status).toBe(200);
+
+      const payload = (await response.json()) as {
+        data?: {
+          searchResources: {
+            nodes: Array<{
+              title: string;
+              distanceKm: string;
+            }>;
+          };
+        };
+        errors?: Array<{ message: string }>;
+      };
+
+      expect(payload.errors).toBeUndefined();
+
+      const nodes = payload.data?.searchResources.nodes ?? [];
+      
+      // Only located resource should be returned
+      expect(nodes).toHaveLength(1);
+      expect(nodes[0]?.title).toBe(`${prefix} - Located`);
+    });
+
+    it("respects maxDistanceKm parameter and caps at system setting", async () => {
+      const prefix = `US1 Proximity Distance Cap ${Date.now()}`;
+      const creator = await seedDemoAccount({
+        identifier: `proximity-distance-cap-${Date.now()}@example.com`,
+        displayName: "Proximity Distance Cap Creator"
+      });
+
+      // Resource 10 km away (Tournai)
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Near 10km`,
+        description: "Near resource",
+        location: "Tournai centre",
+        latitude: 50.6072,
+        longitude: 3.3889,
+        expiresAt: null
+      });
+
+      // Resource ~50 km away (Brussels area)
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Far 50km`,
+        description: "Far resource",
+        location: "Brussels",
+        latitude: 50.85,
+        longitude: 4.35,
+        expiresAt: null
+      });
+
+      // Test with maxDistanceKm=30 (should exclude ~50km resource)
+      const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: `
+            query SearchResourcesDistanceCap(
+              $searchText: String!
+              $latitude: BigFloat!
+              $longitude: BigFloat!
+              $maxDistanceKm: BigFloat
+            ) {
+              searchResources(
+                searchText: $searchText
+                latitude: $latitude
+                longitude: $longitude
+                maxDistanceKm: $maxDistanceKm
+              ) {
+                nodes {
+                  title
+                  distanceKm
+                }
+              }
+            }
+          `,
+          variables: {
+            searchText: prefix,
+            latitude: 50.6072,
+            longitude: 3.3889,
+            maxDistanceKm: 30
+          }
+        })
+      });
+
+      expect(response.status).toBe(200);
+
+      const payload = (await response.json()) as {
+        data?: {
+          searchResources: {
+            nodes: Array<{
+              title: string;
+              distanceKm: string;
+            }>;
+          };
+        };
+        errors?: Array<{ message: string }>;
+      };
+
+      expect(payload.errors).toBeUndefined();
+
+      const nodes = payload.data?.searchResources.nodes ?? [];
+      
+      // Only the near resource should be included
+      expect(nodes.length).toBe(1);
+      expect(nodes[0]?.title).toBe(`${prefix} - Near 10km`);
+      expect(Number(nodes[0]?.distanceKm)).toBeLessThan(30);
+    });
+
+    it("combines favorLocalResources and maxDistanceKm filters correctly", async () => {
+      const prefix = `US1 Proximity Combined ${Date.now()}`;
+      const creator = await seedDemoAccount({
+        identifier: `proximity-combined-${Date.now()}@example.com`,
+        displayName: "Proximity Combined Creator"
+      });
+
+      // Close located resource
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Close Located`,
+        description: "Close located",
+        location: "Tournai centre",
+        latitude: 50.6072,
+        longitude: 3.3889,
+        expiresAt: null
+      });
+
+      // Far located resource
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Far Located`,
+        description: "Far located",
+        location: "Brussels",
+        latitude: 50.85,
+        longitude: 4.35,
+        expiresAt: null
+      });
+
+      // Unlocated resource
+      await seedResource({
+        creatorAccount: creator,
+        title: `${prefix} - Unlocated`,
+        description: "Unlocated",
+        location: null,
+        latitude: null,
+        longitude: null,
+        expiresAt: null
+      });
+
+      // Test with favorLocalResources=true and maxDistanceKm=30
+      const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: `
+            query SearchResourcesCombined(
+              $searchText: String!
+              $latitude: BigFloat!
+              $longitude: BigFloat!
+              $favorLocalResources: Boolean
+              $maxDistanceKm: BigFloat
+            ) {
+              searchResources(
+                searchText: $searchText
+                latitude: $latitude
+                longitude: $longitude
+                favorLocalResources: $favorLocalResources
+                maxDistanceKm: $maxDistanceKm
+              ) {
+                nodes {
+                  title
+                  distanceKm
+                }
+              }
+            }
+          `,
+          variables: {
+            searchText: prefix,
+            latitude: 50.6072,
+            longitude: 3.3889,
+            favorLocalResources: true,
+            maxDistanceKm: 30
+          }
+        })
+      });
+
+      expect(response.status).toBe(200);
+
+      const payload = (await response.json()) as {
+        data?: {
+          searchResources: {
+            nodes: Array<{
+              title: string;
+              distanceKm: string;
+            }>;
+          };
+        };
+        errors?: Array<{ message: string }>;
+      };
+
+      expect(payload.errors).toBeUndefined();
+
+      const nodes = payload.data?.searchResources.nodes ?? [];
+      const titles = nodes.map(n => n.title);
+
+      // Should include close located, unlocated (assigned to 30 since it's the cap), but exclude far located
+      expect(titles).toContain(`${prefix} - Close Located`);
+      expect(titles).toContain(`${prefix} - Unlocated`);
+      expect(titles).not.toContain(`${prefix} - Far Located`);
+
+      // Verify ordering: close located first, then unlocated
+      expect(nodes[0]?.title).toBe(`${prefix} - Close Located`);
+      expect(nodes[1]?.title).toBe(`${prefix} - Unlocated`);
+      expect(Number(nodes[1]?.distanceKm)).toBe(30);
+    });
+  });
 });
