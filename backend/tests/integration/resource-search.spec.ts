@@ -35,9 +35,9 @@ describe("resource search integration", () => {
       creatorAccount: creator,
       title: `${prefix} - Farther`,
       description: `${prefix} farther resource`,
-      location: "Brussels",
-      latitude: 50.85,
-      longitude: 4.35,
+      location: "Lille",
+      latitude: 50.6292,
+      longitude: 3.0573,
       expiresAt: null
     });
 
@@ -563,7 +563,7 @@ describe("resource search integration", () => {
       expect(Number(nodes[0]?.distanceKm)).toBeLessThan(30);
     });
 
-    it("combines favorLocalResources and maxDistanceKm filters correctly", async () => {
+    it("excludes unlocated resources when maxDistanceKm is below the configured fallback distance", async () => {
       const prefix = `US1 Proximity Combined ${Date.now()}`;
       const creator = await seedDemoAccount({
         identifier: `proximity-combined-${Date.now()}@example.com`,
@@ -603,8 +603,9 @@ describe("resource search integration", () => {
         expiresAt: null
       });
 
-      // Test with favorLocalResources=true and maxDistanceKm=30
-      const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      // With a 30 km max distance, the unlocated resource should no longer be
+      // included just because favorLocalResources=true.
+      const response30 = await fetch(`${TEST_BACKEND_URL}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -642,9 +643,9 @@ describe("resource search integration", () => {
         })
       });
 
-      expect(response.status).toBe(200);
+      expect(response30.status).toBe(200);
 
-      const payload = (await response.json()) as {
+      const payload30 = (await response30.json()) as {
         data?: {
           searchResources: {
             nodes: Array<{
@@ -656,20 +657,78 @@ describe("resource search integration", () => {
         errors?: Array<{ message: string }>;
       };
 
-      expect(payload.errors).toBeUndefined();
+      expect(payload30.errors).toBeUndefined();
 
-      const nodes = payload.data?.searchResources.nodes ?? [];
-      const titles = nodes.map(n => n.title);
+      const nodes30 = payload30.data?.searchResources.nodes ?? [];
+      const titles30 = nodes30.map(n => n.title);
 
-      // Should include close located, unlocated (assigned to 30 since it's the cap), but exclude far located
-      expect(titles).toContain(`${prefix} - Close Located`);
-      expect(titles).toContain(`${prefix} - Unlocated`);
-      expect(titles).not.toContain(`${prefix} - Far Located`);
+      expect(titles30).toContain(`${prefix} - Close Located`);
+      expect(titles30).not.toContain(`${prefix} - Unlocated`);
+      expect(titles30).not.toContain(`${prefix} - Far Located`);
 
-      // Verify ordering: close located first, then unlocated
-      expect(nodes[0]?.title).toBe(`${prefix} - Close Located`);
-      expect(nodes[1]?.title).toBe(`${prefix} - Unlocated`);
-      expect(Number(nodes[1]?.distanceKm)).toBe(30);
+      const response50 = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: `
+            query SearchResourcesCombinedWide(
+              $searchText: String!
+              $latitude: BigFloat!
+              $longitude: BigFloat!
+              $favorLocalResources: Boolean
+              $maxDistanceKm: BigFloat
+            ) {
+              searchResources(
+                searchText: $searchText
+                latitude: $latitude
+                longitude: $longitude
+                favorLocalResources: $favorLocalResources
+                maxDistanceKm: $maxDistanceKm
+              ) {
+                nodes {
+                  title
+                  distanceKm
+                }
+              }
+            }
+          `,
+          variables: {
+            searchText: prefix,
+            latitude: 50.6072,
+            longitude: 3.3889,
+            favorLocalResources: true,
+            maxDistanceKm: 50
+          }
+        })
+      });
+
+      expect(response50.status).toBe(200);
+
+      const payload50 = (await response50.json()) as {
+        data?: {
+          searchResources: {
+            nodes: Array<{
+              title: string;
+              distanceKm: string;
+            }>;
+          };
+        };
+        errors?: Array<{ message: string }>;
+      };
+
+      expect(payload50.errors).toBeUndefined();
+
+      const nodes50 = payload50.data?.searchResources.nodes ?? [];
+      const titles50 = nodes50.map(n => n.title);
+
+      expect(titles50).toContain(`${prefix} - Close Located`);
+      expect(titles50).toContain(`${prefix} - Unlocated`);
+      expect(titles50).not.toContain(`${prefix} - Far Located`);
+      expect(nodes50[0]?.title).toBe(`${prefix} - Close Located`);
+      expect(nodes50[1]?.title).toBe(`${prefix} - Unlocated`);
+      expect(Number(nodes50[1]?.distanceKm)).toBe(50);
     });
   });
 });

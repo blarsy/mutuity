@@ -145,9 +145,6 @@ export default function PublicResourcesPage() {
 
   // Resolve a human-readable label for the current active reference location.
   const activeLocation = explicitLocation ?? browserLocation ?? TOURNAI_CITY_CENTRE;
-  const locationStatusKey = explicitLocation
-    ? "browse.locationExplicitStatus"
-    : (browserLocation ? "browse.locationBrowserStatus" : "browse.locationFallbackStatus");
 
   useEffect(() => {
     if (explicitLocationAddress.trim().length > 0) {
@@ -265,10 +262,6 @@ export default function PublicResourcesPage() {
             {t("authGuard.checking", { ns: "common" })}
           </Alert>
         )}
-
-        <Alert severity="info" sx={{ mb: 3 }}>
-          {t(locationStatusKey)}
-        </Alert>
 
         {errorMessage ? (
           <Alert severity="error" sx={{ mb: 3 }}>

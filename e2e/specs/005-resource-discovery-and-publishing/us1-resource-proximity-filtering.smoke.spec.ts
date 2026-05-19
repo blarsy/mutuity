@@ -83,6 +83,53 @@ test("@smoke @spec-005-proximity distance slider updates when interacted with", 
   await expect(distanceText).toBeVisible();
 });
 
+test("@smoke @spec-005-proximity authenticated slider change sends max distance with reference coordinates", async ({ page }) => {
+  await loginViaUi(page, {
+    identifier: E2E_CREATOR_IDENTIFIER,
+    password: E2E_PASSWORD,
+    nextPath: "/resources"
+  });
+
+  const slider = page.locator('input[type="range"]').first();
+  await expect(slider).toBeVisible();
+
+  const requestPromise = page.waitForRequest(request => {
+    if (!request.url().includes("/graphql") || request.method() !== "POST") {
+      return false;
+    }
+
+    const payload = request.postDataJSON() as {
+      operationName?: string;
+      variables?: {
+        maxDistanceKm?: number;
+      };
+    };
+
+    return payload.operationName === "PublicResources" && payload.variables?.maxDistanceKm === 43;
+  });
+
+  await slider.fill("43");
+
+  const payload = requestPromise.then(request => request.postDataJSON() as {
+    variables: {
+      latitude: number | null;
+      longitude: number | null;
+      browserLatitude: number | null;
+      browserLongitude: number | null;
+      maxDistanceKm: number;
+    };
+  });
+
+  await expect(slider).toHaveValue("43");
+
+  const requestBody = await payload;
+  const hasPrimaryCoordinates = requestBody.variables.latitude !== null && requestBody.variables.longitude !== null;
+  const hasBrowserCoordinates = requestBody.variables.browserLatitude !== null && requestBody.variables.browserLongitude !== null;
+
+  expect(requestBody.variables.maxDistanceKm).toBe(43);
+  expect(hasPrimaryCoordinates || hasBrowserCoordinates).toBe(true);
+});
+
 test("@smoke @spec-005-proximity favor local resources label and control visible", async ({ page }) => {
   await page.goto("/resources");
 
