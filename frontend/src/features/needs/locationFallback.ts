@@ -6,6 +6,7 @@ export const TOURNAI_CITY_CENTRE: NeedSearchLocation = {
   source: "fallback"
 };
 
+export const TOURNAI_CENTRE_ADDRESS = "Rue du Curé Notre Dame 15, 7500 Tournai, Belgium";
 type PartialLocation = {
   latitude: number;
   longitude: number;

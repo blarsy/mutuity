@@ -11,6 +11,10 @@ import {
   Checkbox,
   Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   Slider,
   Stack,
@@ -22,7 +26,10 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CategoriesPicker } from "../../components/CategoriesPicker";
-import { getBrowserLocation } from "../needs/locationFallback";
+import { LocationPicker, type LocationValue } from "../../components/LocationPicker";
+import { APIProvider } from "@vis.gl/react-google-maps";
+import { useApiIsLoaded } from "@vis.gl/react-google-maps";
+import { TOURNAI_CITY_CENTRE, TOURNAI_CENTRE_ADDRESS, getBrowserLocation } from "../needs/locationFallback";
 import {
   buildResourceSearchVariables,
   cycleTriStateFilter,
@@ -34,6 +41,7 @@ import {
   type PublicResourceCard,
   type ResourceCategoryOption,
   type ResourceSearchFilters,
+  type ResourceSearchLocation,
   type TriStateFilter
 } from "./types";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
@@ -100,13 +108,24 @@ function buildResourceTags(resource: PublicResourceCard, t: (key: string) => str
   return tags.filter((tag): tag is string => Boolean(tag && tag.trim()));
 }
 
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+
 export default function PublicResourcesPage() {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t, i18n } = useTranslation("resources");
   const [filters, setFilters] = useState(DEFAULT_RESOURCE_SEARCH_FILTERS);
-  const [browserLocation, setBrowserLocation] = useState<ReturnType<typeof getBrowserLocation> extends Promise<infer T> ? T : never>();
-  const [locationStatusKey, setLocationStatusKey] = useState("browse.locationFallbackStatus");
+  const [browserLocation, setBrowserLocation] = useState<ResourceSearchLocation | undefined>(undefined);
+  const [explicitLocation, setExplicitLocation] = useState<ResourceSearchLocation | undefined>(undefined);
+  const [explicitLocationAddress, setExplicitLocationAddress] = useState("");
+  const [resolvedLocationLabel, setResolvedLocationLabel] = useState("");
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [locationDraft, setLocationDraft] = useState<LocationValue>({
+    address: "",
+    latitude: TOURNAI_CITY_CENTRE.latitude,
+    longitude: TOURNAI_CITY_CENTRE.longitude
+  });
+  const isGoogleMapsApiLoaded = useApiIsLoaded();
 
   useEffect(() => {
     let active = true;
@@ -117,7 +136,6 @@ export default function PublicResourcesPage() {
       }
 
       setBrowserLocation(location);
-      setLocationStatusKey("browse.locationBrowserStatus");
     });
 
     return () => {
@@ -125,9 +143,55 @@ export default function PublicResourcesPage() {
     };
   }, []);
 
+  // Resolve a human-readable label for the current active reference location.
+  const activeLocation = explicitLocation ?? browserLocation ?? TOURNAI_CITY_CENTRE;
+  const locationStatusKey = explicitLocation
+    ? "browse.locationExplicitStatus"
+    : (browserLocation ? "browse.locationBrowserStatus" : "browse.locationFallbackStatus");
+
+  useEffect(() => {
+    if (explicitLocationAddress.trim().length > 0) {
+      setResolvedLocationLabel(explicitLocationAddress);
+      return;
+    }
+
+    const lat = activeLocation?.latitude ?? TOURNAI_CITY_CENTRE.latitude;
+    const lng = activeLocation?.longitude ?? TOURNAI_CITY_CENTRE.longitude;
+    const coordLabel = `Lat: ${lat.toFixed(5)}; Lng ${lng.toFixed(5)}`;
+
+    // Check if this is the Tournai fallback location
+    const isTournaiCenter = Math.abs(lat - TOURNAI_CITY_CENTRE.latitude) < 0.0001 && Math.abs(lng - TOURNAI_CITY_CENTRE.longitude) < 0.0001;
+    if (isTournaiCenter) {
+      setResolvedLocationLabel(TOURNAI_CENTRE_ADDRESS);
+      return;
+    }
+
+    // If API is not ready, show coordinate fallback
+    if (!isGoogleMapsApiLoaded || typeof window === "undefined" || !window.google?.maps?.Geocoder) {
+      setResolvedLocationLabel(coordLabel);
+      return;
+    }
+
+    // Attempt reverse geocoding with proper status checking
+    let cancelled = false;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (cancelled) return;
+      if (status === window.google.maps.GeocoderStatus.OK && results?.length && results[0].formatted_address) {
+        setResolvedLocationLabel(results[0].formatted_address);
+      } else {
+        setResolvedLocationLabel(coordLabel);
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [explicitLocationAddress, activeLocation?.latitude, activeLocation?.longitude, isGoogleMapsApiLoaded]);
+
+  const referenceLocationLabel = resolvedLocationLabel;
+
   const variables = useMemo<ResourceSearchQueryVariables>(
-    () => buildResourceSearchVariables({ filters, location: browserLocation }),
-    [browserLocation, filters]
+    () => buildResourceSearchVariables({ filters, location: activeLocation }),
+    [activeLocation, filters]
   );
 
   const { data, loading, error } = useQuery<PublicResourcesQueryData, ResourceSearchQueryVariables>(
@@ -162,7 +226,17 @@ export default function PublicResourcesPage() {
     }));
   };
 
+  const openLocationDialog = () => {
+    setLocationDraft({
+      address: explicitLocationAddress,
+      latitude: explicitLocation?.latitude ?? browserLocation?.latitude ?? TOURNAI_CITY_CENTRE.latitude,
+      longitude: explicitLocation?.longitude ?? browserLocation?.longitude ?? TOURNAI_CITY_CENTRE.longitude
+    });
+    setLocationDialogOpen(true);
+  };
+
   return (
+    <APIProvider apiKey={GOOGLE_API_KEY}>
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack
@@ -272,6 +346,14 @@ export default function PublicResourcesPage() {
                   {t("browse.proximityLabel")}
                 </Typography>
                 <Stack spacing={1}>
+                  <Stack direction={{ xs: "column", sm: "row" }} alignItems="flex-start" justifyContent="space-between" spacing={1}>
+                    <Typography color="text.secondary" sx={{ flex: 1 }} variant="body2">
+                      {t("browse.referenceLocationLabel")}: {referenceLocationLabel}
+                    </Typography>
+                    <Button onClick={openLocationDialog} size="small" sx={{ flexShrink: 0 }} variant="outlined">
+                      {t("browse.setReferenceLocation")}
+                    </Button>
+                  </Stack>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -309,6 +391,35 @@ export default function PublicResourcesPage() {
             </Stack>
           </CardContent>
         </Card>
+
+        <Dialog fullWidth maxWidth="sm" onClose={() => setLocationDialogOpen(false)} open={locationDialogOpen}>
+          <DialogTitle>{t("browse.referenceLocationDialogTitle")}</DialogTitle>
+          <DialogContent>
+            <LocationPicker
+              addressLabel={t("browse.referenceLocationInputLabel")}
+              onChange={setLocationDraft}
+              required
+              value={locationDraft}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setLocationDialogOpen(false)}>{t("actions.cancel", { ns: "common" })}</Button>
+            <Button
+              onClick={() => {
+                setExplicitLocation({
+                  latitude: locationDraft.latitude,
+                  longitude: locationDraft.longitude,
+                  source: "explicit"
+                });
+                setExplicitLocationAddress(locationDraft.address);
+                setLocationDialogOpen(false);
+              }}
+              variant="contained"
+            >
+              {t("actions.save", { ns: "common" })}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {loading ? (
           <Alert severity="info">{t("browse.loading")}</Alert>
@@ -376,5 +487,6 @@ export default function PublicResourcesPage() {
         )}
       </Box>
     </Container>
+    </APIProvider>
   );
 }
