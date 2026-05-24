@@ -42,6 +42,31 @@
         "rejected": "Refusee",
         "notRequested": "Non demandee"
       }
+    },
+    "needJoin": {
+      "title": "Joindre vos besoins a cette campagne",
+      "subtitle": "Selectionnez un ou plusieurs besoins actifs et envoyez des demandes de rattachement au createur de la campagne.",
+      "loading": "Chargement de vos besoins actifs…",
+      "loadingFailed": "Impossible de charger vos besoins pour le moment.",
+      "empty": "Vous n'avez aucun besoin actif a rattacher.",
+      "signInRequired": "Connectez-vous pour demander le rattachement de vos besoins a cette campagne.",
+      "signInAction": "Se connecter",
+      "selectNeed": "Selectionner",
+      "selectedCount": "Besoins selectionnes : {{count}}",
+      "noneSelected": "Aucun besoin selectionne pour l'instant.",
+      "joinSelected": "Joindre les besoins a la campagne",
+      "joiningSelected": "Envoi des demandes…",
+      "joinSingle": "Joindre a la campagne",
+      "joiningSingle": "Envoi…",
+      "joinSuccess": "Demande envoyee pour {{count}} besoin(s).",
+      "joinFailed": "Impossible d'envoyer la demande. Veuillez reessayer.",
+      "tokens": "Tokens proposes : {{count}}",
+      "status": {
+        "joined": "Rattache",
+        "waitingApproval": "En attente d'approbation",
+        "rejected": "Refuse",
+        "notRequested": "Non demande"
+      }
     }
   },
   "pending": {

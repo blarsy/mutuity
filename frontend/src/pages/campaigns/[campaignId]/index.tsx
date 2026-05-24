@@ -28,6 +28,7 @@ import {
 } from "../../../features/shared/publicPageSeo";
 import { formatPublicDateTime } from "../../../features/shared/publicDateTime";
 import { fetchServerGraphql } from "../../../features/shared/serverGraphql";
+import { NeedCard } from "../../../features/ui/NeedCard";
 import { ResourceCard } from "../../../features/ui/ResourceCard";
 import { listingCardGridSx } from "../../../features/ui/listingCardGrid";
 import { getUserFacingGraphQLErrorMessage } from "../../../services/graphql/errorMessages";
@@ -102,6 +103,36 @@ type MyActiveResourcesForCampaignVariables = {
   campaignId: string;
 };
 
+type MyActiveNeedsForCampaignData = {
+  allNeeds: {
+    nodes: {
+      id: string;
+      creatorAccountId: string;
+      title: string;
+      description: string | null;
+      intensity: string;
+      proposedTopesAmount: number | null;
+      imageUrls: string[] | null;
+      expiresAt: string | null;
+      accountByCreatorAccountId: {
+        id: string;
+        displayName: string | null;
+        externalSubject: string;
+      } | null;
+      campaignNeedsByNeedId: {
+        nodes: {
+          status: CampaignJoinStatus;
+        }[];
+      };
+    }[];
+  };
+};
+
+type MyActiveNeedsForCampaignVariables = {
+  creatorAccountId: string;
+  campaignId: string;
+};
+
 const MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY = gql`
   query MyActiveResourcesForCampaign($creatorAccountId: UUID!, $campaignId: UUID!) {
     allResources(
@@ -150,6 +181,63 @@ const REQUEST_RESOURCE_JOIN_MUTATION = gql`
       campaignResource {
         campaignId
         resourceId
+        status
+      }
+    }
+  }
+`;
+
+const MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY = gql`
+  query MyActiveNeedsForCampaign($creatorAccountId: UUID!, $campaignId: UUID!) {
+    allNeeds(condition: { creatorAccountId: $creatorAccountId, isActive: true }, orderBy: ID_DESC) {
+      nodes {
+        id
+        creatorAccountId
+        title
+        description
+        intensity
+        proposedTopesAmount
+        imageUrls
+        expiresAt
+        accountByCreatorAccountId {
+          id
+          displayName
+          externalSubject
+        }
+        campaignNeedsByNeedId(condition: { campaignId: $campaignId }, orderBy: PRIMARY_KEY_DESC, first: 1) {
+          nodes {
+            status
+          }
+        }
+      }
+    }
+  }
+`;
+
+const REQUEST_NEED_JOIN_MUTATION = gql`
+  mutation RequestNeedJoinToCampaign($campaignId: UUID!, $needId: UUID!) {
+    createCampaignNeed(input: { campaignNeed: { campaignId: $campaignId, needId: $needId, status: PENDING } }) {
+      campaignNeed {
+        campaignId
+        needId
+        status
+      }
+    }
+  }
+`;
+
+const REOPEN_NEED_JOIN_REQUEST_MUTATION = gql`
+  mutation ReopenNeedJoinToCampaign($campaignId: UUID!, $needId: UUID!) {
+    updateCampaignNeedByCampaignIdAndNeedId(
+      input: {
+        campaignId: $campaignId
+        needId: $needId
+        campaignNeedPatch: { status: PENDING, actedAt: null, actedByAccountId: null }
+      }
+    ) {
+      campaignNeed {
+        campaignId
+        needId
         status
       }
     }
@@ -210,6 +298,11 @@ export default function PublicCampaignDetailPage({
   const [bulkRunning, setBulkRunning] = useState(false);
   const [joinActionError, setJoinActionError] = useState<string | null>(null);
   const [joinActionSuccessCount, setJoinActionSuccessCount] = useState(0);
+  const [selectedNeedIds, setSelectedNeedIds] = useState<string[]>([]);
+  const [runningNeedIds, setRunningNeedIds] = useState<string[]>([]);
+  const [bulkNeedRunning, setBulkNeedRunning] = useState(false);
+  const [needJoinActionError, setNeedJoinActionError] = useState<string | null>(null);
+  const [needJoinActionSuccessCount, setNeedJoinActionSuccessCount] = useState(0);
 
   const {
     data: myResourcesData,
@@ -229,6 +322,23 @@ export default function PublicCampaignDetailPage({
 
   const [requestJoinMutation] = useMutation(REQUEST_RESOURCE_JOIN_MUTATION);
   const [reopenJoinMutation] = useMutation(REOPEN_RESOURCE_JOIN_REQUEST_MUTATION);
+  const {
+    data: myNeedsData,
+    loading: myNeedsLoading,
+    error: myNeedsError,
+    refetch: refetchMyNeeds
+  } = useQuery<MyActiveNeedsForCampaignData, MyActiveNeedsForCampaignVariables>(
+    MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY,
+    {
+      skip: !campaign || !session.authenticated || !session.account?.id,
+      variables: {
+        creatorAccountId: session.account?.id ?? "",
+        campaignId
+      }
+    }
+  );
+  const [requestNeedJoinMutation] = useMutation(REQUEST_NEED_JOIN_MUTATION);
+  const [reopenNeedJoinMutation] = useMutation(REOPEN_NEED_JOIN_REQUEST_MUTATION);
 
   const pageMeta = buildCampaignPageMeta({
     campaignId,
@@ -237,6 +347,7 @@ export default function PublicCampaignDetailPage({
   });
 
   const activeResources = myResourcesData?.allResources.nodes ?? [];
+  const activeNeeds = myNeedsData?.allNeeds.nodes ?? [];
 
   const statusByResourceId = useMemo(() => {
     return new Map(
@@ -250,6 +361,19 @@ export default function PublicCampaignDetailPage({
       return status !== "ACCEPTED" && status !== "PENDING";
     });
   }, [selectedResourceIds, statusByResourceId]);
+
+  const needStatusByNeedId = useMemo(() => {
+    return new Map(
+      activeNeeds.map(need => [need.id, need.campaignNeedsByNeedId.nodes[0]?.status ?? null])
+    );
+  }, [activeNeeds]);
+
+  const selectedJoinableNeedIds = useMemo(() => {
+    return selectedNeedIds.filter(needId => {
+      const status = needStatusByNeedId.get(needId);
+      return status !== "ACCEPTED" && status !== "PENDING";
+    });
+  }, [selectedNeedIds, needStatusByNeedId]);
 
   const requestJoinForResource = async (resourceId: string) => {
     const status = statusByResourceId.get(resourceId);
@@ -337,6 +461,92 @@ export default function PublicCampaignDetailPage({
     });
   };
 
+  const requestJoinForNeed = async (needId: string) => {
+    const status = needStatusByNeedId.get(needId);
+
+    if (status === "ACCEPTED" || status === "PENDING") {
+      return;
+    }
+
+    if (status === "REJECTED") {
+      await reopenNeedJoinMutation({
+        variables: {
+          campaignId,
+          needId
+        }
+      });
+
+      return;
+    }
+
+    await requestNeedJoinMutation({
+      variables: {
+        campaignId,
+        needId
+      }
+    });
+  };
+
+  const handleNeedJoinSingle = async (needId: string) => {
+    setNeedJoinActionError(null);
+    setNeedJoinActionSuccessCount(0);
+    setRunningNeedIds(current => [...current, needId]);
+
+    try {
+      await requestJoinForNeed(needId);
+      setNeedJoinActionSuccessCount(1);
+      setSelectedNeedIds(current => current.filter(id => id !== needId));
+      await refetchMyNeeds();
+    } catch (error) {
+      setNeedJoinActionError(
+        getUserFacingGraphQLErrorMessage(error as Parameters<typeof getUserFacingGraphQLErrorMessage>[0])
+        ?? t("public.needJoin.joinFailed")
+      );
+    } finally {
+      setRunningNeedIds(current => current.filter(id => id !== needId));
+    }
+  };
+
+  const handleNeedJoinSelected = async () => {
+    if (selectedJoinableNeedIds.length === 0) {
+      return;
+    }
+
+    setNeedJoinActionError(null);
+    setNeedJoinActionSuccessCount(0);
+    setBulkNeedRunning(true);
+
+    let successCount = 0;
+
+    try {
+      for (const needId of selectedJoinableNeedIds) {
+        await requestJoinForNeed(needId);
+        successCount += 1;
+      }
+
+      setNeedJoinActionSuccessCount(successCount);
+      setSelectedNeedIds(current => current.filter(id => !selectedJoinableNeedIds.includes(id)));
+      await refetchMyNeeds();
+    } catch (error) {
+      setNeedJoinActionError(
+        getUserFacingGraphQLErrorMessage(error as Parameters<typeof getUserFacingGraphQLErrorMessage>[0])
+        ?? t("public.needJoin.joinFailed")
+      );
+    } finally {
+      setBulkNeedRunning(false);
+    }
+  };
+
+  const toggleNeedSelection = (needId: string, checked: boolean) => {
+    setSelectedNeedIds(current => {
+      if (checked) {
+        return current.includes(needId) ? current : [...current, needId];
+      }
+
+      return current.filter(id => id !== needId);
+    });
+  };
+
   const renderJoinStatusChip = (status: CampaignJoinStatus | null) => {
     if (status === "ACCEPTED") {
       return <Chip color="success" label={t("public.resourceJoin.status.joined")} size="small" />;
@@ -351,6 +561,22 @@ export default function PublicCampaignDetailPage({
     }
 
     return <Chip label={t("public.resourceJoin.status.notRequested")} size="small" variant="outlined" />;
+  };
+
+  const renderNeedJoinStatusChip = (status: CampaignJoinStatus | null) => {
+    if (status === "ACCEPTED") {
+      return <Chip color="success" label={t("public.needJoin.status.joined")} size="small" />;
+    }
+
+    if (status === "PENDING") {
+      return <Chip color="warning" label={t("public.needJoin.status.waitingApproval")} size="small" />;
+    }
+
+    if (status === "REJECTED") {
+      return <Chip color="default" label={t("public.needJoin.status.rejected")} size="small" variant="outlined" />;
+    }
+
+    return <Chip label={t("public.needJoin.status.notRequested")} size="small" variant="outlined" />;
   };
 
   return (
@@ -534,6 +760,115 @@ export default function PublicCampaignDetailPage({
                         </Box>
                       </>
                     )}
+              </Stack>
+
+              <Stack spacing={2}>
+                <Typography component="h2" variant="h5">{t("public.needJoin.title")}</Typography>
+                <Typography color="text.secondary" variant="body2">{t("public.needJoin.subtitle")}</Typography>
+
+                {needJoinActionSuccessCount > 0 ? (
+                  <Alert severity="success">
+                    {t("public.needJoin.joinSuccess", { count: needJoinActionSuccessCount })}
+                  </Alert>
+                ) : null}
+                {needJoinActionError ? <Alert severity="error">{needJoinActionError}</Alert> : null}
+
+                {!session.authenticated ? (
+                  <Alert
+                    action={
+                      <Button component={NextLink} href={`/login?next=%2Fcampaigns%2F${campaignId}`} size="small" variant="outlined">
+                        {t("public.needJoin.signInAction")}
+                      </Button>
+                    }
+                    severity="info"
+                  >
+                    {t("public.needJoin.signInRequired")}
+                  </Alert>
+                ) : myNeedsLoading ? (
+                  <Alert severity="info">{t("public.needJoin.loading")}</Alert>
+                ) : myNeedsError ? (
+                  <Alert severity="error">
+                    {getUserFacingGraphQLErrorMessage(myNeedsError) ?? t("public.needJoin.loadingFailed")}
+                  </Alert>
+                ) : activeNeeds.length === 0 ? (
+                  <Alert severity="info">{t("public.needJoin.empty")}</Alert>
+                ) : (
+                  <>
+                    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1.5}>
+                      <Typography color="text.secondary" variant="body2">
+                        {selectedJoinableNeedIds.length > 0
+                          ? t("public.needJoin.selectedCount", { count: selectedJoinableNeedIds.length })
+                          : t("public.needJoin.noneSelected")}
+                      </Typography>
+                      <Button
+                        disabled={selectedJoinableNeedIds.length === 0 || bulkNeedRunning}
+                        onClick={() => void handleNeedJoinSelected()}
+                        variant="contained"
+                      >
+                        {bulkNeedRunning
+                          ? t("public.needJoin.joiningSelected")
+                          : t("public.needJoin.joinSelected")}
+                      </Button>
+                    </Stack>
+
+                    <Box sx={listingCardGridSx}>
+                      {activeNeeds.map(need => {
+                        const status = need.campaignNeedsByNeedId.nodes[0]?.status ?? null;
+                        const isJoinDisabled = status === "ACCEPTED" || status === "PENDING";
+                        const isRunning = runningNeedIds.includes(need.id);
+                        const creatorLabel = need.accountByCreatorAccountId?.displayName
+                          ?? need.accountByCreatorAccountId?.externalSubject
+                          ?? need.creatorAccountId;
+
+                        return (
+                          <NeedCard
+                            actions={
+                              <Stack alignItems={{ xs: "stretch", sm: "center" }} direction={{ xs: "column", sm: "row" }} spacing={1}>
+                                <FormControlLabel
+                                  control={(
+                                    <Checkbox
+                                      checked={selectedNeedIds.includes(need.id)}
+                                      disabled={isJoinDisabled || isRunning || bulkNeedRunning}
+                                      onChange={event => toggleNeedSelection(need.id, event.target.checked)}
+                                    />
+                                  )}
+                                  label={t("public.needJoin.selectNeed")}
+                                />
+                                <Button
+                                  disabled={isJoinDisabled || isRunning || bulkNeedRunning}
+                                  onClick={() => void handleNeedJoinSingle(need.id)}
+                                  size="small"
+                                  variant="contained"
+                                >
+                                  {isRunning
+                                    ? t("public.needJoin.joiningSingle")
+                                    : t("public.needJoin.joinSingle")}
+                                </Button>
+                              </Stack>
+                            }
+                            chips={
+                              <>
+                                {renderNeedJoinStatusChip(status)}
+                                <Chip label={need.intensity.toLowerCase()} size="small" variant="outlined" />
+                              </>
+                            }
+                            creatorName={creatorLabel}
+                            description={need.description}
+                            expiresAt={need.expiresAt}
+                            footer={
+                              <Typography color="text.secondary" variant="body2">
+                                {t("public.needJoin.tokens", { count: need.proposedTopesAmount ?? 0 })}
+                              </Typography>
+                            }
+                            imageUrls={need.imageUrls ?? []}
+                            key={need.id}
+                            title={need.title}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </>
+                )}
               </Stack>
             </>
           ) : <Alert severity="warning">{t("public.empty")}</Alert>}

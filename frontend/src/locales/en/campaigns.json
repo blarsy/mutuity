@@ -42,6 +42,31 @@
         "rejected": "Rejected",
         "notRequested": "Not requested"
       }
+    },
+    "needJoin": {
+      "title": "Join your needs to this campaign",
+      "subtitle": "Select one or more active needs and send join requests to the campaign creator.",
+      "loading": "Loading your active needs…",
+      "loadingFailed": "Unable to load your needs right now.",
+      "empty": "You have no active needs available to join.",
+      "signInRequired": "Sign in to request joining your needs to this campaign.",
+      "signInAction": "Sign in",
+      "selectNeed": "Select",
+      "selectedCount": "Selected needs: {{count}}",
+      "noneSelected": "No needs selected yet.",
+      "joinSelected": "Join needs to campaign",
+      "joiningSelected": "Sending requests…",
+      "joinSingle": "Join to campaign",
+      "joiningSingle": "Sending…",
+      "joinSuccess": "Join request sent for {{count}} need(s).",
+      "joinFailed": "Unable to send join request. Please try again.",
+      "tokens": "Proposed tokens: {{count}}",
+      "status": {
+        "joined": "Joined",
+        "waitingApproval": "Waiting approval",
+        "rejected": "Rejected",
+        "notRequested": "Not requested"
+      }
     }
   },
   "pending": {
