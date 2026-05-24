@@ -15,6 +15,7 @@
     "switchToDark": "Switch to dark mode",
     "switchToLight": "Switch to light mode",
     "toggleColorMode": "Toggle color mode",
+    "openNavigationMenu": "Open navigation menu",
     "openProfileMenu": "Open profile menu",
     "openSignInDialog": "Open sign in dialog",
     "profileFallback": "Profile",

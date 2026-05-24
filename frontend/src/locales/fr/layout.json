@@ -15,6 +15,7 @@
     "switchToDark": "Passer en mode sombre",
     "switchToLight": "Passer en mode clair",
     "toggleColorMode": "Basculer le mode couleur",
+    "openNavigationMenu": "Ouvrir le menu de navigation",
     "openProfileMenu": "Ouvrir le menu profil",
     "openSignInDialog": "Ouvrir la fenêtre de connexion",
     "profileFallback": "Profil",

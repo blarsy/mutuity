@@ -2,7 +2,8 @@ import NextLink from "next/link";
 import { useLazyQuery, useQuery } from "@apollo/client/react";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import { Alert, AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Snackbar, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Alert, AppBar, Badge, Box, Button, Drawer, IconButton, List, ListItemButton, ListItemText, Menu, MenuItem, Snackbar, Stack, Toolbar, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -58,7 +59,10 @@ export function AppTopBar({
   const router = useRouter();
   const { session, signOut } = useAuth();
   const { t, i18n } = useTranslation("layout");
+  const theme = useTheme();
+  const isMobileNavigation = useMediaQuery(theme.breakpoints.down("md"));
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [notificationToast, setNotificationToast] = useState<string | null>(null);
   const [chatMessageToast, setChatMessageToast] = useState<{
@@ -200,79 +204,176 @@ export function AppTopBar({
     );
   };
 
+  const handleMobileNavLinkClick = (href: string) => {
+    setMobileNavOpen(false);
+    void router.push(href);
+  };
+
   return (
     <>
       <AppBar color="inherit" elevation={0} position="sticky" sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
-        <Toolbar sx={{ gap: 2, justifyContent: "space-between" }}>
-          <Stack alignItems={{ xs: "flex-start", md: "center" }} direction={{ xs: "column", md: "row" }} spacing={2} sx={{ flex: 1 }}>
-            <Typography component={NextLink} href="/" sx={{ color: "inherit", fontWeight: 700, textDecoration: "none" }} variant="h6">
-              Mutuity
-            </Typography>
+        <Toolbar sx={{ gap: { xs: 1, md: 2 }, justifyContent: "space-between" }}>
+          {isMobileNavigation ? (
+            <>
+              <IconButton
+                aria-label={t("topbar.openNavigationMenu")}
+                color="inherit"
+                onClick={() => setMobileNavOpen(true)}
+              >
+                <MenuIcon />
+              </IconButton>
 
-            <Stack direction="row" flexWrap="wrap" gap={1}>
-              {links.map(link => (
-                <Button
-                  color="inherit"
+              <Box sx={{ display: "flex", flex: 1, justifyContent: "center", minWidth: 0 }}>
+                <Typography
                   component={NextLink}
-                  href={link.href}
-                  key={link.href}
-                  size="small"
-                  variant={router.pathname === link.href ? "contained" : "text"}
+                  href="/"
+                  sx={{
+                    color: "inherit",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    textAlign: "center",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis"
+                  }}
+                  variant="h6"
                 >
-                  {session.authenticated ? renderNavLabel(link) : t(link.labelKey)}
-                </Button>
-              ))}
-            </Stack>
-          </Stack>
+                  Mutuity
+                </Typography>
+              </Box>
 
-          <Stack alignItems="center" direction="row" spacing={1}>
-            {session.authenticated ? (
-              <>
-                <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
-                  {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
-                </Button>
-                <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
-                  <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
-                    {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
-                  </IconButton>
-                </Tooltip>
-                <AvatarIconButton
-                  aria-label={t("topbar.openProfileMenu")}
-                  displayName={currentLabel}
-                  imageUrl={session.account?.avatarUrl ?? null}
-                  onClick={event => setMenuAnchor(event.currentTarget)}
-                />
-              </>
-            ) : (
-              <>
-                <Stack direction="row" spacing={0.5}>
-                  {AVAILABLE_LANGUAGES.map(language => (
+              <Stack alignItems="center" direction="row" spacing={0.5}>
+                {session.authenticated ? (
+                  <>
+                    <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
+                      {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
+                    </Button>
+                    <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
+                      <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
+                        {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+                      </IconButton>
+                    </Tooltip>
+                    <AvatarIconButton
+                      aria-label={t("topbar.openProfileMenu")}
+                      displayName={currentLabel}
+                      imageUrl={session.account?.avatarUrl ?? null}
+                      onClick={event => setMenuAnchor(event.currentTarget)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
+                      <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
+                        {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+                      </IconButton>
+                    </Tooltip>
+                    <AvatarIconButton
+                      aria-label={t("topbar.openSignInDialog")}
+                      displayName={t("topbar.signInFallback")}
+                      onClick={() => setLoginDialogOpen(true)}
+                    />
+                  </>
+                )}
+              </Stack>
+            </>
+          ) : (
+            <>
+              <Stack alignItems={{ xs: "flex-start", md: "center" }} direction={{ xs: "column", md: "row" }} spacing={2} sx={{ flex: 1 }}>
+                <Typography component={NextLink} href="/" sx={{ color: "inherit", fontWeight: 700, textDecoration: "none" }} variant="h6">
+                  Mutuity
+                </Typography>
+
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {links.map(link => (
                     <Button
                       color="inherit"
-                      key={language}
-                      onClick={() => handleLanguageChange(language)}
+                      component={NextLink}
+                      href={link.href}
+                      key={link.href}
                       size="small"
-                      variant={currentLanguage === language ? "contained" : "outlined"}
+                      variant={router.pathname === link.href ? "contained" : "text"}
                     >
-                      {language.toUpperCase()}
+                      {session.authenticated ? renderNavLabel(link) : t(link.labelKey)}
                     </Button>
                   ))}
                 </Stack>
-                <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
-                  <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
-                    {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
-                  </IconButton>
-                </Tooltip>
-                <AvatarIconButton
-                  aria-label={t("topbar.openSignInDialog")}
-                  displayName={t("topbar.signInFallback")}
-                  onClick={() => setLoginDialogOpen(true)}
-                />
-              </>
-            )}
-          </Stack>
+              </Stack>
+
+              <Stack alignItems="center" direction="row" spacing={1}>
+                {session.authenticated ? (
+                  <>
+                    <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
+                      {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
+                    </Button>
+                    <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
+                      <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
+                        {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+                      </IconButton>
+                    </Tooltip>
+                    <AvatarIconButton
+                      aria-label={t("topbar.openProfileMenu")}
+                      displayName={currentLabel}
+                      imageUrl={session.account?.avatarUrl ?? null}
+                      onClick={event => setMenuAnchor(event.currentTarget)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Stack direction="row" spacing={0.5}>
+                      {AVAILABLE_LANGUAGES.map(language => (
+                        <Button
+                          color="inherit"
+                          key={language}
+                          onClick={() => handleLanguageChange(language)}
+                          size="small"
+                          variant={currentLanguage === language ? "contained" : "outlined"}
+                        >
+                          {language.toUpperCase()}
+                        </Button>
+                      ))}
+                    </Stack>
+                    <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
+                      <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
+                        {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
+                      </IconButton>
+                    </Tooltip>
+                    <AvatarIconButton
+                      aria-label={t("topbar.openSignInDialog")}
+                      displayName={t("topbar.signInFallback")}
+                      onClick={() => setLoginDialogOpen(true)}
+                    />
+                  </>
+                )}
+              </Stack>
+            </>
+          )}
         </Toolbar>
       </AppBar>
+
+      <Drawer
+        anchor="right"
+        onClose={() => setMobileNavOpen(false)}
+        open={mobileNavOpen}
+      >
+        <Box sx={{ minWidth: 280, p: 1.5 }}>
+          <Typography sx={{ px: 1.5, py: 1 }} variant="subtitle2">
+            Mutuity
+          </Typography>
+          <List sx={{ pt: 0 }}>
+            {links.map(link => (
+              <ListItemButton
+                key={link.href}
+                onClick={() => handleMobileNavLinkClick(link.href)}
+                selected={router.pathname === link.href}
+              >
+                <ListItemText
+                  primary={session.authenticated ? renderNavLabel(link) : t(link.labelKey)}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
 
       <Menu anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)} open={Boolean(menuAnchor)}>
         <MenuItem component={NextLink} href="/profile" onClick={() => setMenuAnchor(null)}>
