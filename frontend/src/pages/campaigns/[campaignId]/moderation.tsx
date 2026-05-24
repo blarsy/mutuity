@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Button,
   Chip,
@@ -18,6 +21,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
@@ -33,6 +37,17 @@ import {
 } from "../../../features/campaigns/campaignModeration.queries";
 import { CampaignModerationHistory } from "../../../features/campaigns/CampaignModerationHistory";
 import { ImageUploadField } from "../../../components/ImageUploadField";
+import {
+  ACCEPT_CAMPAIGN_NEED_MUTATION,
+  CAMPAIGN_NEED_TRIAGE_QUERY,
+  REJECT_CAMPAIGN_NEED_MUTATION
+} from "../../../features/campaigns/campaignNeedTriage.queries";
+import {
+  ACCEPT_CAMPAIGN_RESOURCE_MUTATION,
+  CAMPAIGN_RESOURCE_TRIAGE_QUERY,
+  REJECT_CAMPAIGN_RESOURCE_MUTATION
+} from "../../../features/campaigns/campaignResourceTriage.queries";
+import { CampaignNeedStatusChip, type CampaignNeedStatus } from "../../../components/campaign/CampaignNeedStatusChip";
 
 type CampaignModerationDetailsData = {
   campaignById: {
@@ -79,10 +94,80 @@ type UpdateCampaignForModerationVariables = {
   pEndAt: string;
 };
 
+type CampaignNeedNode = {
+  campaignId: string;
+  needId: string;
+  status: CampaignNeedStatus;
+  createdAt: string;
+  actedAt: string | null;
+  campaignByCampaignId: {
+    id: string;
+    title: string;
+  } | null;
+  needByNeedId: {
+    id: string;
+    title: string;
+    intensity: string;
+    proposedTopesAmount: number | null;
+  } | null;
+};
+
+type CampaignNeedTriageData = {
+  allCampaignNeeds: {
+    nodes: CampaignNeedNode[];
+  } | null;
+};
+
+type CampaignResourceNode = {
+  campaignId: string;
+  resourceId: string;
+  status: CampaignNeedStatus;
+  createdAt: string;
+  actedAt: string | null;
+  campaignByCampaignId: {
+    id: string;
+    title: string;
+  } | null;
+  resourceByResourceId: {
+    id: string;
+    title: string;
+    location: string | null;
+    defaultTokenAmount: number | null;
+  } | null;
+};
+
+type CampaignResourceTriageData = {
+  allCampaignResources: {
+    nodes: CampaignResourceNode[];
+  } | null;
+};
+
+type CampaignScopedTriageVariables = {
+  campaignId: string;
+};
+
+type NeedTriageMutationVariables = {
+  campaignId: string;
+  needId: string;
+};
+
+type ResourceTriageMutationVariables = {
+  campaignId: string;
+  resourceId: string;
+};
+
 function toDatetimeLocalInput(value: string) {
   const date = new Date(value);
   const offsetMs = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+function needNodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId">) {
+  return `${node.campaignId}:${node.needId}`;
+}
+
+function resourceNodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resourceId">) {
+  return `${node.campaignId}:${node.resourceId}`;
 }
 
 export default function CampaignModerationPage() {
@@ -92,22 +177,67 @@ export default function CampaignModerationPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
+  const campaignIdValue = (campaignId as string) ?? "";
+
   const { data, loading, error, refetch } = useQuery<CampaignModerationDetailsData, CampaignModerationDetailsVariables>(
     CAMPAIGN_MODERATION_DETAILS_QUERY,
     {
       skip: !campaignId,
-      variables: { campaignId: (campaignId as string) ?? "" }
+      variables: { campaignId: campaignIdValue }
     }
   );
+
+  const {
+    data: needTriageData,
+    loading: needTriageLoading,
+    error: needTriageError,
+    refetch: refetchNeedTriage
+  } = useQuery<CampaignNeedTriageData, CampaignScopedTriageVariables>(CAMPAIGN_NEED_TRIAGE_QUERY, {
+    skip: !campaignId,
+    variables: {
+      campaignId: campaignIdValue
+    }
+  });
+
+  const {
+    data: resourceTriageData,
+    loading: resourceTriageLoading,
+    error: resourceTriageError,
+    refetch: refetchResourceTriage
+  } = useQuery<CampaignResourceTriageData, CampaignScopedTriageVariables>(CAMPAIGN_RESOURCE_TRIAGE_QUERY, {
+    skip: !campaignId,
+    variables: {
+      campaignId: campaignIdValue
+    }
+  });
 
   const [updateCampaign, { loading: updateLoading, error: updateError }] = useMutation<
     UpdateCampaignForModerationData,
     UpdateCampaignForModerationVariables
   >(UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION);
 
+  const [acceptCampaignNeed, { loading: acceptNeedLoading, error: acceptNeedError }] = useMutation<unknown, NeedTriageMutationVariables>(
+    ACCEPT_CAMPAIGN_NEED_MUTATION
+  );
+  const [rejectCampaignNeed, { loading: rejectNeedLoading, error: rejectNeedError }] = useMutation<unknown, NeedTriageMutationVariables>(
+    REJECT_CAMPAIGN_NEED_MUTATION
+  );
+  const [acceptCampaignResource, { loading: acceptResourceLoading, error: acceptResourceError }] = useMutation<unknown, ResourceTriageMutationVariables>(
+    ACCEPT_CAMPAIGN_RESOURCE_MUTATION
+  );
+  const [rejectCampaignResource, { loading: rejectResourceLoading, error: rejectResourceError }] = useMutation<unknown, ResourceTriageMutationVariables>(
+    REJECT_CAMPAIGN_RESOURCE_MUTATION
+  );
+
   const campaign = data?.campaignById ?? null;
   const detailsErrorMessage = getUserFacingGraphQLErrorMessage(error);
   const updateErrorMessage = getUserFacingGraphQLErrorMessage(updateError);
+  const needTriageErrorMessage = getUserFacingGraphQLErrorMessage(needTriageError)
+    ?? getUserFacingGraphQLErrorMessage(acceptNeedError)
+    ?? getUserFacingGraphQLErrorMessage(rejectNeedError);
+  const resourceTriageErrorMessage = getUserFacingGraphQLErrorMessage(resourceTriageError)
+    ?? getUserFacingGraphQLErrorMessage(acceptResourceError)
+    ?? getUserFacingGraphQLErrorMessage(rejectResourceError);
 
   const initialValues = useMemo<CreateCampaignValues | null>(() => {
     if (!campaign) {
@@ -129,6 +259,72 @@ export default function CampaignModerationPage() {
   }, [campaign]);
 
   const canEdit = campaign?.moderationStatus === "PENDING" || campaign?.moderationStatus === "AWAITING_ADAPTATION";
+  const isApprovedOrLater = campaign ? !canEdit : false;
+  const moderationSectionLabel = isApprovedOrLater
+    ? t("moderationNotes.historyTitle")
+    : t("moderationNotes.journalTitle");
+
+  const needNodes = useMemo(() => needTriageData?.allCampaignNeeds?.nodes ?? [], [needTriageData?.allCampaignNeeds?.nodes]);
+  const resourceNodes = useMemo(() => resourceTriageData?.allCampaignResources?.nodes ?? [], [resourceTriageData?.allCampaignResources?.nodes]);
+
+  const [busyNeedKey, setBusyNeedKey] = useState<string | null>(null);
+  const [busyResourceKey, setBusyResourceKey] = useState<string | null>(null);
+  const [optimisticNeedStatuses, setOptimisticNeedStatuses] = useState<Record<string, CampaignNeedStatus>>({});
+  const [optimisticResourceStatuses, setOptimisticResourceStatuses] = useState<Record<string, CampaignNeedStatus>>({});
+
+  const handleNeedTriage = async (node: CampaignNeedNode, action: "accept" | "reject") => {
+    const key = needNodeKey(node);
+    const nextStatus: CampaignNeedStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
+    setBusyNeedKey(key);
+    setOptimisticNeedStatuses(current => ({ ...current, [key]: nextStatus }));
+
+    try {
+      if (action === "accept") {
+        await acceptCampaignNeed({
+          variables: { campaignId: campaignIdValue, needId: node.needId }
+        });
+      } else {
+        await rejectCampaignNeed({
+          variables: { campaignId: campaignIdValue, needId: node.needId }
+        });
+      }
+      setOptimisticNeedStatuses(current => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+      await refetchNeedTriage();
+    } finally {
+      setBusyNeedKey(current => (current === key ? null : current));
+    }
+  };
+
+  const handleResourceTriage = async (node: CampaignResourceNode, action: "accept" | "reject") => {
+    const key = resourceNodeKey(node);
+    const nextStatus: CampaignNeedStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
+    setBusyResourceKey(key);
+    setOptimisticResourceStatuses(current => ({ ...current, [key]: nextStatus }));
+
+    try {
+      if (action === "accept") {
+        await acceptCampaignResource({
+          variables: { campaignId: campaignIdValue, resourceId: node.resourceId }
+        });
+      } else {
+        await rejectCampaignResource({
+          variables: { campaignId: campaignIdValue, resourceId: node.resourceId }
+        });
+      }
+      setOptimisticResourceStatuses(current => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+      await refetchResourceTriage();
+    } finally {
+      setBusyResourceKey(current => (current === key ? null : current));
+    }
+  };
 
   const handleSubmit = async (values: CreateCampaignValues) => {
     setUpdateSuccess(false);
@@ -171,24 +367,142 @@ export default function CampaignModerationPage() {
 
         {!loading && !detailsErrorMessage && campaign ? (
           <Stack spacing={2}>
-            <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>
-              <Typography variant="subtitle1">{t("moderationNotes.title")}</Typography>
-              <Stack alignItems="center" direction="row" spacing={1}>
-                <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
-                <Button
-                  disabled={!canEdit}
-                  onClick={() => {
-                    setEditOpen(true);
-                  }}
-                  size="small"
-                  variant="contained"
-                >
-                  {t("moderationNotes.editCampaign")}
-                </Button>
-              </Stack>
-            </Stack>
+            {isApprovedOrLater ? (
+              <>
+                <Typography variant="h6">{t("resourceTriage.sectionTitle")}</Typography>
 
-            <CampaignModerationHistory campaignId={campaignId as string} />
+                {resourceTriageLoading ? <CircularProgress size={20} /> : null}
+                {resourceTriageErrorMessage ? <Alert severity="error">{resourceTriageErrorMessage}</Alert> : null}
+
+                {!resourceTriageLoading && !resourceTriageErrorMessage && resourceNodes.length === 0 ? (
+                  <Alert severity="info">{t("resourceTriage.emptyForCampaign")}</Alert>
+                ) : null}
+
+                {resourceNodes.map(node => {
+                  const key = resourceNodeKey(node);
+                  const status = optimisticResourceStatuses[key] ?? node.status;
+                  const canTriageResource = status === "PENDING";
+                  const rowBusy = busyResourceKey === key || acceptResourceLoading || rejectResourceLoading;
+
+                  return (
+                    <Box key={key} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, p: 2 }}>
+                      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
+                        <Box>
+                          <Typography variant="subtitle1">
+                            {node.resourceByResourceId?.title ?? t("resourceTriage.resourceFallback", { resourceId: node.resourceId })}
+                          </Typography>
+                          <Typography color="text.secondary" variant="body2">
+                            {t("resourceTriage.location")}: {node.resourceByResourceId?.location ?? t("resourceTriage.na")}
+                          </Typography>
+                          <Typography color="text.secondary" variant="body2">
+                            {t("resourceTriage.defaultTokens")}: {node.resourceByResourceId?.defaultTokenAmount ?? t("resourceTriage.na")}
+                          </Typography>
+                        </Box>
+                        <CampaignNeedStatusChip status={status} />
+                      </Stack>
+
+                      {canTriageResource ? (
+                        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                          <Button
+                            disabled={rowBusy}
+                            onClick={() => void handleResourceTriage(node, "accept")}
+                            size="small"
+                            variant="contained"
+                          >
+                            {t("resourceTriage.accept")}
+                          </Button>
+                          <Button
+                            color="error"
+                            disabled={rowBusy}
+                            onClick={() => void handleResourceTriage(node, "reject")}
+                            size="small"
+                            variant="outlined"
+                          >
+                            {t("resourceTriage.reject")}
+                          </Button>
+                        </Stack>
+                      ) : null}
+                    </Box>
+                  );
+                })}
+
+                <Typography variant="h6" sx={{ mt: 1 }}>{t("triage.sectionTitle")}</Typography>
+
+                {needTriageLoading ? <CircularProgress size={20} /> : null}
+                {needTriageErrorMessage ? <Alert severity="error">{needTriageErrorMessage}</Alert> : null}
+
+                {!needTriageLoading && !needTriageErrorMessage && needNodes.length === 0 ? (
+                  <Alert severity="info">{t("triage.emptyForCampaign")}</Alert>
+                ) : null}
+
+                {needNodes.map(node => {
+                  const key = needNodeKey(node);
+                  const status = optimisticNeedStatuses[key] ?? node.status;
+                  const canTriageNeed = status === "PENDING";
+                  const rowBusy = busyNeedKey === key || acceptNeedLoading || rejectNeedLoading;
+
+                  return (
+                    <Box key={key} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, p: 2 }}>
+                      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
+                        <Box>
+                          <Typography variant="subtitle1">
+                            {node.needByNeedId?.title ?? t("triage.needFallback", { needId: node.needId })}
+                          </Typography>
+                          <Typography color="text.secondary" variant="body2">
+                            {t("triage.campaignLabel")}: {node.campaignByCampaignId?.title ?? node.campaignId}
+                          </Typography>
+                          <Typography color="text.secondary" variant="body2">
+                            {t("triage.pendingTriage", { count: status === "PENDING" ? 1 : 0 })}
+                          </Typography>
+                        </Box>
+                        <CampaignNeedStatusChip status={status} />
+                      </Stack>
+
+                      {canTriageNeed ? (
+                        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                          <Button
+                            disabled={rowBusy}
+                            onClick={() => void handleNeedTriage(node, "accept")}
+                            size="small"
+                            variant="contained"
+                          >
+                            {t("triage.accept")}
+                          </Button>
+                          <Button
+                            color="error"
+                            disabled={rowBusy}
+                            onClick={() => void handleNeedTriage(node, "reject")}
+                            size="small"
+                            variant="outlined"
+                          >
+                            {t("triage.reject")}
+                          </Button>
+                        </Stack>
+                      ) : null}
+                    </Box>
+                  );
+                })}
+              </>
+            ) : null}
+
+            {!isApprovedOrLater ? (
+              <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="subtitle1">{moderationSectionLabel}</Typography>
+                <Stack alignItems="center" direction="row" spacing={1}>
+                  <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
+                  <Button
+                    disabled={!canEdit}
+                    onClick={() => {
+                      setEditOpen(true);
+                    }}
+                    size="small"
+                    variant="contained"
+                  >
+                    {t("moderationNotes.editCampaign")}
+                  </Button>
+                </Stack>
+              </Stack>
+            ) : null}
 
             {campaign.imageUrl ? (
               <Box
@@ -213,6 +527,33 @@ export default function CampaignModerationPage() {
                 />
               </Box>
             ) : null}
+
+            {isApprovedOrLater ? (
+              <Accordion disableGutters>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    justifyContent="space-between"
+                    spacing={1}
+                    sx={{ width: "100%", pr: 1 }}
+                  >
+                    <Typography variant="subtitle2">{t("moderationNotes.historyTitle")}</Typography>
+                    <Stack alignItems="center" direction="row" spacing={1}>
+                      <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
+                      <Button disabled size="small" variant="contained">
+                        {t("moderationNotes.editCampaign")}
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <CampaignModerationHistory campaignId={campaignId as string} />
+                </AccordionDetails>
+              </Accordion>
+            ) : (
+              <CampaignModerationHistory campaignId={campaignId as string} />
+            )}
 
             {updateSuccess ? (
               <Alert severity="success">{t("moderationNotes.updateSuccess")}</Alert>

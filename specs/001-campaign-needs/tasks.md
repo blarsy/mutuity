@@ -5,7 +5,7 @@
 
 ## Format: `[ID] [P?] [Story] Description`
 - **[P]**: Can run in parallel (different files, no dependency)
-- **[Story]**: User story scope (`US1`, `US2`, `US3`, `US4`, `US5`)
+- **[Story]**: User story scope (`US1`, `US2`, `US3`, `US4`, `US5`, `US6`, `US7`)
 - All task descriptions include concrete file paths
 
 ## Phase 1: Setup (Shared Infrastructure)
@@ -128,24 +128,30 @@
 - [x] T051 [US5] Build campaign creator triage UI in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
 - [x] T052 [US5] Add optimistic UI updates and rollback handling for triage actions in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
 
-## Phase 8: User Story 6 - Campaign Creator Accepts Or Rejects Joined Resources (Priority: P2)
+## Phase 8: User Story 7 - Campaign Creator Accepts Or Rejects Joined Resources (Priority: P2)
 
 **Goal**: Campaign creator can triage linked resources (accept/reject) with authorization safeguards.
 
 **Independent Test**: Creator triages linked resources; non-creator denied; transitions audited.
 
-### Tests (US6)
+### Tests (US7)
 
-- [ ] T069 [P] [US6] Add integration tests for resource-triage transitions and permissions in `backend/tests/integration/campaign-resource-triage.spec.ts`
-- [ ] T070 [P] [US6] Add contract tests for PostGraphile-exposed `acceptCampaignResource` and `rejectCampaignResource` in `backend/tests/contract/campaign-resource-triage.contract.spec.ts`
+- [x] T069 [P] [US7] Add integration tests for resource-triage transitions and permissions in `backend/tests/integration/campaign-resource-triage.spec.ts`
+- [x] T070 [P] [US7] Add contract tests for PostGraphile-exposed `acceptCampaignResource` and `rejectCampaignResource` in `backend/tests/contract/campaign-resource-triage.contract.spec.ts`
 
-### Implementation (US6)
+### Implementation (US7)
 
-- [ ] T071 [US6] Implement SQL functions `accept_campaign_resource` and `reject_campaign_resource` in `database/functions/campaign_resource/`
-- [ ] T072 [US6] Expose resource-triage functions through PostGraphile in `backend/src/postgraphile/server.ts`
-- [ ] T073 [US6] Add campaign creator joined-resources GraphQL query in `frontend/src/features/campaigns/campaignResourceTriage.queries.ts`
-- [ ] T074 [US6] Build campaign creator resource-triage UI in `frontend/src/features/campaigns/CampaignResourceTriagePage.tsx`
-- [ ] T075 [US6] Add optimistic UI updates and rollback handling for resource-triage actions in `frontend/src/features/campaigns/CampaignResourceTriagePage.tsx`
+- [x] T071 [US7] Implement SQL functions `accept_campaign_resource` and `reject_campaign_resource` in `database/functions/campaign_resource/`
+- [x] T072 [US7] Expose resource-triage functions through PostGraphile in `backend/src/postgraphile/server.ts`
+- [x] T073 [US7] Add campaign creator joined-resources GraphQL query in `frontend/src/features/campaigns/campaignResourceTriage.queries.ts`
+- [x] T074 [US7] Build campaign creator resource-triage UI in `frontend/src/features/campaigns/CampaignResourceTriagePage.tsx`
+- [x] T075 [US7] Add optimistic UI updates and rollback handling for resource-triage actions in `frontend/src/features/campaigns/CampaignResourceTriagePage.tsx`
+
+## Phase 8b: Public Campaign Join Experience
+
+- [x] T076 [US6] Add public campaign page joined-needs section with single and bulk join actions in `frontend/src/pages/campaigns/[campaignId]/index.tsx`
+- [x] T077 [US7] Add public campaign page joined-resources section with single and bulk join actions in `frontend/src/pages/campaigns/[campaignId]/index.tsx`
+- [x] T078 [P] [US6] Add localized user-facing strings for public campaign need/resource join states in `frontend/src/locales/en/campaigns.json` and `frontend/src/locales/fr/campaigns.json`
 
 ## Phase 9: Polish & Cross-Cutting
 
@@ -173,7 +179,7 @@
 - Foundational tasks (T008-T013) block all user stories.
 - US1-US4 are P1 and can be developed incrementally after foundations.
 - US5 depends on US4 relation model and campaign ownership checks.
-- US6 depends on resource-campaign relation model and campaign ownership checks.
+- US7 depends on resource-campaign relation model and campaign ownership checks.
 - Polish phase follows completion of targeted user stories.
 
 ## Parallel Execution Examples
