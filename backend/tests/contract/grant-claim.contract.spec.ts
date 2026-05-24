@@ -21,7 +21,7 @@ async function withClient<T>(callback: (client: Client) => Promise<T>): Promise<
 
 async function seedGrant(adminAccountId: string, stamp: number, overrides: {
   maxSuccessfulClaimCount?: number | null;
-  expiresAt?: string | null;
+  expiresAt?: string;
   archivedAt?: string | null;
 } = {}): Promise<string> {
   return withClient(async client => {
@@ -38,7 +38,7 @@ async function seedGrant(adminAccountId: string, stamp: number, overrides: {
         `E2E Grant ${stamp}`,
         75,
         overrides.maxSuccessfulClaimCount ?? null,
-        overrides.expiresAt ?? null,
+        overrides.expiresAt ?? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         overrides.archivedAt ?? null,
         adminAccountId
       ]
@@ -144,9 +144,9 @@ describe("grant claim E2E contract", () => {
       title: `E2E Grant ${stamp}`,
       description: "",
       awardedTokenAmount: 75,
-      maxSuccessfulClaimCount: null,
-      expiresAt: null
+      maxSuccessfulClaimCount: null
     });
+    expect(node?.expiresAt).toBeTruthy();
   });
 
   it("completes full claim flow and returns success outcome with claimedAmount and grantClaimId", async () => {

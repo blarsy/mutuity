@@ -32,25 +32,37 @@ async function submitResourceBid(bidderCookie: string, resourceId: string, messa
   return json.data!.submitResourceBid.resourceBid.id;
 }
 
-async function sendResourceMessage(cookie: string, resourceBidId: string, body: string) {
+async function sendResourceMessage(
+  cookie: string,
+  resourceId: string,
+  otherAccountId: string,
+  body: string
+) {
   const res = await fetch(`${TEST_BACKEND_URL}/graphql`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({
       query: `
-        mutation SendResourceMessage($input: SendResourceMessageInput!) {
-          sendResourceMessage(input: $input) { resourceMessage { id } }
+        mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
+          sendResourceMessageDirect(input: $input) { resourceMessage { id } }
         }
       `,
-      variables: { input: { resourceBidId, body, imageUrls: [] } }
+      variables: {
+        input: {
+          pResourceId: resourceId,
+          pOtherAccountId: otherAccountId,
+          pBody: body,
+          pImageUrls: []
+        }
+      }
     })
   });
   const json = await res.json() as {
-    data?: { sendResourceMessage: { resourceMessage: { id: string } } };
+    data?: { sendResourceMessageDirect: { resourceMessage: { id: string } } };
     errors?: Array<{ message: string }>;
   };
   expect(json.errors).toBeUndefined();
-  return json.data!.sendResourceMessage.resourceMessage.id;
+  return json.data!.sendResourceMessageDirect.resourceMessage.id;
 }
 
 async function listConversations(
@@ -151,7 +163,7 @@ describe("chat conversations integration", () => {
     const bidderCookie = await loginAs(bidder);
     const creatorCookie = await loginAs(creator);
 
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Interested in this!");
+    await submitResourceBid(bidderCookie, resource.id, "Interested in this!");
 
     // Conversation should NOT exist yet (no messages sent)
     const preMessageCreatorList = await listConversations(creatorCookie);
@@ -160,7 +172,7 @@ describe("chat conversations integration", () => {
     expect(preMessageBidderList.every(c => c.contextId !== resource.id)).toBe(true);
 
     // Creator sends the first message, which lazily creates the conversation
-    await sendResourceMessage(creatorCookie, bidId, "Thanks for your interest!");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Thanks for your interest!");
 
     const creatorList = await listConversations(creatorCookie);
     const resourceConvForCreator = creatorList.find(c => c.contextId === resource.id);
@@ -169,8 +181,7 @@ describe("chat conversations integration", () => {
     expect(resourceConvForCreator?.contextTitle).toBe(resource.title);
     expect(resourceConvForCreator?.otherAccountId).toBe(bidder.accountId);
     expect(resourceConvForCreator?.lastMessagePreview).toBe("Thanks for your interest!");
-    // Bid's initial message from bidder was inserted into the thread, so creator has 1 unread
-    expect(resourceConvForCreator?.unreadCount).toBe(1);
+    expect(resourceConvForCreator?.unreadCount).toBe(0);
 
     const bidderList = await listConversations(bidderCookie);
     const resourceConvForBidder = bidderList.find(c => c.contextId === resource.id);
@@ -214,7 +225,7 @@ describe("chat conversations integration", () => {
     const claimerCookie = await loginAs(claimer);
     const resourceCreatorCookie = await loginAs(resourceCreator);
 
-    const bidId = await submitResourceBid(claimerCookie, resource.id, "Also interested in resource");
+    await submitResourceBid(claimerCookie, resource.id, "Also interested in resource");
 
     // Seed need conversation (creator sends first reply)
     await sendClaimMessage(needCreatorCookie, claim.id, "Great, let's connect");
@@ -223,7 +234,7 @@ describe("chat conversations integration", () => {
     await new Promise(r => setTimeout(r, 50));
 
     // Seed resource conversation (resource creator sends first message)
-    await sendResourceMessage(resourceCreatorCookie, bidId, "Thanks for the bid!");
+    await sendResourceMessage(resourceCreatorCookie, resource.id, claimer.accountId, "Thanks for the bid!");
 
     // The claimer/bidder should see both conversations: the need thread and the resource thread
     const claimerList = await listConversations(claimerCookie);
@@ -261,11 +272,11 @@ describe("chat conversations integration", () => {
     const bidderCookie = await loginAs(bidder);
     const creatorCookie = await loginAs(creator);
 
-    const bidIdA = await submitResourceBid(bidderCookie, resourceA.id, "Want jam");
-    const bidIdB = await submitResourceBid(bidderCookie, resourceB.id, "Want tools");
+    await submitResourceBid(bidderCookie, resourceA.id, "Want jam");
+    await submitResourceBid(bidderCookie, resourceB.id, "Want tools");
 
-    await sendResourceMessage(creatorCookie, bidIdA, "Jam pickup available Saturday");
-    await sendResourceMessage(creatorCookie, bidIdB, "Tools can be picked up anytime");
+    await sendResourceMessage(creatorCookie, resourceA.id, bidder.accountId, "Jam pickup available Saturday");
+    await sendResourceMessage(creatorCookie, resourceB.id, bidder.accountId, "Tools can be picked up anytime");
 
     // Search by resource title substring
     const jamSearch = await listConversations(creatorCookie, "Handmade");
@@ -296,9 +307,9 @@ describe("chat conversations integration", () => {
     const bidderCookie = await loginAs(bidder);
     const creatorCookie = await loginAs(creator);
 
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "I want this");
-    await sendResourceMessage(creatorCookie, bidId, "Message 1 from creator");
-    await sendResourceMessage(creatorCookie, bidId, "Message 2 from creator");
+    await submitResourceBid(bidderCookie, resource.id, "I want this");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Message 1 from creator");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Message 2 from creator");
 
     // Bidder should see 2 unread before marking read
     const beforeRead = await listConversations(bidderCookie);
@@ -357,9 +368,9 @@ describe("chat conversations integration", () => {
     const creatorCookie = await loginAs(creator);
     const outsiderCookie = await loginAs(outsider);
 
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Want it");
+    await submitResourceBid(bidderCookie, resource.id, "Want it");
     // Creator seeds the conversation
-    await sendResourceMessage(creatorCookie, bidId, "Hello bidder");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Hello bidder");
 
     // Outsider tries to send a message to this bid (which they're not part of)
     const outsiderRes = await fetch(`${TEST_BACKEND_URL}/graphql`, {
@@ -367,11 +378,18 @@ describe("chat conversations integration", () => {
       headers: { "Content-Type": "application/json", Cookie: outsiderCookie },
       body: JSON.stringify({
         query: `
-          mutation SendResourceMessage($input: SendResourceMessageInput!) {
-            sendResourceMessage(input: $input) { resourceMessage { id } }
+          mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
+            sendResourceMessageDirect(input: $input) { resourceMessage { id } }
           }
         `,
-        variables: { input: { resourceBidId: bidId, body: "Sneaky message", imageUrls: [] } }
+        variables: {
+          input: {
+            pResourceId: resource.id,
+            pOtherAccountId: bidder.accountId,
+            pBody: "Sneaky message",
+            pImageUrls: []
+          }
+        }
       })
     });
     const outsiderJson = await outsiderRes.json() as { errors?: Array<{ message: string }> };

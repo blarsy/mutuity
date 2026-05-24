@@ -23,7 +23,7 @@ describe("campaign approval integration", () => {
     });
     const manager = await seedDemoAccount({
       identifier: `manager-${stamp}@example.com`,
-      role: "manager",
+      role: "admin",
       displayName: "Campaign Manager"
     });
     const viewer = await seedDemoAccount({

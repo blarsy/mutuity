@@ -102,7 +102,7 @@ describe("audit trail integration", () => {
     });
     const manager = await seedDemoAccount({
       identifier: `audit-manager-${stamp}@example.com`,
-      role: "manager",
+      role: "admin",
       displayName: "Audit Manager"
     });
     const needCreator = await seedDemoAccount({

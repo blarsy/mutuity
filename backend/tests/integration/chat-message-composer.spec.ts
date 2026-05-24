@@ -36,21 +36,33 @@ async function submitResourceBid(bidderCookie: string, resourceId: string, messa
   return json.data!.submitResourceBid.resourceBid.id;
 }
 
-async function sendResourceMessage(cookie: string, resourceBidId: string, body: string) {
+async function sendResourceMessage(
+  cookie: string,
+  resourceId: string,
+  otherAccountId: string,
+  body: string
+) {
   const res = await fetch(`${TEST_BACKEND_URL}/graphql`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({
       query: `
-        mutation SendResourceMessage($input: SendResourceMessageInput!) {
-          sendResourceMessage(input: $input) { resourceMessage { id } }
+        mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
+          sendResourceMessageDirect(input: $input) { resourceMessage { id } }
         }
       `,
-      variables: { input: { resourceBidId, body, imageUrls: [] } }
+      variables: {
+        input: {
+          pResourceId: resourceId,
+          pOtherAccountId: otherAccountId,
+          pBody: body,
+          pImageUrls: []
+        }
+      }
     })
   });
   return res.json() as Promise<{
-    data?: { sendResourceMessage: { resourceMessage: { id: string } } };
+    data?: { sendResourceMessageDirect: { resourceMessage: { id: string } } };
     errors?: Array<{ message: string }>;
   }>;
 }
@@ -226,9 +238,9 @@ describe("chat message composer – resource conversations", () => {
       isActive: true
     });
     const bidderCookie = await loginAs(bidder);
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Initial bid message");
+    await submitResourceBid(bidderCookie, resource.id, "Initial bid message");
 
-    const blankPayload = await sendResourceMessage(bidderCookie, bidId, "   ");
+    const blankPayload = await sendResourceMessage(bidderCookie, resource.id, creator.accountId, "   ");
     expect(blankPayload.errors).toBeDefined();
     expect(blankPayload.errors?.[0]?.message).toMatch(/message body is required/i);
   });
@@ -254,19 +266,19 @@ describe("chat message composer – resource conversations", () => {
       isActive: true
     });
     const bidderCookie = await loginAs(bidder);
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Bid message");
+    await submitResourceBid(bidderCookie, resource.id, "Bid message");
 
     // Creator sends a first message to open the conversation.
     const creatorCookie = await loginAs(creator);
     await expect(
-      sendResourceMessage(creatorCookie, bidId, "Creator opens resource thread")
+      sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Creator opens resource thread")
     ).resolves.toMatchObject({
-      data: { sendResourceMessage: { resourceMessage: { id: expect.any(String) } } }
+      data: { sendResourceMessageDirect: { resourceMessage: { id: expect.any(String) } } }
     });
 
     // Outsider is not part of the bid and should be blocked.
     const outsiderCookie = await loginAs(outsider);
-    const outsiderPayload = await sendResourceMessage(outsiderCookie, bidId, "Outsider intrusion");
+    const outsiderPayload = await sendResourceMessage(outsiderCookie, resource.id, bidder.accountId, "Outsider intrusion");
     expect(outsiderPayload.errors).toBeDefined();
     expect(outsiderPayload.errors?.[0]?.message).toMatch(/forbidden|participant/i);
   });
@@ -288,19 +300,19 @@ describe("chat message composer – resource conversations", () => {
       isActive: true
     });
     const bidderCookie = await loginAs(bidder);
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Bid seed message");
+    await submitResourceBid(bidderCookie, resource.id, "Bid seed message");
 
     const creatorCookie = await loginAs(creator);
 
     await expect(
-      sendResourceMessage(creatorCookie, bidId, "Resource message one")
+      sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Resource message one")
     ).resolves.toMatchObject({
-      data: { sendResourceMessage: { resourceMessage: { id: expect.any(String) } } }
+      data: { sendResourceMessageDirect: { resourceMessage: { id: expect.any(String) } } }
     });
     await expect(
-      sendResourceMessage(bidderCookie, bidId, "Resource message two")
+      sendResourceMessage(bidderCookie, resource.id, creator.accountId, "Resource message two")
     ).resolves.toMatchObject({
-      data: { sendResourceMessage: { resourceMessage: { id: expect.any(String) } } }
+      data: { sendResourceMessageDirect: { resourceMessage: { id: expect.any(String) } } }
     });
 
     // Verify exactly one conversation exists for this bid.
@@ -309,15 +321,23 @@ describe("chat message composer – resource conversations", () => {
       headers: { "Content-Type": "application/json", Cookie: creatorCookie },
       body: JSON.stringify({
         query: `
-          query ResourceBidConversationCount($resourceBidId: UUID!) {
+          query ResourceConversationCount($resourceId: UUID!, $ownerAccountId: UUID!, $bidderAccountId: UUID!) {
             resourceConversations: allResourceConversations(
-              condition: { resourceBidId: $resourceBidId }
+              condition: {
+                resourceId: $resourceId
+                ownerAccountId: $ownerAccountId
+                bidderAccountId: $bidderAccountId
+              }
             ) {
               totalCount
             }
           }
         `,
-        variables: { resourceBidId: bidId }
+        variables: {
+          resourceId: resource.id,
+          ownerAccountId: creator.accountId,
+          bidderAccountId: bidder.accountId
+        }
       })
     });
 

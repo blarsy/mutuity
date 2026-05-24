@@ -106,21 +106,23 @@ describe("claim messaging integration", () => {
       body: JSON.stringify({
         query: `
           query ClaimConversation($needClaimId: UUID!) {
-            claimConversationByNeedClaimId(needClaimId: $needClaimId) {
-              id
-              needClaimId
-              creatorAccountId
-              claimerAccountId
-              claimMessagesByConversationId {
-                nodes {
-                  id
-                  senderAccountId
-                  body
-                  createdAt
-                  readAt
-                  claimMessageImagesByMessageId {
-                    nodes {
-                      imageUrl
+            allClaimConversations(condition: { needClaimId: $needClaimId }, first: 1) {
+              nodes {
+                id
+                needClaimId
+                creatorAccountId
+                claimerAccountId
+                claimMessagesByConversationId {
+                  nodes {
+                    id
+                    senderAccountId
+                    body
+                    createdAt
+                    readAt
+                    claimMessageImagesByMessageId {
+                      nodes {
+                        imageUrl
+                      }
                     }
                   }
                 }
@@ -137,32 +139,36 @@ describe("claim messaging integration", () => {
     expect(conversationResponse.status).toBe(200);
     const conversationPayload = (await conversationResponse.json()) as {
       data?: {
-        claimConversationByNeedClaimId: {
-          id: string;
-          creatorAccountId: string;
-          claimerAccountId: string;
-          claimMessagesByConversationId: {
-            nodes: Array<{
-              senderAccountId: string;
-              body: string;
-              createdAt: string;
-              readAt: string | null;
-              claimMessageImagesByMessageId: { nodes: Array<{ imageUrl: string }> };
-            }>;
-          };
-        } | null;
+        allClaimConversations: {
+          nodes: Array<{
+            id: string;
+            creatorAccountId: string;
+            claimerAccountId: string;
+            claimMessagesByConversationId: {
+              nodes: Array<{
+                senderAccountId: string;
+                body: string;
+                createdAt: string;
+                readAt: string | null;
+                claimMessageImagesByMessageId: { nodes: Array<{ imageUrl: string }> };
+              }>;
+            };
+          }>;
+        };
       };
       errors?: Array<{ message: string }>;
     };
 
+    const conversation = conversationPayload.data?.allClaimConversations.nodes[0] ?? null;
+
     expect(conversationPayload.errors).toBeUndefined();
-    expect(conversationPayload.data?.claimConversationByNeedClaimId).toMatchObject({
+    expect(conversation).toMatchObject({
       creatorAccountId: creator.accountId,
       claimerAccountId: claimer.accountId
     });
 
     const orderedMessages = [
-      ...(conversationPayload.data?.claimConversationByNeedClaimId?.claimMessagesByConversationId.nodes ?? [])
+      ...(conversation?.claimMessagesByConversationId.nodes ?? [])
     ].sort(
       (left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
     );
@@ -181,7 +187,7 @@ describe("claim messaging integration", () => {
       })
     ]);
 
-    const conversationId = conversationPayload.data?.claimConversationByNeedClaimId?.id;
+    const conversationId = conversation?.id;
     expect(conversationId).toBeTruthy();
 
     const markReadResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {

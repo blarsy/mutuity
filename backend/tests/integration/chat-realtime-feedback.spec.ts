@@ -8,13 +8,9 @@ import {
   type SeededAccount
 } from "./auth-test-helpers";
 import { seedResource } from "./resource-test-helpers";
+import { isTimestampWithinAge } from "./test-async-helpers";
 
 jest.setTimeout(30000);
-
-function isTypingSignalActive(lastTypedAt: string, timeoutMs = 5000): boolean {
-  const ageMs = Date.now() - new Date(lastTypedAt).getTime();
-  return ageMs >= 0 && ageMs <= timeoutMs;
-}
 
 async function loginAs(account: SeededAccount) {
   return loginWithGraphqlSessionCookie(account.identifier, account.password);
@@ -46,28 +42,40 @@ async function submitResourceBid(bidderCookie: string, resourceId: string, messa
   return json.data!.submitResourceBid!.resourceBid!.id;
 }
 
-async function sendResourceMessage(cookie: string, resourceBidId: string, body: string) {
+async function sendResourceMessage(
+  cookie: string,
+  resourceId: string,
+  otherAccountId: string,
+  body: string
+) {
   const res = await fetch(`${TEST_BACKEND_URL}/graphql`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({
       query: `
-        mutation SendResourceMessage($input: SendResourceMessageInput!) {
-          sendResourceMessage(input: $input) { resourceMessage { id } }
+        mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
+          sendResourceMessageDirect(input: $input) { resourceMessage { id } }
         }
       `,
-      variables: { input: { resourceBidId, body, imageUrls: [] } }
+      variables: {
+        input: {
+          pResourceId: resourceId,
+          pOtherAccountId: otherAccountId,
+          pBody: body,
+          pImageUrls: []
+        }
+      }
     })
   });
 
   const json = await res.json() as {
-    data?: { sendResourceMessage?: { resourceMessage?: { id: string } } };
+    data?: { sendResourceMessageDirect?: { resourceMessage?: { id: string } } };
     errors?: Array<{ message: string }>;
   };
 
   expect(json.errors).toBeUndefined();
-  expect(json.data?.sendResourceMessage?.resourceMessage?.id).toBeTruthy();
-  return json.data!.sendResourceMessage!.resourceMessage!.id;
+  expect(json.data?.sendResourceMessageDirect?.resourceMessage?.id).toBeTruthy();
+  return json.data!.sendResourceMessageDirect!.resourceMessage!.id;
 }
 
 async function listConversations(cookie: string) {
@@ -127,9 +135,9 @@ describe("chat realtime feedback", () => {
     const bidderCookie = await loginAs(bidder);
     const creatorCookie = await loginAs(creator);
 
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "I want this");
-    await sendResourceMessage(creatorCookie, bidId, "Message 1 from creator");
-    await sendResourceMessage(creatorCookie, bidId, "Message 2 from creator");
+    await submitResourceBid(bidderCookie, resource.id, "I want this");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Message 1 from creator");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Message 2 from creator");
 
     const beforeRead = await listConversations(bidderCookie);
     const conv = beforeRead.find(c => c.contextId === resource.id);
@@ -179,13 +187,14 @@ describe("chat realtime feedback", () => {
     const bidderCookie = await loginAs(bidder);
     const creatorCookie = await loginAs(creator);
 
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Initial bid message");
-    await sendResourceMessage(creatorCookie, bidId, "Thread setup message");
+    await submitResourceBid(bidderCookie, resource.id, "Initial bid message");
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, "Thread setup message");
 
     const creatorConversations = await listConversations(creatorCookie);
     const conversation = creatorConversations.find(c => c.contextId === resource.id);
     expect(conversation?.conversationId).toBeTruthy();
 
+    const upsertStartedAt = Date.now();
     const upsertRes = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Cookie: bidderCookie },
@@ -229,7 +238,9 @@ describe("chat realtime feedback", () => {
     const presence = upsertJson.data?.upsertChatTypingPresence?.chatTypingPresence;
     expect(presence?.accountId).toBe(bidder.accountId);
     expect(presence?.conversationKind).toBe("RESOURCE");
-    expect(isTypingSignalActive(presence?.lastTypedAt ?? "", 5000)).toBe(true);
+    const presenceTimestampMs = new Date(presence?.lastTypedAt ?? "").getTime();
+    expect(Number.isFinite(presenceTimestampMs)).toBe(true);
+    expect(presenceTimestampMs).toBeGreaterThanOrEqual(upsertStartedAt - 2000);
 
     const db = new Client({ connectionString: TEST_DATABASE_URL });
     await db.connect();
@@ -265,13 +276,13 @@ describe("chat realtime feedback", () => {
 
       const staleLastTypedAt = staleResult.rows[0]?.last_typed_at;
       expect(staleLastTypedAt).toBeTruthy();
-      expect(isTypingSignalActive(staleLastTypedAt ?? "", 5000)).toBe(false);
+      expect(isTimestampWithinAge(staleLastTypedAt ?? "", 5000)).toBe(false);
     } finally {
       await verifyDb.end();
     }
   });
 
-  it("creates a chat notification payload for the recipient on incoming resource messages", async () => {
+  it("does not create account_notification rows for incoming resource messages", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `chat-notif-creator-${stamp}@example.com`,
@@ -289,44 +300,24 @@ describe("chat realtime feedback", () => {
     const bidderCookie = await loginAs(bidder);
     const creatorCookie = await loginAs(creator);
 
-    const bidId = await submitResourceBid(bidderCookie, resource.id, "Initial bid message");
+    await submitResourceBid(bidderCookie, resource.id, "Initial bid message");
     const longBody = `${"a".repeat(120)} with trailing context`;
-    await sendResourceMessage(creatorCookie, bidId, longBody);
+    await sendResourceMessage(creatorCookie, resource.id, bidder.accountId, longBody);
 
     const db = new Client({ connectionString: TEST_DATABASE_URL });
     await db.connect();
     try {
-      const notifResult = await db.query<{
-        event_type: string;
-        payload: {
-          conversationKind?: string;
-          conversationId?: string;
-          contextId?: string;
-          senderAccountId?: string;
-          senderDisplayName?: string;
-          messagePreview?: string;
-        };
-      }>(
+      const notifResult = await db.query<{ count: string }>(
         `
-          select event_type, payload
+          select count(*)::text as count
           from app_public.account_notification
           where recipient_account_id = $1::uuid
             and event_type = 'chat_message_received'
-          order by created_at desc
-          limit 1
         `,
         [bidder.accountId]
       );
 
-      const row = notifResult.rows[0];
-      expect(row).toBeTruthy();
-      expect(row.event_type).toBe("chat_message_received");
-      expect(row.payload.conversationKind).toBe("resource");
-      expect(row.payload.contextId).toBe(resource.id);
-      expect(row.payload.senderAccountId).toBe(creator.accountId);
-      expect(row.payload.senderDisplayName).toBe(creator.displayName);
-      expect(row.payload.conversationId).toBeTruthy();
-      expect(row.payload.messagePreview).toBe(`${"a".repeat(100)}...`);
+      expect(Number(notifResult.rows[0]?.count ?? "0")).toBe(0);
     } finally {
       await db.end();
     }

@@ -263,7 +263,7 @@ describe("notifications center integration", () => {
     const manager = await seedDemoAccount({
       identifier: `notifications-manager-${stamp}@example.com`,
       displayName: "Notifications Manager",
-      role: "manager"
+      role: "admin"
     });
     const needOwner = await seedDemoAccount({
       identifier: `notifications-owner-${stamp}@example.com`,

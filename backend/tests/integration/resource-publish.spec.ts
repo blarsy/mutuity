@@ -131,7 +131,7 @@ describe("resource publishing integration", () => {
           canBeExchanged: true,
           canBeTakenAway: true,
           canBeDelivered: false,
-          expiresAt: "2026-05-10T12:00:00.000Z"
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         }
       })
     });

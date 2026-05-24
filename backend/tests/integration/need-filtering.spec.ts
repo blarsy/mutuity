@@ -97,10 +97,24 @@ describe("need filtering integration", () => {
 
     await seedNeed({
       creatorAccount: creator,
-      title: `${prefix} Need`,
+      title: `${prefix} Account Need`,
       location: "Stored account location",
       latitude: 51.0001,
       longitude: 3.9999,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    });
+
+    const fallbackCreator = await seedDemoAccount({
+      identifier: `fallback-secondary-${Date.now()}@example.com`,
+      displayName: "Fallback Secondary Creator"
+    });
+
+    await seedNeed({
+      creatorAccount: fallbackCreator,
+      title: `${prefix} Fallback Need`,
+      location: "Tournai",
+      latitude: 50.6072,
+      longitude: 3.3889,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     });
 
@@ -124,7 +138,7 @@ describe("need filtering integration", () => {
           }
         `,
         variables: {
-          searchText: prefix
+          searchText: `${prefix} Account`
         }
       })
     });
@@ -164,9 +178,9 @@ describe("need filtering integration", () => {
           }
         `,
         variables: {
-          searchText: prefix,
-          browserLatitude: 50.4444,
-          browserLongitude: 3.5555
+          searchText: `${prefix} Account`,
+          browserLatitude: 50.9001,
+          browserLongitude: 3.8999
         }
       })
     });
@@ -177,8 +191,8 @@ describe("need filtering integration", () => {
         searchNeeds: {
           nodes: [
             {
-              queryLatitude: "50.4444",
-              queryLongitude: "3.5555"
+              queryLatitude: "50.9001",
+              queryLongitude: "3.8999"
             }
           ]
         }
@@ -202,7 +216,7 @@ describe("need filtering integration", () => {
           }
         `,
         variables: {
-          searchText: prefix
+          searchText: `${prefix} Fallback`
         }
       })
     });

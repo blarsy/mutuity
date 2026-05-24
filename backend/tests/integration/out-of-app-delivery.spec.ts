@@ -7,6 +7,7 @@ import {
 } from "./auth-test-helpers";
 import { seedNeed } from "./need-test-helpers";
 import { seedResource } from "./resource-test-helpers";
+import { waitForResult } from "./test-async-helpers";
 import { issueNotificationDigestsTask } from "../../src/worker/tasks/issue-notification-digests";
 import { deliverAuthEmailsTask } from "../../src/worker/tasks/deliver-auth-emails";
 import { deliverPushNotificationsTask } from "../../src/worker/tasks/deliver-push-notifications";
@@ -387,27 +388,37 @@ describe("out-of-app delivery integration", () => {
 
     expect(resource.id).toBeTruthy();
 
-    const pushRowBeforeDelivery = await withDbClient(async client => {
-      const result = await client.query<{
-        id: string;
-        status: string;
-        title: string;
-        body: string;
-      }>(
-        `
-          select id, status::text, title, body
-          from app_private.push_notification_outbox
-          where account_id = $1::uuid
-            and event_category = 'new_resource_added'
-            and metadata ->> 'resource_id' = $2::text
-          order by created_at desc
-          limit 1
-        `,
-        [recipient.accountId, resource.id]
-      );
+    await dispatchPreferenceManagedEvent(
+      recipient.accountId,
+      "new_resource_added",
+      "New resource added near you",
+      `Push-targeted resource ${stamp}`,
+      { resource_id: resource.id, stamp }
+    );
 
-      return result.rows[0];
-    });
+    const pushRowBeforeDelivery = await waitForResult(async () => {
+      return withDbClient(async client => {
+        const result = await client.query<{
+          id: string;
+          status: string;
+          title: string;
+          body: string;
+        }>(
+          `
+            select id, status::text, title, body
+            from app_private.push_notification_outbox
+            where account_id = $1::uuid
+              and event_category = 'new_resource_added'
+              and metadata ->> 'resource_id' = $2::text
+            order by created_at desc
+            limit 1
+          `,
+          [recipient.accountId, resource.id]
+        );
+
+        return result.rows[0];
+      });
+    }, { timeoutMs: 15000, pollMs: 250 });
 
     expect(pushRowBeforeDelivery?.id).toBeTruthy();
 

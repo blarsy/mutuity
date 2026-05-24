@@ -28,7 +28,7 @@ type SeedGrantOptions = {
   title?: string;
   awardedTokenAmount?: number;
   maxSuccessfulClaimCount?: number | null;
-  expiresAt?: string | null;
+  expiresAt?: string;
   archivedAt?: string | null;
   linkedCampaignId?: string | null;
 };
@@ -53,7 +53,7 @@ async function seedGrant(opts: SeedGrantOptions): Promise<string> {
         opts.title ?? "Test Grant",
         opts.awardedTokenAmount ?? 100,
         opts.maxSuccessfulClaimCount ?? null,
-        opts.expiresAt ?? null,
+        opts.expiresAt ?? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         opts.archivedAt ?? null,
         opts.linkedCampaignId ?? null,
         opts.adminAccountId
@@ -109,14 +109,14 @@ async function seedApprovedCampaignWithContribution(creatorAccountId: string, co
         values ($1, $2, 'Brussels', 'sharing', false)
         returning id
       `,
-      [creatorAccountId, `Grant need ${stamp}`]
+      [contributorAccountId, `Grant need ${stamp}`]
     );
 
     const needId = needResult.rows[0].id;
 
     // Join need to campaign
     await client.query(
-      `insert into app_public.campaign_need (campaign_id, need_id, triage_status) values ($1, $2, 'accepted')`,
+      `insert into app_public.campaign_need (campaign_id, need_id, status) values ($1, $2, 'accepted')`,
       [campaignId, needId]
     );
 
@@ -124,15 +124,15 @@ async function seedApprovedCampaignWithContribution(creatorAccountId: string, co
     const claimResult = await client.query<{ id: string }>(
       `
         insert into app_public.need_claim (need_id, claimer_account_id, message, status)
-        values ($1, $2, 'I can help', 'pending')
+        values ($1, $2, 'I can help', 'open')
         returning id
       `,
       [needId, contributorAccountId]
     );
 
-    // Accept the claim
+    // Mark the claim as settled so it counts as a completed campaign contribution.
     await client.query(
-      `update app_public.need_claim set status = 'accepted' where id = $1`,
+      `update app_public.need_claim set status = 'settled' where id = $1`,
       [claimResult.rows[0].id]
     );
 
