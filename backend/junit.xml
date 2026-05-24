@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="138" failures="38" errors="0" time="94.856">
+  <testsuite name="resource publishing integration" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:06" time="22.797" tests="3">
+    <testcase classname="resource publishing integration allows an authenticated account to publish a resource" name="resource publishing integration allows an authenticated account to publish a resource" time="4.155">
+      <failure>Error: expect(received).resolves.toMatchObject(expected)
+
+- Expected  - 21
++ Received  +  1
+
+  Object {
+    &quot;data&quot;: Object {
+-     &quot;publishResource&quot;: Object {
+-       &quot;resource&quot;: Object {
+-         &quot;canBeDelivered&quot;: false,
+-         &quot;canBeExchanged&quot;: true,
+-         &quot;canBeGiven&quot;: true,
+-         &quot;canBeTakenAway&quot;: true,
+-         &quot;categoryLabels&quot;: Array [
+-           &quot;Food &amp; beverage&quot;,
+-           &quot;Building material &amp; tools&quot;,
+-         ],
+-         &quot;creatorAccountId&quot;: &quot;46ed62ee-b2c6-49c9-9c89-7fa8111ffea1&quot;,
+-         &quot;defaultTokenAmount&quot;: 250,
+-         &quot;description&quot;: &quot;Fresh soup and kitchen utensils available this weekend.&quot;,
+-         &quot;intensity&quot;: &quot;SHARING&quot;,
+-         &quot;isActive&quot;: true,
+-         &quot;isProduct&quot;: true,
+-         &quot;isService&quot;: false,
+-         &quot;location&quot;: &quot;Tournai centre&quot;,
+-         &quot;title&quot;: &quot;US2 Published Resource 1779307818612&quot;,
+-       },
+-     },
++     &quot;publishResource&quot;: null,
+    },
+  }
+    at Object.toMatchObject (/Users/bertrandlarsy/code/mutuity/node_modules/expect/build/index.js:174:22)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/resource-publish.spec.ts:141:44)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="resource publishing integration rejects invalid publish payloads with a safe validation error" name="resource publishing integration rejects invalid publish payloads with a safe validation error" time="2.552">
+    </testcase>
+    <testcase classname="resource publishing integration updates resource updatedAt when linked categories and images change through publishResource edit mode" name="resource publishing integration updates resource updatedAt when linked categories and images change through publishResource edit mode" time="4.178">
+    </testcase>
+  </testsuite>
+  <testsuite name="notifications center integration" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:06" time="23.644" tests="2">
+    <testcase classname="notifications center integration marks single notifications and marks all unread notifications as read across all sources" name="notifications center integration marks single notifications and marks all unread notifications as read across all sources" time="10.574">
+    </testcase>
+    <testcase classname="notifications center integration cleans up only notifications old enough and already read long enough" name="notifications center integration cleans up only notifications old enough and already read long enough" time="0.976">
+      <failure>error: new row for relation &quot;account_credential&quot; violates check constraint &quot;account_credential_role_name_check&quot;
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:60:5
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:39:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/notifications-center.spec.ts:263:21)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="chat realtime feedback" errors="0" failures="3" skipped="0" timestamp="2026-05-20T20:10:06" time="31.097" tests="3">
+    <testcase classname="chat realtime feedback marks resource messages as read and reduces unread count" name="chat realtime feedback marks resource messages as read and reduces unread count" time="6.754">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-realtime-feedback.spec.ts:68:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-realtime-feedback.spec.ts:131:5)</failure>
+    </testcase>
+    <testcase classname="chat realtime feedback stores typing presence and allows client timeout behavior based on lastTypedAt" name="chat realtime feedback stores typing presence and allows client timeout behavior based on lastTypedAt" time="4.152">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-realtime-feedback.spec.ts:68:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-realtime-feedback.spec.ts:183:5)</failure>
+    </testcase>
+    <testcase classname="chat realtime feedback creates a chat notification payload for the recipient on incoming resource messages" name="chat realtime feedback creates a chat notification payload for the recipient on incoming resource messages" time="8.208">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-realtime-feedback.spec.ts:68:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-realtime-feedback.spec.ts:294:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="claim messaging integration" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:29" time="8.32" tests="1">
+    <testcase classname="claim messaging integration creates the conversation on the creator&apos;s first reply, persists image metadata, and limits access to participants" name="claim messaging integration creates the conversation on the creator&apos;s first reply, persists image metadata, and limits access to participants" time="7.642">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 400
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/claim-messaging.spec.ts:137:41)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="grant claim E2E contract" errors="0" failures="4" skipped="0" timestamp="2026-05-20T20:10:30" time="8.688" tests="4">
+    <testcase classname="grant claim E2E contract exposes getGrantForClaim query with correct shape" name="grant claim E2E contract exposes getGrantForClaim query with correct shape" time="1.521">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:28:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:16:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:135:21)</failure>
+    </testcase>
+    <testcase classname="grant claim E2E contract completes full claim flow and returns success outcome with claimedAmount and grantClaimId" name="grant claim E2E contract completes full claim flow and returns success outcome with claimedAmount and grantClaimId" time="1.564">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:28:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:16:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:156:21)</failure>
+    </testcase>
+    <testcase classname="grant claim E2E contract returns denial outcome codes for user-safe display (expired, already_claimed, cap_reached, grant_unavailable)" name="grant claim E2E contract returns denial outcome codes for user-safe display (expired, already_claimed, cap_reached, grant_unavailable)" time="3.744">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:28:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:16:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:183:24)</failure>
+    </testcase>
+    <testcase classname="grant claim E2E contract returns not_authenticated denial without a server error (safe for anonymous UX)" name="grant claim E2E contract returns not_authenticated denial without a server error (safe for anonymous UX)" time="1.117">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:28:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:16:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/contract/grant-claim.contract.spec.ts:207:21)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="grant claim integration" errors="0" failures="9" skipped="0" timestamp="2026-05-20T20:10:06" time="32.856" tests="10">
+    <testcase classname="grant claim integration returns not_authenticated for anonymous users" name="grant claim integration returns not_authenticated for anonymous users" time="0.725">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:178:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration succeeds for open grant (no targeting)" name="grant claim integration succeeds for open grant (no targeting)" time="1.225">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:196:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration returns already_claimed on duplicate attempt" name="grant claim integration returns already_claimed on duplicate attempt" time="0.938">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:218:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration returns grant_unavailable for archived grant" name="grant claim integration returns grant_unavailable for archived grant" time="1.002">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:239:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration returns expired for past expiry date" name="grant claim integration returns expired for past expiry date" time="3.51">
+    </testcase>
+    <testcase classname="grant claim integration returns cap_reached when max claims exhausted" name="grant claim integration returns cap_reached when max claims exhausted" time="2.733">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:284:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration returns success for account-id targeted user and not_targeted for others" name="grant claim integration returns success for account-id targeted user and not_targeted for others" time="2.932">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:310:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration returns success for email-targeted user and not_targeted for others" name="grant claim integration returns success for email-targeted user and not_targeted for others" time="2.02">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:336:21)</failure>
+    </testcase>
+    <testcase classname="grant claim integration returns campaign_criterion_not_satisfied for user without campaign contribution, success with contribution" name="grant claim integration returns campaign_criterion_not_satisfied for user without campaign contribution, success with contribution" time="1.725">
+      <failure>error: column &quot;triage_status&quot; of relation &quot;campaign_need&quot; does not exist
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:118:5
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:364:24)</failure>
+    </testcase>
+    <testcase classname="grant claim integration does not exceed cap under concurrent claims" name="grant claim integration does not exceed cap under concurrent claims" time="4.089">
+      <failure>error: null value in column &quot;expires_at&quot; of relation &quot;grant_definition&quot; violates not-null constraint
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:38:20
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:20:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/grants.spec.ts:396:21)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign moderation note SQL" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:39" time="0.437" tests="1">
+    <testcase classname="campaign moderation note SQL restricts moderation notes to managers and pending campaigns" name="campaign moderation note SQL restricts moderation notes to managers and pending campaigns" time="0.003">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;Only managers can add moderation notes&quot;
+Received string:    &quot;create or replace function app_public.add_campaign_moderation_note(
+  campaign_id uuid,
+  body text
+)
+returns app_public.campaign_moderation_note
+language plpgsql
+as $$
+declare
+  v_note app_public.campaign_moderation_note;
+  v_manager_account_id uuid;
+  v_campaign_status app_public.campaign_moderation_status;
+begin
+  if not app_private.is_admin() then
+    raise exception using message = &apos;Only admins can add moderation notes&apos;;
+  end if;·
+  v_manager_account_id := app_private.current_account_id();·
+  if v_manager_account_id is null then
+    raise exception using message = &apos;Authentication required&apos;;
+  end if;·
+  select moderation_status
+  into v_campaign_status
+  from app_public.campaign
+  where id = add_campaign_moderation_note.campaign_id;·
+  if v_campaign_status is null then
+    raise exception using message = &apos;Campaign not found&apos;;
+  end if;·
+  if v_campaign_status &lt;&gt; &apos;pending&apos; then
+    raise exception using message = &apos;Moderation notes are allowed only for pending campaigns&apos;;
+  end if;·
+  if length(trim(body)) = 0 then
+    raise exception using message = &apos;Moderation note body is required&apos;;
+  end if;·
+  insert into app_public.campaign_moderation_note (
+    campaign_id,
+    manager_account_id,
+    body
+  )
+  values (
+    add_campaign_moderation_note.campaign_id,
+    v_manager_account_id,
+    trim(add_campaign_moderation_note.body)
+  )
+  returning * into v_note;·
+  return v_note;
+end;
+$$;·
+comment on function app_public.add_campaign_moderation_note(uuid, text)
+  is &apos;@name addCampaignModerationNote&apos;;
+&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/campaign-moderation-note.spec.ts:9:17)
+    at Promise.then.completed (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/bertrandlarsy/code/mutuity/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/bertrandlarsy/code/mutuity/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/bertrandlarsy/code/mutuity/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/bertrandlarsy/code/mutuity/node_modules/jest-runner/build/testWorker.js:106:12)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="audit trail integration" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:37" time="2.617" tests="1">
+    <testcase classname="audit trail integration records campaign approval and joined-need triage transitions" name="audit trail integration records campaign approval and joined-need triage transitions" time="1.831">
+      <failure>error: new row for relation &quot;account_credential&quot; violates check constraint &quot;account_credential_role_name_check&quot;
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:60:5
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:39:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/audit-trail.spec.ts:103:21)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign approval integration" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:39" time="2.462" tests="1">
+    <testcase classname="campaign approval integration enforces manager-only approval and makes campaign visible once approved" name="campaign approval integration enforces manager-only approval and makes campaign visible once approved" time="1.821">
+      <failure>error: new row for relation &quot;account_credential&quot; violates check constraint &quot;account_credential_role_name_check&quot;
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:60:5
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:39:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/campaign-approval.spec.ts:24:21)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="need filtering integration" errors="0" failures="1" skipped="0" timestamp="2026-05-20T20:10:37" time="6.742" tests="2">
+    <testcase classname="need filtering integration applies accent-insensitive text search and tri-state filters" name="need filtering integration applies accent-insensitive text search and tri-state filters" time="1.061">
+    </testcase>
+    <testcase classname="need filtering integration uses account coordinates first, then browser coordinates, then Tournai fallback" name="need filtering integration uses account coordinates first, then browser coordinates, then Tournai fallback" time="4.841">
+      <failure>Error: expect(received).resolves.toMatchObject(expected)
+
+- Expected  - 6
++ Received  + 1
+
+  Object {
+    &quot;data&quot;: Object {
+      &quot;searchNeeds&quot;: Object {
+-       &quot;nodes&quot;: Array [
+-         Object {
+-           &quot;queryLatitude&quot;: &quot;50.4444&quot;,
+-           &quot;queryLongitude&quot;: &quot;3.5555&quot;,
+-         },
+-       ],
++       &quot;nodes&quot;: Array [],
+      },
+    },
+  }
+    at Object.toMatchObject (/Users/bertrandlarsy/code/mutuity/node_modules/expect/build/index.js:174:22)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/need-filtering.spec.ts:175:51)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="chat message composer integration" errors="0" failures="3" skipped="0" timestamp="2026-05-20T20:10:06" time="49.594" tests="6">
+    <testcase classname="chat message composer integration rejects blank message bodies for claim conversations" name="chat message composer integration rejects blank message bodies for claim conversations" time="3.355">
+    </testcase>
+    <testcase classname="chat message composer integration blocks non-participants from sending claim messages" name="chat message composer integration blocks non-participants from sending claim messages" time="6.353">
+    </testcase>
+    <testcase classname="chat message composer integration keeps one conversation per need claim context" name="chat message composer integration keeps one conversation per need claim context" time="9.451">
+    </testcase>
+    <testcase classname="chat message composer – resource conversations rejects blank message bodies for resource conversations" name="chat message composer – resource conversations rejects blank message bodies for resource conversations" time="6.397">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /message body is required/i
+Received string:  &quot;Something went wrong. Please try again.&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-message-composer.spec.ts:233:47)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="chat message composer – resource conversations blocks non-participants from sending resource messages" name="chat message composer – resource conversations blocks non-participants from sending resource messages" time="6.806">
+      <failure>Error: expect(received).resolves.toMatchObject(expected)
+
+- Expected  -  4
++ Received  + 23
+
+  Object {
+-   &quot;data&quot;: Object {
+-     &quot;sendResourceMessage&quot;: Object {
+-       &quot;resourceMessage&quot;: Object {
+-         &quot;id&quot;: Any&lt;String&gt;,
++   &quot;errors&quot;: Array [
++     Object {
++       &quot;extensions&quot;: Object {
++         &quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;,
++       },
++       &quot;locations&quot;: Array [
++         Object {
++           &quot;column&quot;: 46,
++           &quot;line&quot;: 2,
++         },
++       ],
++       &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;,
++     },
++     Object {
++       &quot;extensions&quot;: Object {
++         &quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;,
+        },
++       &quot;locations&quot;: Array [
++         Object {
++           &quot;column&quot;: 11,
++           &quot;line&quot;: 3,
+          },
++       ],
++       &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;,
+      },
++   ],
+  }
+    at Object.toMatchObject (/Users/bertrandlarsy/code/mutuity/node_modules/expect/build/index.js:174:22)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-message-composer.spec.ts:263:16)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="chat message composer – resource conversations keeps one conversation per resource bid context" name="chat message composer – resource conversations keeps one conversation per resource bid context" time="5.265">
+      <failure>Error: expect(received).resolves.toMatchObject(expected)
+
+- Expected  -  4
++ Received  + 23
+
+  Object {
+-   &quot;data&quot;: Object {
+-     &quot;sendResourceMessage&quot;: Object {
+-       &quot;resourceMessage&quot;: Object {
+-         &quot;id&quot;: Any&lt;String&gt;,
++   &quot;errors&quot;: Array [
++     Object {
++       &quot;extensions&quot;: Object {
++         &quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;,
++       },
++       &quot;locations&quot;: Array [
++         Object {
++           &quot;column&quot;: 46,
++           &quot;line&quot;: 2,
++         },
++       ],
++       &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;,
++     },
++     Object {
++       &quot;extensions&quot;: Object {
++         &quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;,
+        },
++       &quot;locations&quot;: Array [
++         Object {
++           &quot;column&quot;: 11,
++           &quot;line&quot;: 3,
+          },
++       ],
++       &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;,
+      },
++   ],
+  }
+    at Object.toMatchObject (/Users/bertrandlarsy/code/mutuity/node_modules/expect/build/index.js:174:22)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-message-composer.spec.ts:297:16)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="admin support authorization" errors="0" failures="7" skipped="0" timestamp="2026-05-20T20:10:06" time="51.819" tests="13">
+    <testcase classname="admin support authorization denies non-admin access to adminListAccounts" name="admin support authorization denies non-admin access to adminListAccounts" time="2.985">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /administrator/i
+Received string:  &quot;Something went wrong. Please try again.&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:131:37)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="admin support authorization denies non-admin access to adminGetMailContent" name="admin support authorization denies non-admin access to adminGetMailContent" time="3.028">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /administrator/i
+Received string:  &quot;Something went wrong. Please try again.&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:157:37)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="admin support authorization denies non-admin access to adminResendMail" name="admin support authorization denies non-admin access to adminResendMail" time="3.678">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /administrator/i
+Received string:  &quot;Something went wrong. Please try again.&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:185:37)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="admin support authorization denies unauthenticated access to adminListGrants" name="admin support authorization denies unauthenticated access to adminListGrants" time="0.102">
+    </testcase>
+    <testcase classname="admin mail actions adminGetMailContent returns stored HTML body for admin" name="admin mail actions adminGetMailContent returns stored HTML body for admin" time="2.193">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: &quot;&lt;p&gt;HTML body&lt;/p&gt;&quot;
+Received: undefined
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:229:44)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="admin mail actions adminResendMail resets mail status to pending" name="admin mail actions adminResendMail resets mail status to pending" time="4.742">
+    </testcase>
+    <testcase classname="admin mail actions adminResendMail emits an audit log entry" name="admin mail actions adminResendMail emits an audit log entry" time="2.669">
+    </testcase>
+    <testcase classname="admin search and filter adminListAccounts filters by name search term" name="admin search and filter adminListAccounts filters by name search term" time="6.623">
+    </testcase>
+    <testcase classname="admin grant creation with audit log upsertGrant creates a grant and emits an audit log entry for admin" name="admin grant creation with audit log upsertGrant creates a grant and emits an audit log entry for admin" time="3.052">
+    </testcase>
+    <testcase classname="admin grant creation with audit log upsertGrant requires grant expiration datetime" name="admin grant creation with audit log upsertGrant requires grant expiration datetime" time="3.181">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /expiration datetime is required/i
+Received string:  &quot;Something went wrong. Please try again.&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:418:39)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="admin grant creation with audit log upsertGrant requires at least one claim constraint" name="admin grant creation with audit log upsertGrant requires at least one claim constraint" time="2.281">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /at least one constraint/i
+Received string:  &quot;Something went wrong. Please try again.&quot;
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:449:39)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="admin grant creation with audit log upsertGrant is denied for non-admin" name="admin grant creation with audit log upsertGrant is denied for non-admin" time="4.768">
+    </testcase>
+    <testcase classname="admin campaign moderation note audit log addCampaignModerationNote emits an audit log entry" name="admin campaign moderation note audit log addCampaignModerationNote emits an audit log entry" time="0.572">
+      <failure>error: new row for relation &quot;account_credential&quot; violates check constraint &quot;account_credential_role_name_check&quot;
+    at /Users/bertrandlarsy/code/mutuity/node_modules/pg/lib/client.js:631:17
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:60:5
+    at withClient (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/auth-test-helpers.ts:39:12)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/admin-support.spec.ts:481:21)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="chat conversations integration" errors="0" failures="5" skipped="0" timestamp="2026-05-20T20:10:06" time="54.642" tests="5">
+    <testcase classname="chat conversations integration lists resource conversations for both participants after the first message is sent" name="chat conversations integration lists resource conversations for both participants after the first message is sent" time="10.771">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:52:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:163:5)</failure>
+    </testcase>
+    <testcase classname="chat conversations integration lists need (claim) conversations alongside resource conversations, ordered by last activity" name="chat conversations integration lists need (claim) conversations alongside resource conversations, ordered by last activity" time="8.58">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:52:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:226:5)</failure>
+    </testcase>
+    <testcase classname="chat conversations integration filters conversations by text search across title, participant name, and message body" name="chat conversations integration filters conversations by text search across title, participant name, and message body" time="7.648">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:52:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:267:5)</failure>
+    </testcase>
+    <testcase classname="chat conversations integration marks messages as read and reduces the unread count to zero" name="chat conversations integration marks messages as read and reduces the unread count to zero" time="7.218">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:52:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:300:5)</failure>
+    </testcase>
+    <testcase classname="chat conversations integration blocks non-participants from sending messages to a resource conversation" name="chat conversations integration blocks non-participants from sending messages to a resource conversation" time="8.393">
+      <failure>Error: expect(received).toBeUndefined()
+
+Received: [{&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 46, &quot;line&quot;: 2}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}, {&quot;extensions&quot;: {&quot;code&quot;: &quot;INTERNAL_SERVER_ERROR&quot;}, &quot;locations&quot;: [{&quot;column&quot;: 11, &quot;line&quot;: 3}], &quot;message&quot;: &quot;Something went wrong. Please try again.&quot;}]
+    at sendResourceMessage (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:52:23)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/bertrandlarsy/code/mutuity/backend/tests/integration/chat-conversations.spec.ts:362:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="claim settlement integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:10:41" time="23.566" tests="2">
+    <testcase classname="claim settlement integration settles one claim atomically, closes siblings, records the Topes event, and stays idempotent" name="claim settlement integration settles one claim atomically, closes siblings, records the Topes event, and stays idempotent" time="15.259">
+    </testcase>
+    <testcase classname="claim settlement integration handles concurrent settlement attempts safely with a single settlement event and no duplicate ledger side-effects" name="claim settlement integration handles concurrent settlement attempts safely with a single settlement event and no duplicate ledger side-effects" time="7.801">
+    </testcase>
+  </testsuite>
+  <testsuite name="resource bid integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:10:40" time="30.503" tests="5">
+    <testcase classname="resource bid integration issues expiring-soon warnings and expires/refunds open bids when the resource deadline passes" name="resource bid integration issues expiring-soon warnings and expires/refunds open bids when the resource deadline passes" time="4.352">
+    </testcase>
+    <testcase classname="resource bid integration allows an authenticated non-owner to bid on an active resource and reuses the default token amount" name="resource bid integration allows an authenticated non-owner to bid on an active resource and reuses the default token amount" time="7.478">
+    </testcase>
+    <testcase classname="resource bid integration allows proposed token amounts outside the resource intensity suggested range" name="resource bid integration allows proposed token amounts outside the resource intensity suggested range" time="5.532">
+    </testcase>
+    <testcase classname="resource bid integration rejects new bids on expired resources" name="resource bid integration rejects new bids on expired resources" time="3.063">
+    </testcase>
+    <testcase classname="resource bid integration lets the resource creator accept or decline bids and notifies bidders" name="resource bid integration lets the resource creator accept or decline bids and notifies bidders" time="9.24">
+    </testcase>
+  </testsuite>
+  <testsuite name="out-of-app delivery integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:01" time="11.834" tests="7">
+    <testcase classname="out-of-app delivery integration delivers a summary email only once the 3-day cadence is due" name="out-of-app delivery integration delivers a summary email only once the 3-day cadence is due" time="1.275">
+    </testcase>
+    <testcase classname="out-of-app delivery integration respects the 1-day digest cadence window" name="out-of-app delivery integration respects the 1-day digest cadence window" time="0.76">
+    </testcase>
+    <testcase classname="out-of-app delivery integration respects the 7-day digest cadence window" name="out-of-app delivery integration respects the 7-day digest cadence window" time="0.9">
+    </testcase>
+    <testcase classname="out-of-app delivery integration respects the 30-day digest cadence window" name="out-of-app delivery integration respects the 30-day digest cadence window" time="0.96">
+    </testcase>
+    <testcase classname="out-of-app delivery integration routes each managed category to exactly one out-of-app path and suppresses both paths when an account is active" name="out-of-app delivery integration routes each managed category to exactly one out-of-app path and suppresses both paths when an account is active" time="2.799">
+    </testcase>
+    <testcase classname="out-of-app delivery integration queues and processes a push notification when a new resource is created for a realtime-push recipient" name="out-of-app delivery integration queues and processes a push notification when a new resource is created for a realtime-push recipient" time="2.835">
+    </testcase>
+    <testcase classname="out-of-app delivery integration delivers one summary email containing resource, notification, need, and chat message items" name="out-of-app delivery integration delivers one summary email containing resource, notification, need, and chat message items" time="1.081">
+    </testcase>
+  </testsuite>
+  <testsuite name="bid settlement integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:10:40" time="37.302" tests="5">
+    <testcase classname="bid settlement integration records reservation and bidder-cancel refund movements" name="bid settlement integration records reservation and bidder-cancel refund movements" time="5.679">
+    </testcase>
+    <testcase classname="bid settlement integration refunds reserved Topes when the resource creator declines a bid" name="bid settlement integration refunds reserved Topes when the resource creator declines a bid" time="7.038">
+    </testcase>
+    <testcase classname="bid settlement integration settles reserved Topes to the resource creator when a bid is accepted" name="bid settlement integration settles reserved Topes to the resource creator when a bid is accepted" time="7.48">
+    </testcase>
+    <testcase classname="bid settlement integration keeps acceptance idempotent under concurrent retries without duplicate settlement movements" name="bid settlement integration keeps acceptance idempotent under concurrent retries without duplicate settlement movements" time="8.114">
+    </testcase>
+    <testcase classname="bid settlement integration refunds reserved Topes when bid validity expires" name="bid settlement integration refunds reserved Topes when bid validity expires" time="8.355">
+    </testcase>
+  </testsuite>
+  <testsuite name="auth graphql operations" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:10:44" time="33.424" tests="6">
+    <testcase classname="auth graphql operations supports authSession, authLogin, and authLogout with cookie-backed session state" name="auth graphql operations supports authSession, authLogin, and authLogout with cookie-backed session state" time="3.925">
+    </testcase>
+    <testcase classname="auth graphql operations supports authenticated authChangePassword and invalidates old credentials" name="auth graphql operations supports authenticated authChangePassword and invalidates old credentials" time="8.623">
+    </testcase>
+    <testcase classname="auth graphql operations supports local registration, immediate login, and one-time verification token usage" name="auth graphql operations supports local registration, immediate login, and one-time verification token usage" time="3.539">
+    </testcase>
+    <testcase classname="auth graphql operations throttles verification resend without leaking account state" name="auth graphql operations throttles verification resend without leaking account state" time="1.689">
+    </testcase>
+    <testcase classname="auth graphql operations enforces password-reset token one-time use and rejects forced-expired tokens" name="auth graphql operations enforces password-reset token one-time use and rejects forced-expired tokens" time="7.269">
+    </testcase>
+    <testcase classname="auth graphql operations enforces external-identity link safety and blocks duplicate local registration on verified provider email" name="auth graphql operations enforces external-identity link safety and blocks duplicate local registration on verified provider email" time="7.772">
+    </testcase>
+  </testsuite>
+  <testsuite name="administrator-only role consolidation" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:10" time="7.79" tests="1">
+    <testcase classname="administrator-only role consolidation enforces administrator-only authorization across moderation, approval, grants, and admin support queries" name="administrator-only role consolidation enforces administrator-only authorization across moderation, approval, grants, and admin support queries" time="7.33">
+    </testcase>
+  </testsuite>
+  <testsuite name="claims-workspace: visibility and ordering" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:05" time="17.128" tests="4">
+    <testcase classname="claims-workspace: visibility and ordering claimer sees their sent claims and need creator sees their received claims" name="claims-workspace: visibility and ordering claimer sees their sent claims and need creator sees their received claims" time="5.876">
+    </testcase>
+    <testcase classname="claims-workspace: visibility and ordering claims are returned with updatedAt and createdAt for client-side ordering" name="claims-workspace: visibility and ordering claims are returned with updatedAt and createdAt for client-side ordering" time="4.067">
+    </testcase>
+    <testcase classname="claims-workspace: visibility and ordering multiple claims across needs are all returned in a single query" name="claims-workspace: visibility and ordering multiple claims across needs are all returned in a single query" time="2.518">
+    </testcase>
+    <testcase classname="claims-workspace: visibility and ordering claims with different statuses are all readable (open, withdrawn, declined, settled)" name="claims-workspace: visibility and ordering claims with different statuses are all readable (open, withdrawn, declined, settled)" time="4.269">
+    </testcase>
+  </testsuite>
+  <testsuite name="claim-auto-decline: need expiry via worker" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:10:58" time="25.81" tests="5">
+    <testcase classname="claim-auto-decline: need expiry via worker open claims are auto-declined when the need expires, claimer receives claim_expired notification" name="claim-auto-decline: need expiry via worker open claims are auto-declined when the need expires, claimer receives claim_expired notification" time="3.823">
+    </testcase>
+    <testcase classname="claim-auto-decline: need expiry via worker creator receives a batch need_expired_claims_declined notification" name="claim-auto-decline: need expiry via worker creator receives a batch need_expired_claims_declined notification" time="4.142">
+    </testcase>
+    <testcase classname="claim-auto-decline: need expiry via worker already-declined claims are not double-declined by the expiry worker" name="claim-auto-decline: need expiry via worker already-declined claims are not double-declined by the expiry worker" time="2.451">
+    </testcase>
+    <testcase classname="claim-auto-decline: need deactivation via mutation open claims are auto-declined when the need creator deactivates the need" name="claim-auto-decline: need deactivation via mutation open claims are auto-declined when the need creator deactivates the need" time="8.402">
+    </testcase>
+    <testcase classname="claim-auto-decline: need deactivation via mutation expiry-driven deactivation does not trigger the deactivation trigger (no double notification)" name="claim-auto-decline: need deactivation via mutation expiry-driven deactivation does not trigger the deactivation trigger (no double notification)" time="6.496">
+    </testcase>
+  </testsuite>
+  <testsuite name="bids workspace integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:17" time="7.354" tests="1">
+    <testcase classname="bids workspace integration returns sent/received bids ordered by latest status-change time and filters active bids" name="bids workspace integration returns sent/received bids ordered by latest status-change time and filters active bids" time="6.638">
+    </testcase>
+  </testsuite>
+  <testsuite name="profile and resource milestone rewards" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:18" time="7.392" tests="2">
+    <testcase classname="profile and resource milestone rewards grants each profile completion reward at most once per account lifetime" name="profile and resource milestone rewards grants each profile completion reward at most once per account lifetime" time="5.201">
+    </testcase>
+    <testcase classname="profile and resource milestone rewards grants first resource image and default Topes rewards at most once per resource lifetime" name="profile and resource milestone rewards grants first resource image and default Topes rewards at most once per resource lifetime" time="1.557">
+    </testcase>
+  </testsuite>
+  <testsuite name="resource search integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:13" time="12.333" tests="7">
+    <testcase classname="resource search integration returns only active, non-expired resources ordered by closeness and creation recency" name="resource search integration returns only active, non-expired resources ordered by closeness and creation recency" time="1.657">
+    </testcase>
+    <testcase classname="resource search integration applies tri-state filters to resource modality flags" name="resource search integration applies tri-state filters to resource modality flags" time="1.814">
+    </testcase>
+    <testcase classname="resource search integration filters resources by the fixed system category codes" name="resource search integration filters resources by the fixed system category codes" time="1.008">
+    </testcase>
+    <testcase classname="resource search integration proximity filtering (T094) returns unlocated resources at end when favorLocalResources=true" name="resource search integration proximity filtering (T094) returns unlocated resources at end when favorLocalResources=true" time="1.726">
+    </testcase>
+    <testcase classname="resource search integration proximity filtering (T094) filters out unlocated resources when favorLocalResources=false" name="resource search integration proximity filtering (T094) filters out unlocated resources when favorLocalResources=false" time="1.911">
+    </testcase>
+    <testcase classname="resource search integration proximity filtering (T094) respects maxDistanceKm parameter and caps at system setting" name="resource search integration proximity filtering (T094) respects maxDistanceKm parameter and caps at system setting" time="1.697">
+    </testcase>
+    <testcase classname="resource search integration proximity filtering (T094) excludes unlocated resources when maxDistanceKm is below the configured fallback distance" name="resource search integration proximity filtering (T094) excludes unlocated resources when maxDistanceKm is below the configured fallback distance" time="2.024">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign airdrop payouts" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:18" time="10.291" tests="1">
+    <testcase classname="campaign airdrop payouts pays each eligible account once per approved campaign and emits a notification" name="campaign airdrop payouts pays each eligible account once per approved campaign and emits a notification" time="9.714">
+    </testcase>
+  </testsuite>
+  <testsuite name="need create integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:22" time="6.373" tests="2">
+    <testcase classname="need create integration creates standalone need and campaign-linked pending need while enforcing Topes rules" name="need create integration creates standalone need and campaign-linked pending need while enforcing Topes rules" time="2.59">
+    </testcase>
+    <testcase classname="need create integration updates need updatedAt when linked campaign_need status changes" name="need create integration updates need updatedAt when linked campaign_need status changes" time="3.446">
+    </testcase>
+  </testsuite>
+  <testsuite name="token gifting integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:25" time="6.818" tests="1">
+    <testcase classname="token gifting integration creates opposite ledger movements and notifies the recipient" name="token gifting integration creates opposite ledger movements and notifies the recipient" time="6.507">
+    </testcase>
+  </testsuite>
+  <testsuite name="need claim integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:24" time="7.946" tests="1">
+    <testcase classname="need claim integration persists authenticated claims, creates a creator notification, and denies signed-out attempts" name="need claim integration persists authenticated claims, creates a creator notification, and denies signed-out attempts" time="7.536">
+    </testcase>
+  </testsuite>
+  <testsuite name="need search integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:28" time="4.524" tests="2">
+    <testcase classname="need search integration returns only active, non-expired needs ordered by weighted score and capped at 50 results" name="need search integration returns only active, non-expired needs ordered by weighted score and capped at 50 results" time="2.513">
+    </testcase>
+    <testcase classname="need search integration applies maxDistanceKm to proximity filtering" name="need search integration applies maxDistanceKm to proximity filtering" time="1.703">
+    </testcase>
+  </testsuite>
+  <testsuite name="claims-settlement: cancel (claimer-side withdrawal)" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:10:56" time="37.973" tests="8">
+    <testcase classname="claims-settlement: cancel (claimer-side withdrawal) claimer can cancel their own open claim, status becomes WITHDRAWN" name="claims-settlement: cancel (claimer-side withdrawal) claimer can cancel their own open claim, status becomes WITHDRAWN" time="4.419">
+    </testcase>
+    <testcase classname="claims-settlement: cancel (claimer-side withdrawal) need creator cannot cancel someone else&apos;s claim" name="claims-settlement: cancel (claimer-side withdrawal) need creator cannot cancel someone else&apos;s claim" time="4.828">
+    </testcase>
+    <testcase classname="claims-settlement: cancel (claimer-side withdrawal) cancelling an already-withdrawn claim is idempotent" name="claims-settlement: cancel (claimer-side withdrawal) cancelling an already-withdrawn claim is idempotent" time="3.347">
+    </testcase>
+    <testcase classname="claims-settlement: cancel (claimer-side withdrawal) cancellation sends a notification to the need creator" name="claims-settlement: cancel (claimer-side withdrawal) cancellation sends a notification to the need creator" time="8.127">
+    </testcase>
+    <testcase classname="claims-settlement: decline (creator-side) need creator can decline an open claim on their need, status becomes DECLINED" name="claims-settlement: decline (creator-side) need creator can decline an open claim on their need, status becomes DECLINED" time="4.65">
+    </testcase>
+    <testcase classname="claims-settlement: decline (creator-side) claimer cannot decline their own claim" name="claims-settlement: decline (creator-side) claimer cannot decline their own claim" time="2.203">
+    </testcase>
+    <testcase classname="claims-settlement: decline (creator-side) declining an already-declined claim is idempotent" name="claims-settlement: decline (creator-side) declining an already-declined claim is idempotent" time="5.032">
+    </testcase>
+    <testcase classname="claims-settlement: decline (creator-side) decline sends a notification to the claimer" name="claims-settlement: decline (creator-side) decline sends a notification to the claimer" time="4.891">
+    </testcase>
+  </testsuite>
+  <testsuite name="need claim contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:28" time="5.755" tests="1">
+    <testcase classname="need claim contract exposes the claim mutation payload and notification shape through GraphQL" name="need claim contract exposes the claim mutation payload and notification shape through GraphQL" time="5.445">
+    </testcase>
+  </testsuite>
+  <testsuite name="claim settlement contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:32" time="2.405" tests="1">
+    <testcase classname="claim settlement contract exposes the creator-only settlement mutation and resulting settlement state" name="claim settlement contract exposes the creator-only settlement mutation and resulting settlement state" time="2.198">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign need triage integration" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:25" time="8.91" tests="1">
+    <testcase classname="campaign need triage integration allows campaign creator to accept or reject pending joined needs and blocks unauthorized transitions" name="campaign need triage integration allows campaign creator to accept or reject pending joined needs and blocks unauthorized transitions" time="8.349">
+    </testcase>
+  </testsuite>
+  <testsuite name="worker bootstrap" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:33" time="2.266" tests="1">
+    <testcase classname="worker bootstrap expires stale needs, closes linked open claims, and emits claimer notifications" name="worker bootstrap expires stale needs, closes linked open claims, and emits claimer notifications" time="1.893">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign create authentication" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:35" time="0.749" tests="1">
+    <testcase classname="campaign create authentication returns sanitized UNAUTHENTICATED error for anonymous createCampaign mutation" name="campaign create authentication returns sanitized UNAUTHENTICATED error for anonymous createCampaign mutation" time="0.275">
+    </testcase>
+  </testsuite>
+  <testsuite name="delayed token rewards" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:32" time="4.43" tests="1">
+    <testcase classname="delayed token rewards rewards eligible 24h-old resources and claims only once" name="delayed token rewards rewards eligible 24h-old resources and claims only once" time="4.043">
+    </testcase>
+  </testsuite>
+  <testsuite name="need search contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:34" time="2.363" tests="1">
+    <testcase classname="need search contract exposes the public search shape with ranking metadata and filter inputs" name="need search contract exposes the public search shape with ranking metadata and filter inputs" time="1.803">
+    </testcase>
+  </testsuite>
+  <testsuite name="need create authentication" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:36" time="0.711" tests="1">
+    <testcase classname="need create authentication returns sanitized UNAUTHENTICATED error for anonymous createNeed mutation" name="need create authentication returns sanitized UNAUTHENTICATED error for anonymous createNeed mutation" time="0.462">
+    </testcase>
+  </testsuite>
+  <testsuite name="auth GraphQL contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:34" time="2.531" tests="1">
+    <testcase classname="auth GraphQL contract exposes the expected authLogin and authSession response shape" name="auth GraphQL contract exposes the expected authLogin and authSession response shape" time="2.025">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign approval GraphQL contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:36" time="0.263" tests="1">
+    <testcase classname="campaign approval GraphQL contract keeps approveCampaign alias documented for PostGraphile" name="campaign approval GraphQL contract keeps approveCampaign alias documented for PostGraphile" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign GraphQL contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:36" time="0.286" tests="1">
+    <testcase classname="campaign GraphQL contract keeps createCampaign alias documented for PostGraphile" name="campaign GraphQL contract keeps createCampaign alias documented for PostGraphile" time="0.008">
+    </testcase>
+  </testsuite>
+  <testsuite name="need creation GraphQL contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:36" time="0.366" tests="1">
+    <testcase classname="need creation GraphQL contract keeps createNeed alias documented for PostGraphile" name="need creation GraphQL contract keeps createNeed alias documented for PostGraphile" time="0.042">
+    </testcase>
+  </testsuite>
+  <testsuite name="GraphQL authentication fallback" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:36" time="0.639" tests="1">
+    <testcase classname="GraphQL authentication fallback returns a sanitized UNAUTHENTICATED error for anonymous protected mutations" name="GraphQL authentication fallback returns a sanitized UNAUTHENTICATED error for anonymous protected mutations" time="0.126">
+    </testcase>
+  </testsuite>
+  <testsuite name="unified operational logging coverage" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:34" time="3.142" tests="3">
+    <testcase classname="unified operational logging coverage supports component filtering and shared context correlation across components" name="unified operational logging coverage supports component filtering and shared context correlation across components" time="1.419">
+    </testcase>
+    <testcase classname="unified operational logging coverage keeps application sources on unified write paths without legacy duplicate writers" name="unified operational logging coverage keeps application sources on unified write paths without legacy duplicate writers" time="0.298">
+    </testcase>
+    <testcase classname="unified operational logging coverage deletes logs older than the configured retention window during scheduled cleanup" name="unified operational logging coverage deletes logs older than the configured retention window during scheduled cleanup" time="0.578">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign moderation GraphQL contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:37" time="0.576" tests="1">
+    <testcase classname="campaign moderation GraphQL contract keeps addCampaignModerationNote alias documented for PostGraphile" name="campaign moderation GraphQL contract keeps addCampaignModerationNote alias documented for PostGraphile" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign need triage GraphQL contract" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:37" time="0.551" tests="1">
+    <testcase classname="campaign need triage GraphQL contract keeps acceptCampaignNeed and rejectCampaignNeed aliases documented for PostGraphile" name="campaign need triage GraphQL contract keeps acceptCampaignNeed and rejectCampaignNeed aliases documented for PostGraphile" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign create SQL" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:37" time="0.434" tests="1">
+    <testcase classname="campaign create SQL enforces pending moderation and date validation in create_campaign" name="campaign create SQL enforces pending moderation and date validation in create_campaign" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="campaign airdrop coming-soon notifications" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:34" time="4.328" tests="1">
+    <testcase classname="campaign airdrop coming-soon notifications notifies linked accounts once when a campaign is 48 hours from airdrop time, whether links are approved or not" name="campaign airdrop coming-soon notifications notifies linked accounts once when a campaign is 48 hours from airdrop time, whether links are approved or not" time="3.601">
+    </testcase>
+  </testsuite>
+  <testsuite name="account deletion anonymization" errors="0" failures="0" skipped="0" timestamp="2026-05-20T20:11:25" time="14.133" tests="6">
+    <testcase classname="account deletion anonymization anonymizes account fields and revokes active sessions" name="account deletion anonymization anonymizes account fields and revokes active sessions" time="5.051">
+    </testcase>
+    <testcase classname="account deletion anonymization prevents deleted credentials from authenticating again" name="account deletion anonymization prevents deleted credentials from authenticating again" time="2.886">
+    </testcase>
+    <testcase classname="account deletion anonymization stores an anonymized deleted account projection" name="account deletion anonymization stores an anonymized deleted account projection" time="2.714">
+    </testcase>
+    <testcase classname="account deletion anonymization keeps historical need and campaign links consultable after deletion" name="account deletion anonymization keeps historical need and campaign links consultable after deletion" time="1.862">
+    </testcase>
+    <testcase classname="account deletion anonymization emits deletion operational control events used by post-delete controls" name="account deletion anonymization emits deletion operational control events used by post-delete controls" time="0.884">
+    </testcase>
+    <testcase classname="account deletion anonymization keeps deletion control events within configured retention cleanup windows" name="account deletion anonymization keeps deletion control events within configured retention cleanup windows" time="0.034">
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,4 +1,13 @@
+-- Add proximity filtering controls to need discovery.
+--
+-- This keeps the Contribute page in sync with backend filtering by accepting
+-- favor_local_resources and max_distance_km on search_needs.
+
+set search_path = app_public, app_private, public;
+
 drop function if exists app_public.search_needs(
+  numeric,
+  numeric,
   numeric,
   numeric,
   text,
@@ -8,193 +17,6 @@ drop function if exists app_public.search_needs(
   app_public.tri_state_filter,
   integer
 );
-
-drop function if exists app_private.resolve_need_search_coordinates(
-  numeric,
-  numeric
-);
-
-create or replace function app_private.resolve_need_search_coordinates(
-  p_latitude numeric,
-  p_longitude numeric,
-  p_browser_latitude numeric default null,
-  p_browser_longitude numeric default null
-)
-returns table (
-  latitude numeric,
-  longitude numeric,
-  source text
-)
-language plpgsql
-stable
-as $$
-declare
-  v_account_id uuid;
-begin
-  if p_latitude is not null and p_longitude is not null then
-    return query select p_latitude, p_longitude, 'explicit'::text;
-    return;
-  end if;
-
-  v_account_id := app_private.current_account_id();
-
-  if v_account_id is not null then
-    return query
-    select a.latitude, a.longitude, 'account'::text
-    from app_public.account a
-    where a.id = v_account_id
-      and a.latitude is not null
-      and a.longitude is not null
-    limit 1;
-
-    if found then
-      return;
-    end if;
-  end if;
-
-  if p_browser_latitude is not null and p_browser_longitude is not null then
-    return query select p_browser_latitude, p_browser_longitude, 'browser'::text;
-    return;
-  end if;
-
-  return query select 50.6072::numeric, 3.3889::numeric, 'fallback'::text;
-end;
-$$;
-
-create or replace function app_private.matches_tri_state_filter(
-  p_state app_public.tri_state_filter,
-  p_value boolean
-)
-returns boolean
-language sql
-stable
-as $$
-  select case
-    when p_state = 'set' then p_value is true
-    when p_state = 'unset' then p_value is false
-    else true
-  end
-$$;
-
-create or replace function app_private.immutable_unaccent(p_text text)
-returns text
-language sql
-immutable
-parallel safe
-as $$
-  select public.unaccent('public.unaccent', coalesce(p_text, ''))
-$$;
-
-create or replace function app_private.account_search_document(
-  p_display_name text,
-  p_external_subject text
-)
-returns text
-language sql
-immutable
-parallel safe
-as $$
-  select lower(
-    app_private.immutable_unaccent(
-      trim(concat_ws(' ', coalesce(p_display_name, ''), coalesce(p_external_subject, '')))
-    )
-  )
-$$;
-
-create or replace function app_private.need_search_document(
-  p_title text,
-  p_description text,
-  p_required_tooling_text text,
-  p_required_competence_text text
-)
-returns text
-language sql
-immutable
-parallel safe
-as $$
-  select lower(
-    app_private.immutable_unaccent(
-      trim(
-        concat_ws(
-          ' ',
-          coalesce(p_title, ''),
-          coalesce(p_description, ''),
-          coalesce(p_required_tooling_text, ''),
-          coalesce(p_required_competence_text, '')
-        )
-      )
-    )
-  )
-$$;
-
-create or replace function app_private.calculate_need_closeness_score(
-  p_need_latitude numeric,
-  p_need_longitude numeric,
-  p_query_latitude numeric,
-  p_query_longitude numeric
-)
-returns numeric
-language sql
-immutable
-as $$
-  select greatest(
-    0::numeric,
-    100::numeric - least(
-      100::numeric,
-      (
-        6371::numeric * acos(
-          least(
-            1::double precision,
-            greatest(
-              -1::double precision,
-              cos(radians(p_query_latitude::double precision))
-              * cos(radians(p_need_latitude::double precision))
-              * cos(radians((p_need_longitude - p_query_longitude)::double precision))
-              + sin(radians(p_query_latitude::double precision))
-              * sin(radians(p_need_latitude::double precision))
-            )
-          )
-        )
-      )::numeric
-    )
-  )
-$$;
-
-create or replace function app_private.calculate_need_ease_of_setup_score(
-  p_tooling_required boolean,
-  p_competence_required boolean,
-  p_multiple_people_required boolean
-)
-returns numeric
-language sql
-immutable
-as $$
-  select greatest(
-    0::numeric,
-    100::numeric
-      - case when p_tooling_required then 25 else 0 end
-      - case when p_competence_required then 25 else 0 end
-      - case when p_multiple_people_required then 25 else 0 end
-  )
-$$;
-
-create or replace function app_private.calculate_need_expiration_score(p_expires_at timestamptz)
-returns numeric
-language sql
-stable
-as $$
-  select case
-    when p_expires_at is null then 50::numeric
-    when p_expires_at <= now() then 0::numeric
-    else greatest(
-      0::numeric,
-      100::numeric - least(
-        100::numeric,
-        ((extract(epoch from (p_expires_at - now())) / 3600.0) / 168.0 * 100.0)::numeric
-      )
-    )
-  end
-$$;
 
 create or replace function app_public.search_needs(
   latitude numeric default null,
@@ -243,7 +65,7 @@ as $$
   ),
   filtered_needs as (
     select
-      n.*, 
+      n.*,
       coalesce(a.display_name, a.external_subject, 'Unknown account') as creator_display_name,
       r.query_latitude,
       r.query_longitude,

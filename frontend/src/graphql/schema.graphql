@@ -10145,6 +10145,7 @@ type Query implements Node {
     browserLatitude: BigFloat
     browserLongitude: BigFloat
     competenceRequired: TriStateFilter
+    favorLocalResources: Boolean
     """Only read the first `n` values of the set."""
     first: Int
     """Only read the last `n` values of the set."""
@@ -10152,6 +10153,7 @@ type Query implements Node {
     latitude: BigFloat
     limitCount: Int
     longitude: BigFloat
+    maxDistanceKm: BigFloat
     multiplePeopleRequired: TriStateFilter
     objectRequired: TriStateFilter
     """

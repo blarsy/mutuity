@@ -9,19 +9,28 @@ import {
   Card,
   CardContent,
   Chip,
+  Checkbox,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Slider,
   Stack,
   TextField,
   Typography
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { APIProvider, useApiIsLoaded } from "@vis.gl/react-google-maps";
 
 import { useAuth } from "../auth/AuthProvider";
+import { LocationPicker, type LocationValue } from "../../components/LocationPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
 import { NeedClaimDialog } from "./NeedClaimDialog";
-import { getBrowserLocation } from "./locationFallback";
+import { TOURNAI_CITY_CENTRE, TOURNAI_CENTRE_ADDRESS, getBrowserLocation } from "./locationFallback";
 import { VIEWER_CLAIM_OVERVIEW_QUERY } from "./needClaims.queries";
 import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { NeedCard } from "../ui/NeedCard";
@@ -90,7 +99,9 @@ type ViewerClaimOverviewData = {
   };
 };
 
-type ToggleFilterKey = Exclude<keyof NeedSearchFilters, "searchText">;
+type ToggleFilterKey = Exclude<keyof NeedSearchFilters, "searchText" | "favorLocalResources" | "maxDistanceKm">;
+
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
 function formatDate(value: string | null, fallback: string) {
   if (!value) {
@@ -140,9 +151,16 @@ export default function PublicNeedsPage() {
   const { t } = useTranslation("needs");
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
-  const [locationStatus, setLocationStatus] = useState(
-    "browse.locationFallbackStatus"
-  );
+  const [explicitLocation, setExplicitLocation] = useState<NeedSearchLocation | undefined>(undefined);
+  const [explicitLocationAddress, setExplicitLocationAddress] = useState("");
+  const [resolvedLocationLabel, setResolvedLocationLabel] = useState("");
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [locationDraft, setLocationDraft] = useState<LocationValue>({
+    address: "",
+    latitude: TOURNAI_CITY_CENTRE.latitude,
+    longitude: TOURNAI_CITY_CENTRE.longitude
+  });
+  const isGoogleMapsApiLoaded = useApiIsLoaded();
 
   useEffect(() => {
     let active = true;
@@ -153,7 +171,6 @@ export default function PublicNeedsPage() {
       }
 
       setBrowserLocation(location);
-      setLocationStatus("browse.locationBrowserStatus");
     });
 
     return () => {
@@ -161,9 +178,53 @@ export default function PublicNeedsPage() {
     };
   }, []);
 
+  const activeLocation = explicitLocation ?? browserLocation ?? TOURNAI_CITY_CENTRE;
+
+  useEffect(() => {
+    if (explicitLocationAddress.trim().length > 0) {
+      setResolvedLocationLabel(explicitLocationAddress);
+      return;
+    }
+
+    const lat = activeLocation.latitude;
+    const lng = activeLocation.longitude;
+    const coordLabel = `Lat: ${lat.toFixed(5)}; Lng ${lng.toFixed(5)}`;
+
+    const isTournaiCenter = Math.abs(lat - TOURNAI_CITY_CENTRE.latitude) < 0.0001
+      && Math.abs(lng - TOURNAI_CITY_CENTRE.longitude) < 0.0001;
+
+    if (isTournaiCenter) {
+      setResolvedLocationLabel(TOURNAI_CENTRE_ADDRESS);
+      return;
+    }
+
+    if (!isGoogleMapsApiLoaded || typeof window === "undefined" || !window.google?.maps?.Geocoder) {
+      setResolvedLocationLabel(coordLabel);
+      return;
+    }
+
+    let cancelled = false;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, statusValue) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (statusValue === window.google.maps.GeocoderStatus.OK && results?.length && results[0].formatted_address) {
+        setResolvedLocationLabel(results[0].formatted_address);
+      } else {
+        setResolvedLocationLabel(coordLabel);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [explicitLocationAddress, activeLocation.latitude, activeLocation.longitude, isGoogleMapsApiLoaded]);
+
   const variables = useMemo<NeedSearchQueryVariables>(
-    () => buildNeedSearchVariables({ filters, location: browserLocation }),
-    [browserLocation, filters]
+    () => buildNeedSearchVariables({ filters, location: activeLocation }),
+    [activeLocation, filters]
   );
 
   const { data, loading, error } = useQuery<PublicNeedsQueryData, NeedSearchQueryVariables>(
@@ -209,11 +270,21 @@ export default function PublicNeedsPage() {
     }));
   };
 
+  const openLocationDialog = () => {
+    setLocationDraft({
+      address: explicitLocationAddress,
+      latitude: explicitLocation?.latitude ?? browserLocation?.latitude ?? TOURNAI_CITY_CENTRE.latitude,
+      longitude: explicitLocation?.longitude ?? browserLocation?.longitude ?? TOURNAI_CITY_CENTRE.longitude
+    });
+    setLocationDialogOpen(true);
+  };
+
   const handleClaimed = (_claimId: string) => {
     void refetchClaimOverview();
   };
 
   return (
+    <APIProvider apiKey={GOOGLE_API_KEY}>
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Stack
@@ -242,10 +313,6 @@ export default function PublicNeedsPage() {
             {t("authGuard.checking", { ns: "common" })}
           </Alert>
         )}
-
-        <Alert severity="info" sx={{ mb: 3 }}>
-          {t(locationStatus)}
-        </Alert>
 
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
@@ -277,9 +344,86 @@ export default function PublicNeedsPage() {
                   {t("filters.multiplePeopleRequired")}: {t(`triState.${filters.multiplePeopleRequired}`)}
                 </Button>
               </Stack>
+
+              <Box>
+                <Typography gutterBottom variant="subtitle2">
+                  {t("browse.proximityLabel")}
+                </Typography>
+                <Stack spacing={1}>
+                  <Stack direction={{ xs: "column", sm: "row" }} alignItems="flex-start" justifyContent="space-between" spacing={1}>
+                    <Typography color="text.secondary" sx={{ flex: 1 }} variant="body2">
+                      {t("browse.referenceLocationLabel")}: {resolvedLocationLabel}
+                    </Typography>
+                    <Button onClick={openLocationDialog} size="small" sx={{ flexShrink: 0 }} variant="outlined">
+                      {t("browse.setReferenceLocation")}
+                    </Button>
+                  </Stack>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.favorLocalResources}
+                        onChange={(_event, checked) => {
+                          setFilters(current => ({
+                            ...current,
+                            favorLocalResources: checked
+                          }));
+                        }}
+                      />
+                    }
+                    label={t("browse.favorLocalResources")}
+                  />
+                  <Box sx={{ px: 1 }}>
+                    <Typography color="text.secondary" variant="body2">
+                      {t("browse.maxDistanceValue", { value: filters.maxDistanceKm })}
+                    </Typography>
+                    <Slider
+                      min={1}
+                      max={50}
+                      step={1}
+                      value={filters.maxDistanceKm}
+                      valueLabelDisplay="auto"
+                      onChange={(_event, value) => {
+                        setFilters(current => ({
+                          ...current,
+                          maxDistanceKm: Array.isArray(value) ? value[0] : value
+                        }));
+                      }}
+                    />
+                  </Box>
+                </Stack>
+              </Box>
             </Stack>
           </CardContent>
         </Card>
+
+        <Dialog fullWidth maxWidth="sm" onClose={() => setLocationDialogOpen(false)} open={locationDialogOpen}>
+          <DialogTitle>{t("browse.referenceLocationDialogTitle")}</DialogTitle>
+          <DialogContent>
+            <LocationPicker
+              addressLabel={t("browse.referenceLocationInputLabel")}
+              onChange={setLocationDraft}
+              required
+              value={locationDraft}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setLocationDialogOpen(false)}>{t("actions.cancel", { ns: "common" })}</Button>
+            <Button
+              onClick={() => {
+                setExplicitLocation({
+                  latitude: locationDraft.latitude,
+                  longitude: locationDraft.longitude,
+                  source: "explicit"
+                });
+                setExplicitLocationAddress(locationDraft.address);
+                setLocationDialogOpen(false);
+              }}
+              variant="contained"
+            >
+              {t("actions.save", { ns: "common" })}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {loading ? <Alert severity="info">{t("browse.loading")}</Alert> : null}
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
@@ -378,5 +522,6 @@ export default function PublicNeedsPage() {
         </Box>
       </Box>
     </Container>
+    </APIProvider>
   );
 }

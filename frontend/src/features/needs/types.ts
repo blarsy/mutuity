@@ -8,6 +8,8 @@ export type NeedSearchLocation = {
 
 export type NeedSearchFilters = {
   searchText: string;
+  favorLocalResources: boolean;
+  maxDistanceKm: number;
   multiplePeopleRequired: TriStateFilter;
   toolingRequired: TriStateFilter;
   competenceRequired: TriStateFilter;
@@ -78,6 +80,8 @@ export type ClaimConversationThread = {
 
 export const DEFAULT_NEED_SEARCH_FILTERS: NeedSearchFilters = {
   searchText: "",
+  favorLocalResources: true,
+  maxDistanceKm: 50,
   multiplePeopleRequired: "neutral",
   toolingRequired: "neutral",
   competenceRequired: "neutral",

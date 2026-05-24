@@ -175,6 +175,8 @@ export const PUBLIC_NEEDS_QUERY = gql`
     $browserLatitude: BigFloat
     $browserLongitude: BigFloat
     $searchText: String
+    $favorLocalResources: Boolean
+    $maxDistanceKm: BigFloat
     $multiplePeopleRequired: TriStateFilter
     $toolingRequired: TriStateFilter
     $competenceRequired: TriStateFilter
@@ -187,6 +189,8 @@ export const PUBLIC_NEEDS_QUERY = gql`
       browserLatitude: $browserLatitude
       browserLongitude: $browserLongitude
       searchText: $searchText
+      favorLocalResources: $favorLocalResources
+      maxDistanceKm: $maxDistanceKm
       multiplePeopleRequired: $multiplePeopleRequired
       toolingRequired: $toolingRequired
       competenceRequired: $competenceRequired

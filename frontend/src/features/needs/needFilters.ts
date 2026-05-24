@@ -8,6 +8,8 @@ export type NeedSearchQueryVariables = {
   browserLatitude: number | null;
   browserLongitude: number | null;
   searchText?: string;
+  favorLocalResources: boolean;
+  maxDistanceKm: number;
   multiplePeopleRequired: GraphQLTriStateFilter;
   toolingRequired: GraphQLTriStateFilter;
   competenceRequired: GraphQLTriStateFilter;
@@ -56,6 +58,8 @@ export function buildNeedSearchVariables(input: {
     browserLatitude: null,
     browserLongitude: null,
     searchText: trimmedSearchText.length > 0 ? trimmedSearchText : undefined,
+    favorLocalResources: filters.favorLocalResources,
+    maxDistanceKm: filters.maxDistanceKm,
     multiplePeopleRequired: GRAPHQL_TRI_STATE[filters.multiplePeopleRequired],
     toolingRequired: GRAPHQL_TRI_STATE[filters.toolingRequired],
     competenceRequired: GRAPHQL_TRI_STATE[filters.competenceRequired],
