@@ -15,7 +15,31 @@
     "title": "Public campaigns",
     "subtitle": "Browse campaigns currently active on the platform.",
     "loading": "Loading campaigns…",
-    "empty": "No active approved campaigns at the moment."
+    "empty": "No active approved campaigns at the moment.",
+    "resourceJoin": {
+      "title": "Join your resources to this campaign",
+      "subtitle": "Select one or more active resources and send join requests to the campaign creator.",
+      "loading": "Loading your active resources…",
+      "loadingFailed": "Unable to load your resources right now.",
+      "empty": "You have no active resources available to join.",
+      "signInRequired": "Sign in to request joining your resources to this campaign.",
+      "signInAction": "Sign in",
+      "selectResource": "Select",
+      "selectedCount": "Selected resources: {{count}}",
+      "joinSelected": "Join resources to campaign",
+      "joiningSelected": "Sending requests…",
+      "joinSingle": "Join to campaign",
+      "joiningSingle": "Sending…",
+      "joinSuccess": "Join request sent for {{count}} resource(s).",
+      "joinFailed": "Unable to send join request. Please try again.",
+      "tokens": "Suggested tokens: {{count}}",
+      "status": {
+        "joined": "Joined",
+        "waitingApproval": "Waiting approval",
+        "rejected": "Rejected",
+        "notRequested": "Not requested"
+      }
+    }
   },
   "pending": {
     "title": "Pending campaigns",

@@ -15,7 +15,31 @@
     "title": "Campagnes publiques",
     "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
     "loading": "Chargement des campagnes…",
-    "empty": "Aucune campagne approuvée active pour le moment."
+    "empty": "Aucune campagne approuvée active pour le moment.",
+    "resourceJoin": {
+      "title": "Joindre vos ressources a cette campagne",
+      "subtitle": "Selectionnez une ou plusieurs ressources actives et envoyez des demandes de rattachement au createur de la campagne.",
+      "loading": "Chargement de vos ressources actives…",
+      "loadingFailed": "Impossible de charger vos ressources pour le moment.",
+      "empty": "Vous n'avez aucune ressource active a rattacher.",
+      "signInRequired": "Connectez-vous pour demander le rattachement de vos ressources a cette campagne.",
+      "signInAction": "Se connecter",
+      "selectResource": "Selectionner",
+      "selectedCount": "Ressources selectionnees : {{count}}",
+      "joinSelected": "Joindre les ressources a la campagne",
+      "joiningSelected": "Envoi des demandes…",
+      "joinSingle": "Joindre a la campagne",
+      "joiningSingle": "Envoi…",
+      "joinSuccess": "Demande envoyee pour {{count}} ressource(s).",
+      "joinFailed": "Impossible d'envoyer la demande. Veuillez reessayer.",
+      "tokens": "Tokens suggeres : {{count}}",
+      "status": {
+        "joined": "Rattachee",
+        "waitingApproval": "En attente d'approbation",
+        "rejected": "Refusee",
+        "notRequested": "Non demandee"
+      }
+    }
   },
   "pending": {
     "title": "Campagnes en attente",
