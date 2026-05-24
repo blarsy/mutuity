@@ -105,6 +105,20 @@ export default function PublicCampaignDetailPage({
                         ?? campaign.accountByCreatorAccountId?.externalSubject
                         ?? campaign.creatorAccountId}
                     </Typography>
+                    {campaign.imageUrl ? (
+                      <Box
+                        alt={campaign.title}
+                        component="img"
+                        src={campaign.imageUrl}
+                        sx={{
+                          width: "100%",
+                          aspectRatio: "1 / 1",
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          border: theme => `1px solid ${theme.palette.divider}`
+                        }}
+                      />
+                    ) : null}
                     <Typography variant="body1">{campaign.description}</Typography>
                     <Typography color="text.secondary" variant="caption">{t("labels.theme")}</Typography>
                     <RichTextContent html={campaign.theme} />
