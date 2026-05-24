@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
+import PublicIcon from "@mui/icons-material/Public";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -13,8 +14,10 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
   Link,
   Stack,
+  Tooltip,
   Typography
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -70,6 +73,10 @@ function isCampaignEnded(now: Date, endAtIso: string) {
   return now > new Date(endAtIso);
 }
 
+function canOpenPublicCampaign(moderationStatus: string) {
+  return moderationStatus !== "PENDING" && moderationStatus !== "AWAITING_ADAPTATION";
+}
+
 type CampaignCardsProps = {
   campaigns: CampaignNode[];
   grayEnded: boolean;
@@ -93,17 +100,37 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
               <CardContent>
                 <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                   <Box>
-                    <Typography variant="h6">{campaign.title}</Typography>
+                    <Stack alignItems="center" direction="row" sx={{ gap: "1rem" }}>
+                      <Typography variant="h6">{campaign.title}</Typography>
+                      {canOpenPublicCampaign(campaign.moderationStatus) ? (
+                        <Tooltip title={t("page.openPublicCampaign")}>
+                          <IconButton
+                            aria-label={t("page.openPublicCampaign")}
+                            component={NextLink}
+                            href={`/campaigns/${campaign.id}`}
+                            size="large"
+                            sx={{
+                              border: theme => `1px solid ${theme.palette.divider}`,
+                              borderRadius: "9999px"
+                            }}
+                          >
+                            <PublicIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      ) : null}
+                    </Stack>
                     <Typography color="text.secondary" variant="caption">{t("labels.theme")}</Typography>
                     <RichTextContent html={campaign.theme} />
                   </Box>
-                  <Stack direction="row" spacing={1}>
-                    <Chip
-                      color={isCampaignActive(now, campaign.startAt, campaign.endAt) ? "success" : "default"}
-                      label={isCampaignActive(now, campaign.startAt, campaign.endAt) ? t("statuses.active") : ended ? t("statuses.ended") : t("statuses.upcoming")}
-                      size="small"
-                    />
-                    <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
+                  <Stack alignItems="center" direction="row" spacing={1}>
+                    <Stack direction="row" spacing={1}>
+                      <Chip
+                        color={isCampaignActive(now, campaign.startAt, campaign.endAt) ? "success" : "default"}
+                        label={isCampaignActive(now, campaign.startAt, campaign.endAt) ? t("statuses.active") : ended ? t("statuses.ended") : t("statuses.upcoming")}
+                        size="small"
+                      />
+                      <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
+                    </Stack>
                   </Stack>
                 </Stack>
 

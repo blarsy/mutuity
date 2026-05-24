@@ -3,6 +3,7 @@
     "title": "Campaigns",
     "backHome": "Back home",
     "launchCampaign": "Launch campaign",
+    "openPublicCampaign": "Open public campaign page",
     "seeInspiration": "See others for inspiration",
     "signInHint": "Sign in to see your campaigns and launch new ones.",
     "loadingMine": "Loading your campaigns…",
@@ -13,6 +14,7 @@
   },
   "public": {
     "title": "Public campaigns",
+    "ownCampaignHint": "You are the creator of this campaign.",
     "subtitle": "Browse campaigns currently active on the platform.",
     "loading": "Loading campaigns…",
     "empty": "No active approved campaigns at the moment.",
@@ -26,6 +28,7 @@
       "signInAction": "Sign in",
       "selectResource": "Select",
       "selectedCount": "Selected resources: {{count}}",
+      "noneSelected": "No resources selected yet.",
       "joinSelected": "Join resources to campaign",
       "joiningSelected": "Sending requests…",
       "joinSingle": "Join to campaign",

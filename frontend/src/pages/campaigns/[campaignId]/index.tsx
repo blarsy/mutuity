@@ -366,6 +366,23 @@ export default function PublicCampaignDetailPage({
         <Stack spacing={2.5}>
           {campaign ? (
             <>
+              {session.authenticated && session.account?.id === campaign.creatorAccountId ? (
+                <Alert
+                  action={
+                    <Button
+                      component={NextLink}
+                      href={`/campaigns/${campaignId}/moderation`}
+                      size="small"
+                      variant="outlined"
+                    >
+                      {t("moderationNotes.openModeration")}
+                    </Button>
+                  }
+                  severity="info"
+                >
+                  {t("public.ownCampaignHint")}
+                </Alert>
+              ) : null}
               <CampaignAvailabilityAlert state={availabilityState} />
               <Card variant="outlined">
                 <CardContent>
@@ -406,9 +423,7 @@ export default function PublicCampaignDetailPage({
                 </CardContent>
               </Card>
 
-              <Card variant="outlined">
-                <CardContent>
-                  <Stack spacing={2}>
+              <Stack spacing={2}>
                     <Typography component="h2" variant="h5">{t("public.resourceJoin.title")}</Typography>
                     <Typography color="text.secondary" variant="body2">{t("public.resourceJoin.subtitle")}</Typography>
 
@@ -440,22 +455,22 @@ export default function PublicCampaignDetailPage({
                       <Alert severity="info">{t("public.resourceJoin.empty")}</Alert>
                     ) : (
                       <>
-                        {selectedJoinableIds.length > 0 ? (
-                          <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1.5}>
-                            <Typography color="text.secondary" variant="body2">
-                              {t("public.resourceJoin.selectedCount", { count: selectedJoinableIds.length })}
-                            </Typography>
-                            <Button
-                              disabled={bulkRunning}
-                              onClick={() => void handleJoinSelected()}
-                              variant="contained"
-                            >
-                              {bulkRunning
-                                ? t("public.resourceJoin.joiningSelected")
-                                : t("public.resourceJoin.joinSelected")}
-                            </Button>
-                          </Stack>
-                        ) : null}
+                        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1.5}>
+                          <Typography color="text.secondary" variant="body2">
+                            {selectedJoinableIds.length > 0
+                              ? t("public.resourceJoin.selectedCount", { count: selectedJoinableIds.length })
+                              : t("public.resourceJoin.noneSelected")}
+                          </Typography>
+                          <Button
+                            disabled={selectedJoinableIds.length === 0 || bulkRunning}
+                            onClick={() => void handleJoinSelected()}
+                            variant="contained"
+                          >
+                            {bulkRunning
+                              ? t("public.resourceJoin.joiningSelected")
+                              : t("public.resourceJoin.joinSelected")}
+                          </Button>
+                        </Stack>
 
                         <Box sx={listingCardGridSx}>
                           {activeResources.map(resource => {
@@ -519,9 +534,7 @@ export default function PublicCampaignDetailPage({
                         </Box>
                       </>
                     )}
-                  </Stack>
-                </CardContent>
-              </Card>
+              </Stack>
             </>
           ) : <Alert severity="warning">{t("public.empty")}</Alert>}
         </Stack>

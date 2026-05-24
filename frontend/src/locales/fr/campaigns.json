@@ -3,6 +3,7 @@
     "title": "Campagnes",
     "backHome": "Retour à l'accueil",
     "launchCampaign": "Lancer une campagne",
+    "openPublicCampaign": "Ouvrir la page publique de la campagne",
     "seeInspiration": "Voir d'autres campagnes pour s'inspirer",
     "signInHint": "Connectez-vous pour voir vos campagnes et en lancer de nouvelles.",
     "loadingMine": "Chargement de vos campagnes…",
@@ -13,6 +14,7 @@
   },
   "public": {
     "title": "Campagnes publiques",
+    "ownCampaignHint": "Vous êtes le créateur de cette campagne.",
     "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
     "loading": "Chargement des campagnes…",
     "empty": "Aucune campagne approuvée active pour le moment.",
@@ -26,6 +28,7 @@
       "signInAction": "Se connecter",
       "selectResource": "Selectionner",
       "selectedCount": "Ressources selectionnees : {{count}}",
+      "noneSelected": "Aucune ressource selectionnee pour l'instant.",
       "joinSelected": "Joindre les ressources a la campagne",
       "joiningSelected": "Envoi des demandes…",
       "joinSingle": "Joindre a la campagne",
