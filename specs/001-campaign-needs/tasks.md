@@ -128,7 +128,26 @@
 - [x] T051 [US5] Build campaign creator triage UI in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
 - [x] T052 [US5] Add optimistic UI updates and rollback handling for triage actions in `frontend/src/features/campaigns/CampaignNeedTriagePage.tsx`
 
-## Phase 8: Polish & Cross-Cutting
+## Phase 8: User Story 6 - Campaign Creator Accepts Or Rejects Joined Resources (Priority: P2)
+
+**Goal**: Campaign creator can triage linked resources (accept/reject) with authorization safeguards.
+
+**Independent Test**: Creator triages linked resources; non-creator denied; transitions audited.
+
+### Tests (US6)
+
+- [ ] T069 [P] [US6] Add integration tests for resource-triage transitions and permissions in `backend/tests/integration/campaign-resource-triage.spec.ts`
+- [ ] T070 [P] [US6] Add contract tests for PostGraphile-exposed `acceptCampaignResource` and `rejectCampaignResource` in `backend/tests/contract/campaign-resource-triage.contract.spec.ts`
+
+### Implementation (US6)
+
+- [ ] T071 [US6] Implement SQL functions `accept_campaign_resource` and `reject_campaign_resource` in `database/functions/campaign_resource/`
+- [ ] T072 [US6] Expose resource-triage functions through PostGraphile in `backend/src/postgraphile/server.ts`
+- [ ] T073 [US6] Add campaign creator joined-resources GraphQL query in `frontend/src/features/campaigns/campaignResourceTriage.queries.ts`
+- [ ] T074 [US6] Build campaign creator resource-triage UI in `frontend/src/features/campaigns/CampaignResourceTriagePage.tsx`
+- [ ] T075 [US6] Add optimistic UI updates and rollback handling for resource-triage actions in `frontend/src/features/campaigns/CampaignResourceTriagePage.tsx`
+
+## Phase 9: Polish & Cross-Cutting
 
 - [x] T053 [P] Add Storybook stories for new reusable campaign and need components in `frontend/src/components/**/*.stories.tsx`
 - [x] T054 [P] Finalize i18n coverage for all new user-facing strings in `frontend/src/i18n/messages/fr.json` and `frontend/src/i18n/messages/en.json`
@@ -138,7 +157,7 @@
 - [x] T058 Run and document quickstart validation in `specs/001-campaign-needs/quickstart.md`
 - [x] T059 Update feature documentation links and architecture notes in `specs/001-campaign-needs/research.md` if implementation diverges
 
-## Phase 9: Moderation Workflow Refinement
+## Phase 10: Moderation Workflow Refinement
 
 - [ ] T062 Add backend and contract tests for `awaiting_adaptation` status transitions, creator campaign updates, moderation-event ordering, and approval terminal-state behavior in `backend/tests/integration/` and `backend/tests/contract/`
 - [ ] T063 Extend the campaign moderation data model and SQL functions for `awaiting_adaptation`, creator modification events, and creator-edit eligibility in `database/migrations/` and `database/functions/campaign/`
@@ -154,6 +173,7 @@
 - Foundational tasks (T008-T013) block all user stories.
 - US1-US4 are P1 and can be developed incrementally after foundations.
 - US5 depends on US4 relation model and campaign ownership checks.
+- US6 depends on resource-campaign relation model and campaign ownership checks.
 - Polish phase follows completion of targeted user stories.
 
 ## Parallel Execution Examples
@@ -162,11 +182,12 @@
 - T022 and T023 can run in parallel.
 - T037 and T038 can run in parallel.
 - T046 and T047 can run in parallel.
+- T069 and T070 can run in parallel.
 - T053 and T054 can run in parallel.
 
 ## Implementation Strategy
 
 1. Deliver MVP by completing US1, US2, US3, and US4 first.
 2. Validate full moderation and creation loops end-to-end.
-3. Add US5 triage workflow.
+3. Add US5 and US6 triage workflows.
 4. Complete polish and compliance checks before release.

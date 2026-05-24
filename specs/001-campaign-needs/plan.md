@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement the first vertical slice of Mutuity core workflows: campaign creation, creator-visible moderation timelines and adaptation, administrator approval, need creation with optional campaign association, optional Topes proposal bounded by intensity, and campaign-side triage of joined needs. The implementation uses a PostgreSQL-first stack with PostGraphile as the primary GraphQL API surface and Graphile Worker for recurring/background tasks.
+Implement the first vertical slice of Mutuity core workflows: campaign creation, creator-visible moderation timelines and adaptation, administrator approval, need creation with optional campaign association, optional Topes proposal bounded by intensity, campaign-side triage of joined needs, and campaign-side triage of joined resources. The implementation uses a PostgreSQL-first stack with PostGraphile as the primary GraphQL API surface and Graphile Worker for recurring/background tasks.
 
 ## Technical Context
 
@@ -17,7 +17,7 @@ Implement the first vertical slice of Mutuity core workflows: campaign creation,
 **Project Type**: Web application with separate frontend and backend  
 **Performance Goals**: Campaign and need create/update actions should complete within 2 seconds in normal conditions; public listings, moderation timelines, and admin moderation screens should return the first page within 1 second server-side at MVP scale; validation feedback should be shown immediately on the client before submission when possible  
 **Constraints**: API-first backend via PostGraphile; no mobile app implementation in this phase; all user-facing strings through i18n; RLS-aware authorization model; explicit moderation and visibility states including `awaiting adaptation`; recurring jobs implemented via Graphile Worker; authentication-aware error sanitization ensures technical details never leak to client (see SR-001, SR-002 in spec.md); creator edits from moderation must obey the same validation contract as campaign creation at edit time  
-**Scale/Scope**: Initial MVP for campaign authoring, moderation, creator adaptation, moderation notifications, need creation, and campaign need triage
+**Scale/Scope**: Initial MVP for campaign authoring, moderation, creator adaptation, moderation notifications, need creation, campaign need triage, and campaign resource triage
 
 ## Constitution Check
 
@@ -77,6 +77,7 @@ database/
 - `awaiting adaptation` is an explicit moderation status between `pending` and `approved`; administrator notes transition campaigns into this state.
 - The creator edit flow should reuse the campaign create form/schema where possible, but on submit it must re-evaluate the campaign against the current validation contract rather than trusting previously saved dates.
 - Approval is terminal for the moderation workflow: after approval, moderation history remains visible but no new timeline items are appended and editing stays disabled.
+- Campaign-owner triage safeguards should remain consistent across linked needs and linked resources: creator-only accept/reject transitions, explicit status model, and auditable state changes.
 - Moderation-related notifications should deep-link into preconfigured destination state rather than generic lists:
   - creator note/approval notifications -> campaign moderation page with the relevant campaign context opened
   - administrator creator-adaptation notifications -> admin campaigns page with creator-name query prefilled and `awaiting adaptation` status selected

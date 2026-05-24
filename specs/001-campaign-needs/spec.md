@@ -112,6 +112,20 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 2. **Given** a need joined to a campaign, **When** the campaign creator rejects it, **Then** need-campaign relation status becomes rejected.
 3. **Given** a need joined to a campaign, **When** a user who is not the campaign creator attempts accept or reject, **Then** the system denies the action.
 
+### User Story 7 - Campaign Creator Accepts Or Rejects Joined Resources (Priority: P2)
+
+As a campaign creator, I can accept or reject resources joined to my campaign so campaign scope is curated intentionally.
+
+**Why this priority**: Resource participation requires the same explicit campaign-owner triage safeguards as need participation.
+
+**Independent Test**: Campaign creator accepts one joined resource and rejects another; statuses update and are auditable.
+
+**Acceptance Scenarios**:
+
+1. **Given** a resource joined to a campaign, **When** the campaign creator accepts it, **Then** resource-campaign relation status becomes accepted.
+2. **Given** a resource joined to a campaign, **When** the campaign creator rejects it, **Then** resource-campaign relation status becomes rejected.
+3. **Given** a resource joined to a campaign, **When** a user who is not the campaign creator attempts accept or reject, **Then** the system denies the action.
+
 ### Edge Cases
 
 - Campaign submission where start datetime equals end datetime => the system should prevent campaign creation with a validation error
@@ -123,6 +137,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - Administrator filters campaigns to find moderation work => the campaigns admin page supports filtering by at least `pending`, `awaiting adaptation`, and `approved`, with `awaiting adaptation` available explicitly to surface campaigns waiting on creator changes.
 - Creator receives a moderation-related notification and opens it after the campaign is already approved => the system still routes to the campaign moderation page and opens the relevant campaign context, but the page remains read-only.
 - Campaign creator attempts to triage need that is not joined to that creator campaign => The triage UI only shows needs that are joined to the currently looked at campaign. Furthermore, the 'accept' and 'reject' operations on needs joined to campaigns check the caller is the campaign's creator, and fails if not.
+- Campaign creator attempts to triage resource that is not joined to that creator campaign => The triage UI only shows resources that are joined to the currently looked at campaign. Furthermore, the 'accept' and 'reject' operations on resources joined to campaigns check the caller is the campaign's creator, and fails if not.
 - Need linked to an unapproved campaign and visibility behavior on public interfaces => Only approved and active (current time is within its lifetime) campaigns are shown in any UI allowing to join a need. Furthermore, the joining operation checks that the campaign is approved, and that the current time is within its lifetime, and fails if not.
 
 ## Requirements *(mandatory)*
@@ -175,6 +190,10 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 - **FR-033**: System MUST deny accept or reject actions by non-creator accounts.
 - **FR-034**: Need-campaign relation status MUST support at least pending, accepted, and rejected states.
 - **FR-035**: System MUST keep an audit trail of campaign status transitions and joined-need triage actions.
+- **FR-036**: System MUST allow campaign creator to accept or reject resources joined to that creator campaign.
+- **FR-037**: System MUST deny resource accept or reject actions by non-creator accounts.
+- **FR-038**: Resource-campaign relation status MUST support at least pending, accepted, and rejected states.
+- **FR-039**: System MUST keep an audit trail of joined-resource triage actions.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -194,6 +213,7 @@ As a campaign creator, I can accept or reject needs joined to my campaign so cam
 
 Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "100 Topes represents a meaningful gesture of sharing." This preserves non-fiat social value framing.
 - **CampaignNeedTriage**: Relation state for a need joined to a campaign, with campaign id, need id, triage status, actor account id, and action datetime.
+- **CampaignResourceTriage**: Relation state for a resource joined to a campaign, with campaign id, resource id, triage status, actor account id, and action datetime.
 - **AccountRole**: Role classification for permissions, including Mutuity administrator and standard account.
 
 ## Success Criteria *(mandatory)*
@@ -205,7 +225,7 @@ Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "
 - **SC-003**: 100 percent of non-admin attempts to approve campaigns or send moderation notes are denied.
 - **SC-004**: 100 percent of approved campaigns become visible on the public interface within one minute of approval.
 - **SC-005**: 100 percent of non-owner attempts to accept or reject joined needs are denied.
-- **SC-006**: 100 percent of moderation notes, creator adaptation events, and need triage actions are present in history or audit verification during testing.
+- **SC-006**: 100 percent of moderation notes, creator adaptation events, need triage actions, and resource triage actions are present in history or audit verification during testing.
 - **SC-007**: 100 percent of unauthenticated mutation attempts return sanitized user-facing messages and MUST NOT expose internal schema/database details.
 - **SC-008**: 100 percent of backend-handled unexpected GraphQL errors are logged with full technical details server-side.
 - **SC-009**: 100 percent of moderation-related notifications route to the intended destination state: creator notifications open the campaign moderation context, and administrator adaptation notifications prefill the admin campaigns search and awaiting-adaptation filter.
