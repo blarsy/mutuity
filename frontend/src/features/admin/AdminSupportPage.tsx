@@ -292,6 +292,8 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
   const campaignDetailsErrorMessage = getUserFacingGraphQLErrorMessage(campaignDetailsError);
   const isAlreadyApproved = moderationStatus === "APPROVED" || approveSuccess;
   const campaign = campaignDetailsData?.campaignById ?? null;
+  const effectiveModerationStatus = (campaign?.moderationStatus ?? moderationStatus).toUpperCase();
+  const isModerationReadOnly = effectiveModerationStatus !== "PENDING" && effectiveModerationStatus !== "AWAITING_ADAPTATION";
   const campaignCreatorName = asString(row.creatorName) || "-";
 
   async function handleSendNote() {
@@ -438,41 +440,45 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            {noteErrorMessage ? <Alert severity="error">{noteErrorMessage}</Alert> : null}
-            {noteSent && !noteLoading ? (
-              <Alert severity="success">Moderation note sent.</Alert>
-            ) : null}
-            <TextField
-              fullWidth
-              label="Moderation note"
-              multiline
-              minRows={3}
-              placeholder="Enter note for campaign creator..."
-              value={noteBody}
-              onChange={event => { setNoteBody(event.target.value); }}
-            />
-            <Button
-              disabled={noteLoading || !noteBody.trim()}
-              variant="outlined"
-              onClick={() => { void handleSendNote(); }}
-            >
-              {noteLoading ? <CircularProgress size={14} /> : "Send note"}
-            </Button>
+            {!isModerationReadOnly ? (
+              <>
+                {noteErrorMessage ? <Alert severity="error">{noteErrorMessage}</Alert> : null}
+                {noteSent && !noteLoading ? (
+                  <Alert severity="success">Moderation note sent.</Alert>
+                ) : null}
+                <TextField
+                  fullWidth
+                  label="Moderation note"
+                  multiline
+                  minRows={3}
+                  placeholder="Enter note for campaign creator..."
+                  value={noteBody}
+                  onChange={event => { setNoteBody(event.target.value); }}
+                />
+                <Button
+                  disabled={noteLoading || !noteBody.trim()}
+                  variant="outlined"
+                  onClick={() => { void handleSendNote(); }}
+                >
+                  {noteLoading ? <CircularProgress size={14} /> : "Send note"}
+                </Button>
 
-            <Box sx={{ borderTop: 1, borderColor: "divider", pt: 2, mt: 1 }}>
-              {approveErrorMessage ? <Alert severity="error" sx={{ mb: 1 }}>{approveErrorMessage}</Alert> : null}
-              {approveSuccess && !approveLoading ? (
-                <Alert severity="success" sx={{ mb: 1 }}>Campaign approved.</Alert>
-              ) : null}
-              <Button
-                color="success"
-                disabled={approveLoading || isAlreadyApproved}
-                variant="contained"
-                onClick={() => { setConfirmApproveOpen(true); }}
-              >
-                {approveLoading ? <CircularProgress size={14} /> : isAlreadyApproved ? "Already approved" : "Approve campaign"}
-              </Button>
-            </Box>
+                <Box sx={{ borderTop: 1, borderColor: "divider", pt: 2, mt: 1 }}>
+                  {approveErrorMessage ? <Alert severity="error" sx={{ mb: 1 }}>{approveErrorMessage}</Alert> : null}
+                  {approveSuccess && !approveLoading ? (
+                    <Alert severity="success" sx={{ mb: 1 }}>Campaign approved.</Alert>
+                  ) : null}
+                  <Button
+                    color="success"
+                    disabled={approveLoading || isAlreadyApproved}
+                    variant="contained"
+                    onClick={() => { setConfirmApproveOpen(true); }}
+                  >
+                    {approveLoading ? <CircularProgress size={14} /> : isAlreadyApproved ? "Already approved" : "Approve campaign"}
+                  </Button>
+                </Box>
+              </>
+            ) : null}
 
             <Box sx={{ borderTop: 1, borderColor: "divider", pt: 2, mt: 1 }}>
               <Typography sx={{ mb: 1 }} variant="subtitle2">Moderation history</Typography>
