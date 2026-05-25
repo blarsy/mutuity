@@ -56,7 +56,7 @@ const PUBLIC_ACCOUNT_DETAIL_SSR_QUERY = `
     allNeeds(
       condition: { creatorAccountId: $accountId, isActive: true }
       first: 5
-      orderBy: CREATED_AT_DESC
+      orderBy: ID_DESC
     ) {
       nodes {
         id
@@ -66,7 +66,7 @@ const PUBLIC_ACCOUNT_DETAIL_SSR_QUERY = `
     allResources(
       condition: { creatorAccountId: $accountId, isActive: true }
       first: 5
-      orderBy: CREATED_AT_DESC
+      orderBy: ID_DESC
     ) {
       nodes {
         id
@@ -202,7 +202,14 @@ export const getServerSideProps: GetServerSideProps<AccountDetailsPageProps> = a
   });
 
   if (!data) {
-    return { notFound: true };
+    return {
+      props: {
+        accountId: rawAccountId,
+        initialAccount: null,
+        initialNeeds: [],
+        initialResources: []
+      }
+    };
   }
 
   return {
