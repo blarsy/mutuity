@@ -447,7 +447,7 @@ export default function PublicNeedsPage() {
                         <Button
                           component={NextLink}
                           disabled={incomingClaimCount === 0}
-                          href="/claims"
+                          href="/app/claims"
                           variant="outlined"
                         >
                           {incomingClaimCount > 0 ? t("browse.manageIncomingClaims") : t("browse.noClaimsYet")}

@@ -1,24 +1,18 @@
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { LoginDialog } from "../features/auth/LoginDialog";
 
-export default function HomePage() {
+export default function AppHomePage() {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t } = useTranslation("home");
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const accountName = session.account?.displayName ?? session.account?.externalSubject ?? "account";
-
-  useEffect(() => {
-    if (status !== "loading" && session.authenticated) {
-      void router.replace("/app");
-    }
-  }, [router, session.authenticated, status]);
 
   return (
     <Container maxWidth="md">

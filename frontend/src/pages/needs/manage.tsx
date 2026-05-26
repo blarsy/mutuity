@@ -274,7 +274,7 @@ export default function ManageNeedsPage() {
           ) : null}
 
           <Typography color="text.secondary" variant="body2">
-            <NextLink href="/needs">{t("manage.backToSearch")}</NextLink>
+            <NextLink href="/app/needs">{t("manage.backToSearch")}</NextLink>
           </Typography>
         </Stack>
       </Box>
@@ -298,7 +298,7 @@ export default function ManageNeedsPage() {
 
       <Button
         component={NextLink}
-        href="/needs/create"
+        href="/app/needs/create"
         sx={{
           bottom: 24,
           position: "fixed",

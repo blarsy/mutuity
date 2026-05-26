@@ -294,7 +294,7 @@ export default function ManageResourcesPage() {
 
       <Button
         component={NextLink}
-        href="/resources/create"
+        href="/app/resources/create"
         sx={{
           bottom: 24,
           position: "fixed",

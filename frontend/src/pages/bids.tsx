@@ -480,7 +480,7 @@ export default function BidsPage() {
             This workspace is only available for regular accounts. Admin actions are available from the admin console.
           </Alert>
           <Box>
-            <Button component={NextLink} href="/admin" variant="contained">
+            <Button component={NextLink} href="/app/admin" variant="contained">
               Open admin console
             </Button>
           </Box>

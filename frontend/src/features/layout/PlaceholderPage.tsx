@@ -29,10 +29,10 @@ export function PlaceholderPage({ title, description, children }: PlaceholderPag
           {children}
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Button component={NextLink} href="/resources" variant="contained">
+            <Button component={NextLink} href="/app/resources" variant="contained">
               {t("placeholder.goToSearch")}
             </Button>
-            <Button component={NextLink} href="/needs" variant="outlined">
+            <Button component={NextLink} href="/app/needs" variant="outlined">
               {t("placeholder.goToContribute")}
             </Button>
           </Stack>

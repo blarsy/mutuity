@@ -19,22 +19,22 @@ import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import type { AppColorMode } from "../../theme";
 
 const signedOutLinks = [
-  { labelKey: "nav.search", href: "/resources" },
-  { labelKey: "nav.contribute", href: "/needs" }
+  { labelKey: "nav.search", href: "/app/resources" },
+  { labelKey: "nav.contribute", href: "/app/needs" }
 ];
 
 const LANGUAGE_STORAGE_KEY = "mutuity-language";
 const AVAILABLE_LANGUAGES = ["fr", "en"] as const;
 const signedInLinks = [
-  { labelKey: "nav.search", href: "/resources" },
-  { labelKey: "nav.contribute", href: "/needs" },
-  { labelKey: "nav.resources", href: "/resources/manage" },
-  { labelKey: "nav.bids", href: "/bids" },
-  { labelKey: "nav.needs", href: "/needs/manage" },
-  { labelKey: "nav.claims", href: "/claims" },
-  { labelKey: "nav.campaigns", href: "/campaigns" },
-  { labelKey: "nav.chat", href: "/chat" },
-  { labelKey: "nav.notifications", href: "/notifications" }
+  { labelKey: "nav.search", href: "/app/resources" },
+  { labelKey: "nav.contribute", href: "/app/needs" },
+  { labelKey: "nav.resources", href: "/app/resources/manage" },
+  { labelKey: "nav.bids", href: "/app/bids" },
+  { labelKey: "nav.needs", href: "/app/needs/manage" },
+  { labelKey: "nav.claims", href: "/app/claims" },
+  { labelKey: "nav.campaigns", href: "/app/campaigns" },
+  { labelKey: "nav.chat", href: "/app/chat" },
+  { labelKey: "nav.notifications", href: "/app/notifications" }
 ];
 
 type ListChatConversationsData = {
@@ -115,7 +115,7 @@ export function AppTopBar({
 
     const prev = previousUnreadChatCountRef.current;
 
-    if (prev !== null && unreadChatCount > prev && !router.pathname.startsWith("/chat")) {
+    if (prev !== null && unreadChatCount > prev && !router.pathname.startsWith("/app/chat")) {
       void fetchLatestConversation({ variables: { limit: 5, offset: 0 } }).then(result => {
         const first = result.data?.listChatConversations.nodes.find(n => n.unreadCount > 0);
         if (!first) return;
@@ -165,7 +165,7 @@ export function AppTopBar({
   const handleLogOut = async () => {
     setMenuAnchor(null);
     await signOut();
-    await router.push("/resources");
+    await router.push("/app/resources");
   };
 
   const currentLanguage = i18n.language.toLowerCase().startsWith("en") ? "en" : "fr";
@@ -193,7 +193,7 @@ export function AppTopBar({
   };
 
   const renderNavLabel = (link: { labelKey: string; href: string }) => {
-    const badgeCount = link.href === "/notifications" ? unreadNotificationsCount : link.href === "/chat" ? unreadChatCount : 0;
+    const badgeCount = link.href === "/app/notifications" ? unreadNotificationsCount : link.href === "/app/chat" ? unreadChatCount : 0;
 
     return (
       <Badge badgeContent={badgeCount} color="error" invisible={badgeCount === 0} overlap="circular">
@@ -245,7 +245,7 @@ export function AppTopBar({
               <Stack alignItems="center" direction="row" spacing={0.5}>
                 {session.authenticated ? (
                   <>
-                    <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
+                    <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
                       {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
                     </Button>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
@@ -302,7 +302,7 @@ export function AppTopBar({
               <Stack alignItems="center" direction="row" spacing={1}>
                 {session.authenticated ? (
                   <>
-                    <Button color="inherit" component={NextLink} href="/contribution" size="small" variant="outlined">
+                    <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
                       {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
                     </Button>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
@@ -376,13 +376,13 @@ export function AppTopBar({
       </Drawer>
 
       <Menu anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)} open={Boolean(menuAnchor)}>
-        <MenuItem component={NextLink} href="/profile" onClick={() => setMenuAnchor(null)}>
+        <MenuItem component={NextLink} href="/app/profile" onClick={() => setMenuAnchor(null)}>
           {currentLabel}
         </MenuItem>
-        <MenuItem component={NextLink} href="/preferences" onClick={() => setMenuAnchor(null)}>
+        <MenuItem component={NextLink} href="/app/preferences" onClick={() => setMenuAnchor(null)}>
           {t("menu.preferences")}
         </MenuItem>
-        <MenuItem component={NextLink} href="/contribution" onClick={() => setMenuAnchor(null)}>
+        <MenuItem component={NextLink} href="/app/contribution" onClick={() => setMenuAnchor(null)}>
           {t("menu.contribution")}
         </MenuItem>
         <MenuItem onClick={() => void handleLogOut()}>{t("menu.logOut")}</MenuItem>
