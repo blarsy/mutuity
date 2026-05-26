@@ -63,7 +63,7 @@ Implement the first concrete Tope-là-native slice in the unified platform: brow
 - represent token movements as auditable ledger events rather than inferred UI counters
 - grant one-time rewards for profile-completion and resource-completion milestones only once per eligible entity lifetime
 - apply paired debit/credit behavior for gifting, bid reservation/refund, and claim settlement flows
-- support delayed milestone rewards such as `resource created 24 hours ago` and `claim created 24 hours ago` through scheduled/background processing
+- support delayed milestone rewards such as `resource created 24 hours ago` and `need created 24 hours ago` through scheduled/background processing
 - connect campaign airdrop payout logic with per-account, per-campaign idempotency guarantees
 
 ### Slice 6 — Preferences and out-of-app delivery control (P1)
@@ -261,8 +261,9 @@ Admin support page implementation matrix:
 
 ### Token movement model and operational rules
 - Token changes should be captured in a proper ledger so the `Contribution` page can explain not just balance, but why each positive or negative movement occurred.
-- One-time rewards for avatar upload, first bio, first address, first added profile link, first resource image, first default Topes amount, `resource age >= 24h`, and `claim age >= 24h` must be idempotent and guarded against duplicate issuance.
+- One-time rewards for avatar upload, first bio, first address, first added profile link, first resource image, first default Topes amount, `resource age >= 24h`, and `need age >= 24h` must be idempotent and guarded against duplicate issuance.
 - Gifting, accepted bids, bid cancellation/refund, and settled claims should produce paired debit/credit effects that are traceable to the originating business event.
+- Creating a claim does not, by itself, produce any token reward movement; claim-related token movements come from settlement and other explicitly documented flows.
 - Campaign airdrops must remain per-campaign configurable and pay each eligible account at most once per campaign.
 - For the current rule set, an account is eligible for a campaign airdrop only when, at airdrop time, the same account owns at least two approved campaign-linked items for that campaign across these categories: creator-approved need(s) and creator-approved resource(s). This means `2 needs + 0 resources`, `0 needs + 2 resources`, `1 need + 1 resource`, or any larger combination is eligible.
 - Because several of these rules are time-based, Graphile Worker or equivalent scheduled processing is part of the intended implementation shape.

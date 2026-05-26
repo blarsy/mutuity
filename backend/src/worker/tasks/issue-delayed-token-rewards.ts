@@ -9,7 +9,7 @@ type IssueDelayedTokenRewardsPayload = {
 
 type IssueDelayedTokenRewardsResult = {
   resource_reward_count: number;
-  claim_reward_count: number;
+  need_reward_count: number;
   total_reward_count: number;
 };
 
@@ -34,16 +34,16 @@ export const issueDelayedTokenRewardsTask: Task = async payload => {
     ]);
     const counts = result.rows[0] ?? {
       resource_reward_count: 0,
-      claim_reward_count: 0,
+      need_reward_count: 0,
       total_reward_count: 0
     };
 
     await logWorkerInfo(
-      `[worker] issue_delayed_token_rewards tick at ${now.toISOString()} (resources=${counts.resource_reward_count}, claims=${counts.claim_reward_count}, total=${counts.total_reward_count})`,
+      `[worker] issue_delayed_token_rewards tick at ${now.toISOString()} (resources=${counts.resource_reward_count}, needs=${counts.need_reward_count}, total=${counts.total_reward_count})`,
       {
         task: "issue_delayed_token_rewards",
         resourceRewards: counts.resource_reward_count,
-        claimRewards: counts.claim_reward_count,
+        needRewards: counts.need_reward_count,
         totalRewards: counts.total_reward_count
       }
     );

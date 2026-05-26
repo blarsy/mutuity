@@ -1,3 +1,5 @@
+begin;
+
 drop function if exists app_private.issue_delayed_token_rewards(timestamptz);
 
 create or replace function app_private.issue_delayed_token_rewards(
@@ -86,3 +88,5 @@ $$;
 
 comment on function app_private.issue_delayed_token_rewards(timestamptz)
   is 'Scheduled background issuer for one-time 24h resource and need token rewards.';
+
+commit;

@@ -6,7 +6,7 @@
 # Runs once per hour at minute 0. Real expiry logic lands in Feature 2.
 0 * * * * expire_needs
 
-# issue_delayed_token_rewards: grant once-only 24h milestone rewards for eligible resources and claims.
+# issue_delayed_token_rewards: grant once-only 24h milestone rewards for eligible resources and needs.
 # Runs once per hour at minute 15.
 15 * * * * issue_delayed_token_rewards
 

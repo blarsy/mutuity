@@ -382,7 +382,8 @@ As a system administrator, I can access focused admin-only data pages with fast 
 - **FR-047**: Gifting tokens to another account MUST create equal and opposite ledger effects: a negative movement for the sender and a matching positive movement for the receiver for the exact gifted amount.
 - **FR-048**: Creating a bid MUST reserve or deduct the bid amount from the bidder, and cancelling, expiring, or automatically cancelling that bid because the target resource expired or was deleted MUST restore that same amount to the bidder.
 - **FR-049**: Settling a claim MUST create opposite token movements based on the settled claim amount: a positive movement for the claimer whose claim was selected and a negative movement for the account that settles the claim on its need.
-- **FR-050**: A claim that remains valid for 24 hours after creation MUST grant a one-time `+10` token reward over that claim’s lifetime.
+- **FR-050**: A need that remains active for 24 hours after creation MUST grant a one-time `+10` token reward to that need's creator over that need's lifetime.
+- **FR-050a**: Creating a claim MUST NOT grant any standalone token reward; claim-related token movements are limited to settlement and other explicitly documented rules.
 - **FR-051**: Authenticated users MUST have access to a `Resources` workspace page that lists only the resources they created.
 - **FR-052**: The `Resources` workspace page MUST sort resources by last modification time descending, with the most recently modified resource shown first.
 - **FR-053**: Any property change on a resource — including title, description, modality flags, images, categories, or any other linked data — MUST update the resource's last modification time.
@@ -540,7 +541,7 @@ The following UI surfaces are important enough to be documented now at the behav
 | Bid accepted | `-<bid amount>` | corresponds to the accepted bid remaining committed |
 | My claim settled | `+<claim amount>` | whenever a claim created by the account is settled |
 | Settled a claim on my need | `-<claim amount>` | whenever the account settles a received claim |
-| Claim created 24 hours ago | `+10` | once over a claim’s lifetime |
+| Need created 24 hours ago | `+10` | once over that need’s lifetime, credited to the need creator |
 
 ### Key Entities *(include if feature involves data)*
 
