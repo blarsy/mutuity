@@ -24,8 +24,7 @@ export function notificationUrlForEvent(eventType: string, payload: Notification
     case "gift_tokens_received":
       return "/contribution";
     case "campaign_airdrop_coming_soon": {
-      const campaignUrl = asText(payload.url);
-      return campaignUrl ?? "/";
+      return campaignId ? `/campaigns/${campaignId}` : "/campaigns";
     }
     case "welcome_profile_reward":
       return "/profile";
