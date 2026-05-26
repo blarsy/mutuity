@@ -51,6 +51,15 @@ export default function AppHomePage() {
           </Button>
         </Stack>
 
+        <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+          <Button component={NextLink} href="/privacy" size="small">
+            Privacy
+          </Button>
+          <Button component={NextLink} href="/terms" size="small">
+            Terms
+          </Button>
+        </Stack>
+
         <LoginDialog
           nextDestination={router.asPath}
           onClose={() => setLoginDialogOpen(false)}
