@@ -17,6 +17,7 @@ import {
   Typography
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import type { AuthStatus } from "../features/auth/AuthProvider";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { LoginDialog } from "../features/auth/LoginDialog";
@@ -25,7 +26,7 @@ const LANDING_LATEST_RESOURCES_QUERY = gql`
   query LandingLatestResources($first: Int = 6) {
     allResources(
       condition: { isActive: true }
-      orderBy: CREATED_AT_DESC
+      orderBy: ID_DESC
       first: $first
     ) {
       nodes {
@@ -108,6 +109,14 @@ function initialsFromName(name: string) {
   return chunks.join("") || "A";
 }
 
+export function shouldRedirectFromRoot(status: AuthStatus, isAuthenticated: boolean) {
+  return status !== "loading" && isAuthenticated;
+}
+
+export function shouldRenderGuestActions(status: AuthStatus, isAuthenticated: boolean) {
+  return status !== "loading" && !isAuthenticated;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { session, status } = useAuth();
@@ -131,7 +140,7 @@ export default function HomePage() {
   );
 
   useEffect(() => {
-    if (status !== "loading" && session.authenticated) {
+    if (shouldRedirectFromRoot(status, session.authenticated)) {
       void router.replace("/app");
     }
   }, [router, session.authenticated, status]);
@@ -191,13 +200,13 @@ export default function HomePage() {
 
               {session.authenticated ? (
                 <Alert severity="success">{t("welcomeBack", { name: accountName })}</Alert>
-              ) : (
+              ) : shouldRenderGuestActions(status, session.authenticated) ? (
                 <Box>
                   <Button onClick={() => setLoginDialogOpen(true)} variant="outlined">
                     {t("signIn")}
                   </Button>
                 </Box>
-              )}
+              ) : null}
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                 <Button component={NextLink} href="/app/needs" variant="contained">
