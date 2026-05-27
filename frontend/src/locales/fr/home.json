@@ -1,10 +1,26 @@
 {
   "title": "Mutuity",
-  "subtitle": "Découvrez les besoins et ressources disponibles. Une expérience d'intégration plus complète sera ajoutée ici.",
+  "subtitle": "Transformez les ressources locales en valeur partagee. Decouvrez les besoins, publiez des ressources et coordonnez plusieurs campagnes.",
+  "heroBadge": "Economie circulaire",
+  "communityBadge": "Multi-campagnes",
+  "impactLine": "Moins de gaspillage, plus de cooperation, une coordination plus rapide.",
   "checkingSession": "Vérification de la session…",
   "welcomeBack": "Bienvenue {{name}}",
   "signIn": "Se connecter",
   "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, demandes, discussions et à votre espace de gestion.",
   "browseNeeds": "Besoins",
-  "browseResources": "Ressources"
+  "browseResources": "Ressources",
+  "browseCampaigns": "Campagnes",
+  "featureOneTitle": "Trouver les besoins utiles",
+  "featureOneText": "Parcourez les besoins de la communaute et identifiez ou vos ressources peuvent aider.",
+  "featureTwoTitle": "Publier ce que vous proposez",
+  "featureTwoText": "Referencez biens et services reutilisables pour les orienter rapidement vers les bonnes personnes.",
+  "featureThreeTitle": "Coordonner plusieurs campagnes",
+  "featureThreeText": "Organisez des campagnes en parallele sans melanger les responsabilites ni la visibilite.",
+  "ctaTitle": "Pret a contribuer ?",
+  "ctaText": "Rejoignez votre espace communautaire et commencez les echanges avec une tracabilite claire.",
+  "createAccount": "Creer un compte",
+  "enterApp": "Entrer dans l'app",
+  "privacy": "Confidentialite",
+  "terms": "Conditions"
 }
