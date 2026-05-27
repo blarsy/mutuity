@@ -22,7 +22,7 @@
 - [x] T012-012 Migrate existing top-level app routes to `/app/*` equivalents.
 - [x] T012-013 Implement backward-compatible redirects from legacy routes.
 - [x] T012-014 Update notification and in-app routing helpers to new `/app/*` structure.
-- [ ] T012-015 Add route-level tests for migrated and legacy route behavior.
+- [x] T012-015 Add route-level tests for migrated and legacy route behavior.
 
 ## Milestone D - Landing Page Data and UX
 
@@ -81,5 +81,6 @@
 - Completed in `395c32d`: root legal pages `/privacy` and `/terms` with product-name interpolation fallback (T012-030 through T012-032).
 - Completed in `1c9d440`: root landing redesign for multi-campaign context and preserved client redirect behavior from `/` to `/app` (T012-006, T012-016, T012-019).
 - Completed in `f0c8149`: root landing live feed integration for latest resources and latest accounts (T012-017, T012-018).
-- In progress (uncommitted): root auth-behavior helper tests for guest stay vs authenticated redirect (`tests/public/home-route-auth-behavior.spec.ts`, supports T012-020).
+- Completed in `048f548`: root auth-behavior helper tests for guest stay vs authenticated redirect (`tests/public/home-route-auth-behavior.spec.ts`, supports T012-020).
+- In progress (uncommitted): legacy route migration contract tests and shared redirect source (`frontend/legacyAppRedirects.cjs`, `tests/public/route-migration-redirects.spec.ts`, supports T012-015).
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.
