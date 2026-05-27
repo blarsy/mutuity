@@ -1,8 +1,11 @@
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Card,
@@ -18,12 +21,114 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/AuthProvider";
 import { LoginDialog } from "../features/auth/LoginDialog";
 
+const LANDING_LATEST_RESOURCES_QUERY = gql`
+  query LandingLatestResources($first: Int = 6) {
+    allResources(
+      condition: { isActive: true }
+      orderBy: CREATED_AT_DESC
+      first: $first
+    ) {
+      nodes {
+        id
+        title
+        description
+        location
+        imageUrls
+        createdAt
+        accountByCreatorAccountId {
+          id
+          displayName
+          externalSubject
+        }
+      }
+    }
+  }
+`;
+
+const LANDING_LATEST_ACCOUNTS_QUERY = gql`
+  query LandingLatestAccounts($first: Int = 6) {
+    allAccounts(orderBy: ID_DESC, first: $first) {
+      nodes {
+        id
+        displayName
+        externalSubject
+        avatarUrl
+        bio
+      }
+    }
+  }
+`;
+
+type LandingLatestResourcesData = {
+  allResources: {
+    nodes: Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      location: string | null;
+      imageUrls: Array<string | null>;
+      createdAt: string;
+      accountByCreatorAccountId: {
+        displayName: string | null;
+        externalSubject: string;
+      } | null;
+    }>;
+  } | null;
+};
+
+type LandingLatestAccountsData = {
+  allAccounts: {
+    nodes: Array<{
+      id: string;
+      displayName: string | null;
+      externalSubject: string;
+      avatarUrl: string | null;
+      bio: string | null;
+    }>;
+  } | null;
+};
+
+function shortText(value: string | null | undefined, fallback: string, maxLength = 120) {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1)}…` : normalized;
+}
+
+function initialsFromName(name: string) {
+  const chunks = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(value => value[0]?.toUpperCase() ?? "");
+
+  return chunks.join("") || "A";
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t } = useTranslation("home");
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const accountName = session.account?.displayName ?? session.account?.externalSubject ?? "account";
+  const {
+    data: latestResourcesData,
+    loading: latestResourcesLoading,
+    error: latestResourcesError
+  } = useQuery<LandingLatestResourcesData>(LANDING_LATEST_RESOURCES_QUERY);
+  const {
+    data: latestAccountsData,
+    loading: latestAccountsLoading,
+    error: latestAccountsError
+  } = useQuery<LandingLatestAccountsData>(LANDING_LATEST_ACCOUNTS_QUERY);
+
+  const latestResources = latestResourcesData?.allResources?.nodes ?? [];
+  const latestAccounts = (latestAccountsData?.allAccounts?.nodes ?? []).filter(
+    account => !account.externalSubject.startsWith("deleted-")
+  );
 
   useEffect(() => {
     if (status !== "loading" && session.authenticated) {
@@ -133,6 +238,116 @@ export default function HomePage() {
                 <Typography color="text.secondary">{t("featureThreeText")}</Typography>
               </CardContent>
             </Card>
+          </Stack>
+
+          <Stack spacing={2}>
+            <Stack direction="row" justifyContent="space-between" spacing={2}>
+              <Typography sx={{ color: "#143818", fontSize: { xs: 22, md: 28 }, fontWeight: 700 }}>
+                {t("latestResourcesTitle")}
+              </Typography>
+              <Button component={NextLink} href="/app/resources" size="small" variant="text">
+                {t("seeAllResources")}
+              </Button>
+            </Stack>
+
+            {latestResourcesLoading ? (
+              <Alert severity="info">{t("loadingLatestResources")}</Alert>
+            ) : null}
+
+            {!latestResourcesLoading && latestResourcesError ? (
+              <Alert severity="warning">{t("latestResourcesUnavailable")}</Alert>
+            ) : null}
+
+            {!latestResourcesLoading && !latestResourcesError && latestResources.length === 0 ? (
+              <Alert severity="info">{t("noLatestResources")}</Alert>
+            ) : null}
+
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+              {latestResources.slice(0, 3).map(resource => {
+                const creatorLabel =
+                  resource.accountByCreatorAccountId?.displayName
+                  ?? resource.accountByCreatorAccountId?.externalSubject
+                  ?? t("unknownAccount");
+                const imageUrl = resource.imageUrls.find(Boolean) || null;
+
+                return (
+                  <Card key={resource.id} sx={{ borderRadius: 3, flex: 1 }} variant="outlined">
+                    <CardContent>
+                      <Stack spacing={1.2}>
+                        <Box
+                          sx={{
+                            aspectRatio: "16/9",
+                            backgroundColor: "#ecf2de",
+                            backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
+                            backgroundPosition: "center",
+                            backgroundSize: "cover",
+                            borderRadius: 2
+                          }}
+                        />
+                        <Typography sx={{ fontWeight: 700 }}>{resource.title}</Typography>
+                        <Typography color="text.secondary" variant="body2">
+                          {shortText(resource.description, t("resourceDescriptionFallback"), 95)}
+                        </Typography>
+                        <Typography color="text.secondary" variant="caption">
+                          {t("byAccount", { account: creatorLabel })}
+                        </Typography>
+                        <Button component={NextLink} href={`/app/resources/${resource.id}`} size="small" variant="outlined">
+                          {t("openResource")}
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </Stack>
+          </Stack>
+
+          <Stack spacing={2}>
+            <Stack direction="row" justifyContent="space-between" spacing={2}>
+              <Typography sx={{ color: "#143818", fontSize: { xs: 22, md: 28 }, fontWeight: 700 }}>
+                {t("latestAccountsTitle")}
+              </Typography>
+              <Button component={NextLink} href="/app/resources" size="small" variant="text">
+                {t("meetContributors")}
+              </Button>
+            </Stack>
+
+            {latestAccountsLoading ? (
+              <Alert severity="info">{t("loadingLatestAccounts")}</Alert>
+            ) : null}
+
+            {!latestAccountsLoading && latestAccountsError ? (
+              <Alert severity="warning">{t("latestAccountsUnavailable")}</Alert>
+            ) : null}
+
+            {!latestAccountsLoading && !latestAccountsError && latestAccounts.length === 0 ? (
+              <Alert severity="info">{t("noLatestAccounts")}</Alert>
+            ) : null}
+
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+              {latestAccounts.slice(0, 3).map(account => {
+                const name = account.displayName || account.externalSubject;
+
+                return (
+                  <Card key={account.id} sx={{ borderRadius: 3, flex: 1 }} variant="outlined">
+                    <CardContent>
+                      <Stack spacing={1.2}>
+                        <Stack alignItems="center" direction="row" spacing={1.2}>
+                          <Avatar src={account.avatarUrl || undefined}>{initialsFromName(name)}</Avatar>
+                          <Typography sx={{ fontWeight: 700 }}>{name}</Typography>
+                        </Stack>
+                        <Typography color="text.secondary" variant="body2">
+                          {shortText(account.bio, t("accountBioFallback"), 100)}
+                        </Typography>
+                        <Button component={NextLink} href={`/app/accounts/${account.id}`} size="small" variant="outlined">
+                          {t("openProfile")}
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </Stack>
           </Stack>
 
           <Box

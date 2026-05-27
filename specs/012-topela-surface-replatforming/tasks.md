@@ -27,8 +27,8 @@
 ## Milestone D - Landing Page Data and UX
 
 - [x] T012-016 Port Tope-la landing content and assets to root page.
-- [ ] T012-017 Add GraphQL query for latest resources section.
-- [ ] T012-018 Add GraphQL query for latest accounts section.
+- [x] T012-017 Add GraphQL query for latest resources section.
+- [x] T012-018 Add GraphQL query for latest accounts section.
 - [x] T012-019 Implement client-side authenticated redirect from `/` to `/app`.
 - [ ] T012-020 Add tests for guest render vs authenticated redirect behavior.
 
@@ -80,4 +80,5 @@
 - Completed in `8296c57`: `/app` home move, `/app/*` aliases, legacy redirects, and in-app link updates (T012-010 through T012-014).
 - Completed in `395c32d`: root legal pages `/privacy` and `/terms` with product-name interpolation fallback (T012-030 through T012-032).
 - Completed in `1c9d440`: root landing redesign for multi-campaign context and preserved client redirect behavior from `/` to `/app` (T012-006, T012-016, T012-019).
+- In progress (uncommitted): root landing live feed integration for latest resources and latest accounts (T012-017, T012-018).
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.
