@@ -2,12 +2,12 @@
 
 ## Milestone A - Assumption Closure
 
-- [ ] T012-001 Publish complete route migration matrix from locked route decision (`old -> new`, redirect type, alias window).
+- [x] T012-001 Publish complete route migration matrix from locked route decision (`old -> new`, redirect type, alias window).
 - [ ] T012-002 Implement product-name source of truth contract using backend DB setting.
 - [ ] T012-003 Implement campaign SEO fallback image behavior for campaigns without image.
 - [ ] T012-004 Document follow-up backlog for advanced social collision/recovery UX beyond MVP policy.
 - [ ] T012-005 Materialize Android/iOS store URLs in frontend/runtime config from approved source.
-- [ ] T012-006 Apply accepted landing redirect UX behavior (short client-side flash tolerated).
+- [x] T012-006 Apply accepted landing redirect UX behavior (short client-side flash tolerated).
 
 ## Milestone B - Product Identity Config
 
@@ -17,19 +17,19 @@
 
 ## Milestone C - Route Replatforming
 
-- [ ] T012-010 Implement landing page as root route `/`.
-- [ ] T012-011 Move current app home to `/app`.
-- [ ] T012-012 Migrate existing top-level app routes to `/app/*` equivalents.
-- [ ] T012-013 Implement backward-compatible redirects from legacy routes.
-- [ ] T012-014 Update notification and in-app routing helpers to new `/app/*` structure.
+- [x] T012-010 Implement landing page as root route `/`.
+- [x] T012-011 Move current app home to `/app`.
+- [x] T012-012 Migrate existing top-level app routes to `/app/*` equivalents.
+- [x] T012-013 Implement backward-compatible redirects from legacy routes.
+- [x] T012-014 Update notification and in-app routing helpers to new `/app/*` structure.
 - [ ] T012-015 Add route-level tests for migrated and legacy route behavior.
 
 ## Milestone D - Landing Page Data and UX
 
-- [ ] T012-016 Port Tope-la landing content and assets to root page.
+- [x] T012-016 Port Tope-la landing content and assets to root page.
 - [ ] T012-017 Add GraphQL query for latest resources section.
 - [ ] T012-018 Add GraphQL query for latest accounts section.
-- [ ] T012-019 Implement client-side authenticated redirect from `/` to `/app`.
+- [x] T012-019 Implement client-side authenticated redirect from `/` to `/app`.
 - [ ] T012-020 Add tests for guest render vs authenticated redirect behavior.
 
 ## Milestone E - Campaign Public Explainers and SEO
@@ -49,9 +49,9 @@
 
 ## Milestone G - Legal Pages
 
-- [ ] T012-030 Port Tope-la privacy content to Mutuity legal route path.
-- [ ] T012-031 Port Tope-la CGU content to Mutuity legal route path.
-- [ ] T012-032 Replace hardcoded product mentions with configured product name interpolation.
+- [x] T012-030 Port Tope-la privacy content to Mutuity legal route path.
+- [x] T012-031 Port Tope-la CGU content to Mutuity legal route path.
+- [x] T012-032 Replace hardcoded product mentions with configured product name interpolation.
 - [ ] T012-033 Add tests ensuring legal copy includes configured product name.
 
 ## Milestone H - Social Auth Completion
@@ -73,3 +73,11 @@
 ## Explicitly Deferred
 
 - [ ] T012-044 Track token wording normalization in separate dedicated wording workshop feature (no implementation in this feature).
+
+## Progress Sync Notes
+
+- Completed in `8f3d891`: spec lock for scope, route contract, and MVP social-linking policy (supports T012-001).
+- Completed in `8296c57`: `/app` home move, `/app/*` aliases, legacy redirects, and in-app link updates (T012-010 through T012-014).
+- Completed in `395c32d`: root legal pages `/privacy` and `/terms` with product-name interpolation fallback (T012-030 through T012-032).
+- Completed in `1c9d440`: root landing redesign for multi-campaign context and preserved client redirect behavior from `/` to `/app` (T012-006, T012-016, T012-019).
+- Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.
