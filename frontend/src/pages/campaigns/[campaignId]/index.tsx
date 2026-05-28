@@ -20,7 +20,7 @@ import {
   Stack,
   Typography
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { RichTextContent } from "../../../components/richText/RichTextContent";
@@ -323,7 +323,12 @@ export default function PublicCampaignDetailPage({
       iosUrl: storeLinks.iosUrl
     });
   }, [campaignId, session.authenticated, storeLinks.androidUrl, storeLinks.iosUrl, t]);
-  const activeExplainerSlide = explainerSlides[explainerSlideIndex];
+
+  useEffect(() => {
+    setExplainerSlideIndex(current => Math.min(current, Math.max(0, explainerSlides.length - 1)));
+  }, [explainerSlides.length]);
+
+  const activeExplainerSlide = explainerSlides[Math.min(explainerSlideIndex, Math.max(0, explainerSlides.length - 1))];
 
   const {
     data: myResourcesData,
