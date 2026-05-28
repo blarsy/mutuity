@@ -34,8 +34,8 @@
 
 ## Milestone E - Campaign Public Explainers and SEO
 
-- [ ] T012-021 Add `What is this campaign?` button on campaign public page.
-- [ ] T012-022 Implement campaign explainer dialog slider base slides (1-3).
+- [x] T012-021 Add `What is this campaign?` button on campaign public page.
+- [x] T012-022 Implement campaign explainer dialog slider base slides (1-3).
 - [ ] T012-023 Implement unauthenticated-only slide with login/register + Android/iOS CTAs.
 - [ ] T012-024 Implement campaign explainer content model mapped to moderation states and triage rules.
 - [ ] T012-025 Enforce campaign SEO metadata contract (title, description, 600x600 image).
@@ -83,5 +83,6 @@
 - Completed in `f0c8149`: root landing live feed integration for latest resources and latest accounts (T012-017, T012-018).
 - Completed in `048f548`: root auth-behavior helper tests for guest stay vs authenticated redirect (`tests/public/home-route-auth-behavior.spec.ts`, supports T012-020).
 - Completed in `ae09c7c`: legacy route migration contract tests and shared redirect source (`frontend/legacyAppRedirects.cjs`, `tests/public/route-migration-redirects.spec.ts`, supports T012-015).
-- In progress (uncommitted): localized legal pages (FR+EN) and legal interpolation guard tests (`tests/public/legal-copy-localization.spec.ts`, supports T012-033).
+- Completed in `ad2ac9d`: localized legal pages (FR+EN) and legal interpolation guard tests (`tests/public/legal-copy-localization.spec.ts`, supports T012-033).
+- In progress (uncommitted): campaign public explainer trigger and 3 base slides (`public.explainer.*`, `tests/campaigns/campaign-explainer.spec.ts`, supports T012-021 and T012-022).
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.

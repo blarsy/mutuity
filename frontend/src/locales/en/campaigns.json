@@ -16,6 +16,28 @@
     "title": "Public campaigns",
     "ownCampaignHint": "You are the creator of this campaign.",
     "subtitle": "Browse campaigns currently active on the platform.",
+    "explainer": {
+      "openButton": "What is this campaign?",
+      "dialogTitle": "Campaign explainer",
+      "previous": "Previous",
+      "next": "Next",
+      "close": "Close",
+      "progress": "Slide {{current}} of {{total}}",
+      "slides": {
+        "purpose": {
+          "title": "Why campaigns exist",
+          "body": "Campaigns focus collective effort around a shared theme for a limited period so contributors can coordinate faster."
+        },
+        "rewards": {
+          "title": "How rewards and timing work",
+          "body": "Campaign timing (start, airdrop, end) structures participation windows and reward distribution while keeping expectations explicit."
+        },
+        "governance": {
+          "title": "Who reviews contributions",
+          "body": "Campaign creators triage incoming resource and need requests, while moderation status controls public visibility and lifecycle."
+        }
+      }
+    },
     "loading": "Loading campaigns…",
     "empty": "No active approved campaigns at the moment.",
     "resourceJoin": {

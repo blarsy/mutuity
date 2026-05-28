@@ -12,6 +12,10 @@ import {
   Checkbox,
   Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   Stack,
   Typography
@@ -21,6 +25,7 @@ import { useTranslation } from "react-i18next";
 
 import { RichTextContent } from "../../../components/richText/RichTextContent";
 import { useAuth } from "../../../features/auth/AuthProvider";
+import { buildCampaignExplainerSlides } from "../../../features/campaigns/campaignExplainer";
 import {
   buildCampaignPageMeta,
   resolveCampaignAvailabilityState,
@@ -303,6 +308,10 @@ export default function PublicCampaignDetailPage({
   const [bulkNeedRunning, setBulkNeedRunning] = useState(false);
   const [needJoinActionError, setNeedJoinActionError] = useState<string | null>(null);
   const [needJoinActionSuccessCount, setNeedJoinActionSuccessCount] = useState(0);
+  const [explainerOpen, setExplainerOpen] = useState(false);
+  const [explainerSlideIndex, setExplainerSlideIndex] = useState(0);
+  const explainerSlides = useMemo(() => buildCampaignExplainerSlides(t), [t]);
+  const activeExplainerSlide = explainerSlides[explainerSlideIndex];
 
   const {
     data: myResourcesData,
@@ -638,6 +647,17 @@ export default function PublicCampaignDetailPage({
                       />
                     ) : null}
                     <Typography variant="body1">{campaign.description}</Typography>
+                    <Box>
+                      <Button
+                        onClick={() => {
+                          setExplainerSlideIndex(0);
+                          setExplainerOpen(true);
+                        }}
+                        variant="outlined"
+                      >
+                        {t("public.explainer.openButton")}
+                      </Button>
+                    </Box>
                     <Typography color="text.secondary" variant="caption">{t("labels.theme")}</Typography>
                     <RichTextContent html={campaign.theme} />
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
@@ -648,6 +668,52 @@ export default function PublicCampaignDetailPage({
                   </Stack>
                 </CardContent>
               </Card>
+
+              <Dialog
+                fullWidth
+                maxWidth="sm"
+                onClose={() => setExplainerOpen(false)}
+                open={explainerOpen}
+              >
+                <DialogTitle>{t("public.explainer.dialogTitle")}</DialogTitle>
+                <DialogContent>
+                  <Stack spacing={2} sx={{ pt: 1 }}>
+                    <Typography component="h3" variant="h6">
+                      {activeExplainerSlide.title}
+                    </Typography>
+                    <Typography variant="body1">{activeExplainerSlide.body}</Typography>
+                    <Typography color="text.secondary" variant="caption">
+                      {t("public.explainer.progress", {
+                        current: explainerSlideIndex + 1,
+                        total: explainerSlides.length
+                      })}
+                    </Typography>
+                  </Stack>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    disabled={explainerSlideIndex === 0}
+                    onClick={() => setExplainerSlideIndex(current => Math.max(0, current - 1))}
+                  >
+                    {t("public.explainer.previous")}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (explainerSlideIndex === explainerSlides.length - 1) {
+                        setExplainerOpen(false);
+                        return;
+                      }
+
+                      setExplainerSlideIndex(current => Math.min(explainerSlides.length - 1, current + 1));
+                    }}
+                    variant="contained"
+                  >
+                    {explainerSlideIndex === explainerSlides.length - 1
+                      ? t("public.explainer.close")
+                      : t("public.explainer.next")}
+                  </Button>
+                </DialogActions>
+              </Dialog>
 
               <Stack spacing={2}>
                     <Typography component="h2" variant="h5">{t("public.resourceJoin.title")}</Typography>

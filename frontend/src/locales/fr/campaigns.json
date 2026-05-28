@@ -16,6 +16,28 @@
     "title": "Campagnes publiques",
     "ownCampaignHint": "Vous êtes le créateur de cette campagne.",
     "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
+    "explainer": {
+      "openButton": "Qu'est-ce que cette campagne ?",
+      "dialogTitle": "Explication de la campagne",
+      "previous": "Precedent",
+      "next": "Suivant",
+      "close": "Fermer",
+      "progress": "Slide {{current}} sur {{total}}",
+      "slides": {
+        "purpose": {
+          "title": "Pourquoi les campagnes existent",
+          "body": "Les campagnes concentrent l'effort collectif autour d'un theme partage sur une periode limitee pour mieux coordonner les contributions."
+        },
+        "rewards": {
+          "title": "Comment fonctionnent rewards et calendrier",
+          "body": "Le calendrier de campagne (debut, airdrop, fin) structure les periodes de participation et la distribution des rewards avec des attentes claires."
+        },
+        "governance": {
+          "title": "Qui examine les contributions",
+          "body": "Le createur de campagne trie les demandes de rattachement des ressources et besoins, tandis que la moderation controle la visibilite publique."
+        }
+      }
+    },
     "loading": "Chargement des campagnes…",
     "empty": "Aucune campagne approuvée active pour le moment.",
     "resourceJoin": {
