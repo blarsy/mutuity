@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
 import NextLink from "next/link";
 import {
@@ -14,15 +14,18 @@ import {
   DialogContent,
   DialogTitle,
   LinearProgress,
+  useMediaQuery,
   Stack,
   TextField,
   Typography
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { CONTRIBUTION_OVERVIEW_QUERY, GIFT_TOKENS_MUTATION } from "../features/contribution/contribution.queries";
+import { buildTokenExplainerSlides, resolveTokenExplainerDialogLayout } from "../features/contribution/tokenExplainer";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
 
@@ -86,7 +89,6 @@ function movementDetailTranslationKey(movement: ContributionOverviewData["allTok
   }
 }
 
-const TOPES_GUIDE_SLIDES = ["what", "earn", "spend", "tips"] as const;
 const TOPES_EARNING_OPPORTUNITIES = [
   { key: "profileAvatar", amount: 20, href: "/profile" },
   { key: "profileBio", amount: 20, href: "/profile" },
@@ -103,6 +105,8 @@ export default function ContributionPage() {
   const { session } = useAuth();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const { t } = useTranslation("contribution");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { data, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
@@ -118,8 +122,11 @@ export default function ContributionPage() {
   const [giftMessage, setGiftMessage] = useState("");
   const [giftSuccess, setGiftSuccess] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isTopesGuideOpen, setTopesGuideOpen] = useState(false);
-  const [topesGuideSlideIndex, setTopesGuideSlideIndex] = useState(0);
+  const [isTokenExplainerOpen, setTokenExplainerOpen] = useState(false);
+  const [tokenExplainerSlideIndex, setTokenExplainerSlideIndex] = useState(0);
+
+  const tokenExplainerSlides = useMemo(() => buildTokenExplainerSlides(t), [t]);
+  const tokenExplainerDialogLayout = useMemo(() => resolveTokenExplainerDialogLayout(isMobile), [isMobile]);
 
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(giftError);
   const movementEdges = data?.allTokenMovements.edges ?? [];
@@ -127,23 +134,25 @@ export default function ContributionPage() {
   const hasMoreMovements = Boolean(data?.allTokenMovements.pageInfo.hasNextPage);
   const lastMovementCursor = data?.allTokenMovements.pageInfo.endCursor ?? null;
   const balance = data?.currentTokenBalance ?? 0;
-  const currentGuideSlide = TOPES_GUIDE_SLIDES[topesGuideSlideIndex];
+  const currentTokenExplainerSlide = tokenExplainerSlides[
+    Math.min(tokenExplainerSlideIndex, Math.max(0, tokenExplainerSlides.length - 1))
+  ];
 
-  const openTopesGuide = () => {
-    setTopesGuideSlideIndex(0);
-    setTopesGuideOpen(true);
+  const openTokenExplainer = () => {
+    setTokenExplainerSlideIndex(0);
+    setTokenExplainerOpen(true);
   };
 
-  const closeTopesGuide = () => {
-    setTopesGuideOpen(false);
+  const closeTokenExplainer = () => {
+    setTokenExplainerOpen(false);
   };
 
-  const goToPreviousGuideSlide = () => {
-    setTopesGuideSlideIndex(current => Math.max(0, current - 1));
+  const goToPreviousTokenExplainerSlide = () => {
+    setTokenExplainerSlideIndex(current => Math.max(0, current - 1));
   };
 
-  const goToNextGuideSlide = () => {
-    setTopesGuideSlideIndex(current => Math.min(TOPES_GUIDE_SLIDES.length - 1, current + 1));
+  const goToNextTokenExplainerSlide = () => {
+    setTokenExplainerSlideIndex(current => Math.min(tokenExplainerSlides.length - 1, current + 1));
   };
 
   const handleGift = async () => {
@@ -218,7 +227,7 @@ export default function ContributionPage() {
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Chip color={balance >= 0 ? "success" : "error"} label={t("topesAmount", { amount: balance })} />
             <Chip label={t("ledgerEntriesCount", { count: movements.length })} variant="outlined" />
-            <Button onClick={openTopesGuide} size="small" variant="outlined">
+            <Button onClick={openTokenExplainer} size="small" variant="outlined">
               {t("topesGuide.openButton")}
             </Button>
           </Stack>
@@ -368,40 +377,46 @@ export default function ContributionPage() {
         </Stack>
       </Box>
 
-      <Dialog fullWidth maxWidth="sm" onClose={closeTopesGuide} open={isTopesGuideOpen}>
+      <Dialog
+        fullScreen={tokenExplainerDialogLayout.fullScreen}
+        fullWidth
+        maxWidth={tokenExplainerDialogLayout.maxWidth}
+        onClose={closeTokenExplainer}
+        open={isTokenExplainerOpen}
+      >
         <DialogTitle>{t("topesGuide.title")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
             <Typography color="text.secondary" variant="caption">
               {t("topesGuide.stepLabel", {
-                current: topesGuideSlideIndex + 1,
-                total: TOPES_GUIDE_SLIDES.length
+                current: tokenExplainerSlideIndex + 1,
+                total: tokenExplainerSlides.length
               })}
             </Typography>
 
             <LinearProgress
-              value={((topesGuideSlideIndex + 1) / TOPES_GUIDE_SLIDES.length) * 100}
+              value={((tokenExplainerSlideIndex + 1) / tokenExplainerSlides.length) * 100}
               variant="determinate"
             />
 
             <Box>
               <Typography gutterBottom variant="h6">
-                {t(`topesGuide.slides.${currentGuideSlide}.title`)}
+                {currentTokenExplainerSlide.title}
               </Typography>
               <Typography color="text.secondary">
-                {t(`topesGuide.slides.${currentGuideSlide}.body`)}
+                {currentTokenExplainerSlide.body}
               </Typography>
             </Box>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeTopesGuide}>{t("topesGuide.closeButton")}</Button>
-          <Button disabled={topesGuideSlideIndex === 0} onClick={goToPreviousGuideSlide}>
+          <Button onClick={closeTokenExplainer}>{t("topesGuide.closeButton")}</Button>
+          <Button disabled={tokenExplainerSlideIndex === 0} onClick={goToPreviousTokenExplainerSlide}>
             {t("topesGuide.previousButton")}
           </Button>
           <Button
-            disabled={topesGuideSlideIndex === TOPES_GUIDE_SLIDES.length - 1}
-            onClick={goToNextGuideSlide}
+            disabled={tokenExplainerSlideIndex === tokenExplainerSlides.length - 1}
+            onClick={goToNextTokenExplainerSlide}
             variant="contained"
           >
             {t("topesGuide.nextButton")}

@@ -43,9 +43,9 @@
 
 ## Milestone F - Contribution Token Explainer
 
-- [ ] T012-027 Add trigger on contribution page for token explainer modal.
-- [ ] T012-028 Port and render all 3 legacy token explainer slides.
-- [ ] T012-029 Add responsive tests for token explainer dialog behavior.
+- [x] T012-027 Add trigger on contribution page for token explainer modal.
+- [x] T012-028 Port and render all 3 legacy token explainer slides.
+- [x] T012-029 Add responsive tests for token explainer dialog behavior.
 
 ## Milestone G - Legal Pages
 
