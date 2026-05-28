@@ -1,11 +1,29 @@
 export type SocialProvider = "google" | "apple";
 
+export const SOCIAL_AUTH_PROVIDERS: ReadonlyArray<SocialProvider> = ["google", "apple"];
+
 function getConfiguredStartUrl(provider: SocialProvider) {
   if (provider === "google") {
     return process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL?.trim() ?? "";
   }
 
   return process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL?.trim() ?? "";
+}
+
+function getConfiguredCallbackUrl(provider: SocialProvider) {
+  if (provider === "google") {
+    return (
+      process.env.NEXT_PUBLIC_GOOGLE_AUTH_CALLBACK_URL?.trim()
+      || process.env.NEXT_PUBLIC_GOOGLE_AUTH_REDIRECT_URI?.trim()
+      || ""
+    );
+  }
+
+  return (
+    process.env.NEXT_PUBLIC_APPLE_AUTH_CALLBACK_URL?.trim()
+    || process.env.NEXT_PUBLIC_APPLE_AUTH_REDIRECT_URI?.trim()
+    || ""
+  );
 }
 
 export function getSocialAuthStartUrl(provider: SocialProvider, nextDestination: string) {
@@ -28,4 +46,19 @@ export function getSocialAuthStartUrl(provider: SocialProvider, nextDestination:
   }
 
   return url.toString();
+}
+
+export function getSocialAuthCallbackUrl(provider: SocialProvider) {
+  const configuredCallback = getConfiguredCallbackUrl(provider);
+
+  if (!configuredCallback) {
+    return null;
+  }
+
+  const isAbsolute = /^https?:\/\//i.test(configuredCallback);
+  if (!isAbsolute && typeof window === "undefined") {
+    return null;
+  }
+
+  return isAbsolute ? configuredCallback : new URL(configuredCallback, window.location.origin).toString();
 }

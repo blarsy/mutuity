@@ -56,9 +56,9 @@
 
 ## Milestone H - Social Auth Completion
 
-- [ ] T012-034 Confirm Google and Apple auth start URLs and callback wiring in all environments.
-- [ ] T012-035 Remove/disable any non-scoped social provider entry points (including Facebook).
-- [ ] T012-036 Implement/complete provider callback handling for Google and Apple.
+- [x] T012-034 Confirm Google and Apple auth start URLs and callback wiring in all environments.
+- [x] T012-035 Remove/disable any non-scoped social provider entry points (including Facebook).
+- [x] T012-036 Implement/complete provider callback handling for Google and Apple.
 - [ ] T012-037 Implement MVP anti-account-takeover policy for provider identities (no email-only auto-link, provider-id key, explicit link confirmation, re-auth for linking).
 - [ ] T012-038 Add low-overhead safety tests for MVP policy (linked sign-in, no silent same-email attach, explicit link confirmation, DB uniqueness integrity).
 - [ ] T012-039 Add end-to-end tests for Google and Apple sign-in and registration completion paths using MVP policy outcomes.

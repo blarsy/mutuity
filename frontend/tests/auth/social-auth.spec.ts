@@ -1,9 +1,11 @@
-import { getSocialAuthStartUrl } from "../../src/features/auth/socialAuth";
+import { SOCIAL_AUTH_PROVIDERS, getSocialAuthCallbackUrl, getSocialAuthStartUrl } from "../../src/features/auth/socialAuth";
 import { resolveSocialPrefill } from "../../src/pages/register";
 
 describe("social auth helpers", () => {
   const previousGoogleUrl = process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL;
   const previousAppleUrl = process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL;
+  const previousGoogleCallbackUrl = process.env.NEXT_PUBLIC_GOOGLE_AUTH_CALLBACK_URL;
+  const previousAppleRedirectUri = process.env.NEXT_PUBLIC_APPLE_AUTH_REDIRECT_URI;
 
   afterEach(() => {
     if (previousGoogleUrl === undefined) {
@@ -17,6 +19,22 @@ describe("social auth helpers", () => {
     } else {
       process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL = previousAppleUrl;
     }
+
+    if (previousGoogleCallbackUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_GOOGLE_AUTH_CALLBACK_URL;
+    } else {
+      process.env.NEXT_PUBLIC_GOOGLE_AUTH_CALLBACK_URL = previousGoogleCallbackUrl;
+    }
+
+    if (previousAppleRedirectUri === undefined) {
+      delete process.env.NEXT_PUBLIC_APPLE_AUTH_REDIRECT_URI;
+    } else {
+      process.env.NEXT_PUBLIC_APPLE_AUTH_REDIRECT_URI = previousAppleRedirectUri;
+    }
+  });
+
+  it("keeps social auth providers scoped to google and apple", () => {
+    expect(SOCIAL_AUTH_PROVIDERS).toEqual(["google", "apple"]);
   });
 
   it("returns null when provider start URLs are not configured", () => {
@@ -55,5 +73,17 @@ describe("social auth helpers", () => {
       suggestedName: "",
       suggestedEmail: ""
     });
+  });
+
+  it("resolves callback URL from dedicated callback env keys", () => {
+    process.env.NEXT_PUBLIC_GOOGLE_AUTH_CALLBACK_URL = "https://accounts.example.test/oauth/google/callback";
+
+    expect(getSocialAuthCallbackUrl("google")).toBe("https://accounts.example.test/oauth/google/callback");
+  });
+
+  it("falls back to redirect URI env keys for callback configuration", () => {
+    process.env.NEXT_PUBLIC_APPLE_AUTH_REDIRECT_URI = "https://accounts.example.test/oauth/apple/callback";
+
+    expect(getSocialAuthCallbackUrl("apple")).toBe("https://accounts.example.test/oauth/apple/callback");
   });
 });

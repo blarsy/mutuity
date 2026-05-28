@@ -1,13 +1,11 @@
 import { Alert, Button, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { getSocialAuthStartUrl, type SocialProvider } from "./socialAuth";
+import { SOCIAL_AUTH_PROVIDERS, getSocialAuthStartUrl, type SocialProvider } from "./socialAuth";
 
 type SocialAuthButtonsProps = {
   nextDestination: string;
 };
-
-const PROVIDERS: ReadonlyArray<SocialProvider> = ["google", "apple"];
 
 function providerLabel(provider: SocialProvider, t: (key: string) => string) {
   return provider === "google" ? t("form.continueWithGoogle") : t("form.continueWithApple");
@@ -16,7 +14,7 @@ function providerLabel(provider: SocialProvider, t: (key: string) => string) {
 export function SocialAuthButtons({ nextDestination }: SocialAuthButtonsProps) {
   const { t } = useTranslation("auth");
 
-  const providerLinks = PROVIDERS.map(provider => ({
+  const providerLinks = SOCIAL_AUTH_PROVIDERS.map(provider => ({
     provider,
     href: getSocialAuthStartUrl(provider, nextDestination)
   }));
