@@ -8,6 +8,13 @@ describe("campaign explainer slide model", () => {
     "public.explainer.slides.rewards.body": "Rewards body",
     "public.explainer.slides.governance.title": "Governance",
     "public.explainer.slides.governance.body": "Governance body",
+    "public.explainer.slides.governance.triage.creator": "Creator triage detail",
+    "public.explainer.slides.governance.triage.contributor": "Contributor triage detail",
+    "public.explainer.slides.governance.status.approved": "Approved status detail",
+    "public.explainer.slides.governance.status.pending": "Pending status detail",
+    "public.explainer.slides.governance.status.awaitingAdaptation": "Awaiting adaptation status detail",
+    "public.explainer.slides.governance.status.rejected": "Rejected status detail",
+    "public.explainer.slides.governance.status.unknown": "Unknown status detail",
     "public.explainer.slides.onboarding.title": "Onboarding",
     "public.explainer.slides.onboarding.body": "Onboarding body",
     "public.explainer.slides.onboarding.login": "Sign in",
@@ -20,6 +27,8 @@ describe("campaign explainer slide model", () => {
 
   const authenticatedOptions = {
     isAuthenticated: true,
+    isCampaignCreator: false,
+    moderationStatus: "APPROVED",
     loginHref: "/login?next=%2Fcampaigns%2Fabc",
     registerHref: "/register?next=%2Fcampaigns%2Fabc",
     androidUrl: "https://play.google.com/store/apps/details?id=com.topela",
@@ -42,7 +51,22 @@ describe("campaign explainer slide model", () => {
 
     expect(slides[0]).toEqual({ id: "purpose", title: "Purpose", body: "Purpose body" });
     expect(slides[1]).toEqual({ id: "rewards", title: "Rewards", body: "Rewards body" });
-    expect(slides[2]).toEqual({ id: "governance", title: "Governance", body: "Governance body" });
+    expect(slides[2]).toEqual({
+      id: "governance",
+      title: "Governance",
+      body: "Governance body",
+      details: ["Contributor triage detail", "Approved status detail"]
+    });
+  });
+
+  it("maps governance details for creator role and moderation status", () => {
+    const slides = buildCampaignExplainerSlides(t, {
+      ...authenticatedOptions,
+      isCampaignCreator: true,
+      moderationStatus: "AWAITING_ADAPTATION"
+    });
+
+    expect(slides[2].details).toEqual(["Creator triage detail", "Awaiting adaptation status detail"]);
   });
 
   it("adds onboarding slide only for unauthenticated users", () => {

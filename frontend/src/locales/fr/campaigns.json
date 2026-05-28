@@ -34,7 +34,18 @@
         },
         "governance": {
           "title": "Qui examine les contributions",
-          "body": "Le createur de campagne trie les demandes de rattachement des ressources et besoins, tandis que la moderation controle la visibilite publique."
+          "body": "La gouvernance de campagne combine le triage du createur et les controles de moderation de la plateforme.",
+          "triage": {
+            "creator": "En tant que createur, vous triez les demandes de rattachement des ressources et besoins depuis votre espace de moderation.",
+            "contributor": "Les contributeurs peuvent envoyer des demandes de rattachement de ressources et besoins, triées par le createur de campagne."
+          },
+          "status": {
+            "approved": "Etat de moderation actuel : approuvee et visible publiquement.",
+            "pending": "Etat de moderation actuel : en attente de revue et pas encore listee publiquement.",
+            "awaitingAdaptation": "Etat de moderation actuel : adaptation requise avant publication.",
+            "rejected": "Etat de moderation actuel : rejetee jusqu'a une nouvelle soumission.",
+            "unknown": "Etat de moderation actuel : la visibilite depend du workflow de moderation."
+          }
         },
         "onboarding": {
           "title": "Rejoindre et participer",

@@ -37,7 +37,7 @@
 - [x] T012-021 Add `What is this campaign?` button on campaign public page.
 - [x] T012-022 Implement campaign explainer dialog slider base slides (1-3).
 - [x] T012-023 Implement unauthenticated-only slide with login/register + Android/iOS CTAs.
-- [ ] T012-024 Implement campaign explainer content model mapped to moderation states and triage rules.
+- [x] T012-024 Implement campaign explainer content model mapped to moderation states and triage rules.
 - [x] T012-025 Enforce campaign SEO metadata contract (title, description, 600x600 image).
 - [x] T012-026 Add tests for slider visibility rules and campaign metadata generation.
 

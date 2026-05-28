@@ -317,12 +317,23 @@ export default function PublicCampaignDetailPage({
 
     return buildCampaignExplainerSlides(t, {
       isAuthenticated: session.authenticated,
+      isCampaignCreator: Boolean(session.account?.id && campaign?.creatorAccountId === session.account.id),
+      moderationStatus: campaign?.moderationStatus,
       loginHref: `/login?next=${nextDestination}`,
       registerHref: `/register?next=${nextDestination}`,
       androidUrl: storeLinks.androidUrl,
       iosUrl: storeLinks.iosUrl
     });
-  }, [campaignId, session.authenticated, storeLinks.androidUrl, storeLinks.iosUrl, t]);
+  }, [
+    campaign?.creatorAccountId,
+    campaign?.moderationStatus,
+    campaignId,
+    session.account?.id,
+    session.authenticated,
+    storeLinks.androidUrl,
+    storeLinks.iosUrl,
+    t
+  ]);
 
   useEffect(() => {
     setExplainerSlideIndex(current => Math.min(current, Math.max(0, explainerSlides.length - 1)));
@@ -703,6 +714,15 @@ export default function PublicCampaignDetailPage({
                       {activeExplainerSlide.title}
                     </Typography>
                     <Typography variant="body1">{activeExplainerSlide.body}</Typography>
+                    {activeExplainerSlide.details?.length ? (
+                      <Stack spacing={0.6}>
+                        {activeExplainerSlide.details.map(detail => (
+                          <Typography color="text.secondary" key={detail} variant="body2">
+                            • {detail}
+                          </Typography>
+                        ))}
+                      </Stack>
+                    ) : null}
                     {activeExplainerSlide.ctas?.length ? (
                       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
                         {activeExplainerSlide.ctas.map(cta => (

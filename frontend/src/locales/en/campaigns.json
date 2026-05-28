@@ -34,7 +34,18 @@
         },
         "governance": {
           "title": "Who reviews contributions",
-          "body": "Campaign creators triage incoming resource and need requests, while moderation status controls public visibility and lifecycle."
+          "body": "Campaign governance combines creator triage decisions and platform moderation controls.",
+          "triage": {
+            "creator": "As creator, you triage incoming resource and need join requests from your moderation workspace.",
+            "contributor": "Contributors can submit resource and need join requests that are triaged by the campaign creator."
+          },
+          "status": {
+            "approved": "Current moderation state: approved and publicly visible.",
+            "pending": "Current moderation state: pending review and not yet publicly listed.",
+            "awaitingAdaptation": "Current moderation state: awaiting adaptation before publication.",
+            "rejected": "Current moderation state: rejected until a new moderation submission.",
+            "unknown": "Current moderation state: visibility depends on moderation workflow."
+          }
         },
         "onboarding": {
           "title": "Join and start participating",
