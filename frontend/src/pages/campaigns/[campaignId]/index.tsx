@@ -32,6 +32,7 @@ import {
   type PublicAvailabilityState
 } from "../../../features/shared/publicPageSeo";
 import { formatPublicDateTime } from "../../../features/shared/publicDateTime";
+import { resolveMobileStoreLinks } from "../../../features/shared/mobileStoreLinks";
 import { fetchServerGraphql } from "../../../features/shared/serverGraphql";
 import { NeedCard } from "../../../features/ui/NeedCard";
 import { ResourceCard } from "../../../features/ui/ResourceCard";
@@ -310,7 +311,18 @@ export default function PublicCampaignDetailPage({
   const [needJoinActionSuccessCount, setNeedJoinActionSuccessCount] = useState(0);
   const [explainerOpen, setExplainerOpen] = useState(false);
   const [explainerSlideIndex, setExplainerSlideIndex] = useState(0);
-  const explainerSlides = useMemo(() => buildCampaignExplainerSlides(t), [t]);
+  const storeLinks = useMemo(() => resolveMobileStoreLinks(), []);
+  const explainerSlides = useMemo(() => {
+    const nextDestination = encodeURIComponent(`/campaigns/${campaignId}`);
+
+    return buildCampaignExplainerSlides(t, {
+      isAuthenticated: session.authenticated,
+      loginHref: `/login?next=${nextDestination}`,
+      registerHref: `/register?next=${nextDestination}`,
+      androidUrl: storeLinks.androidUrl,
+      iosUrl: storeLinks.iosUrl
+    });
+  }, [campaignId, session.authenticated, storeLinks.androidUrl, storeLinks.iosUrl, t]);
   const activeExplainerSlide = explainerSlides[explainerSlideIndex];
 
   const {
@@ -682,6 +694,23 @@ export default function PublicCampaignDetailPage({
                       {activeExplainerSlide.title}
                     </Typography>
                     <Typography variant="body1">{activeExplainerSlide.body}</Typography>
+                    {activeExplainerSlide.ctas?.length ? (
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
+                        {activeExplainerSlide.ctas.map(cta => (
+                          <Button
+                            component={cta.external ? "a" : NextLink}
+                            href={cta.href}
+                            key={cta.label}
+                            rel={cta.external ? "noreferrer" : undefined}
+                            size="small"
+                            target={cta.external ? "_blank" : undefined}
+                            variant="outlined"
+                          >
+                            {cta.label}
+                          </Button>
+                        ))}
+                      </Stack>
+                    ) : null}
                     <Typography color="text.secondary" variant="caption">
                       {t("public.explainer.progress", {
                         current: explainerSlideIndex + 1,

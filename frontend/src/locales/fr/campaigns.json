@@ -35,6 +35,14 @@
         "governance": {
           "title": "Qui examine les contributions",
           "body": "Le createur de campagne trie les demandes de rattachement des ressources et besoins, tandis que la moderation controle la visibilite publique."
+        },
+        "onboarding": {
+          "title": "Rejoindre et participer",
+          "body": "Connectez-vous ou creez votre compte pour contribuer aux besoins et ressources de campagne. Vous pouvez aussi installer l'application mobile.",
+          "login": "Se connecter",
+          "register": "Creer un compte",
+          "android": "Application Android",
+          "ios": "Application iOS"
         }
       }
     },
