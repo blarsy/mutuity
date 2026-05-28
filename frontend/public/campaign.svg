@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-label="Campaign">
+  <defs>
+    <linearGradient id="campaign-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f766e" />
+      <stop offset="100%" stop-color="#0b3a53" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#campaign-bg)" />
+  <g fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+    <path d="M150 360c60-100 140-150 250-140" />
+    <path d="M200 420c80-110 170-165 290-150" opacity="0.55" />
+  </g>
+  <circle cx="170" cy="220" r="34" fill="#fbbf24" />
+  <circle cx="410" cy="350" r="26" fill="#34d399" />
+  <text x="56" y="540" fill="#ffffff" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="60" font-weight="700" letter-spacing="1">Campaign</text>
+</svg>

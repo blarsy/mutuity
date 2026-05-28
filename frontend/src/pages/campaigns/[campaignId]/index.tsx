@@ -369,7 +369,8 @@ export default function PublicCampaignDetailPage({
   const pageMeta = buildCampaignPageMeta({
     campaignId,
     campaignTitle: campaign?.title,
-    campaignDescription: campaign?.description
+    campaignDescription: campaign?.description,
+    campaignImageUrl: campaign?.imageUrl
   });
 
   const activeResources = myResourcesData?.allResources.nodes ?? [];
@@ -612,6 +613,9 @@ export default function PublicCampaignDetailPage({
         <meta content={pageMeta.description} name="description" />
         <meta content={pageMeta.title} property="og:title" />
         <meta content={pageMeta.description} property="og:description" />
+        <meta content={pageMeta.ogImageUrl} property="og:image" />
+        <meta content="600" property="og:image:width" />
+        <meta content="600" property="og:image:height" />
         <link href={pageMeta.canonicalUrl} rel="canonical" />
       </Head>
       <Box sx={{ py: 6 }}>

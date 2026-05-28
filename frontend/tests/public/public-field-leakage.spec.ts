@@ -42,7 +42,8 @@ describe("public page projections - restricted field exclusion", () => {
       const campaignPageMeta = buildCampaignPageMeta({
         campaignId: "campaign-123",
         campaignTitle: "Community Support",
-        campaignDescription: "Help members in need"
+        campaignDescription: "Help members in need",
+        campaignImageUrl: null
       });
 
       // Verify metadata doesn't contain email

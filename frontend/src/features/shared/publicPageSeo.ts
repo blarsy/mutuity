@@ -22,9 +22,12 @@ type PageMeta = {
   title: string;
   description: string;
   canonicalUrl: string;
+  ogImageUrl?: string;
 };
 
 const DEFAULT_SITE_URL = "http://localhost:3000";
+const CAMPAIGN_OG_IMAGE_SIZE = 600;
+const CAMPAIGN_OG_FALLBACK_PATH = "/campaign.svg";
 
 function nowMs() {
   return Date.now();
@@ -57,6 +60,20 @@ export function canonicalUrlForPath(pathname: string) {
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL).replace(/\/$/, "");
   const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
   return `${baseUrl}${path}`;
+}
+
+function buildCampaignOgImageUrl(imageUrl: string | null | undefined) {
+  const fallbackUrl = canonicalUrlForPath(CAMPAIGN_OG_FALLBACK_PATH);
+  if (!imageUrl) {
+    return fallbackUrl;
+  }
+
+  const cloudinaryMatch = imageUrl.match(/^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/i);
+  if (!cloudinaryMatch) {
+    return imageUrl;
+  }
+
+  return `${cloudinaryMatch[1]}c_fill,g_auto,h_${CAMPAIGN_OG_IMAGE_SIZE},w_${CAMPAIGN_OG_IMAGE_SIZE}/${cloudinaryMatch[2]}`;
 }
 
 export function resolveNeedAvailabilityState(need: NeedLike | null): PublicAvailabilityState {
@@ -117,11 +134,13 @@ export function buildCampaignPageMeta(input: {
   campaignTitle: string | null | undefined;
   campaignDescription: string | null | undefined;
   campaignId: string;
+  campaignImageUrl: string | null | undefined;
 }): PageMeta {
   return {
     title: plainText(input.campaignTitle, "Campaign"),
     description: plainText(input.campaignDescription, "Campaign details on Mutuity"),
-    canonicalUrl: canonicalUrlForPath(`/campaigns/${input.campaignId}`)
+    canonicalUrl: canonicalUrlForPath(`/campaigns/${input.campaignId}`),
+    ogImageUrl: buildCampaignOgImageUrl(input.campaignImageUrl)
   };
 }
 

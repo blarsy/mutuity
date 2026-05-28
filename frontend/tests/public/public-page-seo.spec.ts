@@ -22,12 +22,27 @@ describe("public page seo helpers", () => {
     const meta = buildCampaignPageMeta({
       campaignId: "c1",
       campaignTitle: "Campaign title",
-      campaignDescription: "Plain campaign summary"
+      campaignDescription: "Plain campaign summary",
+      campaignImageUrl: "https://res.cloudinary.com/demo/image/upload/v1712345678/campaigns/my-campaign.jpg"
     });
 
     expect(meta.title).toBe("Campaign title");
     expect(meta.description).toBe("Plain campaign summary");
     expect(meta.canonicalUrl).toBe("http://localhost:3000/campaigns/c1");
+    expect(meta.ogImageUrl).toBe(
+      "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,h_600,w_600/v1712345678/campaigns/my-campaign.jpg"
+    );
+  });
+
+  it("uses campaign og image fallback when campaign has no image", () => {
+    const meta = buildCampaignPageMeta({
+      campaignId: "c2",
+      campaignTitle: "Campaign title",
+      campaignDescription: "Plain campaign summary",
+      campaignImageUrl: null
+    });
+
+    expect(meta.ogImageUrl).toBe("http://localhost:3000/campaign.svg");
   });
 
   it("builds metadata fallback chains for need and account", () => {
