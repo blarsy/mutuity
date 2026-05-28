@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": "We care about the confidentiality of your personal data. This policy explains how {{productName}} collects, uses, and protects information when you use the platform.",
+    "sections": {
+      "dataCollectTitle": "1. Data we collect",
+      "dataCollectBody": "We only collect personal data required to operate the platform, such as your email address, display name, and the content you create while using {{productName}}.",
+      "dataUseTitle": "2. How we use your data",
+      "dataUseBody": "We use personal data to provide requested services, including notifications, account management, and product experience personalization.",
+      "dataSharingTitle": "3. Data sharing",
+      "dataSharingBody": "We do not sell personal data. We only share data in the following situations:",
+      "securityTitle": "4. Security",
+      "securityBody": "We apply reasonable technical and organizational measures to protect personal data against unauthorized access, disclosure, alteration, or destruction.",
+      "retentionTitle": "5. Data retention",
+      "retentionBody": "We retain data only as long as needed to provide services, unless a longer period is required or permitted by law.",
+      "rightsTitle": "6. Your rights",
+      "rightsBody": "Depending on applicable law, you may have rights to access, correct, delete, limit, or object to processing of your personal data, and to request portability.",
+      "updatesTitle": "7. Policy updates",
+      "updatesBody": "We may update this policy from time to time. Material changes will be posted on this page."
+    },
+    "sharingCases": [
+      "If you explicitly consent.",
+      "If sharing is required to provide a feature you requested.",
+      "If disclosure is required by law or judicial process."
+    ],
+    "contact": "Contact: topela.tech@gmail.com"
+  },
+  "terms": {
+    "title": "Terms Of Use",
+    "sections": {
+      "purposeTitle": "1. Platform purpose",
+      "purposeBody": "{{productName}} is a collaborative exchange platform designed to support non-monetary interactions through an internal accounting unit named token.",
+      "tokenNatureTitle": "2. Nature of token",
+      "tokenNatureBody": "token is an internal unit used within {{productName}}. It is not:",
+      "tokenPropertiesTitle": "token also:",
+      "exchangesTitle": "3. Exchanges between users",
+      "exchangesBody": "Exchanges are negotiated freely between participants, with no official pricing table. Users are solely responsible for legal, tax, and social obligations that may apply to their activity.",
+      "endowmentTitle": "4. Platform endowment mechanism",
+      "endowmentBody": "To support platform operation and development, a platform endowment equivalent to 10% of each validated exchange volume may be minted in token and assigned to a dedicated platform account.",
+      "transparencyTitle": "5. Transparency and evolution",
+      "transparencyBody": "{{productName}} communicates the core principles of token usage and may evolve the system over time to preserve legal compliance and product sustainability."
+    },
+    "tokenIsNot": [
+      "legal tender",
+      "electronic money",
+      "an official means of payment",
+      "a financial instrument",
+      "a purchasable voucher",
+      "a claim to monetary compensation"
+    ],
+    "tokenProperties": [
+      "cannot be exchanged for euros",
+      "is not bought or sold against official currency",
+      "is not pegged to labor time or a stable external index",
+      "does not provide any conversion, refund, or guaranteed value"
+    ]
+  }
+}

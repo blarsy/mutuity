@@ -1,52 +1,45 @@
 import { Box, Container, List, ListItem, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME || "Mutuity";
 
-const SHARING_CASES = [
-  "If you explicitly consent.",
-  "If sharing is required to provide a feature you requested.",
-  "If disclosure is required by law or judicial process."
-];
-
 export default function PrivacyPage() {
+  const { t } = useTranslation("legal");
+  const sharingCases = t("privacy.sharingCases", { returnObjects: true }) as unknown as string[];
+
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Privacy Policy
+          {t("privacy.title")}
         </Typography>
 
         <Typography paragraph>
-          We care about the confidentiality of your personal data. This policy explains how
-          {` ${PRODUCT_NAME} `}
-          collects, uses, and protects information when you use the platform.
+          {t("privacy.intro", { productName: PRODUCT_NAME })}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          1. Data we collect
+          {t("privacy.sections.dataCollectTitle")}
         </Typography>
         <Typography paragraph>
-          We only collect personal data required to operate the platform, such as your email
-          address, display name, and the content you create while using
-          {` ${PRODUCT_NAME}`}.
+          {t("privacy.sections.dataCollectBody", { productName: PRODUCT_NAME })}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          2. How we use your data
+          {t("privacy.sections.dataUseTitle")}
         </Typography>
         <Typography paragraph>
-          We use personal data to provide requested services, including notifications,
-          account management, and product experience personalization.
+          {t("privacy.sections.dataUseBody")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          3. Data sharing
+          {t("privacy.sections.dataSharingTitle")}
         </Typography>
         <Typography paragraph>
-          We do not sell personal data. We only share data in the following situations:
+          {t("privacy.sections.dataSharingBody")}
         </Typography>
         <List dense>
-          {SHARING_CASES.map(item => (
+          {sharingCases.map(item => (
             <ListItem key={item} sx={{ display: "list-item", py: 0.5 }}>
               {item}
             </ListItem>
@@ -54,39 +47,35 @@ export default function PrivacyPage() {
         </List>
 
         <Typography gutterBottom variant="h6">
-          4. Security
+          {t("privacy.sections.securityTitle")}
         </Typography>
         <Typography paragraph>
-          We apply reasonable technical and organizational measures to protect personal data
-          against unauthorized access, disclosure, alteration, or destruction.
+          {t("privacy.sections.securityBody")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          5. Data retention
+          {t("privacy.sections.retentionTitle")}
         </Typography>
         <Typography paragraph>
-          We retain data only as long as needed to provide services, unless a longer period is
-          required or permitted by law.
+          {t("privacy.sections.retentionBody")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          6. Your rights
+          {t("privacy.sections.rightsTitle")}
         </Typography>
         <Typography paragraph>
-          Depending on applicable law, you may have rights to access, correct, delete, limit,
-          or object to processing of your personal data, and to request portability.
+          {t("privacy.sections.rightsBody")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          7. Policy updates
+          {t("privacy.sections.updatesTitle")}
         </Typography>
         <Typography paragraph>
-          We may update this policy from time to time. Material changes will be posted on this
-          page.
+          {t("privacy.sections.updatesBody")}
         </Typography>
 
         <Typography variant="body2">
-          Contact: topela.tech@gmail.com
+          {t("privacy.contact")}
         </Typography>
       </Box>
     </Container>

@@ -16,6 +16,7 @@ import enNotifications from "./locales/en/notifications.json";
 import enPreferences from "./locales/en/preferences.json";
 import enGrants from "./locales/en/grants.json";
 import enChat from "./locales/en/chat.json";
+import enLegal from "./locales/en/legal.json";
 
 import frCommon from "./locales/fr/common.json";
 import frLayout from "./locales/fr/layout.json";
@@ -32,6 +33,7 @@ import frNotifications from "./locales/fr/notifications.json";
 import frPreferences from "./locales/fr/preferences.json";
 import frGrants from "./locales/fr/grants.json";
 import frChat from "./locales/fr/chat.json";
+import frLegal from "./locales/fr/legal.json";
 
 void i18n
   .use(initReactI18next)
@@ -52,7 +54,8 @@ void i18n
         notifications: enNotifications,
         preferences: enPreferences,
         grants: enGrants,
-        chat: enChat
+        chat: enChat,
+        legal: enLegal
       },
       fr: {
         common: frCommon,
@@ -69,7 +72,8 @@ void i18n
         notifications: frNotifications,
         preferences: frPreferences,
         grants: frGrants,
-        chat: frChat
+        chat: frChat,
+        legal: frLegal
       }
     },
     lng: "fr",

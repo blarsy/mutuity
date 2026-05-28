@@ -1,57 +1,45 @@
 import { Box, Container, List, ListItem, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME || "Mutuity";
 
-const TOKEN_IS_NOT = [
-  "legal tender",
-  "electronic money",
-  "an official means of payment",
-  "a financial instrument",
-  "a purchasable voucher",
-  "a claim to monetary compensation"
-];
-
-const TOKEN_PROPERTIES = [
-  "cannot be exchanged for euros",
-  "is not bought or sold against official currency",
-  "is not pegged to labor time or a stable external index",
-  "does not provide any conversion, refund, or guaranteed value"
-];
-
 export default function TermsPage() {
+  const { t } = useTranslation("legal");
+  const tokenIsNot = t("terms.tokenIsNot", { returnObjects: true }) as unknown as string[];
+  const tokenProperties = t("terms.tokenProperties", { returnObjects: true }) as unknown as string[];
+
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
-          Terms Of Use
+          {t("terms.title")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          1. Platform purpose
+          {t("terms.sections.purposeTitle")}
         </Typography>
         <Typography paragraph>
-          {PRODUCT_NAME} is a collaborative exchange platform designed to support non-monetary
-          interactions through an internal accounting unit named token.
+          {t("terms.sections.purposeBody", { productName: PRODUCT_NAME })}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          2. Nature of token
+          {t("terms.sections.tokenNatureTitle")}
         </Typography>
         <Typography paragraph>
-          token is an internal unit used within {PRODUCT_NAME}. It is not:
+          {t("terms.sections.tokenNatureBody", { productName: PRODUCT_NAME })}
         </Typography>
         <List dense>
-          {TOKEN_IS_NOT.map(item => (
+          {tokenIsNot.map(item => (
             <ListItem key={item} sx={{ display: "list-item", py: 0.5 }}>
               {item}
             </ListItem>
           ))}
         </List>
         <Typography paragraph>
-          token also:
+          {t("terms.sections.tokenPropertiesTitle")}
         </Typography>
         <List dense>
-          {TOKEN_PROPERTIES.map(item => (
+          {tokenProperties.map(item => (
             <ListItem key={item} sx={{ display: "list-item", py: 0.5 }}>
               {item}
             </ListItem>
@@ -59,29 +47,24 @@ export default function TermsPage() {
         </List>
 
         <Typography gutterBottom variant="h6">
-          3. Exchanges between users
+          {t("terms.sections.exchangesTitle")}
         </Typography>
         <Typography paragraph>
-          Exchanges are negotiated freely between participants, with no official pricing table.
-          Users are solely responsible for legal, tax, and social obligations that may apply to
-          their activity.
+          {t("terms.sections.exchangesBody")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          4. Platform endowment mechanism
+          {t("terms.sections.endowmentTitle")}
         </Typography>
         <Typography paragraph>
-          To support platform operation and development, a platform endowment equivalent to 10%
-          of each validated exchange volume may be minted in token and assigned to a dedicated
-          platform account.
+          {t("terms.sections.endowmentBody")}
         </Typography>
 
         <Typography gutterBottom variant="h6">
-          5. Transparency and evolution
+          {t("terms.sections.transparencyTitle")}
         </Typography>
         <Typography paragraph>
-          {PRODUCT_NAME} communicates the core principles of token usage and may evolve the
-          system over time to preserve legal compliance and product sustainability.
+          {t("terms.sections.transparencyBody", { productName: PRODUCT_NAME })}
         </Typography>
       </Box>
     </Container>

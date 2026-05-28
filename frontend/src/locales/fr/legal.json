@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "title": "Politique de confidentialite",
+    "intro": "Nous accordons une grande importance a la confidentialite de vos donnees personnelles. Cette politique explique comment {{productName}} collecte, utilise et protege vos informations lorsque vous utilisez la plateforme.",
+    "sections": {
+      "dataCollectTitle": "1. Donnees collectees",
+      "dataCollectBody": "Nous collectons uniquement les donnees necessaires au fonctionnement de la plateforme, comme votre e-mail, votre nom d'affichage et les contenus que vous creez en utilisant {{productName}}.",
+      "dataUseTitle": "2. Utilisation des donnees",
+      "dataUseBody": "Nous utilisons ces donnees pour fournir les services demandes, y compris les notifications, la gestion du compte et la personnalisation de l'experience.",
+      "dataSharingTitle": "3. Partage des donnees",
+      "dataSharingBody": "Nous ne vendons pas vos donnees personnelles. Nous les partageons uniquement dans les cas suivants :",
+      "securityTitle": "4. Securite",
+      "securityBody": "Nous appliquons des mesures techniques et organisationnelles raisonnables pour proteger vos donnees contre l'acces non autorise, la divulgation, l'alteration ou la destruction.",
+      "retentionTitle": "5. Conservation des donnees",
+      "retentionBody": "Nous conservons les donnees aussi longtemps que necessaire pour fournir les services, sauf obligation legale contraire.",
+      "rightsTitle": "6. Vos droits",
+      "rightsBody": "Selon la loi applicable, vous pouvez disposer de droits d'acces, de rectification, de suppression, de limitation, d'opposition et de portabilite de vos donnees.",
+      "updatesTitle": "7. Evolution de la politique",
+      "updatesBody": "Nous pouvons mettre a jour cette politique. Les changements importants seront publies sur cette page."
+    },
+    "sharingCases": [
+      "Si vous donnez votre consentement explicite.",
+      "Si le partage est necessaire pour fournir une fonctionnalite demandee.",
+      "Si la divulgation est imposee par la loi ou une procedure judiciaire."
+    ],
+    "contact": "Contact : topela.tech@gmail.com"
+  },
+  "terms": {
+    "title": "Conditions d'utilisation",
+    "sections": {
+      "purposeTitle": "1. Objet de la plateforme",
+      "purposeBody": "{{productName}} est une plateforme d'echange collaborative visant des interactions non monetaires, basees sur une unite de compte interne nommee token.",
+      "tokenNatureTitle": "2. Nature du token",
+      "tokenNatureBody": "token est une unite interne utilisee dans {{productName}}. Ce n'est pas :",
+      "tokenPropertiesTitle": "token ne :",
+      "exchangesTitle": "3. Echanges entre utilisateurs",
+      "exchangesBody": "Les echanges sont negocies librement entre les participants, sans bareme officiel. Chaque utilisateur reste responsable de ses obligations legales, fiscales et sociales eventuelles.",
+      "endowmentTitle": "4. Mecanisme de dotation de la plateforme",
+      "endowmentBody": "Pour soutenir le fonctionnement et le developpement de la plateforme, une dotation equivalente a 10% du volume de chaque echange valide peut etre creee en token et attribuee a un compte dedie de la plateforme.",
+      "transparencyTitle": "5. Transparence et evolution",
+      "transparencyBody": "{{productName}} communique les principes essentiels d'usage du token et peut faire evoluer le systeme pour garantir conformite legale et durabilite produit."
+    },
+    "tokenIsNot": [
+      "une monnaie legale",
+      "une monnaie electronique",
+      "un moyen de paiement officiel",
+      "un instrument financier",
+      "un bon d'achat convertible",
+      "un droit a compensation monetaire"
+    ],
+    "tokenProperties": [
+      "ne peut pas etre echange contre des euros",
+      "n'est pas achete ni vendu contre une monnaie officielle",
+      "n'est pas indexe sur le temps de travail ni sur un etalon stable",
+      "n'ouvre droit a aucune conversion, remboursement ou garantie de valeur"
+    ]
+  }
+}

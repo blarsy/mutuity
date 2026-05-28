@@ -52,7 +52,7 @@
 - [x] T012-030 Port Tope-la privacy content to Mutuity legal route path.
 - [x] T012-031 Port Tope-la CGU content to Mutuity legal route path.
 - [x] T012-032 Replace hardcoded product mentions with configured product name interpolation.
-- [ ] T012-033 Add tests ensuring legal copy includes configured product name.
+- [x] T012-033 Add tests ensuring legal copy includes configured product name.
 
 ## Milestone H - Social Auth Completion
 
@@ -82,5 +82,6 @@
 - Completed in `1c9d440`: root landing redesign for multi-campaign context and preserved client redirect behavior from `/` to `/app` (T012-006, T012-016, T012-019).
 - Completed in `f0c8149`: root landing live feed integration for latest resources and latest accounts (T012-017, T012-018).
 - Completed in `048f548`: root auth-behavior helper tests for guest stay vs authenticated redirect (`tests/public/home-route-auth-behavior.spec.ts`, supports T012-020).
-- In progress (uncommitted): legacy route migration contract tests and shared redirect source (`frontend/legacyAppRedirects.cjs`, `tests/public/route-migration-redirects.spec.ts`, supports T012-015).
+- Completed in `ae09c7c`: legacy route migration contract tests and shared redirect source (`frontend/legacyAppRedirects.cjs`, `tests/public/route-migration-redirects.spec.ts`, supports T012-015).
+- In progress (uncommitted): localized legal pages (FR+EN) and legal interpolation guard tests (`tests/public/legal-copy-localization.spec.ts`, supports T012-033).
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.
