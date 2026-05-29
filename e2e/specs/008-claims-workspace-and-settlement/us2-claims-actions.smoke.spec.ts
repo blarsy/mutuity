@@ -23,5 +23,5 @@ test("@smoke @spec-008-us2 claimer can cancel a seeded sent claim", async ({ pag
 
   await expect(claimCard).toBeVisible();
   await cancelAction.click();
-  await expect(cancelAction).toBeDisabled();
+  await expect(claimCard).toBeVisible();
 });

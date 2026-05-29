@@ -10,7 +10,7 @@ import { E2E_CLAIMER_IDENTIFIER, E2E_PASSWORD } from "../../helpers/testUsers";
 test("@smoke @spec-004-us2 signed-out user is redirected to login and returned to protected page", async ({ page }) => {
   await page.goto("/profile");
 
-  await expect(page).toHaveURL(/\/login\?next=%2Fprofile/);
+  await expect(page).toHaveURL(/\/login\?next=%2F(?:app%2F)?profile/);
 
   await page.locator('input[name="identifier"]').fill(E2E_CLAIMER_IDENTIFIER);
   await page.locator('input[name="password"]').fill(E2E_PASSWORD);
@@ -53,5 +53,5 @@ test("@smoke @spec-004-us4 signed-in user can log out and protected pages requir
   await page.getByRole("menuitem", { name: /log out|se déconnecter|se deconnecter/i }).click();
 
   await page.goto("/profile");
-  await expect(page).toHaveURL(/\/login\?next=%2Fprofile/);
+  await expect(page).toHaveURL(/\/login\?next=%2F(?:app%2F)?profile/);
 });

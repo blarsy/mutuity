@@ -12,7 +12,7 @@ import {
 
 test("@smoke @spec-007-us3 visitor is redirected to login for bids workspace", async ({ page }) => {
   await page.goto("/bids");
-  await expect(page).toHaveURL(/\/login\?next=%2Fbids/);
+  await expect(page).toHaveURL(/\/login\?next=%2F(?:app%2F)?bids/);
 });
 
 test("@smoke @spec-007-us3 authenticated user can open bids workspace", async ({ page }) => {

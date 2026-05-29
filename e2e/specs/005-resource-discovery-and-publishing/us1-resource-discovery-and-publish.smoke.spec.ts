@@ -28,7 +28,7 @@ test("@smoke @spec-005-us2 authenticated user can publish a resource and see it 
   });
 
   await expect(page).toHaveURL(/\/resources\/manage(\?.*)?$/);
-  await page.locator('a[href="/resources/create"]').click();
+  await page.locator("a,button").filter({ hasText: /add resource|ajouter une ressource/i }).first().click();
   await expect(page).toHaveURL(/\/resources\/create(\?.*)?$/);
 
   await page.locator('input[name="title"]').fill(resourceTitle);

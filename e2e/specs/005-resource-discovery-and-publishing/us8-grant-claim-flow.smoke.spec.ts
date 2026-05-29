@@ -12,7 +12,7 @@ test("@smoke @spec-005-us8 authenticated user is redirected to login when access
   
   await page.goto(`/grants/${grantId}`);
   
-  await expect(page).toHaveURL(/\/login\?next=%2Fgrants%2F/);
+  await expect(page).toHaveURL(/\/login\?next=%2F(?:app%2F)?grants%2F/);
 });
 
 test("@smoke @spec-005-us8 authenticated user can navigate to a grant claim page", async ({ page }) => {

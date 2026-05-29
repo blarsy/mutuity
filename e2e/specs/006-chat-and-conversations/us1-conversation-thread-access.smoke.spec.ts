@@ -10,7 +10,7 @@ import { E2E_CLAIMER_IDENTIFIER, E2E_PASSWORD } from "../../helpers/testUsers";
 test("@smoke @spec-006-us1 visitor is redirected to login when accessing chat page", async ({ page }) => {
   await page.goto("/chat");
 
-  await expect(page).toHaveURL(/\/login\?next=%2Fchat/);
+  await expect(page).toHaveURL(/\/login\?next=%2F(?:app%2F)?chat/);
 });
 
 test("@smoke @spec-006-us1 authenticated user can access chat page with conversation list", async ({ page }) => {

@@ -12,19 +12,16 @@ test("@smoke @spec-005-us9 visitor is redirected to login when accessing admin r
 
   for (const section of adminSections) {
     await page.goto(`/admin/${section}`);
-    await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2F/);
+    await expect(page).toHaveURL(/\/login\?next=%2F(?:app%2F)?admin%2F/);
   }
 });
 
-test("@smoke @spec-005-us9 authenticated user can navigate to admin pages", async ({ page }) => {
-  await loginViaUi(page, {
-    identifier: E2E_CLAIMER_IDENTIFIER,
-    password: E2E_PASSWORD,
-    nextPath: "/admin/accounts"
-  });
+test("@smoke @spec-005-us9 authenticated non-admin user is denied admin pages", async ({ page }) => {
+  await page.goto("/login?next=%2Fadmin%2Faccounts");
+  await page.locator('input[name="identifier"]').fill(E2E_CLAIMER_IDENTIFIER);
+  await page.locator('input[name="password"]').fill(E2E_PASSWORD);
+  await page.locator('button[type="submit"]').click();
 
-  await expect(page).toHaveURL(/\/admin\/accounts(\?.*)?$/);
-
-  const heading = page.locator('h1, [role="heading"]').first();
-  await expect(heading).toBeVisible();
+  await expect(page).toHaveURL(/\/(app|login|$)/);
+  await expect(page).not.toHaveURL(/\/admin\/accounts/);
 });

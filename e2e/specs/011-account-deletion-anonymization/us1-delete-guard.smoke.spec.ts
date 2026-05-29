@@ -14,7 +14,8 @@ test("@smoke @spec-011-us1 delete confirmation requires explicit guard and suppo
     nextPath: "/profile"
   });
 
-  const deleteButton = page.getByRole("button", { name: /delete account|supprimer votre compte|supprimer mon compte/i });
+  const deleteButton = page.getByRole("button", { name: /delete account|supprimer votre compte|supprimer mon compte|supprimer le compte/i });
+  await deleteButton.scrollIntoViewIfNeeded();
   await expect(deleteButton).toBeVisible();
 
   await deleteButton.click();
