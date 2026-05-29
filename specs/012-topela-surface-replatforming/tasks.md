@@ -65,10 +65,10 @@
 
 ## Milestone I - Production Safety and E2E
 
-- [ ] T012-040 Add E2E assertions that first-render data appears in expected UI zones on landing/campaign/legal pages.
-- [ ] T012-041 Add E2E assertions that route migration does not break deep links.
-- [ ] T012-042 Add E2E guardrails that production UI never exposes raw query failure details on query/schema/route drift.
-- [ ] T012-043 Run full regression pass and update implementation-progress tracker with completion evidence.
+- [x] T012-040 Add E2E assertions that first-render data appears in expected UI zones on landing/campaign/legal pages.
+- [x] T012-041 Add E2E assertions that route migration does not break deep links.
+- [x] T012-042 Add E2E guardrails that production UI never exposes raw query failure details on query/schema/route drift.
+- [x] T012-043 Run full regression pass and update implementation-progress tracker with completion evidence.
 
 ## Explicitly Deferred
 
@@ -91,4 +91,6 @@
 - Completed in current branch head: low-overhead social-auth safety coverage (`backend/tests/integration/auth-graphql.spec.ts`, `backend/tests/integration/social-auth-start-routes.spec.ts`, supports T012-038).
 - Completed in current branch head: social callback E2E outcomes for Google/Apple (`e2e/specs/004-login-flow/us5-social-auth-callback.smoke.spec.ts`, supports T012-039).
 - Completed in current branch head: enforced recent re-authentication requirement before linking social identities (`database/migrations/123_social_identity_link_recent_reauth.sql`, `backend/tests/integration/auth-graphql.spec.ts`, supports T012-037).
+- Completed in current branch head: production safety E2E pack for render zones, deep-link redirects, and raw-error masking (`e2e/specs/012-topela-surface-replatforming/us1-render-zones-and-error-guardrails.smoke.spec.ts`, `e2e/specs/012-topela-surface-replatforming/us2-route-migration-deep-links.smoke.spec.ts`, supports T012-040 through T012-042).
+- Completed in current branch head: regression evidence run and tracker synchronization (Playwright + backend integration + typecheck), supports T012-043.
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.
