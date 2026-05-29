@@ -106,6 +106,22 @@ async function expireAuthToken(rawToken: string, tokenKind: string) {
   });
 }
 
+async function ageSessionByCookie(sessionCookie: string, hoursAgo: number) {
+  const tokenValue = decodeURIComponent(sessionCookie.split("=")[1] ?? "");
+  const sessionTokenHash = createHash("sha256").update(tokenValue).digest("hex");
+
+  await withDbClient(async client => {
+    await client.query(
+      `
+        update app_private.account_session
+        set created_at = now() - ($2::int * interval '1 hour')
+        where session_token_hash = $1
+      `,
+      [sessionTokenHash, hoursAgo]
+    );
+  });
+}
+
 describe("auth graphql operations", () => {
   it("supports authSession, authLogin, and authLogout with cookie-backed session state", async () => {
     const account = await seedDemoAccount({
@@ -879,6 +895,63 @@ describe("auth graphql operations", () => {
     expect(secondaryLogin.payload.data?.authLogin.authSession.authenticated).toBe(true);
     const secondaryCookie = getSessionCookie(secondaryLogin.response);
 
+    await ageSessionByCookie(secondaryCookie, 2);
+
+    const staleSessionLinkAttempt = await graphQLRequest(
+      `mutation LinkAccountExternalIdentity(
+        $provider: String!
+        $providerSubject: String!
+        $providerEmail: String!
+        $providerEmailVerified: Boolean!
+      ) {
+        linkAccountExternalIdentity(
+          input: {
+            pProvider: $provider
+            pProviderSubject: $providerSubject
+            pProviderEmail: $providerEmail
+            pProviderEmailVerified: $providerEmailVerified
+          }
+        ) {
+          string
+        }
+      }`,
+      {
+        provider: "apple",
+        providerSubject: `apple-stale-session-sub-${Date.now()}`,
+        providerEmail: `apple-stale-session-${Date.now()}@example.com`,
+        providerEmailVerified: true
+      },
+      secondaryCookie
+    );
+
+    expect(staleSessionLinkAttempt.response.status).toBe(200);
+    expect(staleSessionLinkAttempt.payload.errors).toBeDefined();
+    expect(staleSessionLinkAttempt.payload.errors?.[0]?.extensions?.code).toBe("UNAUTHENTICATED");
+
+    const refreshedSecondaryLogin = await graphQLRequest<{
+      authLogin: {
+        authSession: {
+          authenticated: boolean;
+        };
+      };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          authSession {
+            authenticated
+          }
+        }
+      }`,
+      {
+        identifier: secondaryAccount.identifier,
+        password: secondaryAccount.password
+      }
+    );
+
+    expect(refreshedSecondaryLogin.payload.errors).toBeUndefined();
+    expect(refreshedSecondaryLogin.payload.data?.authLogin.authSession.authenticated).toBe(true);
+    const refreshedSecondaryCookie = getSessionCookie(refreshedSecondaryLogin.response);
+
     const duplicateSubjectLink = await graphQLRequest(
       `mutation LinkAccountExternalIdentity(
         $provider: String!
@@ -903,7 +976,7 @@ describe("auth graphql operations", () => {
         providerEmail: sharedProviderEmail,
         providerEmailVerified: true
       },
-      secondaryCookie
+      refreshedSecondaryCookie
     );
 
     expect(duplicateSubjectLink.response.status).toBe(200);
@@ -933,7 +1006,7 @@ describe("auth graphql operations", () => {
         providerEmail: sharedProviderEmail,
         providerEmailVerified: true
       },
-      secondaryCookie
+      refreshedSecondaryCookie
     );
 
     expect(sameEmailDifferentSubjectLink.response.status).toBe(200);

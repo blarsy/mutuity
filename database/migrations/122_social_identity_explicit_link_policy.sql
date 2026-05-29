@@ -51,7 +51,7 @@ end;
 $$;
 
 grant execute on function app_private.resolve_account_for_external_identity(text, text, text, boolean)
-  to identified_account, manager, admin;
+  to identified_account, admin;
 
 comment on function app_private.resolve_account_for_external_identity(text, text, text, boolean)
   is 'Resolves account candidates by provider subject only; verified email fallback now requires explicit link confirmation.';

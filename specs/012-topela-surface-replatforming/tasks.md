@@ -59,7 +59,7 @@
 - [x] T012-034 Confirm Google and Apple auth start URLs and callback wiring in all environments.
 - [x] T012-035 Remove/disable any non-scoped social provider entry points (including Facebook).
 - [x] T012-036 Implement/complete provider callback handling for Google and Apple.
-- [ ] T012-037 Implement MVP anti-account-takeover policy for provider identities (no email-only auto-link, provider-id key, explicit link confirmation, re-auth for linking).
+- [x] T012-037 Implement MVP anti-account-takeover policy for provider identities (no email-only auto-link, provider-id key, explicit link confirmation, re-auth for linking).
 - [x] T012-038 Add low-overhead safety tests for MVP policy (linked sign-in, no silent same-email attach, explicit link confirmation, DB uniqueness integrity).
 - [x] T012-039 Add end-to-end tests for Google and Apple sign-in and registration completion paths using MVP policy outcomes.
 
@@ -90,4 +90,5 @@
 - Completed in `5d8a8b3` and `a35f73c`: social start env compatibility and explicit-link-required identity resolution policy (`backend/src/postgraphile/server.ts`, `database/migrations/122_social_identity_explicit_link_policy.sql`, supports T012-037 baseline hardening).
 - Completed in current branch head: low-overhead social-auth safety coverage (`backend/tests/integration/auth-graphql.spec.ts`, `backend/tests/integration/social-auth-start-routes.spec.ts`, supports T012-038).
 - Completed in current branch head: social callback E2E outcomes for Google/Apple (`e2e/specs/004-login-flow/us5-social-auth-callback.smoke.spec.ts`, supports T012-039).
+- Completed in current branch head: enforced recent re-authentication requirement before linking social identities (`database/migrations/123_social_identity_link_recent_reauth.sql`, `backend/tests/integration/auth-graphql.spec.ts`, supports T012-037).
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.

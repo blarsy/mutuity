@@ -95,7 +95,8 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Grant title is required", "BAD_USER_INPUT"],
   ["Grant awarded token amount must be a positive integer", "BAD_USER_INPUT"],
   ["Grant max successful claim count must be positive", "BAD_USER_INPUT"],
-  ["Grant not found", "NOT_FOUND"]
+  ["Grant not found", "NOT_FOUND"],
+  ["Recent re-authentication is required to link social identities", "UNAUTHENTICATED"]
 ]);
 const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
   pattern: RegExp;
@@ -418,7 +419,8 @@ const postgraphileMiddleware = postgraphile(
         return {
           role: session.role,
           "jwt.claims.role": session.role,
-          "jwt.claims.account_id": session.accountId
+          "jwt.claims.account_id": session.accountId,
+          "jwt.claims.session_id": session.sessionId
         };
       }
 
