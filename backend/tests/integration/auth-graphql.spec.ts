@@ -909,6 +909,36 @@ describe("auth graphql operations", () => {
     expect(duplicateSubjectLink.response.status).toBe(200);
     expect(duplicateSubjectLink.payload.errors).toBeDefined();
 
+    const sameEmailDifferentSubjectLink = await graphQLRequest(
+      `mutation LinkAccountExternalIdentity(
+        $provider: String!
+        $providerSubject: String!
+        $providerEmail: String!
+        $providerEmailVerified: Boolean!
+      ) {
+        linkAccountExternalIdentity(
+          input: {
+            pProvider: $provider
+            pProviderSubject: $providerSubject
+            pProviderEmail: $providerEmail
+            pProviderEmailVerified: $providerEmailVerified
+          }
+        ) {
+          string
+        }
+      }`,
+      {
+        provider: "google",
+        providerSubject: `google-different-sub-${Date.now()}`,
+        providerEmail: sharedProviderEmail,
+        providerEmailVerified: true
+      },
+      secondaryCookie
+    );
+
+    expect(sameEmailDifferentSubjectLink.response.status).toBe(200);
+    expect(sameEmailDifferentSubjectLink.payload.errors).toBeDefined();
+
     const duplicateLocalRegistration = await graphQLRequest(
       `mutation RegisterLocalAccountWithPassword($identifier: String!, $displayName: String!, $password: String!) {
         registerLocalAccountWithPassword(

@@ -60,7 +60,7 @@
 - [x] T012-035 Remove/disable any non-scoped social provider entry points (including Facebook).
 - [x] T012-036 Implement/complete provider callback handling for Google and Apple.
 - [ ] T012-037 Implement MVP anti-account-takeover policy for provider identities (no email-only auto-link, provider-id key, explicit link confirmation, re-auth for linking).
-- [ ] T012-038 Add low-overhead safety tests for MVP policy (linked sign-in, no silent same-email attach, explicit link confirmation, DB uniqueness integrity).
+- [x] T012-038 Add low-overhead safety tests for MVP policy (linked sign-in, no silent same-email attach, explicit link confirmation, DB uniqueness integrity).
 - [ ] T012-039 Add end-to-end tests for Google and Apple sign-in and registration completion paths using MVP policy outcomes.
 
 ## Milestone I - Production Safety and E2E
@@ -86,4 +86,7 @@
 - Completed in `ad2ac9d`: localized legal pages (FR+EN) and legal interpolation guard tests (`tests/public/legal-copy-localization.spec.ts`, supports T012-033).
 - Completed in `7687e36`: campaign public explainer trigger and 3 base slides (`public.explainer.*`, `tests/campaigns/campaign-explainer.spec.ts`, supports T012-021 and T012-022).
 - Completed in `e405b4a`: unauthenticated explainer slide with login/register and Android/iOS CTAs (`public.explainer.slides.onboarding`, supports T012-023).
+- Completed in `035076e` and `81c3a82`: Google/Apple auth callback + backend start routes (`frontend/src/pages/auth/*/callback.tsx`, `backend/src/postgraphile/server.ts`, supports T012-034 through T012-036).
+- Completed in `5d8a8b3` and `a35f73c`: social start env compatibility and explicit-link-required identity resolution policy (`backend/src/postgraphile/server.ts`, `database/migrations/122_social_identity_explicit_link_policy.sql`, supports T012-037 baseline hardening).
+- Completed in current branch head: low-overhead social-auth safety coverage (`backend/tests/integration/auth-graphql.spec.ts`, `backend/tests/integration/social-auth-start-routes.spec.ts`, supports T012-038).
 - Scope clarification: the former single-campaign `OngoingCampaignAnnouncement` zone is intentionally not ported.
