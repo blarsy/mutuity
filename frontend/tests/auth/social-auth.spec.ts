@@ -4,6 +4,7 @@ import { resolveSocialPrefill } from "../../src/pages/register";
 describe("social auth helpers", () => {
   const previousGoogleUrl = process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL;
   const previousAppleUrl = process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL;
+  const previousBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const previousGoogleCallbackUrl = process.env.NEXT_PUBLIC_GOOGLE_AUTH_CALLBACK_URL;
   const previousAppleRedirectUri = process.env.NEXT_PUBLIC_APPLE_AUTH_REDIRECT_URI;
 
@@ -18,6 +19,12 @@ describe("social auth helpers", () => {
       delete process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL;
     } else {
       process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL = previousAppleUrl;
+    }
+
+    if (previousBackendUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_BACKEND_URL;
+    } else {
+      process.env.NEXT_PUBLIC_BACKEND_URL = previousBackendUrl;
     }
 
     if (previousGoogleCallbackUrl === undefined) {
@@ -37,12 +44,26 @@ describe("social auth helpers", () => {
     expect(SOCIAL_AUTH_PROVIDERS).toEqual(["google", "apple"]);
   });
 
-  it("returns null when provider start URLs are not configured", () => {
+  it("returns null when provider and backend start URLs are not configured", () => {
     delete process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL;
     delete process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL;
+    delete process.env.NEXT_PUBLIC_BACKEND_URL;
 
     expect(getSocialAuthStartUrl("google", "/needs/create")).toBeNull();
     expect(getSocialAuthStartUrl("apple", "/needs/create")).toBeNull();
+  });
+
+  it("falls back to backend auth start endpoints when explicit provider URLs are missing", () => {
+    delete process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL;
+    delete process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL;
+    process.env.NEXT_PUBLIC_BACKEND_URL = "http://localhost:5050/";
+
+    expect(getSocialAuthStartUrl("google", "/needs/create")).toBe(
+      "http://localhost:5050/auth/google/start?next=%2Fneeds%2Fcreate"
+    );
+    expect(getSocialAuthStartUrl("apple", "/needs/create")).toBe(
+      "http://localhost:5050/auth/apple/start?next=%2Fneeds%2Fcreate"
+    );
   });
 
   it("builds absolute provider URL and carries next destination", () => {

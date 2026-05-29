@@ -2,12 +2,22 @@ export type SocialProvider = "google" | "apple";
 
 export const SOCIAL_AUTH_PROVIDERS: ReadonlyArray<SocialProvider> = ["google", "apple"];
 
-function getConfiguredStartUrl(provider: SocialProvider) {
-  if (provider === "google") {
-    return process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL?.trim() ?? "";
+function backendDerivedStartUrl(provider: SocialProvider) {
+  const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.trim() ?? "";
+  if (!backendBaseUrl) {
+    return "";
   }
 
-  return process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL?.trim() ?? "";
+  const normalizedBase = backendBaseUrl.replace(/\/$/, "");
+  return `${normalizedBase}/auth/${provider}/start`;
+}
+
+function getConfiguredStartUrl(provider: SocialProvider) {
+  if (provider === "google") {
+    return process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL?.trim() || backendDerivedStartUrl(provider);
+  }
+
+  return process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL?.trim() || backendDerivedStartUrl(provider);
 }
 
 function getConfiguredCallbackUrl(provider: SocialProvider) {
