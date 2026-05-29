@@ -195,8 +195,16 @@ const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:300
   .map(origin => origin.trim())
   .filter(Boolean);
 const frontendBaseUrl = process.env.FRONTEND_URL?.trim() || "http://localhost:3000";
-const GOOGLE_AUTH_START_URL = process.env.GOOGLE_AUTH_START_URL?.trim() || "";
-const APPLE_AUTH_START_URL = process.env.APPLE_AUTH_START_URL?.trim() || "";
+const GOOGLE_AUTH_START_URL = (
+  process.env.GOOGLE_AUTH_START_URL?.trim()
+  || process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL?.trim()
+  || ""
+);
+const APPLE_AUTH_START_URL = (
+  process.env.APPLE_AUTH_START_URL?.trim()
+  || process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL?.trim()
+  || ""
+);
 
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -346,7 +354,7 @@ app.get("/auth/:provider/start", (req, res) => {
   const configuredStartUrl = providerStartUrl(provider);
   if (!configuredStartUrl) {
     res.status(501).json({
-      error: `Missing ${provider.toUpperCase()}_AUTH_START_URL configuration`
+      error: `Missing ${provider.toUpperCase()}_AUTH_START_URL configuration (or NEXT_PUBLIC_${provider.toUpperCase()}_AUTH_START_URL fallback)`
     });
     return;
   }
