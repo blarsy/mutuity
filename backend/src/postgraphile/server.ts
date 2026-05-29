@@ -194,6 +194,9 @@ const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:300
   .split(",")
   .map(origin => origin.trim())
   .filter(Boolean);
+const frontendBaseUrl = process.env.FRONTEND_URL?.trim() || "http://localhost:3000";
+const GOOGLE_AUTH_START_URL = process.env.GOOGLE_AUTH_START_URL?.trim() || "";
+const APPLE_AUTH_START_URL = process.env.APPLE_AUTH_START_URL?.trim() || "";
 
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -291,6 +294,20 @@ function isLocalBackendOrigin(origin: string) {
   }
 }
 
+function normalizeNextDestination(candidate: unknown) {
+  const value = typeof candidate === "string" ? candidate : "/";
+  return value.startsWith("/") ? value : "/";
+}
+
+function toAbsoluteUrl(candidate: string, requestBaseUrl: string) {
+  const isAbsolute = /^https?:\/\//i.test(candidate);
+  return isAbsolute ? new URL(candidate) : new URL(candidate, requestBaseUrl);
+}
+
+function providerStartUrl(provider: "google" | "apple") {
+  return provider === "google" ? GOOGLE_AUTH_START_URL : APPLE_AUTH_START_URL;
+}
+
 app.use(cookieParser(sessionSecret));
 app.use(createAuthSessionMiddleware(pool));
 app.use(
@@ -317,6 +334,30 @@ app.use(
     }
   })
 );
+
+app.get("/auth/:provider/start", (req, res) => {
+  const provider = req.params.provider;
+
+  if (provider !== "google" && provider !== "apple") {
+    res.status(404).json({ error: "Unsupported social provider" });
+    return;
+  }
+
+  const configuredStartUrl = providerStartUrl(provider);
+  if (!configuredStartUrl) {
+    res.status(501).json({
+      error: `Missing ${provider.toUpperCase()}_AUTH_START_URL configuration`
+    });
+    return;
+  }
+
+  const requestBaseUrl = `${req.protocol}://${req.get("host")}`;
+  const nextDestination = normalizeNextDestination(req.query.next);
+  const redirectUrl = toAbsoluteUrl(configuredStartUrl, requestBaseUrl || frontendBaseUrl);
+  redirectUrl.searchParams.set("next", nextDestination);
+
+  res.redirect(302, redirectUrl.toString());
+});
 
 // SQL functions in app_public (for example createCampaign and addCampaignModerationNote)
 // are exposed as GraphQL mutations by PostGraphile.
