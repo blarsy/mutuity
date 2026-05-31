@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Alert, Box, Button } from "@mui/material";
 import type { ReactNode } from "react";
+import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
 
 import { requestEmailVerification } from "../auth/auth.api";
@@ -17,6 +18,7 @@ export function AppShell({
   colorMode: AppColorMode;
   onToggleColorMode: () => void;
 }) {
+  const router = useRouter();
   const { session } = useAuth();
   const { t } = useTranslation("layout");
   const [resendLoading, setResendLoading] = useState(false);
@@ -25,6 +27,7 @@ export function AppShell({
 
   const shouldShowActivationBanner =
     session.authenticated && Boolean(session.account) && !session.account?.emailVerified;
+  const shouldShowTopBar = router.pathname !== "/";
 
   const handleResendActivationMail = async () => {
     if (!session.account?.externalSubject || resendLoading) {
@@ -49,7 +52,7 @@ export function AppShell({
 
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
-      <AppTopBar colorMode={colorMode} onToggleColorMode={onToggleColorMode} />
+      {shouldShowTopBar ? <AppTopBar colorMode={colorMode} onToggleColorMode={onToggleColorMode} /> : null}
       {shouldShowActivationBanner ? (
         <>
           <Alert

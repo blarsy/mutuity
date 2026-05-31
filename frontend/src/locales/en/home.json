@@ -1,42 +1,103 @@
 {
+  "pageTitle": "Tope-là",
   "title": "Mutuity",
   "subtitle": "Turn your local resources into shared value. Discover needs, publish resources, and coordinate across multiple campaigns.",
-  "heroBadge": "Circular Economy",
-  "communityBadge": "Multi-campaign",
-  "impactLine": "Less waste, more cooperation, faster coordination.",
   "checkingSession": "Checking session…",
   "welcomeBack": "Welcome back {{name}}",
   "signIn": "Sign in",
   "loginDialogSubtitle": "Connect to access bids, claims, chat, and your account workspace.",
   "browseNeeds": "Needs",
   "browseResources": "Resources",
-  "browseCampaigns": "Campaigns",
-  "featureOneTitle": "Find What Is Needed",
-  "featureOneText": "Browse community needs and identify where your time, tools, or knowledge can help.",
-  "featureTwoTitle": "Publish What You Can Offer",
-  "featureTwoText": "List reusable goods and services, and route them to the right contributors quickly.",
-  "featureThreeTitle": "Coordinate Across Campaigns",
-  "featureThreeText": "Manage collaboration in parallel campaigns without mixing responsibilities or visibility.",
-  "latestResourcesTitle": "Latest Resources",
-  "seeAllResources": "See all",
-  "loadingLatestResources": "Loading latest resources…",
-  "latestResourcesUnavailable": "Latest resources are temporarily unavailable.",
-  "noLatestResources": "No resources published yet.",
-  "resourceDescriptionFallback": "Details will appear here soon.",
-  "openResource": "Open resource",
-  "latestAccountsTitle": "Latest Contributors",
-  "meetContributors": "Browse community",
-  "loadingLatestAccounts": "Loading contributors…",
-  "latestAccountsUnavailable": "Contributors are temporarily unavailable.",
-  "noLatestAccounts": "No contributor profile yet.",
-  "accountBioFallback": "No bio shared yet.",
-  "openProfile": "Open profile",
-  "byAccount": "By {{account}}",
-  "unknownAccount": "Unknown account",
-  "ctaTitle": "Ready To Start Contributing?",
-  "ctaText": "Join your community workspace and begin exchanging resources with clear traceability.",
-  "createAccount": "Create account",
-  "enterApp": "Enter app",
+  "hero": {
+    "titleLine1Black": "The app that keeps ",
+    "titleLine1White": "resources",
+    "titleLine2Black": "in ",
+    "titleLine2White": "motion",
+    "bodyLine1": "Find what you need, share what sits unused at home, and start saving today.",
+    "bodyLine2": "With Tope-là, you access items, services, and skills shared by your community. You reduce expenses, simplify daily life, and keep resources circulating instead of letting them go to waste.",
+    "faq": "FAQ"
+  },
+  "audience": {
+    "titleLine1": "Who is ",
+    "titleLine2": "Tope-là for?",
+    "body": "individuals, families, associations, and artisans who want to reuse, share, or exchange items, services, and skills, save money, build social ties, and contribute to a circular economy."
+  },
+  "downloads": {
+    "title": "Download on"
+  },
+  "webVersion": {
+    "title": "Web version",
+    "connect": "Sign in"
+  },
+  "social": {
+    "title": "Follow us"
+  },
+  "team": {
+    "titleLine1": "Our ",
+    "titleLine2": "team",
+    "bertrandTitle": "Co-founder and developer",
+    "aliceTitle": "Co-founder and art director"
+  },
+  "accountsGallery": {
+    "headingLine1": "Together",
+    "headingLine2": "we are stronger:",
+    "subheading": "Join them!"
+  },
+  "itemsGallery": {
+    "headingLine1": "Latest needs",
+    "headingLine2": "& resources",
+    "proposedBy": "Offered by",
+    "requestedBy": "Requested by"
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "infoLink": "Info",
+    "steps": {
+      "step1": {
+        "left": "April 2024",
+        "title": "Alpha version",
+        "detail": "Account and resource creation. Instant messaging."
+      },
+      "step2": {
+        "left": "August 2024",
+        "title": "Beta version",
+        "detail": "Account customization. Notifications for instant messages and new resources."
+      },
+      "step3": {
+        "left": "December 2024",
+        "title": "Stable version",
+        "detail": "A polished and fully functional version to begin serious growth."
+      },
+      "step4": {
+        "left": "June 2025",
+        "title": "Contributor mode",
+        "detail": "For motivated users, Tope-là becomes a win-win game."
+      },
+      "step5": {
+        "left": "November 2025",
+        "title": "Exchange campaigns",
+        "detail": "Targeted campaigns to launch the network."
+      },
+      "step6": {
+        "left": "2026",
+        "title": "Collectivization",
+        "detail": "Tope-là gradually becomes a project fully self-managed by its users."
+      }
+    }
+  },
+  "alts": {
+    "character": "Tope-là character",
+    "avatar": "Avatar",
+    "hands": "Hands",
+    "done": "Done",
+    "todo": "To do",
+    "logo": "Tope-là",
+    "phone": "Tope-là smartphone",
+    "googlePlay": "Google Play",
+    "appStore": "App Store",
+    "facebook": "Facebook",
+    "instagram": "Instagram"
+  },
   "privacy": "Privacy",
   "terms": "Terms"
 }

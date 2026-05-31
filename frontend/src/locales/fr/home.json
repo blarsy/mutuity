@@ -1,42 +1,103 @@
 {
+  "pageTitle": "Tope-là",
   "title": "Mutuity",
   "subtitle": "Transformez les ressources locales en valeur partagee. Decouvrez les besoins, publiez des ressources et coordonnez plusieurs campagnes.",
-  "heroBadge": "Economie circulaire",
-  "communityBadge": "Multi-campagnes",
-  "impactLine": "Moins de gaspillage, plus de cooperation, une coordination plus rapide.",
   "checkingSession": "Vérification de la session…",
   "welcomeBack": "Bienvenue {{name}}",
   "signIn": "Se connecter",
   "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, demandes, discussions et à votre espace de gestion.",
   "browseNeeds": "Besoins",
   "browseResources": "Ressources",
-  "browseCampaigns": "Campagnes",
-  "featureOneTitle": "Trouver les besoins utiles",
-  "featureOneText": "Parcourez les besoins de la communaute et identifiez ou vos ressources peuvent aider.",
-  "featureTwoTitle": "Publier ce que vous proposez",
-  "featureTwoText": "Referencez biens et services reutilisables pour les orienter rapidement vers les bonnes personnes.",
-  "featureThreeTitle": "Coordonner plusieurs campagnes",
-  "featureThreeText": "Organisez des campagnes en parallele sans melanger les responsabilites ni la visibilite.",
-  "latestResourcesTitle": "Dernieres ressources",
-  "seeAllResources": "Voir tout",
-  "loadingLatestResources": "Chargement des dernieres ressources…",
-  "latestResourcesUnavailable": "Les dernieres ressources sont temporairement indisponibles.",
-  "noLatestResources": "Aucune ressource publiee pour le moment.",
-  "resourceDescriptionFallback": "Les details apparaitront bientot.",
-  "openResource": "Ouvrir la ressource",
-  "latestAccountsTitle": "Derniers contributeurs",
-  "meetContributors": "Parcourir la communaute",
-  "loadingLatestAccounts": "Chargement des contributeurs…",
-  "latestAccountsUnavailable": "Les contributeurs sont temporairement indisponibles.",
-  "noLatestAccounts": "Aucun profil contributeur pour le moment.",
-  "accountBioFallback": "Aucune bio partagee pour le moment.",
-  "openProfile": "Ouvrir le profil",
-  "byAccount": "Par {{account}}",
-  "unknownAccount": "Compte inconnu",
-  "ctaTitle": "Pret a contribuer ?",
-  "ctaText": "Rejoignez votre espace communautaire et commencez les echanges avec une tracabilite claire.",
-  "createAccount": "Creer un compte",
-  "enterApp": "Entrer dans l'app",
+  "hero": {
+    "titleLine1Black": "L'app qui fait ",
+    "titleLine1White": "tourner",
+    "titleLine2Black": "les ",
+    "titleLine2White": "ressources",
+    "bodyLine1": "Trouve ce qu'il te faut, donne ce qui dort chez toi, et économise dès aujourd'hui.",
+    "bodyLine2": "Avec Tope-là, tu accèdes à des objets, services et compétences partagés par ta communauté. Tu réduis tes dépenses, simplifies ton quotidien et fais circuler les ressources plutôt que les laisser se perdre.",
+    "faq": "Foire aux questions"
+  },
+  "audience": {
+    "titleLine1": "Tope-là c’est ",
+    "titleLine2": "pour qui ?",
+    "body": "particuliers, familles, associations, et artisans souhaitant réutiliser, partager ou échanger objets, services et compétences, économiser, créer du lien social et participer à une économie circulaire."
+  },
+  "downloads": {
+    "title": "Télécharge sur"
+  },
+  "webVersion": {
+    "title": "Version web",
+    "connect": "Connexion"
+  },
+  "social": {
+    "title": "Suis-nous"
+  },
+  "team": {
+    "titleLine1": "Notre ",
+    "titleLine2": "team",
+    "bertrandTitle": "Cofondateur et développeur",
+    "aliceTitle": "Cofondatrice et directrice artistique"
+  },
+  "accountsGallery": {
+    "headingLine1": "Ensemble",
+    "headingLine2": "On est plus fort:",
+    "subheading": "Rejoignez-les !"
+  },
+  "itemsGallery": {
+    "headingLine1": "Derniers besoins",
+    "headingLine2": "& ressources",
+    "proposedBy": "Proposé par",
+    "requestedBy": "Demandé par"
+  },
+  "roadmap": {
+    "title": "Feuille de route",
+    "infoLink": "Info",
+    "steps": {
+      "step1": {
+        "left": "Avril 2024",
+        "title": "Version Alpha",
+        "detail": "Création de compte et de ressources. Messagerie instantanée."
+      },
+      "step2": {
+        "left": "Août 2024",
+        "title": "Version Bèta",
+        "detail": "Customisation de compte. Notification de messages instantanés et nouvelles ressources."
+      },
+      "step3": {
+        "left": "Décembre 2024",
+        "title": "Version stable",
+        "detail": "Une version jolie et complètement fonctionnelle, pour commencer les choses sérieuses."
+      },
+      "step4": {
+        "left": "Juin 2025",
+        "title": "Mode contributeur",
+        "detail": "Pour les motivé.e.s, Tope-là devient un jeu gagnant-gagnant."
+      },
+      "step5": {
+        "left": "Novembre 2025",
+        "title": "Campagnes d'échange",
+        "detail": "Des campagnes ciblées pour lancer le réseau."
+      },
+      "step6": {
+        "left": "2026",
+        "title": "Collectivisation",
+        "detail": "Tope-là devient progressivement un projet 100% auto-géré par ses utilisateurs."
+      }
+    }
+  },
+  "alts": {
+    "character": "Personnage Tope-là",
+    "avatar": "Avatar",
+    "hands": "Mains",
+    "done": "Terminé",
+    "todo": "À faire",
+    "logo": "Tope-là",
+    "phone": "Smartphone Tope-là",
+    "googlePlay": "Google Play",
+    "appStore": "App Store",
+    "facebook": "Facebook",
+    "instagram": "Instagram"
+  },
   "privacy": "Confidentialite",
   "terms": "Conditions"
 }

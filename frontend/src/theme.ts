@@ -11,6 +11,9 @@ const bodyFont = `${general.style.fontFamily}, sans-serif`;
 const accentFont = `${sugar.style.fontFamily}, cursive`;
 const buttonFont = `${altGeneral.style.fontFamily}, sans-serif`;
 
+const BIGGEST_TITLE_FONT_SIZE = 2.5;
+const TITLE_SIZE_RATIOS = [1, 0.8, 0.65, 0.55, 0.45, 0.4] as const;
+
 export type AppColorMode = "light" | "dark";
 
 export function createAppTheme(mode: AppColorMode = "light") {
@@ -40,17 +43,58 @@ export function createAppTheme(mode: AppColorMode = "light") {
       fontFamily: bodyFont,
       body1: { fontFamily: bodyFont },
       body2: { fontFamily: accentFont },
-      h1: { fontFamily: titleFont, fontWeight: 800 },
-      h2: { fontFamily: titleFont, fontWeight: 800 },
-      h3: { fontFamily: titleFont, fontWeight: 800 },
-      h4: { fontFamily: titleFont, fontWeight: 800 },
-      h5: { fontFamily: titleFont, fontWeight: 800 },
-      h6: { fontFamily: titleFont, fontWeight: 800 },
+      h1: {
+        fontFamily: titleFont,
+        fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[0]}rem`,
+        fontStretch: "expanded",
+        fontWeight: 800,
+        padding: "1.5rem 0",
+        textTransform: "uppercase"
+      },
+      h2: {
+        fontFamily: titleFont,
+        fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[1]}rem`,
+        fontWeight: 800,
+        padding: "1.2rem 0"
+      },
+      h3: {
+        fontFamily: titleFont,
+        fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[2]}rem`,
+        fontWeight: 800,
+        padding: "1rem 0"
+      },
+      h4: {
+        fontFamily: titleFont,
+        fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[3]}rem`,
+        fontWeight: 800,
+        padding: "0.5rem 0"
+      },
+      h5: {
+        fontFamily: titleFont,
+        fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[4]}rem`,
+        fontWeight: 800,
+        padding: "0.3rem 0"
+      },
+      h6: {
+        fontFamily: titleFont,
+        fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[5]}rem`,
+        fontWeight: 800,
+        padding: "0.2rem 0"
+      },
       subtitle1: { fontFamily: titleFont },
       subtitle2: { fontFamily: titleFont },
       overline: { fontFamily: bodyFont },
       caption: { fontFamily: buttonFont },
       button: { fontFamily: buttonFont }
+    },
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 600,
+        md: 900,
+        lg: 1200,
+        xl: 1650
+      }
     },
     components: {
       MuiAppBar: {
