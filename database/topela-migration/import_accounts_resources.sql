@@ -327,7 +327,8 @@ insert into app_private.account_credential (
   role_name,
   is_active,
   created_at,
-  updated_at
+  updated_at,
+  email_verified_at
 )
 select
   s.account_id,
@@ -339,7 +340,8 @@ select
   'identified_account',
   true,
   s.created_at,
-  s.created_at
+  s.created_at,
+  now()
 from stg_accounts s;
 
 -- Import local identity links.
@@ -361,7 +363,7 @@ select
   s.email,
   s.email,
   s.email,
-  s.activated is not null,
+  true,
   jsonb_build_object(
     'legacyMigration', true,
     'legacyHashKind', 'pgcrypto_crypt_md5',
