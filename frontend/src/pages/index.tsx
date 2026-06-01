@@ -253,24 +253,24 @@ function TopelaAvatarBubble({ avatarUrls, index }: { avatarUrls: string[]; index
     <Box
       sx={{
         height: {
-          lg: `${largestBubbleSize}px`,
-          md: `${smallestBubbleSize + ((largestBubbleSize - smallestBubbleSize) / 2)}px`,
+          md: `${largestBubbleSize}px`,
+          sm: `${smallestBubbleSize + ((largestBubbleSize - smallestBubbleSize) / 2)}px`,
           xs: `${smallestBubbleSize}px`
         },
         left: {
-          lg: `${lgLeft}px`,
-          md: `${lgLeft * 0.75}px`,
+          md: `${lgLeft}px`,
+          sm: `${lgLeft * 0.75}px`,
           xs: `${lgLeft * 0.5}px`
         },
         position: "absolute",
         top: {
-          lg: `${lgTop}px`,
-          md: `${lgTop * 0.75}px`,
+          md: `${lgTop}px`,
+          sm: `${lgTop * 0.75}px`,
           xs: `${lgTop * 0.5}px`
         },
         width: {
-          lg: `${largestBubbleSize}px`,
-          md: `${smallestBubbleSize + ((largestBubbleSize - smallestBubbleSize) / 2)}px`,
+          md: `${largestBubbleSize}px`,
+          sm: `${smallestBubbleSize + ((largestBubbleSize - smallestBubbleSize) / 2)}px`,
           xs: `${smallestBubbleSize}px`
         }
       }}
@@ -395,7 +395,7 @@ function TopelaAccountsGallerySection({ accounts }: { accounts: TopelaAccountNod
       <Stack direction="row" justifyContent="center">
         <Stack
           sx={{
-            flex: { md: "0 0 300px", sm: "0 0 300px", xs: "0 0 200px", lg: "0 0 400px" },
+            flex: { sm: "0 0 300px", xs: "0 0 200px", md: "0 0 400px" },
             position: "relative"
           }}
         >
@@ -786,7 +786,7 @@ export default function HomePage() {
       </Container>
 
       <TopelaItemsGallerySection items={topelaLatestItems} />
-      
+
       <Stack
         alignItems="center"
         py={4}
