@@ -17,6 +17,8 @@ import enPreferences from "./locales/en/preferences.json";
 import enGrants from "./locales/en/grants.json";
 import enChat from "./locales/en/chat.json";
 import enLegal from "./locales/en/legal.json";
+import enCollective from "./locales/en/collective.json";
+import enSupport from "./locales/en/support.json";
 
 import frCommon from "./locales/fr/common.json";
 import frLayout from "./locales/fr/layout.json";
@@ -34,6 +36,8 @@ import frPreferences from "./locales/fr/preferences.json";
 import frGrants from "./locales/fr/grants.json";
 import frChat from "./locales/fr/chat.json";
 import frLegal from "./locales/fr/legal.json";
+import frCollective from "./locales/fr/collective.json";
+import frSupport from "./locales/fr/support.json";
 
 void i18n
   .use(initReactI18next)
@@ -55,7 +59,9 @@ void i18n
         preferences: enPreferences,
         grants: enGrants,
         chat: enChat,
-        legal: enLegal
+        legal: enLegal,
+        collective: enCollective,
+        support: enSupport
       },
       fr: {
         common: frCommon,
@@ -73,7 +79,9 @@ void i18n
         preferences: frPreferences,
         grants: frGrants,
         chat: frChat,
-        legal: frLegal
+        legal: frLegal,
+        collective: frCollective,
+        support: frSupport
       }
     },
     lng: "fr",

@@ -146,11 +146,6 @@ export const RESOURCE_DETAIL_QUERY = gql`
       defaultTokenAmount
       imageUrls
       categoryLabels
-      resourceCategoryAssignmentsByResourceId(orderBy: CATEGORY_CODE_ASC) {
-        nodes {
-          categoryCode
-        }
-      }
       isProduct
       isService
       canBeGiven

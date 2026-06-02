@@ -1,0 +1,43 @@
+{
+  "title": "Collectivisation",
+  "signalsLead": "Cette page est pour toi si",
+  "signals": [
+    "👉 tu veux dépasser le statu quo du produire/consommer/dormir",
+    "👉 tu cherches du sens, de la profondeur, à tes actions",
+    "👉 quelque chose te semble coincer dans le militantisme conventionnel, l'associatif conventionnel, ou l'entrepreneuriat conventionnel",
+    "👉 bref, tu as l'impression d'être décalé(e) par rapport à ton environnement"
+  ],
+  "missionP1": "La mission de Tope-là est de permettre aux acteurs de la culture, de l'art, de l'artisanat, de l'écologie, de l'éducation et du soin non médical de trouver les outils, matériaux, compétences dont ils ont besoin, grâce à l'échange, au troc, ou au don.",
+  "missionP2": "Derrière l'apparente simplicité de cette mission, se trouve un défi de taille : à la fois sortir des logiques marchandes dominantes, et en créer de nouvelles qui fluidifient la circulation des ressources.",
+  "opalLeadP1": "Le bon outil pour cheminer vers ces nouvelles logiques restauratives d'un tissu social cohésif réside dans un type d'organisation encore peu observé, parfois appelé \"Organisation Opale\".",
+  "opalLeadP2": "Voici les piliers d'une telle organisation :",
+  "pillars": [
+    "🪄 Autogouvernance : Les équipes gèrent leur travail, prennent des décisions sans managers traditionnels, en s'appuyant sur la consultation des pairs et des experts (processus de sollicitation d'avis).",
+    "🪄 Plénitude : Encourager les collaborateurs à être eux-mêmes (émotions, valeurs, aspirations), favorisant l'authenticité et réduisant les \"masques\" sociaux au travail.",
+    "🪄 Raison d'être évolutive : L'organisation est perçue comme un organisme vivant qui s'adapte et évolue en fonction d'une mission collective, plutôt que d'un but fixe."
+  ],
+  "postPillarP1": "Tope-là voudrait se transformer en une organisation \"Opale\". Concrètement, on utilise des processus de réunion et de collaboration qui respectent ces piliers. On n'a pas peur de sortir des sentiers battus, ni d'utiliser des outils plus classiques, ça dépend toujours de ce qui est ressenti comme juste pour la mission collective, ainsi qu'un sentiment personnel de cohérence.",
+  "postPillarP2": "La seule vraie exigence pour entrer dans cette atmosphère, est de laisser la chance à ces processus de construire une confiance partagée dans le collectif.",
+  "mindsetLead": "Mais on te mentirait si on ne mentionnait pas certains éléments de posture indispensables :",
+  "mindset": [
+    "🎯 Tu appréhendes le conflit comme une opportunité de découvrir quelque chose dont le collectif a besoin pour accomplir sa mission",
+    "🎯 Tu peux vivre avec une quantité d'incertitude plus grande que dans les modèles organisationnels plus connus, et considérer l'incertitude comme un territoire à explorer, pas uniquement comme une source systématique de danger",
+    "🎯 Tu as suffisamment travaillé sur tes blessures pour appréhender des situations en étant l'accompagnant de tes émotions et ressentis, plutôt que leur esclave - et bien sûr nous ne sommes pas des machines",
+    "🎯 Tu as de l'expérience dans l'une ou l'autre forme de gouvernance partagée, ou au moins une connaissance théorique et un intérêt"
+  ],
+  "skillsLead": "Question compétences, voici une liste - pas forcément exhaustive - de ce dont Tope-là a besoin :",
+  "skills": [
+    "🧩 Gardiens de l'expérience utilisateur: pour l'ergonomie, la facilité d'usage, l'intuitivité, le bon fonctionnement de nos créations",
+    "🧩 Porte-paroles: communiquer les messages que Tope-là veut faire parvenir, via Internet, ou parfois via les médias traditionnels",
+    "🧩 Pôle visuel: mettre en image les outils numériques et les messages de Tope-là, et garder une cohérence qui renforce toutes les qualités de nos créations",
+    "🧩 Ambassadeurs: parler de Tope-là, recueillir des retours, observer comment Tope-là est perçue, sentir comment atteindre mieux notre public, entretenir un lien avec les utilisateurs",
+    "🧩 Artisans numériques: apprendre les outils avec lesquels les créations numériques de Tope-là sont bâties, les adapter, fournir les informations techniques qui influencent les décisions des autres collaborateurs"
+  ],
+  "skillsOutro": "Chacun de ces rôles a des exigences variables en temps et compétences, qui sont co-créées entre les collaborateurs pour que les attentes soient claires, réalistes en fonction de la situation de chacun, et pertinentes dans le cadre de la mission de Tope-là.",
+  "compensationTitle": "Un mot important sur la contribution et la rémunération",
+  "compensationP1": "À ce stade du projet, les contributions à Tope-là ne sont pas rémunérées en euros. L'objectif est de construire d'abord un cadre, des outils et une dynamique collective solides.",
+  "compensationP2": "Des formes de rémunération pourront émerger plus tard - en euros ou via d'autres mécanismes propres à Tope-là - mais il n'y a aucune certitude ni promesse à ce sujet.",
+  "compensationP3": "Chacun est donc invité à s'engager uniquement à hauteur de ce qui est juste et soutenable pour lui ou elle, en conscience.",
+  "contactLead": "Si tu sens un élan vers ce contexte, et que tu penses cocher beaucoup de cases, écris-nous à",
+  "contactTail": "qu'on se rencontre 🙂"
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Support",
+  "contactLead": "For any issue or feedback while using our products, contact us at:",
+  "checklistLead": "To help us resolve technical issues faster, please include when possible:",
+  "checklist": [
+    "The email address linked to your Mutuity account.",
+    "A screenshot of the screen where the issue occurs.",
+    "What you were trying to do.",
+    "What happened instead, if that is not obvious from screenshots."
+  ]
+}

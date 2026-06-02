@@ -1,0 +1,11 @@
+{
+  "title": "Support",
+  "contactLead": "Pour tout probleme ou remarque pendant l'utilisation de nos produits, contactez-nous a :",
+  "checklistLead": "Pour accelerer la prise en charge d'un probleme technique, veuillez inclure si possible :",
+  "checklist": [
+    "L'adresse email associee a votre compte Mutuity.",
+    "Une capture d'ecran du moment ou le probleme se produit.",
+    "Ce que vous cherchiez a faire.",
+    "Ce que vous obtenez a la place, si ce n'est pas evident avec les captures."
+  ]
+}

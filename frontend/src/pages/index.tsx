@@ -547,7 +547,7 @@ function TopelaRoadmap() {
         <RoadmapStepStone done leftText={t("roadmap.steps.step5.left")} rightTextDetail={t("roadmap.steps.step5.detail")} rightTextTitle={t("roadmap.steps.step5.title")} />
         <RoadmapStepStone
           leftText={t("roadmap.steps.step6.left")}
-          linkUrl="/collectif"
+          linkUrl="/collective"
           rightTextDetail={t("roadmap.steps.step6.detail")}
           rightTextTitle={t("roadmap.steps.step6.title")}
         />
@@ -654,7 +654,7 @@ export default function HomePage() {
 
             <Button
               endIcon={<QuestionAnswerIcon />}
-              href="https://linktr.ee/topela"
+              href="https://foggy-neptune-444.notion.site/Foire-aux-questions-ebb4a58584b8449d836d91ab37995e9a?pvs=74"
               startIcon={<QuestionMarkIcon />}
               sx={{
                 alignSelf: "center",

@@ -165,9 +165,10 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     resource?.canBeTakenAway ? t("form.canBeTakenAway") : null,
     resource?.canBeDelivered ? t("form.canBeDelivered") : null
   ].filter((value): value is string => Boolean(value));
+  const locationLabel = resource?.location?.trim() ?? "";
   const latitude = Number(resource?.latitude);
   const longitude = Number(resource?.longitude);
-  const hasValidCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
+  const hasCompleteLocation = locationLabel.length > 0 && Number.isFinite(latitude) && Number.isFinite(longitude);
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -496,54 +497,56 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 </Stack>
               </Stack>
 
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("form.locationLabel")}
-                </Typography>
-                <Stack spacing={1.25}>
-                  <Typography variant="body2">
-                    {resource.location}
+              {hasCompleteLocation ? (
+                <Stack spacing={0.5}>
+                  <Typography color="text.secondary" variant="overline">
+                    {t("form.locationLabel")}
                   </Typography>
-                  <Box
-                    sx={{
-                      borderRadius: 1,
-                      overflow: "hidden",
-                      width: "100%",
-                      aspectRatio: "16 / 9",
-                      bgcolor: "grey.100"
-                    }}
-                  >
-                    {MAPS_API_KEY && hasValidCoordinates ? (
-                      <APIProvider apiKey={MAPS_API_KEY}>
-                        <GoogleMap
-                          center={{ lat: latitude, lng: longitude }}
-                          defaultZoom={14}
-                          disableDefaultUI={false}
-                          clickableIcons={false}
-                          mapTypeControl={false}
-                          streetViewControl={false}
-                          fullscreenControl={false}
-                          style={{ width: "100%", height: "100%" }}
+                  <Stack spacing={1.25}>
+                    <Typography variant="body2">
+                      {locationLabel}
+                    </Typography>
+                    <Box
+                      sx={{
+                        borderRadius: 1,
+                        overflow: "hidden",
+                        width: "100%",
+                        aspectRatio: "16 / 9",
+                        bgcolor: "grey.100"
+                      }}
+                    >
+                      {MAPS_API_KEY ? (
+                        <APIProvider apiKey={MAPS_API_KEY}>
+                          <GoogleMap
+                            center={{ lat: latitude, lng: longitude }}
+                            defaultZoom={14}
+                            disableDefaultUI={false}
+                            clickableIcons={false}
+                            mapTypeControl={false}
+                            streetViewControl={false}
+                            fullscreenControl={false}
+                            style={{ width: "100%", height: "100%" }}
+                          >
+                            <Marker position={{ lat: latitude, lng: longitude }} />
+                          </GoogleMap>
+                        </APIProvider>
+                      ) : (
+                        <Box
+                          sx={{
+                            alignItems: "center",
+                            color: "text.secondary",
+                            display: "flex",
+                            height: "100%",
+                            justifyContent: "center"
+                          }}
                         >
-                          <Marker position={{ lat: latitude, lng: longitude }} />
-                        </GoogleMap>
-                      </APIProvider>
-                    ) : (
-                      <Box
-                        sx={{
-                          alignItems: "center",
-                          color: "text.secondary",
-                          display: "flex",
-                          height: "100%",
-                          justifyContent: "center"
-                        }}
-                      >
-                        <Typography variant="caption">{resource.location}</Typography>
-                      </Box>
-                    )}
-                  </Box>
+                          <Typography variant="caption">{locationLabel}</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Stack>
                 </Stack>
-              </Stack>
+              ) : null}
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
                 <Stack spacing={0.25}>
