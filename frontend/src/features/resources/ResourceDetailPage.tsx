@@ -64,6 +64,7 @@ type ResourceDetailData = {
       id: string;
       displayName: string | null;
       externalSubject: string;
+      avatarUrl: string | null;
     } | null;
   } | null;
 };
@@ -193,6 +194,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
             <Stack alignItems="center" direction="row" spacing={1}>
               <AvatarIconButton
                 displayName={creatorLabel}
+                imageUrl={resource.accountByCreatorAccountId?.avatarUrl}
                 onClick={() => {
                   void router.push(`/accounts/${resource.creatorAccountId}`);
                 }}

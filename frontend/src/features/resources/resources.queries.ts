@@ -160,6 +160,7 @@ export const RESOURCE_DETAIL_QUERY = gql`
         id
         displayName
         externalSubject
+        avatarUrl
       }
     }
   }

@@ -12,6 +12,7 @@ import {
   REQUEST_PASSWORD_RESET_MUTATION
 } from "./auth.queries";
 import { apolloClient } from "../../services/graphql/client";
+import i18n from "../../i18n";
 import type { AuthSession, LoginInput } from "./types";
 
 function normalizeAuthSession(payload: Partial<AuthSession> | null | undefined): AuthSession {
@@ -147,7 +148,10 @@ export function requestPasswordReset(input: { identifier: string }) {
       }
     })
     .then(() => ({
-      message: "If an account exists for that email, password reset instructions have been sent."
+      message: i18n.t("restoreAccess.resetRequestedFallback", {
+        ns: "auth",
+        defaultValue: "If an account exists for that email, password reset instructions have been sent."
+      })
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));

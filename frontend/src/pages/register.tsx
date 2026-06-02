@@ -91,9 +91,6 @@ export default function RegisterPage() {
         <Stack spacing={2}>
           {error ? <Alert severity="error">{error}</Alert> : null}
           {success ? <Alert severity="success">{success}</Alert> : null}
-          {provider === "google" || provider === "apple" ? (
-            <Alert severity="info">{t("register.socialPrefillNotice")}</Alert>
-          ) : null}
 
           <TextField
             label={t("register.accountNameLabel")}

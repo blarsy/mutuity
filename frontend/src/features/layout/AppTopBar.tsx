@@ -1,6 +1,7 @@
 import NextLink from "next/link";
 import { useLazyQuery, useQuery } from "@apollo/client/react";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Alert, AppBar, Badge, Box, Button, Drawer, IconButton, List, ListItemButton, ListItemText, Menu, MenuItem, Snackbar, Stack, Toolbar, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
@@ -267,11 +268,9 @@ export function AppTopBar({
                         {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
                       </IconButton>
                     </Tooltip>
-                    <AvatarIconButton
-                      aria-label={t("topbar.openSignInDialog")}
-                      displayName={t("topbar.signInFallback")}
-                      onClick={() => setLoginDialogOpen(true)}
-                    />
+                    <IconButton aria-label={t("topbar.openSignInDialog")} color="inherit" onClick={() => setLoginDialogOpen(true)}>
+                      <AccountCircleIcon />
+                    </IconButton>
                   </>
                 )}
               </Stack>
@@ -337,11 +336,9 @@ export function AppTopBar({
                         {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
                       </IconButton>
                     </Tooltip>
-                    <AvatarIconButton
-                      aria-label={t("topbar.openSignInDialog")}
-                      displayName={t("topbar.signInFallback")}
-                      onClick={() => setLoginDialogOpen(true)}
-                    />
+                    <IconButton aria-label={t("topbar.openSignInDialog")} color="inherit" onClick={() => setLoginDialogOpen(true)}>
+                      <AccountCircleIcon />
+                    </IconButton>
                   </>
                 )}
               </Stack>
