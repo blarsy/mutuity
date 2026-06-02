@@ -48,6 +48,7 @@
     "needsCount_one": "{{count}} need",
     "needsCount_other": "{{count}} needs",
     "resourcesCount_one": "{{count}} resource",
-    "resourcesCount_other": "{{count}} resources"
+    "resourcesCount_other": "{{count}} resources",
+    "links": "Links"
   }
 }

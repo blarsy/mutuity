@@ -1,8 +1,15 @@
 import Head from "next/head";
 import type { GetServerSideProps } from "next";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
-import { Alert, Avatar, Box, Card, CardContent, Chip, Container, List, ListItem, Stack, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Card, CardContent, Chip, Container, Link, List, ListItem, Stack, Typography } from "@mui/material";
+import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import TwitterIcon from "@mui/icons-material/Twitter";
+import WebIcon from "@mui/icons-material/Web";
+import { useEffect, useState } from "react";
 
 import {
   buildAccountPageMeta,
@@ -10,6 +17,35 @@ import {
   type PublicAvailabilityState
 } from "../../features/shared/publicPageSeo";
 import { fetchServerGraphql } from "../../features/shared/serverGraphql";
+import { ResourceCard } from "../../features/ui/ResourceCard";
+import { listingCardGridSx } from "../../features/ui/listingCardGrid";
+
+const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+
+type ProfileLinkType = "website" | "facebook" | "instagram" | "x";
+
+type ProfileLink = {
+  url: string;
+  label: string;
+  type: ProfileLinkType;
+};
+
+type AccountResource = {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  imageUrls: string[];
+  expiresAt: string | null;
+  intensity: string;
+  defaultTokenAmount: number | null;
+  isProduct: boolean;
+  isService: boolean;
+  canBeGiven: boolean;
+  canBeExchanged: boolean;
+  canBeTakenAway: boolean;
+  canBeDelivered: boolean;
+};
 
 type PublicAccountDetailData = {
   accountById: {
@@ -18,6 +54,8 @@ type PublicAccountDetailData = {
     externalSubject: string;
     bio: string | null;
     location: string | null;
+    latitude: number | null;
+    longitude: number | null;
     avatarUrl: string | null;
     profileLinks: unknown;
   } | null;
@@ -28,10 +66,7 @@ type PublicAccountDetailData = {
     }>;
   } | null;
   allResources: {
-    nodes: Array<{
-      id: string;
-      title: string;
-    }>;
+    nodes: AccountResource[];
   } | null;
 };
 
@@ -39,7 +74,7 @@ type AccountDetailsPageProps = {
   accountId: string;
   initialAccount: PublicAccountDetailData["accountById"];
   initialNeeds: Array<{ id: string; title: string }>;
-  initialResources: Array<{ id: string; title: string }>;
+  initialResources: AccountResource[];
 };
 
 const PUBLIC_ACCOUNT_DETAIL_SSR_QUERY = `
@@ -50,6 +85,8 @@ const PUBLIC_ACCOUNT_DETAIL_SSR_QUERY = `
       externalSubject
       bio
       location
+      latitude
+      longitude
       avatarUrl
       profileLinks
     }
@@ -71,10 +108,31 @@ const PUBLIC_ACCOUNT_DETAIL_SSR_QUERY = `
       nodes {
         id
         title
+        description
+        location
+        imageUrls
+        expiresAt
+        intensity
+        defaultTokenAmount
+        isProduct
+        isService
+        canBeGiven
+        canBeExchanged
+        canBeTakenAway
+        canBeDelivered
       }
     }
   }
 `;
+
+function ProfileLinkIcon({ type }: { type: ProfileLinkType }) {
+  switch (type) {
+    case "facebook": return <FacebookIcon color="primary" />;
+    case "instagram": return <InstagramIcon color="primary" />;
+    case "x": return <TwitterIcon color="primary" />;
+    case "website": return <WebIcon color="primary" />;
+  }
+}
 
 export default function AccountDetailsPage({
   accountId,
@@ -82,7 +140,14 @@ export default function AccountDetailsPage({
   initialNeeds,
   initialResources
 }: AccountDetailsPageProps) {
+  const router = useRouter();
   const { t } = useTranslation("common");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const availabilityState = resolveAccountAvailabilityState(initialAccount);
   const pageMeta = buildAccountPageMeta({
     accountId,
@@ -98,6 +163,17 @@ export default function AccountDetailsPage({
     .join("");
   const hasProfile = Boolean(initialAccount);
   const account = initialAccount;
+
+  const profileLinks: ProfileLink[] = Array.isArray(account?.profileLinks)
+    ? (account.profileLinks as ProfileLink[]).filter(l => Boolean(l?.url))
+    : [];
+
+  const latitude = Number(account?.latitude);
+  const longitude = Number(account?.longitude);
+  const hasCompleteLocation =
+    Boolean(account?.location?.trim()) &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude);
 
   return (
     <Container maxWidth="md">
@@ -123,15 +199,59 @@ export default function AccountDetailsPage({
                     <Avatar alt={displayName} src={account.avatarUrl || undefined}>
                       {initials}
                     </Avatar>
-                    <Stack spacing={0.5}>
-                      <Typography variant="h6">{displayName}</Typography>
-                      {account.location ? (
-                        <Typography color="text.secondary" variant="body2">{account.location}</Typography>
-                      ) : null}
-                    </Stack>
+                    <Typography variant="h6">{displayName}</Typography>
                   </Stack>
 
-                  {account.bio ? <Typography variant="body1">{account.bio}</Typography> : null}
+                  {account.bio ? (
+                    <Typography variant="body1">{account.bio}</Typography>
+                  ) : null}
+
+                  {account.location ? (
+                    <Stack spacing={1}>
+                      <Typography color="text.secondary" variant="body2">{account.location}</Typography>
+                      {mounted && hasCompleteLocation && MAPS_API_KEY ? (
+                        <Box sx={{ aspectRatio: "16 / 9", borderRadius: 1, overflow: "hidden", width: "100%" }}>
+                          <APIProvider apiKey={MAPS_API_KEY}>
+                            <GoogleMap
+                              center={{ lat: latitude, lng: longitude }}
+                              defaultZoom={14}
+                              clickableIcons={false}
+                              mapTypeControl={false}
+                              streetViewControl={false}
+                              fullscreenControl={false}
+                              style={{ width: "100%", height: "100%" }}
+                            >
+                              <Marker position={{ lat: latitude, lng: longitude }} />
+                            </GoogleMap>
+                          </APIProvider>
+                        </Box>
+                      ) : null}
+                    </Stack>
+                  ) : null}
+
+                  {profileLinks.length > 0 ? (
+                    <Stack spacing={0.5}>
+                      <Typography color="text.secondary" variant="overline">
+                        {t("publicAccount.links")}
+                      </Typography>
+                      <Stack spacing={0.5}>
+                        {profileLinks.map((link, idx) => (
+                          <Stack key={idx} alignItems="center" direction="row" spacing={1}>
+                            <ProfileLinkIcon type={link.type} />
+                            <Link
+                              href={link.url}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                              underline="hover"
+                              variant="body2"
+                            >
+                              {link.label || link.url}
+                            </Link>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    </Stack>
+                  ) : null}
 
                   <Stack direction="row" spacing={1}>
                     <Chip label={availabilityState.toLowerCase()} size="small" />
@@ -163,15 +283,23 @@ export default function AccountDetailsPage({
           <Stack spacing={1}>
             <Typography variant="h6">{t("publicAccount.activeResources")}</Typography>
             {initialResources.length ? (
-              <List disablePadding>
+              <Box sx={listingCardGridSx}>
                 {initialResources.map(resource => (
-                  <ListItem disableGutters key={resource.id}>
-                    <Typography component={NextLink} href={`/resources/${resource.id}`} variant="body2">
-                      {resource.title}
-                    </Typography>
-                  </ListItem>
+                  <ResourceCard
+                    key={resource.id}
+                    title={resource.title}
+                    creatorName={displayName}
+                    creatorImageUrl={account?.avatarUrl}
+                    description={resource.description}
+                    expiresAt={resource.expiresAt}
+                    imageUrls={resource.imageUrls}
+                    location={resource.location}
+                    onClick={() => {
+                      void router.push(`/resources/${resource.id}`);
+                    }}
+                  />
                 ))}
-              </List>
+              </Box>
             ) : (
               <Typography color="text.secondary" variant="body2">{t("publicAccount.noResources")}</Typography>
             )}
