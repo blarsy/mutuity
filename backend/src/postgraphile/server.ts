@@ -9,8 +9,9 @@ import { Pool } from "pg";
 import { postgraphile, makePluginHook, enhanceHttpServerWithSubscriptions } from "postgraphile";
 import PgPubSub from "@graphile/pg-pubsub";
 
+import { handleGoogleCallback } from "../auth/googleCallback.js";
 import { signSocialAuthState } from "../auth/socialState";
-import { createAuthSessionMiddleware } from "../auth/session.js";
+import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
 
@@ -198,6 +199,7 @@ const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:300
   .filter(Boolean);
 const frontendBaseUrl = process.env.FRONTEND_URL?.trim() || "http://localhost:3000";
 const GOOGLE_OAUTH_CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim() || "";
+const GOOGLE_OAUTH_CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim() || "";
 const GOOGLE_OAUTH_CALLBACK_URL = process.env.GOOGLE_OAUTH_CALLBACK_URL?.trim() || "";
 const GOOGLE_OAUTH_SCOPES = process.env.GOOGLE_OAUTH_SCOPES?.trim() || "openid email profile";
 const SOCIAL_AUTH_STATE_SECRET = process.env.SOCIAL_AUTH_STATE_SECRET?.trim() || "";
@@ -318,6 +320,15 @@ function hasGoogleOauthStartConfig() {
   return Boolean(GOOGLE_OAUTH_CLIENT_ID && GOOGLE_OAUTH_CALLBACK_URL && SOCIAL_AUTH_STATE_SECRET);
 }
 
+function hasGoogleOauthCallbackConfig() {
+  return Boolean(
+    GOOGLE_OAUTH_CLIENT_ID
+      && GOOGLE_OAUTH_CLIENT_SECRET
+      && GOOGLE_OAUTH_CALLBACK_URL
+      && SOCIAL_AUTH_STATE_SECRET
+  );
+}
+
 function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
   const redirectUrl = new URL(GOOGLE_OAUTH_AUTHORIZE_URL);
   const state = signSocialAuthState(
@@ -340,6 +351,32 @@ function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
 
 function providerStartUrl(provider: "google" | "apple") {
   return provider === "apple" ? APPLE_AUTH_START_URL : "";
+}
+
+function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
+  status: "success" | "register_required" | "link_confirmation_required" | "error";
+  nextDestination: string;
+  email?: string;
+  name?: string;
+  error?: string;
+}) {
+  const callbackUrl = new URL(`/auth/${provider}/callback`, frontendBaseUrl);
+  callbackUrl.searchParams.set("status", input.status);
+  callbackUrl.searchParams.set("next", normalizeNextDestination(input.nextDestination));
+
+  if (input.email) {
+    callbackUrl.searchParams.set("email", input.email);
+  }
+
+  if (input.name) {
+    callbackUrl.searchParams.set("name", input.name);
+  }
+
+  if (input.error) {
+    callbackUrl.searchParams.set("error", input.error);
+  }
+
+  return callbackUrl;
 }
 
 app.use(cookieParser(sessionSecret));
@@ -404,6 +441,99 @@ app.get("/auth/:provider/start", (req, res) => {
   redirectUrl.searchParams.set("next", nextDestination);
 
   res.redirect(302, redirectUrl.toString());
+});
+
+app.get("/auth/google/callback", async (req, res) => {
+  if (!hasGoogleOauthCallbackConfig()) {
+    res.status(501).json({
+      error: "Missing GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"
+    });
+    return;
+  }
+
+  const code = typeof req.query.code === "string" ? req.query.code : "";
+  const state = typeof req.query.state === "string" ? req.query.state : "";
+
+  if (!code || !state) {
+    const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+      status: "error",
+      nextDestination: "/",
+      error: "Missing OAuth callback parameters"
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  const result = await handleGoogleCallback({
+    pool,
+    code,
+    state,
+    stateSecret: SOCIAL_AUTH_STATE_SECRET,
+    clientId: GOOGLE_OAUTH_CLIENT_ID,
+    clientSecret: GOOGLE_OAUTH_CLIENT_SECRET,
+    callbackUrl: GOOGLE_OAUTH_CALLBACK_URL
+  });
+
+  if (result.kind === "success") {
+    try {
+      const nextSession = await createSessionForAccount(pool, {
+        accountId: result.accountId,
+        role: "identified_account"
+      });
+
+      res.cookie(SESSION_COOKIE_NAME, nextSession.sessionToken, getSessionCookieOptions());
+      const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+        status: "success",
+        nextDestination: result.nextDestination
+      });
+      res.redirect(302, callbackUrl.toString());
+      return;
+    } catch (error) {
+      await logWebApiError("[auth] Failed to create session after Google callback", error, {
+        context: "google_callback_session_create",
+        metadata: {
+          accountId: result.accountId
+        }
+      });
+
+      const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+        status: "error",
+        nextDestination: result.nextDestination,
+        error: "Could not create a session"
+      });
+      res.redirect(302, callbackUrl.toString());
+      return;
+    }
+  }
+
+  if (result.kind === "register_required") {
+    const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+      status: "register_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  if (result.kind === "link_confirmation_required") {
+    const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+      status: "link_confirmation_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+    status: "error",
+    nextDestination: result.nextDestination,
+    error: result.errorMessage
+  });
+  res.redirect(302, callbackUrl.toString());
 });
 
 // SQL functions in app_public (for example createCampaign and addCampaignModerationNote)
