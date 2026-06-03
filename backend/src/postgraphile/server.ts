@@ -9,6 +9,7 @@ import { Pool } from "pg";
 import { postgraphile, makePluginHook, enhanceHttpServerWithSubscriptions } from "postgraphile";
 import PgPubSub from "@graphile/pg-pubsub";
 
+import { signSocialAuthState } from "../auth/socialState";
 import { createAuthSessionMiddleware } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
@@ -196,16 +197,16 @@ const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:300
   .map(origin => origin.trim())
   .filter(Boolean);
 const frontendBaseUrl = process.env.FRONTEND_URL?.trim() || "http://localhost:3000";
-const GOOGLE_AUTH_START_URL = (
-  process.env.GOOGLE_AUTH_START_URL?.trim()
-  || process.env.NEXT_PUBLIC_GOOGLE_AUTH_START_URL?.trim()
-  || ""
-);
+const GOOGLE_OAUTH_CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim() || "";
+const GOOGLE_OAUTH_CALLBACK_URL = process.env.GOOGLE_OAUTH_CALLBACK_URL?.trim() || "";
+const GOOGLE_OAUTH_SCOPES = process.env.GOOGLE_OAUTH_SCOPES?.trim() || "openid email profile";
+const SOCIAL_AUTH_STATE_SECRET = process.env.SOCIAL_AUTH_STATE_SECRET?.trim() || "";
 const APPLE_AUTH_START_URL = (
   process.env.APPLE_AUTH_START_URL?.trim()
   || process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL?.trim()
   || ""
 );
+const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -313,8 +314,32 @@ function toAbsoluteUrl(candidate: string, requestBaseUrl: string) {
   return isAbsolute ? new URL(candidate) : new URL(candidate, requestBaseUrl);
 }
 
+function hasGoogleOauthStartConfig() {
+  return Boolean(GOOGLE_OAUTH_CLIENT_ID && GOOGLE_OAUTH_CALLBACK_URL && SOCIAL_AUTH_STATE_SECRET);
+}
+
+function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
+  const redirectUrl = new URL(GOOGLE_OAUTH_AUTHORIZE_URL);
+  const state = signSocialAuthState(
+    {
+      next: nextDestination
+    },
+    SOCIAL_AUTH_STATE_SECRET
+  );
+
+  redirectUrl.searchParams.set("client_id", GOOGLE_OAUTH_CLIENT_ID);
+  redirectUrl.searchParams.set("redirect_uri", GOOGLE_OAUTH_CALLBACK_URL);
+  redirectUrl.searchParams.set("response_type", "code");
+  redirectUrl.searchParams.set("scope", GOOGLE_OAUTH_SCOPES);
+  redirectUrl.searchParams.set("state", state);
+  redirectUrl.searchParams.set("access_type", "offline");
+  redirectUrl.searchParams.set("include_granted_scopes", "true");
+
+  return redirectUrl;
+}
+
 function providerStartUrl(provider: "google" | "apple") {
-  return provider === "google" ? GOOGLE_AUTH_START_URL : APPLE_AUTH_START_URL;
+  return provider === "apple" ? APPLE_AUTH_START_URL : "";
 }
 
 app.use(cookieParser(sessionSecret));
@@ -352,16 +377,29 @@ app.get("/auth/:provider/start", (req, res) => {
     return;
   }
 
+  const nextDestination = normalizeNextDestination(req.query.next);
+  if (provider === "google") {
+    if (!hasGoogleOauthStartConfig()) {
+      res.status(501).json({
+        error: "Missing GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"
+      });
+      return;
+    }
+
+    const redirectUrl = createGoogleOAuthAuthorizeUrl(nextDestination);
+    res.redirect(302, redirectUrl.toString());
+    return;
+  }
+
   const configuredStartUrl = providerStartUrl(provider);
   if (!configuredStartUrl) {
     res.status(501).json({
-      error: `Missing ${provider.toUpperCase()}_AUTH_START_URL configuration (or NEXT_PUBLIC_${provider.toUpperCase()}_AUTH_START_URL fallback)`
+      error: "Missing APPLE_AUTH_START_URL configuration (or NEXT_PUBLIC_APPLE_AUTH_START_URL fallback)"
     });
     return;
   }
 
   const requestBaseUrl = `${req.protocol}://${req.get("host")}`;
-  const nextDestination = normalizeNextDestination(req.query.next);
   const redirectUrl = toAbsoluteUrl(configuredStartUrl, requestBaseUrl || frontendBaseUrl);
   redirectUrl.searchParams.set("next", nextDestination);
 
