@@ -34,6 +34,7 @@ Cadence: update at least once per workday
 | P7 | Engagement and delivery controls | 005 (Preferences/digest finalization) | DONE | 100% | TBD |
 | P8 | Admin and ops hardening | 005 (Grants/admin/logging hardening) | DONE | 100% | TBD |
 | P9 | Listing visual identity | 009 | DONE | 100% | TBD |
+| P10 | Social login (Google + Apple) | 013 | NOT STARTED | 0% | TBD |
 
 ## Phase Details And Checkpoints
 
@@ -231,6 +232,28 @@ Definition of Done:
 - [x] All card and thread header surfaces display a consistent listing identity strip for both resources and needs.
 - [x] No surface shows a broken image element when a listing has no images.
 
+### P10 - Social Login (013)
+
+Status: NOT STARTED
+Goal: deliver Google and Apple OAuth sign-in/sign-up end-to-end; close the social auth parity gap from Feature 005.
+
+Checkpoints:
+
+- [ ] Google start route generates signed state and redirects to Google authorize endpoint.
+- [ ] Google callback resolves `subject_match` → session, `explicit_link_required` → prompt, `no_match` → register with signed provider token.
+- [ ] SQL migration 124: `register_account_with_social_identity` is atomic and bypasses the re-auth gate for fresh registration.
+- [ ] Frontend register page branches on `provider` query param and calls the new mutation.
+- [ ] Apple start route generates client_secret_jwt and embeds nonce in signed state.
+- [ ] Apple POST callback handles name-first-sign-in-only edge case and resolves account correctly.
+- [ ] T057b in 005/tasks.md marked complete.
+
+Definition of Done:
+
+- [ ] A new user can complete full sign-up via Google or Apple from a clean browser.
+- [ ] A returning user can sign in via Google or Apple without the registration form.
+- [ ] Email-conflict path shows explicit confirmation prompt; no silent auto-link.
+- [ ] All backend integration tests pass; frontend build passes typecheck.
+
 ## Active Work Queue
 
 Current phase: Completed through P9
@@ -263,6 +286,7 @@ Status legend:
 | 010-public-pages-and-seo | Public pages, CTA contracts, SSR metadata | e2e/specs/010-public-pages-and-seo/us1-need-cta-flow.smoke.spec.ts; e2e/specs/010-public-pages-and-seo/us2-authenticated-cta.smoke.spec.ts; e2e/specs/010-public-pages-and-seo/us3-public-route-and-metadata.smoke.spec.ts | READY | Public route availability, metadata, and need CTA behavior are covered. |
 | 011-account-deletion-anonymization | Delete-account guard and post-delete public UX | e2e/specs/011-account-deletion-anonymization/us1-delete-guard.smoke.spec.ts | READY | The UI delete-confirmation guard is smoke-tested; deeper deletion outcomes live in backend integration tests. |
 | 012-topela-surface-replatforming | First-render zones, legacy deep-link migration, and raw-error masking guardrails | e2e/specs/012-topela-surface-replatforming/us1-render-zones-and-error-guardrails.smoke.spec.ts; e2e/specs/012-topela-surface-replatforming/us2-route-migration-deep-links.smoke.spec.ts | READY | Production-safety UI guardrails are smoke-tested, including non-leaky error handling for GraphQL drift scenarios. |
+| 013-social-login | Google + Apple sign-up/sign-in and email-conflict handling | None | MISSING | Backend callback handlers are not yet implemented; smoke tests are deferred until P10 is complete. |
 
 Current smoke gaps:
 
