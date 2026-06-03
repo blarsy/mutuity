@@ -32,6 +32,7 @@ export function resolveSocialCallbackOutcome(
   const callbackStatus = asSingleValue(query.status).toLowerCase();
   const suggestedEmail = asSingleValue(query.email);
   const suggestedName = asSingleValue(query.name) || asSingleValue(query.suggestedName);
+  const providerSubject = asSingleValue(query.providerSubject);
 
   const shouldRedirectToRegister =
     callbackStatus === "register_required"
@@ -45,6 +46,9 @@ export function resolveSocialCallbackOutcome(
   }
   if (suggestedName) {
     params.set("name", suggestedName);
+  }
+  if (providerSubject) {
+    params.set("providerSubject", providerSubject);
   }
 
   return {

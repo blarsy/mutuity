@@ -8,6 +8,7 @@ import {
   CONFIRM_EMAIL_VERIFICATION_MUTATION,
   CONFIRM_PASSWORD_RESET_WITH_PASSWORD_MUTATION,
   REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION,
+  REGISTER_LOCAL_ACCOUNT_WITH_SOCIAL_IDENTITY_MUTATION,
   REQUEST_EMAIL_VERIFICATION_MUTATION,
   REQUEST_PASSWORD_RESET_MUTATION
 } from "./auth.queries";
@@ -97,6 +98,39 @@ export function registerLocalAccount(input: {
     })
     .then(() => ({
       message: "Account created. Please verify your email."
+    }))
+    .catch(error => {
+      throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
+    });
+}
+
+export function registerLocalAccountWithSocialIdentity(input: {
+  identifier: string;
+  displayName: string;
+  password: string;
+  provider: "google" | "apple";
+  providerSubject: string;
+  providerEmail?: string;
+  providerEmailVerified?: boolean;
+  preferredLanguage?: "en" | "fr";
+}) {
+  return apolloClient
+    .mutate<{ registerLocalAccountWithSocialIdentity?: { boolean?: boolean | null } }>({
+      mutation: REGISTER_LOCAL_ACCOUNT_WITH_SOCIAL_IDENTITY_MUTATION,
+      variables: {
+        identifier: input.identifier,
+        displayName: input.displayName,
+        password: input.password,
+        provider: input.provider,
+        providerSubject: input.providerSubject,
+        providerEmail: input.providerEmail,
+        providerEmailVerified: input.providerEmailVerified ?? Boolean(input.providerEmail),
+        verificationTtlMs: Number(process.env.NEXT_PUBLIC_EMAIL_VERIFICATION_TOKEN_TTL_MS ?? 24 * 60 * 60 * 1000),
+        preferredLanguage: input.preferredLanguage
+      }
+    })
+    .then(() => ({
+      message: "Account created successfully."
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));

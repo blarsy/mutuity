@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { registerLocalAccount } from "../features/auth/auth.api";
+import { registerLocalAccount, registerLocalAccountWithSocialIdentity } from "../features/auth/auth.api";
 import { useAuth } from "../features/auth/AuthProvider";
 import { SocialAuthButtons } from "../features/auth/SocialAuthButtons";
 
@@ -20,7 +20,8 @@ export function resolveSocialPrefill(query: ParsedUrlQuery) {
   return {
     suggestedName,
     suggestedEmail: typeof query.email === "string" ? query.email : "",
-    provider: typeof query.provider === "string" ? query.provider.toLowerCase() : ""
+    provider: typeof query.provider === "string" ? query.provider.toLowerCase() : "",
+    providerSubject: typeof query.providerSubject === "string" ? query.providerSubject : ""
   };
 }
 
@@ -34,7 +35,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { suggestedName, suggestedEmail, provider } = resolveSocialPrefill(router.query);
+  const { suggestedName, suggestedEmail, provider, providerSubject } = resolveSocialPrefill(router.query);
 
   useEffect(() => {
     if (suggestedName && displayName.trim().length === 0) {
@@ -56,12 +57,35 @@ export default function RegisterPage() {
 
     try {
       const normalizedIdentifier = identifier.trim().toLowerCase();
+      const preferredLanguage = i18n.language.toLowerCase().startsWith("en") ? "en" : "fr";
+
+      if ((provider === "google" || provider === "apple") && providerSubject.trim().length > 0) {
+        const response = await registerLocalAccountWithSocialIdentity({
+          identifier: normalizedIdentifier,
+          displayName: displayName.trim(),
+          password,
+          provider,
+          providerSubject: providerSubject.trim(),
+          providerEmail: normalizedIdentifier,
+          providerEmailVerified: true,
+          preferredLanguage
+        });
+
+        await signIn({
+          identifier: normalizedIdentifier,
+          password
+        });
+
+        setSuccess(response?.message ?? t("register.successFallback"));
+        await router.replace("/");
+        return;
+      }
 
       const response = await registerLocalAccount({
         displayName: displayName.trim(),
         identifier: normalizedIdentifier,
         password,
-        preferredLanguage: i18n.language.toLowerCase().startsWith("en") ? "en" : "fr"
+        preferredLanguage
       });
 
       await signIn({

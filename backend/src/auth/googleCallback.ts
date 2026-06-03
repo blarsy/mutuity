@@ -42,18 +42,21 @@ export type GoogleCallbackResult =
       nextDestination: string;
       email: string;
       name: string;
+      providerSubject: string;
     }
   | {
       kind: "register_required";
       nextDestination: string;
       email: string;
       name: string;
+      providerSubject: string;
     }
   | {
       kind: "link_confirmation_required";
       nextDestination: string;
       email: string;
       name: string;
+      providerSubject: string;
     }
   | {
       kind: "error";
@@ -164,7 +167,8 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
         accountId: resolution.account_id,
         nextDestination: parsedState.next,
         email: profile.email,
-        name: profile.name
+        name: profile.name,
+        providerSubject: profile.providerSubject
       };
     }
 
@@ -173,7 +177,8 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
         kind: "link_confirmation_required",
         nextDestination: parsedState.next,
         email: profile.email,
-        name: profile.name
+        name: profile.name,
+        providerSubject: profile.providerSubject
       };
     }
 
@@ -181,7 +186,8 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
       kind: "register_required",
       nextDestination: parsedState.next,
       email: profile.email,
-      name: profile.name
+      name: profile.name,
+      providerSubject: profile.providerSubject
     };
   } catch (error) {
     await logWebApiError("[auth] Google callback failed", error, {

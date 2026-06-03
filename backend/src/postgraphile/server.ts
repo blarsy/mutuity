@@ -358,6 +358,7 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
   nextDestination: string;
   email?: string;
   name?: string;
+  providerSubject?: string;
   error?: string;
 }) {
   const callbackUrl = new URL(`/auth/${provider}/callback`, frontendBaseUrl);
@@ -370,6 +371,10 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
 
   if (input.name) {
     callbackUrl.searchParams.set("name", input.name);
+  }
+
+  if (input.providerSubject) {
+    callbackUrl.searchParams.set("providerSubject", input.providerSubject);
   }
 
   if (input.error) {
@@ -511,7 +516,8 @@ app.get("/auth/google/callback", async (req, res) => {
       status: "register_required",
       nextDestination: result.nextDestination,
       email: result.email,
-      name: result.name
+      name: result.name,
+      providerSubject: result.providerSubject
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -522,7 +528,8 @@ app.get("/auth/google/callback", async (req, res) => {
       status: "link_confirmation_required",
       nextDestination: result.nextDestination,
       email: result.email,
-      name: result.name
+      name: result.name,
+      providerSubject: result.providerSubject
     });
     res.redirect(302, callbackUrl.toString());
     return;

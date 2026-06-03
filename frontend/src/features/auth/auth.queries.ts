@@ -99,6 +99,36 @@ export const REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION = gql`
   }
 `;
 
+export const REGISTER_LOCAL_ACCOUNT_WITH_SOCIAL_IDENTITY_MUTATION = gql`
+  mutation RegisterLocalAccountWithSocialIdentity(
+    $identifier: String!
+    $displayName: String!
+    $password: String!
+    $provider: String!
+    $providerSubject: String!
+    $providerEmail: String
+    $providerEmailVerified: Boolean
+    $preferredLanguage: String
+    $verificationTtlMs: BigInt
+  ) {
+    registerLocalAccountWithSocialIdentity(
+      input: {
+        identifier: $identifier
+        displayName: $displayName
+        password: $password
+        provider: $provider
+        providerSubject: $providerSubject
+        providerEmail: $providerEmail
+        providerEmailVerified: $providerEmailVerified
+        preferredLanguage: $preferredLanguage
+        verificationTtlMs: $verificationTtlMs
+      }
+    ) {
+      boolean
+    }
+  }
+`;
+
 export const REQUEST_EMAIL_VERIFICATION_MUTATION = gql`
   mutation RequestEmailVerification(
     $identifier: String!
