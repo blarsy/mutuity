@@ -33,6 +33,13 @@
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 2. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| [Initial state] | [Concrete example] | [Business-visible result] |
+| [Initial state] | [Concrete example] | [Business-visible result] |
+
 ---
 
 ### User Story 2 - [Brief Title] (Priority: P2)
@@ -46,6 +53,12 @@
 **Acceptance Scenarios**:
 
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| [Initial state] | [Concrete example] | [Business-visible result] |
 
 ---
 
@@ -61,9 +74,27 @@
 
 1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| [Initial state] | [Concrete example] | [Business-visible result] |
+
 ---
 
 [Add more user stories as needed, each with an assigned priority]
+
+<!--
+  ACTION REQUIRED: Capture concrete examples immediately below each user story.
+  These examples are the shared source of truth for specification, discussion,
+  and later acceptance tests.
+
+  For branching flows, the examples should function as a compact decision matrix:
+  state the input condition, expected business outcome, and user-visible result.
+
+  Keep the examples business-facing and example-driven. Do not describe how the
+  behavior is implemented.
+-->
 
 ### Edge Cases
 

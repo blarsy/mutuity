@@ -65,20 +65,25 @@ You **MUST** consider the user input before proceeding (if not empty).
 3. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure
    - Load spec.md and extract user stories with their priorities (P1, P2, P3, etc.)
+  - For each user story, extract per-story Examples and classify them as Success, Alternate, Exception, or Recovery
    - If data-model.md exists: Extract entities and map to user stories
    - If contracts/ exists: Map interface contracts to user stories
    - If research.md exists: Extract decisions for setup tasks
    - Generate tasks organized by user story (see Task Generation Rules below)
+  - Generate business acceptance-test tasks from per-story examples (mandatory for P1 stories)
+  - Generate an E2E smoke matrix that selects minimal business-critical coverage from P1 examples
    - Generate dependency graph showing user story completion order
    - Create parallel execution examples per user story
    - Validate task completeness (each user story has all needed tasks, independently testable)
+  - Run a pass/fail quality gate: ERROR if mandatory acceptance-test or E2E smoke coverage is missing
 
 4. **Generate tasks.md**: Use `.specify/templates/tasks-template.md` as structure, fill with:
    - Correct feature name from plan.md
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
    - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation tasks
+  - Each phase includes: story goal, independent test criteria, business acceptance-test tasks, implementation tasks
+  - Include a dedicated E2E smoke matrix section and related executable tasks
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task
@@ -91,8 +96,10 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Task count per user story
    - Parallel opportunities identified
    - Independent test criteria for each story
+  - E2E smoke matrix summary (which examples were selected and why)
    - Suggested MVP scope (typically just User Story 1)
    - Format validation: Confirm ALL tasks follow the checklist format (checkbox, ID, labels, file paths)
+  - Coverage gate status (pass/fail with missing items, if any)
 
 6. **Check for extension hooks**: After tasks.md is generated, check if `.specify/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_tasks` key
@@ -131,7 +138,9 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**Business acceptance tests are REQUIRED for P1 stories**: Generate test tasks for each P1 story based on that story's examples.
+
+**E2E smoke coverage is REQUIRED**: Generate a minimal E2E smoke matrix and matching tasks that cover business-critical paths.
 
 ### Checklist Format (REQUIRED)
 
@@ -169,16 +178,17 @@ Every task MUST strictly follow this format:
 
 1. **From User Stories (spec.md)** - PRIMARY ORGANIZATION:
    - Each user story (P1, P2, P3...) gets its own phase
+   - Treat each story's `Examples` table as the acceptance source of truth
    - Map all related components to their story:
      - Models needed for that story
      - Services needed for that story
      - Interfaces/UI needed for that story
-     - If tests requested: Tests specific to that story
+     - Acceptance tests specific to that story's examples (mandatory for P1)
    - Mark story dependencies (most stories should be independent)
 
 2. **From Contracts**:
    - Map each interface contract → to the user story it serves
-   - If tests requested: Each interface contract → contract test task [P] before implementation in that story's phase
+  - Each interface contract → contract test task [P] before implementation in that story's phase when applicable to a selected acceptance scenario
 
 3. **From Data Model**:
    - Map each entity to the user story(ies) that need it
@@ -195,6 +205,16 @@ Every task MUST strictly follow this format:
 - **Phase 1**: Setup (project initialization)
 - **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
 - **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
+  - Within each story: Acceptance tests from examples → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
-- **Final Phase**: Polish & Cross-Cutting Concerns
+- **Final Phase**: E2E smoke + Polish & Cross-Cutting Concerns
+
+### Mandatory Coverage Rules
+
+- For each P1 story, create at least one acceptance-test task for the main success example.
+- For each P1 story with branching outcomes, create acceptance-test tasks for at least one alternate/exception example.
+- Create a compact E2E smoke matrix that includes:
+  - At least one success-path smoke test per P1 story
+  - At least one exception-path smoke test across all P1 stories
+  - One end-to-end auth/session integrity check (or equivalent business-critical continuity check)
+- If required coverage cannot be mapped to tasks, stop with ERROR and list missing scenario classes.

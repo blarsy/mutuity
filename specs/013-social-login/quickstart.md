@@ -4,6 +4,20 @@
 
 Validate that Google and Apple sign-in work end-to-end in a local or staging environment: new-user registration, returning-user sign-in, email-conflict handling, and state-tampering rejection.
 
+The scenarios below correspond to the examples listed directly under each user story in `spec.md` and should be read as the canonical manual QA set for the feature.
+
+## E2E Smoke Matrix (Mandatory)
+
+| Smoke ID | Story/example mapping | Scenario class | Included in smoke |
+|---|---|---|---|
+| SMK-US1-SUCCESS | US1 `no_match` -> register prefill and complete sign-up | Success | Yes |
+| SMK-US2-SUCCESS | US2 `subject_match` -> session creation and safe redirect | Success | Yes |
+| SMK-US3-SUCCESS | US3 first Apple sign-up path | Success | Yes |
+| SMK-US4-SUCCESS | US4 returning Apple sign-in by subject | Success | Yes |
+| SMK-P1-EXCEPTION | US1 `explicit_link_required` or state-tampering rejection | Exception | Yes |
+
+Smoke coverage must include all rows above before the feature is considered ready.
+
 ## Prerequisites
 
 - Local stack running (`docker compose up`)

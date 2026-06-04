@@ -19,6 +19,35 @@
 
 ---
 
+## Example-Driven Scope
+
+The examples listed directly under each user story in the spec are the source of truth for branching auth outcomes. Delivery slices, implementation checks, and manual QA should preserve those story-local example outcomes exactly, especially for sign-up vs link-confirmation vs returning-user sign-in.
+
+---
+
+## Business Acceptance-Test Inventory
+
+The inventory below converts per-story examples into mandatory acceptance coverage classes for implementation and smoke selection.
+
+| Story | Example focus | Scenario class | Required coverage type |
+|---|---|---|---|
+| US1 (Google sign-up) | `no_match` redirects to pre-filled register | Success | Acceptance + E2E smoke |
+| US1 (Google sign-up) | `explicit_link_required` redirect | Alternate/Exception | Acceptance + E2E smoke |
+| US2 (Google sign-in) | `subject_match` creates session and redirects to `next` | Success | Acceptance + E2E smoke |
+| US2 (Google sign-in) | External/malformed `next` falls back to `/` | Exception/Recovery | Acceptance |
+| US3 (Apple sign-up) | First sign-in registration path with available profile data | Success | Acceptance + E2E smoke |
+| US3 (Apple sign-up) | Invalid/missing callback `state` is rejected | Exception | Acceptance |
+| US4 (Apple sign-in) | Returning user resolves by provider subject | Success | Acceptance + E2E smoke |
+| US4 (Apple sign-in) | Relay email variation does not break identity resolution | Alternate/Recovery | Acceptance |
+
+### Minimum E2E Smoke Selection
+
+- One success-path smoke test for each P1 story (US1-US4).
+- At least one exception-path smoke test across P1 (state tampering or link-confirmation branch).
+- End-to-end auth/session continuity check after provider callback and redirect.
+
+---
+
 ## Constitution Check
 
 | Principle | How this feature satisfies it |

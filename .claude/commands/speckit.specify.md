@@ -67,6 +67,8 @@ Given that feature description, do this:
        - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
+      For each priority user story, capture concrete examples immediately below the story covering the main success path plus important alternate, exception, and recovery outcomes.
+      For branching flows, make those per-story examples function as a compact outcome matrix that states the input condition, business outcome, and user-visible outcome.
     5. Generate Functional Requirements
        Each requirement must be testable
        Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
@@ -104,6 +106,7 @@ Given that feature description, do this:
       - [ ] Success criteria are measurable
       - [ ] Success criteria are technology-agnostic (no implementation details)
       - [ ] All acceptance scenarios are defined
+      - [ ] Each priority user story includes concrete examples directly beneath the story, with any branching flow captured as an outcome matrix
       - [ ] Edge cases are identified
       - [ ] Scope is clearly bounded
       - [ ] Dependencies and assumptions identified

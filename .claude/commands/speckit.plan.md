@@ -29,7 +29,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
-   - Phase 1: Generate data-model.md, contracts/, quickstart.md
+   - Phase 1: Generate data-model.md, contracts/, quickstart.md from the spec's user stories and per-story examples (including branching outcome matrices)
+   - Phase 1: Produce a business acceptance-test inventory from the per-story examples to feed `/speckit.tasks`
    - Phase 1: Update agent context by running the agent script
    - Re-evaluate Constitution Check post-design
 

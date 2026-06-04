@@ -1,14 +1,14 @@
 # Tasks: Social Login
 
 **Feature**: 013-social-login
-**Task IDs**: T097 – T120 (reserved range)
+**Task IDs**: T097 – T139 (reserved range)
 **Resolves**: T057b in `005-resource-discovery-and-publishing/tasks.md` (social auth parity E2E) when Phase 6 is complete.
 
 ---
 
 ## Phase 1 — Architecture & Spec Foundation
 
-- [x] T097 — Write feature spec (`spec.md`, `plan.md`, `tasks.md`, `quickstart.md`) including Google and Apple flows, security rules, and delivery slices
+- [x] T097 — Write feature spec (`spec.md`, `plan.md`, `tasks.md`, `quickstart.md`) including Google and Apple flows, examples directly beneath each user story, security rules, and delivery slices
 - [ ] T098 — Add `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_CALLBACK_URL`, `GOOGLE_OAUTH_SCOPES`, and `SOCIAL_AUTH_STATE_SECRET` to `backend/.env.example` with comments; document Apple equivalents as placeholders
 - [ ] T099 — Add `google-auth-library` and `apple-signin-auth` to `backend/package.json` and run `npm install`
 
@@ -54,16 +54,31 @@
 
 - [ ] T116 — Verify all existing backend auth tests still pass after adding the new routes (`npm test` in `backend/`)
 - [ ] T117 — Verify frontend build and typecheck pass (`next build` in `frontend/`)
-- [ ] T118 — Manual QA: run through all six quickstart scenarios in a local stack with real test credentials (see `quickstart.md`)
+- [ ] T118 — Manual QA: run through all six quickstart scenarios in a local stack with real test credentials (see `quickstart.md`), matching each canonical per-story example outcome from `spec.md`
 - [ ] T119 — Mark `T057b` in `005-resource-discovery-and-publishing/tasks.md` as complete; add a cross-reference note pointing to this feature
 - [ ] T120 — Update `specs/implementation-progress-tracker.md` to show Feature 013 as complete
+
+### Mandatory P1 Business Acceptance Test Coverage
+
+- [ ] T126 — Add Google sign-up acceptance test for US1 success path (`no_match` → prefilled register) in `backend/tests/integration/google-callback-handler.spec.ts`
+- [ ] T127 — Add Google sign-up acceptance test for US1 branch (`explicit_link_required` → `link_confirmation_required`) in `backend/tests/integration/google-callback-handler.spec.ts`
+- [ ] T128 — Add Google sign-in acceptance test for US2 success path (`subject_match` → session + redirect) in `backend/tests/integration/google-callback-handler.spec.ts`
+- [ ] T129 — Add Google sign-in acceptance test for US2 `next` sanitization (external/malformed `next` falls back to `/`) in `backend/tests/integration/social-auth-start-routes.spec.ts`
+- [ ] T130 — Add Apple sign-up acceptance test for US3 success/branch handling in `backend/tests/integration/apple-callback-handler.spec.ts` (create file if needed)
+- [ ] T131 — Add Apple sign-in acceptance test for US4 returning-user subject match in `backend/tests/integration/apple-callback-handler.spec.ts` (create file if needed)
+
+### E2E Smoke Matrix (Mandatory)
+
+- [ ] T132 — Create a concise E2E smoke matrix in `specs/013-social-login/quickstart.md` mapping selected P1 examples to smoke coverage (US1 success, US2 success, US3 success, US4 success, one exception path)
+- [ ] T133 — Implement E2E smoke test for P1 success paths in `e2e/specs/auth/social-login-smoke.spec.ts` (Google and Apple happy paths)
+- [ ] T134 — Implement E2E smoke exception-path test in `e2e/specs/auth/social-login-smoke.spec.ts` (`link_confirmation_required` or tampered state error)
 
 ---
 
 ## Phase 7 — Identity Link/Unlink UI (P2, deferred)
 
-- [ ] T121 — Create `database/migrations/125_unlink_account_external_identity.sql`: `app_public.unlink_account_external_identity(provider text)` security-definer function; deletes from `account_identity` for `current_account_id()`; raises exception if the account has no local credential and would be left with no sign-in path
-- [ ] T122 — Extend `/auth/:provider/start` to accept `?link=1`; embed `link: true` in the signed state so the Google/Apple callbacks can branch into the link flow rather than the login flow
-- [ ] T123 — Update `googleCallback.ts` and `appleCallback.ts`: when state contains `link: true`, call `app_public.link_account_external_identity` (which already enforces the recent-auth gate) instead of creating a new session
-- [ ] T124 — Create `frontend/src/features/auth/IdentityLinkSection.tsx`: list linked providers from `authSession`; "Link" button triggers start URL with `link=1`; "Unlink" button calls `unlinkAccountExternalIdentity` mutation with confirmation dialog
-- [ ] T125 — Integrate `IdentityLinkSection` into the profile/security settings page; add a frontend test for both the link and unlink paths
+- [ ] T135 — Create `database/migrations/125_unlink_account_external_identity.sql`: `app_public.unlink_account_external_identity(provider text)` security-definer function; deletes from `account_identity` for `current_account_id()`; raises exception if the account has no local credential and would be left with no sign-in path
+- [ ] T136 — Extend `/auth/:provider/start` to accept `?link=1`; embed `link: true` in the signed state so the Google/Apple callbacks can branch into the link flow rather than the login flow
+- [ ] T137 — Update `googleCallback.ts` and `appleCallback.ts`: when state contains `link: true`, call `app_public.link_account_external_identity` (which already enforces the recent-auth gate) instead of creating a new session
+- [ ] T138 — Create `frontend/src/features/auth/IdentityLinkSection.tsx`: list linked providers from `authSession`; "Link" button triggers start URL with `link=1`; "Unlink" button calls `unlinkAccountExternalIdentity` mutation with confirmation dialog
+- [ ] T139 — Integrate `IdentityLinkSection` into the profile/security settings page; add a frontend test for both the link and unlink paths

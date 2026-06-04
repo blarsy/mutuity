@@ -26,11 +26,17 @@
 - [ ] CHK002 Second checklist item
 - [ ] CHK003 Third checklist item
 
+## Example Coverage
+
+- [ ] CHK004 Are the primary user stories backed by concrete examples directly beneath each story?
+- [ ] CHK005 Are branching outcomes represented as an explicit per-story decision matrix where the flow has more than one business-visible result?
+- [ ] CHK006 Are example-driven requirements phrased clearly enough to become acceptance criteria without extra interpretation?
+
 ## [Category 2]
 
-- [ ] CHK004 Another category item
-- [ ] CHK005 Item with specific criteria
-- [ ] CHK006 Final item in this category
+- [ ] CHK007 Another category item
+- [ ] CHK008 Item with specific criteria
+- [ ] CHK009 Final item in this category
 
 ## Notes
 

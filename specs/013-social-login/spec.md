@@ -29,6 +29,14 @@ As a new user without an existing Mutuity account, I can click "Continue with Go
 4. **Given** a Google account whose verified email matches an existing Mutuity account's verified identity, **When** the callback resolves, **Then** the user is redirected to a `link_confirmation_required` state and is not automatically signed in.
 5. **Given** an error or rejection during the Google OAuth flow, **When** the callback returns, **Then** the frontend shows an explicit error message and a link back to sign-in.
 
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| Fresh Google account with no Mutuity match | `alice@example.com` completes Google sign-in for the first time | Redirect to `/register` with `provider=google`, `providerSubject`, `name`, and `email` pre-filled |
+| Google account email matches an existing verified Mutuity account | `alice@example.com` already belongs to a verified Mutuity identity | Redirect to a link-confirmation state instead of auto-sign-in or registration |
+| Callback state is invalid or tampered | User edits the callback state before it reaches the backend | The callback is rejected and the frontend shows an error instead of starting registration |
+
 ---
 
 ### User Story 2 — Returning User Signs In With Google (Priority: P1)
@@ -44,6 +52,14 @@ As an existing user who previously registered with Google, I can click "Continue
 1. **Given** an account with a linked Google identity, **When** the user completes the Google OAuth flow, **Then** they are signed in, a session cookie is issued, and they are redirected to the `next` destination.
 2. **Given** a successful Google sign-in, **When** the session is active, **Then** `authSession` returns the authenticated session with correct account data.
 3. **Given** a successful Google sign-in but the `next` parameter is an external URL or missing a leading slash, **When** the redirect happens, **Then** `next` falls back safely to `/`.
+
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| Linked Google identity is found by provider subject | The same Google subject returns after sign-out | The user is signed in, a session cookie is issued, and they are redirected to `next` |
+| `next` points off-site | `next=https://evil.example` | The redirect falls back to `/` |
+| `next` is omitted | User starts from the login page without a destination | The redirect falls back to `/` |
 
 ---
 
@@ -63,6 +79,14 @@ As a new user without an existing Mutuity account, I can click "Continue with Ap
 4. **Given** registration data submitted via the Apple social path, **When** the account is created, **Then** the Apple identity is linked and the Apple provider subject is stored in `app_private.account_identity`.
 5. **Given** an Apple callback with a missing or invalid `state` parameter, **When** the backend validates the callback, **Then** the request is rejected and the frontend is redirected with an error status.
 
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| First Apple sign-in with name and relay email | Apple returns name plus `@privaterelay.appleid.com` email | Redirect to `/register` with the available name and email pre-filled |
+| Second Apple sign-in for the same subject | Apple omits the name on later sign-ins | The account is matched by provider subject and sign-in succeeds without needing the name again |
+| Apple callback state is missing or invalid | The callback arrives without a valid signed state | The request is rejected and the user sees an error redirect |
+
 ---
 
 ### User Story 4 — Returning User Signs In With Apple (Priority: P1)
@@ -75,6 +99,13 @@ As an existing user who previously registered with Apple, I can click "Continue 
 
 1. **Given** an account with a linked Apple identity, **When** the user completes the Apple Sign In flow, **Then** they are signed in with a fresh session cookie and redirected to `next`.
 2. **Given** a signed-in Apple user with a relay email, **When** they sign in again and the relay address changes, **Then** the stored `provider_email` is updated but the account is still matched by provider subject.
+
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| Linked Apple identity is found by provider subject | The same Apple subject returns after sign-out | The user is signed in directly and redirected to `next` |
+| Relay email changes between sign-ins | Apple issues a different relay address later | The account still resolves by provider subject and remains signed in correctly |
 
 ---
 
@@ -93,6 +124,14 @@ As an existing local-account user, I can link a Google or Apple identity to my a
 3. **Given** a long-running session (more than 15 minutes since creation), **When** the user tries to link a social identity, **Then** they are prompted to re-authenticate before the link can proceed (using `assert_recent_social_link_reauth`).
 4. **Given** a recently authenticated user, **When** the link completes, **Then** the settings page refreshes and shows the newly linked provider.
 
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| Recently authenticated user links Google | User is within the recent re-auth window and completes Google linking | The Google identity is attached to the current Mutuity account |
+| Linking attempts to reuse an identity already attached elsewhere | The same provider subject is already linked to another account | The link is rejected with a clear error and no account changes are made |
+| Session is too old for linking | The login session is older than the re-auth window | The user must re-authenticate before the link can proceed |
+
 ---
 
 ### User Story 6 — Authenticated User Unlinks A Social Identity (Priority: P2)
@@ -107,7 +146,16 @@ As an authenticated user with a linked social identity, I can unlink it from my 
 2. **Given** an account with only a social identity and no local password, **When** the user attempts to unlink, **Then** the action is blocked and an error message explains they must set a local password first.
 3. **Given** an account with multiple linked providers, **When** the user unlinks one, **Then** the remaining provider is unaffected.
 
+**Examples**:
+
+| Condition | Example | Expected Outcome |
+|---|---|---|
+| Account has a local password and one linked provider | User removes Google while keeping password login | The provider is removed and the account still has a sign-in path |
+| Account has only a social provider and no password | User tries to unlink the only provider | The unlink is blocked until a local password exists |
+| Account has multiple providers | User removes one provider from a multi-provider account | The remaining providers stay linked and usable |
+
 ---
+
 
 ## Security Rules
 
