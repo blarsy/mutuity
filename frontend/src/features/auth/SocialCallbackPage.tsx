@@ -34,6 +34,11 @@ export function SocialCallbackPage({ provider }: SocialCallbackPageProps) {
     const redirectAfterRefresh = async () => {
       await refreshSession();
 
+      if (outcome.shouldRedirectToLoginForLink && !session.authenticated) {
+        await router.replace(outcome.loginLinkHref);
+        return;
+      }
+
       if (outcome.shouldRedirectToRegister && !session.authenticated) {
         await router.replace(outcome.registerPrefillHref);
         return;
@@ -45,8 +50,10 @@ export function SocialCallbackPage({ provider }: SocialCallbackPageProps) {
     void redirectAfterRefresh();
   }, [
     outcome.errorMessage,
+    outcome.loginLinkHref,
     outcome.nextDestination,
     outcome.registerPrefillHref,
+    outcome.shouldRedirectToLoginForLink,
     outcome.shouldRedirectToRegister,
     refreshSession,
     router,

@@ -10,6 +10,14 @@ export function resolveNextDestination(candidate: unknown): string {
   return typeof candidate === "string" && candidate.startsWith("/") ? candidate : "/";
 }
 
+function resolveSocialProviderLabel(provider: unknown) {
+  if (provider === "apple") {
+    return "Apple";
+  }
+
+  return "Google";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { status, session } = useAuth();
@@ -17,6 +25,9 @@ export default function LoginPage() {
 
   const nextDestination = useMemo(() => resolveNextDestination(router.query.next), [router.query.next]);
   const isProtectedRedirect = nextDestination !== "/";
+  const socialLinkRequired = router.query.social_link_required === "1";
+  const socialEmail = typeof router.query.email === "string" ? router.query.email : "";
+  const socialProviderLabel = resolveSocialProviderLabel(router.query.provider);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -37,6 +48,15 @@ export default function LoginPage() {
         {isProtectedRedirect && !session.authenticated ? (
           <Alert severity="info" sx={{ mb: 2 }}>
             {t("signIn.protectedRedirectHint")}
+          </Alert>
+        ) : null}
+
+        {socialLinkRequired && !session.authenticated ? (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {t("signIn.socialLinkRequiredHint", {
+              provider: socialProviderLabel,
+              email: socialEmail || t("signIn.socialLinkRequiredNoEmail")
+            })}
           </Alert>
         ) : null}
 

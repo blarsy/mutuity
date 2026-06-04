@@ -19,7 +19,9 @@ export type SocialCallbackOutcome = {
   provider: SocialProvider;
   errorMessage: string | null;
   shouldRedirectToRegister: boolean;
+  shouldRedirectToLoginForLink: boolean;
   registerPrefillHref: string;
+  loginLinkHref: string;
 };
 
 export function resolveSocialCallbackOutcome(
@@ -36,8 +38,8 @@ export function resolveSocialCallbackOutcome(
 
   const shouldRedirectToRegister =
     callbackStatus === "register_required"
-    || callbackStatus === "link_confirmation_required"
     || (!errorMessage && callbackStatus === "no_account");
+  const shouldRedirectToLoginForLink = callbackStatus === "link_confirmation_required";
 
   const params = new URLSearchParams();
   params.set("provider", normalizedProvider);
@@ -51,11 +53,26 @@ export function resolveSocialCallbackOutcome(
     params.set("providerSubject", providerSubject);
   }
 
+  const loginParams = new URLSearchParams();
+  loginParams.set("next", nextDestination);
+  if (shouldRedirectToLoginForLink) {
+    loginParams.set("social_link_required", "1");
+    loginParams.set("provider", normalizedProvider);
+    if (suggestedEmail) {
+      loginParams.set("email", suggestedEmail);
+    }
+    if (providerSubject) {
+      loginParams.set("providerSubject", providerSubject);
+    }
+  }
+
   return {
     nextDestination,
     provider: normalizedProvider,
     errorMessage,
     shouldRedirectToRegister,
-    registerPrefillHref: `/register?${params.toString()}`
+    shouldRedirectToLoginForLink,
+    registerPrefillHref: `/register?${params.toString()}`,
+    loginLinkHref: `/login?${loginParams.toString()}`
   };
 }
