@@ -29,8 +29,16 @@ describe("social auth start routes", () => {
     }
 
     if (appleResponse.status === 302) {
-      const location = appleResponse.headers.get("location") ?? "";
-      expect(location).toContain("next=%2Fapp");
+      const location = appleResponse.headers.get("location");
+      expect(location).toBeTruthy();
+
+      const redirectUrl = new URL(String(location));
+      expect(redirectUrl.origin).toBe("https://appleid.apple.com");
+      expect(redirectUrl.pathname).toBe("/auth/authorize");
+      expect(redirectUrl.searchParams.get("response_type")).toBe("code");
+      expect(redirectUrl.searchParams.get("response_mode")).toBe("form_post");
+      expect(redirectUrl.searchParams.get("state")).toBeTruthy();
+      expect(redirectUrl.searchParams.get("nonce")).toBeTruthy();
     }
   });
 
@@ -61,5 +69,18 @@ describe("social auth start routes", () => {
       expect(location).not.toContain("evil.example");
       expect(location).not.toContain("https%3A%2F%2Fevil.example");
     }
+  });
+
+  it("rejects GET requests to the Apple callback endpoint", async () => {
+    const response = await fetch(`${TEST_BACKEND_URL}/auth/apple/callback`, {
+      method: "GET",
+      redirect: "manual"
+    });
+
+    expect(response.status).toBe(405);
+
+    await expect(response.json()).resolves.toMatchObject({
+      error: "Method not allowed. Apple callback expects POST."
+    });
   });
 });

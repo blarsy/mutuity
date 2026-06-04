@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -9,6 +10,7 @@ import { Pool } from "pg";
 import { postgraphile, makePluginHook, enhanceHttpServerWithSubscriptions } from "postgraphile";
 import PgPubSub from "@graphile/pg-pubsub";
 
+import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
 import { signSocialAuthState } from "../auth/socialState";
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
@@ -203,12 +205,13 @@ const GOOGLE_OAUTH_CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim(
 const GOOGLE_OAUTH_CALLBACK_URL = process.env.GOOGLE_OAUTH_CALLBACK_URL?.trim() || "";
 const GOOGLE_OAUTH_SCOPES = process.env.GOOGLE_OAUTH_SCOPES?.trim() || "openid email profile";
 const SOCIAL_AUTH_STATE_SECRET = process.env.SOCIAL_AUTH_STATE_SECRET?.trim() || "";
-const APPLE_AUTH_START_URL = (
-  process.env.APPLE_AUTH_START_URL?.trim()
-  || process.env.NEXT_PUBLIC_APPLE_AUTH_START_URL?.trim()
-  || ""
-);
+const APPLE_OAUTH_CLIENT_ID = process.env.APPLE_OAUTH_CLIENT_ID?.trim() || "";
+const APPLE_OAUTH_TEAM_ID = process.env.APPLE_OAUTH_TEAM_ID?.trim() || "";
+const APPLE_OAUTH_KEY_ID = process.env.APPLE_OAUTH_KEY_ID?.trim() || "";
+const APPLE_OAUTH_PRIVATE_KEY = process.env.APPLE_OAUTH_PRIVATE_KEY?.trim() || "";
+const APPLE_OAUTH_CALLBACK_URL = process.env.APPLE_OAUTH_CALLBACK_URL?.trim() || "";
 const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const APPLE_OAUTH_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize";
 
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -329,6 +332,25 @@ function hasGoogleOauthCallbackConfig() {
   );
 }
 
+function hasAppleOauthStartConfig() {
+  return Boolean(
+    APPLE_OAUTH_CLIENT_ID
+      && APPLE_OAUTH_CALLBACK_URL
+      && SOCIAL_AUTH_STATE_SECRET
+  );
+}
+
+function hasAppleOauthCallbackConfig() {
+  return Boolean(
+    APPLE_OAUTH_CLIENT_ID
+      && APPLE_OAUTH_TEAM_ID
+      && APPLE_OAUTH_KEY_ID
+      && APPLE_OAUTH_PRIVATE_KEY
+      && APPLE_OAUTH_CALLBACK_URL
+      && SOCIAL_AUTH_STATE_SECRET
+  );
+}
+
 function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
   const redirectUrl = new URL(GOOGLE_OAUTH_AUTHORIZE_URL);
   const state = signSocialAuthState(
@@ -349,8 +371,26 @@ function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
   return redirectUrl;
 }
 
-function providerStartUrl(provider: "google" | "apple") {
-  return provider === "apple" ? APPLE_AUTH_START_URL : "";
+function createAppleOAuthAuthorizeUrl(nextDestination: string) {
+  const redirectUrl = new URL(APPLE_OAUTH_AUTHORIZE_URL);
+  const nonce = randomBytes(16).toString("hex");
+  const state = signSocialAuthState(
+    {
+      next: nextDestination,
+      nonce
+    },
+    SOCIAL_AUTH_STATE_SECRET
+  );
+
+  redirectUrl.searchParams.set("client_id", APPLE_OAUTH_CLIENT_ID);
+  redirectUrl.searchParams.set("redirect_uri", APPLE_OAUTH_CALLBACK_URL);
+  redirectUrl.searchParams.set("response_type", "code");
+  redirectUrl.searchParams.set("response_mode", "form_post");
+  redirectUrl.searchParams.set("scope", "name email");
+  redirectUrl.searchParams.set("state", state);
+  redirectUrl.searchParams.set("nonce", nonce);
+
+  return redirectUrl;
 }
 
 function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
@@ -433,17 +473,14 @@ app.get("/auth/:provider/start", (req, res) => {
     return;
   }
 
-  const configuredStartUrl = providerStartUrl(provider);
-  if (!configuredStartUrl) {
+  if (!hasAppleOauthStartConfig()) {
     res.status(501).json({
-      error: "Missing APPLE_AUTH_START_URL configuration (or NEXT_PUBLIC_APPLE_AUTH_START_URL fallback)"
+      error: "Missing APPLE_OAUTH_CLIENT_ID, APPLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"
     });
     return;
   }
 
-  const requestBaseUrl = `${req.protocol}://${req.get("host")}`;
-  const redirectUrl = toAbsoluteUrl(configuredStartUrl, requestBaseUrl || frontendBaseUrl);
-  redirectUrl.searchParams.set("next", nextDestination);
+  const redirectUrl = createAppleOAuthAuthorizeUrl(nextDestination);
 
   res.redirect(302, redirectUrl.toString());
 });
@@ -536,6 +573,111 @@ app.get("/auth/google/callback", async (req, res) => {
   }
 
   const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+    status: "error",
+    nextDestination: result.nextDestination,
+    error: result.errorMessage
+  });
+  res.redirect(302, callbackUrl.toString());
+});
+
+app.get("/auth/apple/callback", (_req, res) => {
+  res.status(405).json({
+    error: "Method not allowed. Apple callback expects POST."
+  });
+});
+
+app.post("/auth/apple/callback", express.urlencoded({ extended: false }), async (req, res) => {
+  if (!hasAppleOauthCallbackConfig()) {
+    res.status(501).json({
+      error: "Missing APPLE_OAUTH_CLIENT_ID, APPLE_OAUTH_TEAM_ID, APPLE_OAUTH_KEY_ID, APPLE_OAUTH_PRIVATE_KEY, APPLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"
+    });
+    return;
+  }
+
+  const code = typeof req.body?.code === "string" ? req.body.code : "";
+  const state = typeof req.body?.state === "string" ? req.body.state : "";
+  const userPayload = typeof req.body?.user === "string" ? req.body.user : undefined;
+
+  if (!code || !state) {
+    const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
+      status: "error",
+      nextDestination: "/",
+      error: "Missing OAuth callback parameters"
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  const result = await handleAppleCallback({
+    pool,
+    code,
+    state,
+    userPayload,
+    stateSecret: SOCIAL_AUTH_STATE_SECRET,
+    clientId: APPLE_OAUTH_CLIENT_ID,
+    teamId: APPLE_OAUTH_TEAM_ID,
+    keyId: APPLE_OAUTH_KEY_ID,
+    privateKey: APPLE_OAUTH_PRIVATE_KEY,
+    callbackUrl: APPLE_OAUTH_CALLBACK_URL
+  });
+
+  if (result.kind === "success") {
+    try {
+      const nextSession = await createSessionForAccount(pool, {
+        accountId: result.accountId,
+        role: "identified_account"
+      });
+
+      res.cookie(SESSION_COOKIE_NAME, nextSession.sessionToken, getSessionCookieOptions());
+      const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
+        status: "success",
+        nextDestination: result.nextDestination
+      });
+      res.redirect(302, callbackUrl.toString());
+      return;
+    } catch (error) {
+      await logWebApiError("[auth] Failed to create session after Apple callback", error, {
+        context: "apple_callback_session_create",
+        metadata: {
+          accountId: result.accountId
+        }
+      });
+
+      const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
+        status: "error",
+        nextDestination: result.nextDestination,
+        error: "Could not create a session"
+      });
+      res.redirect(302, callbackUrl.toString());
+      return;
+    }
+  }
+
+  if (result.kind === "register_required") {
+    const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
+      status: "register_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name,
+      providerSubject: result.providerSubject
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  if (result.kind === "link_confirmation_required") {
+    const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
+      status: "link_confirmation_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name,
+      providerSubject: result.providerSubject
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
     status: "error",
     nextDestination: result.nextDestination,
     error: result.errorMessage

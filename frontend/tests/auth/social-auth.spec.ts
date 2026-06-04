@@ -86,13 +86,15 @@ describe("social auth helpers", () => {
     ).toEqual({
       provider: "google",
       suggestedName: "Alice Example",
-      suggestedEmail: "ALICE@EXAMPLE.COM"
+      suggestedEmail: "ALICE@EXAMPLE.COM",
+      providerSubject: ""
     });
 
     expect(resolveSocialPrefill({ provider: ["apple"], name: ["ignored"] })).toEqual({
       provider: "",
       suggestedName: "",
-      suggestedEmail: ""
+      suggestedEmail: "",
+      providerSubject: ""
     });
   });
 

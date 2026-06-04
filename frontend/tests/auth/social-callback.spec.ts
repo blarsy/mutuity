@@ -19,16 +19,17 @@ describe("social callback outcome resolver", () => {
     expect(result.nextDestination).toBe("/");
   });
 
-  it("routes to explicit registration when callback requires confirmation", () => {
+  it("routes to login link-confirmation when callback requires confirmation", () => {
     const result = resolveSocialCallbackOutcome("google", {
       status: "link_confirmation_required",
       email: "person@example.com",
       name: "Person Example"
     });
 
-    expect(result.shouldRedirectToRegister).toBe(true);
-    expect(result.registerPrefillHref).toBe(
-      "/register?provider=google&email=person%40example.com&name=Person+Example"
+    expect(result.shouldRedirectToRegister).toBe(false);
+    expect(result.shouldRedirectToLoginForLink).toBe(true);
+    expect(result.loginLinkHref).toBe(
+      "/login?next=%2F&social_link_required=1&provider=google&email=person%40example.com"
     );
   });
 
