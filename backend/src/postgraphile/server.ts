@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -12,7 +11,7 @@ import PgPubSub from "@graphile/pg-pubsub";
 
 import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
-import { signSocialAuthState } from "../auth/socialState";
+import { generateSocialAuthNonce, signSocialAuthState } from "../auth/socialState";
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
@@ -373,7 +372,7 @@ function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
 
 function createAppleOAuthAuthorizeUrl(nextDestination: string) {
   const redirectUrl = new URL(APPLE_OAUTH_AUTHORIZE_URL);
-  const nonce = randomBytes(16).toString("hex");
+  const nonce = generateSocialAuthNonce();
   const state = signSocialAuthState(
     {
       next: nextDestination,

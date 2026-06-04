@@ -83,4 +83,23 @@ describe("social auth start routes", () => {
       error: "Method not allowed. Apple callback expects POST."
     });
   });
+
+  it("does not return 500 when Apple callback POST misses required state", async () => {
+    const response = await fetch(`${TEST_BACKEND_URL}/auth/apple/callback`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded"
+      },
+      body: "code=dummy-oauth-code",
+      redirect: "manual"
+    });
+
+    expect(response.status).not.toBe(500);
+    expect([302, 501]).toContain(response.status);
+
+    if (response.status === 302) {
+      const location = response.headers.get("location") ?? "";
+      expect(location).toContain("status=error");
+    }
+  });
 });

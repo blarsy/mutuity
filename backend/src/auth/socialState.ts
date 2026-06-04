@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const SOCIAL_STATE_TTL_SECONDS = 10 * 60;
 
@@ -16,6 +16,10 @@ export type SocialAuthStatePayload = {
   issuedAt: number;
   expiresAt: number;
 };
+
+export function generateSocialAuthNonce() {
+  return randomBytes(16).toString("hex");
+}
 
 function toBase64Url(value: Buffer | string) {
   return Buffer.from(value)

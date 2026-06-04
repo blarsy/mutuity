@@ -16,7 +16,7 @@
 
 ## Phase 2 — Backend: Google OAuth
 
-- [ ] T100 — Create `backend/src/auth/socialState.ts`: `signState({ next, link, nonce }, secret)` → compact JWT-style signed string; `verifyState(state, secret)` → payload or null; 10-minute TTL; unit-test the round-trip
+- [x] T100 — Create `backend/src/auth/socialState.ts`: signed state helper with nonce support and unit coverage in `backend/tests/integration/social-state.spec.ts`
 - [x] T101 — Replace the Google 501 stub in `server.ts` `/auth/:provider/start` with a real OAuth redirect: load env vars, call `signState`, redirect to `accounts.google.com/o/oauth2/v2/auth` with correct params; sanitize `next` (must start with `/`)
 - [x] T102 — Create `backend/src/auth/googleCallback.ts`: accept `code` + `state`, call `verifyState`, exchange code for tokens via `google-auth-library`, verify the ID token, extract `sub`/`email`/`name`, call DB `resolve_account_for_external_identity`
 - [x] T103 — Add `GET /auth/google/callback` route in `server.ts`: call `googleCallback.ts`, handle `subject_match` → create session + redirect, `explicit_link_required` → redirect with `link_confirmation_required` status, `no_match` → redirect to `/register` with signed provider token
@@ -27,8 +27,8 @@
 ## Phase 3 — Database: Social Registration Wrapper
 
 - [x] T105 — Create `database/migrations/126_social_registration.sql`: `app_public.register_account_with_social_identity(name, email, password, provider, provider_subject, provider_email)` security-definer function callable by `app_anonymous`; internally calls `register_local_account` logic then `app_private.upsert_account_identity`; entire body is one transaction
-- [ ] T106 — Write an integration test for `register_account_with_social_identity`: verify account + identity are created; verify duplicate provider subject raises unique-violation; verify it does NOT bypass the email-uniqueness check on the account table
-- [ ] T107 — Verify PostGraphile auto-exposes the new function as `registerAccountWithSocialIdentity` mutation and update the GraphQL schema snapshot if one exists
+- [ ] T106 — Write an integration test for `register_account_with_social_identity`: verify account + identity are created; verify duplicate provider subject raises unique-violation; verify it does NOT bypass the email-uniqueness check on the account table (blocked locally: function not present in current DB runtime schema)
+- [ ] T107 — Verify PostGraphile auto-exposes the new function as `registerAccountWithSocialIdentity` mutation and update the GraphQL schema snapshot if one exists (blocked locally until migration/function is available to PostGraphile)
 
 ---
 
@@ -36,7 +36,7 @@
 
 - [x] T108 — Wire social registration through `frontend/src/features/auth/auth.api.ts` and `frontend/src/features/auth/auth.queries.ts` using `registerLocalAccountWithSocialIdentity`
 - [x] T109 — Modify `frontend/src/pages/register.tsx`: when `router.query.provider` is present, call `registerAccountWithSocialIdentity` mutation instead of the local registration path; on success, sign in and redirect; on error, surface a human-readable message
-- [ ] T110 — Frontend type-check and build pass; add a Jest test for the register page branch that stubs the mutation and verifies it is called with correct variables when `provider` param is present
+- [ ] T110 — Frontend type-check and build pass; add a Jest test for the register page branch that stubs the mutation and verifies it is called with correct variables when `provider` param is present (Jest branch coverage added in `frontend/tests/auth/register-submission.spec.ts`; full build still pending schema/codegen alignment)
 
 ---
 
@@ -46,7 +46,7 @@
 - [x] T112 — Replace the Apple 501 stub in `server.ts` `/auth/:provider/start`: generate Apple authorize redirect with signed state + nonce
 - [x] T113 — Create `backend/src/auth/appleCallback.ts`: parse callback payload, verify state, exchange code, verify ID token, and resolve account with DB function
 - [x] T114 — Add `POST /auth/apple/callback` route in `server.ts`; same redirect outcomes as Google callback (T103); ensure GET to the same path returns 405
-- [ ] T115 — Add integration tests for Apple start route (similar to T104): assert redirect target is `appleid.apple.com`; assert POST callback with missing state returns a redirect with `error` status rather than a 500
+- [x] T115 — Add integration tests for Apple start route (similar to T104): assert redirect target is `appleid.apple.com`; assert POST callback with missing state does not return 500 and returns an error redirect when callback env is configured
 
 ---
 

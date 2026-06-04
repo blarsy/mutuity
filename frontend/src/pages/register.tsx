@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { registerLocalAccount, registerLocalAccountWithSocialIdentity } from "../features/auth/auth.api";
 import { useAuth } from "../features/auth/AuthProvider";
+import { submitRegistration } from "../features/auth/registerSubmission";
 import { SocialAuthButtons } from "../features/auth/SocialAuthButtons";
 
 export function resolveSocialPrefill(query: ParsedUrlQuery) {
@@ -56,37 +57,20 @@ export default function RegisterPage() {
     setSuccess(null);
 
     try {
-      const normalizedIdentifier = identifier.trim().toLowerCase();
       const preferredLanguage = i18n.language.toLowerCase().startsWith("en") ? "en" : "fr";
 
-      if ((provider === "google" || provider === "apple") && providerSubject.trim().length > 0) {
-        const response = await registerLocalAccountWithSocialIdentity({
-          identifier: normalizedIdentifier,
-          displayName: displayName.trim(),
-          password,
-          provider,
-          providerSubject: providerSubject.trim(),
-          providerEmail: normalizedIdentifier,
-          providerEmailVerified: true,
-          preferredLanguage
-        });
-
-        await signIn({
-          identifier: normalizedIdentifier,
-          password
-        });
-
-        setSuccess(response?.message ?? t("register.successFallback"));
-        await router.replace("/");
-        return;
-      }
-
-      const response = await registerLocalAccount({
-        displayName: displayName.trim(),
-        identifier: normalizedIdentifier,
+      const response = await submitRegistration({
+        displayName,
+        identifier,
         password,
-        preferredLanguage
+        preferredLanguage,
+        provider,
+        providerSubject,
+        registerLocal: registerLocalAccount,
+        registerSocial: registerLocalAccountWithSocialIdentity
       });
+
+      const normalizedIdentifier = identifier.trim().toLowerCase();
 
       await signIn({
         identifier: normalizedIdentifier,
