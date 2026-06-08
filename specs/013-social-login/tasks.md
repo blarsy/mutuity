@@ -27,8 +27,8 @@
 ## Phase 3 — Database: Social Registration Wrapper
 
 - [x] T105 — Create `database/migrations/126_social_registration.sql`: `app_public.register_account_with_social_identity(name, email, password, provider, provider_subject, provider_email)` security-definer function callable by `app_anonymous`; internally calls `register_local_account` logic then `app_private.upsert_account_identity`; entire body is one transaction
-- [ ] T106 — Write an integration test for `register_account_with_social_identity`: verify account + identity are created; verify duplicate provider subject raises unique-violation; verify it does NOT bypass the email-uniqueness check on the account table (blocked locally: function not present in current DB runtime schema)
-- [ ] T107 — Verify PostGraphile auto-exposes the new function as `registerAccountWithSocialIdentity` mutation and update the GraphQL schema snapshot if one exists (blocked locally until migration/function is available to PostGraphile)
+- [x] T106 — Write an integration test for `register_local_account_with_social_identity`: verify account + identity are created; verify duplicate provider subject raises unique-violation; verify it does NOT bypass the email-uniqueness check on the account table
+- [x] T107 — Verify PostGraphile auto-exposes the function as `registerLocalAccountWithSocialIdentity` mutation and update the GraphQL schema snapshot if one exists
 
 ---
 
@@ -36,7 +36,7 @@
 
 - [x] T108 — Wire social registration through `frontend/src/features/auth/auth.api.ts` and `frontend/src/features/auth/auth.queries.ts` using `registerLocalAccountWithSocialIdentity`
 - [x] T109 — Modify `frontend/src/pages/register.tsx`: when `router.query.provider` is present, call `registerAccountWithSocialIdentity` mutation instead of the local registration path; on success, sign in and redirect; on error, surface a human-readable message
-- [ ] T110 — Frontend type-check and build pass; add a Jest test for the register page branch that stubs the mutation and verifies it is called with correct variables when `provider` param is present (Jest branch coverage added in `frontend/tests/auth/register-submission.spec.ts`; full build still pending schema/codegen alignment)
+- [ ] T110 — Frontend type-check and build pass; add a Jest test for the register page branch that stubs the mutation and verifies it is called with correct variables when `provider` param is present (Jest branch coverage added in `frontend/tests/auth/register-submission.spec.ts`; build is now green, but typecheck still fails on unrelated chat GraphQL codegen drift)
 
 ---
 
