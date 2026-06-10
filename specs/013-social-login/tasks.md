@@ -36,7 +36,7 @@
 
 - [x] T108 — Wire social registration through `frontend/src/features/auth/auth.api.ts` and `frontend/src/features/auth/auth.queries.ts` using `registerLocalAccountWithSocialIdentity`
 - [x] T109 — Modify `frontend/src/pages/register.tsx`: when `router.query.provider` is present, call `registerAccountWithSocialIdentity` mutation instead of the local registration path; on success, sign in and redirect; on error, surface a human-readable message
-- [ ] T110 — Frontend type-check and build pass; add a Jest test for the register page branch that stubs the mutation and verifies it is called with correct variables when `provider` param is present (Jest branch coverage added in `frontend/tests/auth/register-submission.spec.ts`; build is now green, but typecheck still fails on unrelated chat GraphQL codegen drift)
+- [x] T110 — Frontend type-check and build pass; add a Jest test for the register page branch that stubs the mutation and verifies it is called with correct variables when `provider` param is present (Jest branch coverage added in `frontend/tests/auth/register-submission.spec.ts`; build and typecheck are green)
 
 ---
 
@@ -52,8 +52,8 @@
 
 ## Phase 6 — Validation & E2E Parity
 
-- [ ] T116 — Verify all existing backend auth tests still pass after adding the new routes (`npm test` in `backend/`)
-- [ ] T117 — Verify frontend build and typecheck pass (`next build` in `frontend/`)
+- [x] T116 — Verify all existing backend auth tests still pass after adding the new routes (`npm test` in `backend/`)
+- [x] T117 — Verify frontend build and typecheck pass (`next build` in `frontend/`)
 - [ ] T118 — Manual QA: run through all six quickstart scenarios in a local stack with real test credentials (see `quickstart.md`), matching each canonical per-story example outcome from `spec.md`
 - [ ] T119 — Mark `T057b` in `005-resource-discovery-and-publishing/tasks.md` as complete; add a cross-reference note pointing to this feature
 - [ ] T120 — Update `specs/implementation-progress-tracker.md` to show Feature 013 as complete

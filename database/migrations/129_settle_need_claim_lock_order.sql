@@ -1,3 +1,5 @@
+begin;
+
 create or replace function app_public.settle_need_claim(need_claim_id uuid)
 returns app_public.need_claim
 language plpgsql
@@ -164,3 +166,5 @@ end;
 $$;
 
 comment on function app_public.settle_need_claim(uuid) is '@name settleNeedClaim';
+
+commit;

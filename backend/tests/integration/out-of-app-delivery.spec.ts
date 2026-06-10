@@ -114,6 +114,28 @@ async function getDigestMailCount(accountId: string) {
   });
 }
 
+async function getLatestDigestMail(accountId: string) {
+  return withDbClient(async client => {
+    const result = await client.query<{
+      id: string;
+      status: string;
+      text_body: string | null;
+    }>(
+      `
+        select id::text, status::text, text_body
+        from app_private.mail_outbox
+        where account_id = $1::uuid
+          and mail_kind = 'notification_digest'
+        order by created_at desc
+        limit 1
+      `,
+      [accountId]
+    );
+
+    return result.rows[0];
+  });
+}
+
 async function getDeliveryCounts(accountId: string, eventCategory: string) {
   return withDbClient(async client => {
     const result = await client.query<{
@@ -198,26 +220,14 @@ describe("out-of-app delivery integration", () => {
     expect(beforeDueCount).toBe(0);
 
     await issueNotificationDigestsTask({ nowIso: new Date(stamp + 4 * 24 * 60 * 60 * 1000).toISOString() }, {} as never);
-    await deliverAuthEmailsTask({}, {} as never);
 
-    const digestMail = await withDbClient(async client => {
-      const result = await client.query<{
-        status: string;
-        text_body: string | null;
-      }>(
-        `
-          select status::text, text_body
-          from app_private.mail_outbox
-          where account_id = $1::uuid
-            and mail_kind = 'notification_digest'
-          order by created_at desc
-          limit 1
-        `,
-        [recipient.accountId]
-      );
+    const queuedDigest = await getLatestDigestMail(recipient.accountId);
 
-      return result.rows[0];
-    });
+    expect(queuedDigest?.id).toBeTruthy();
+
+    await deliverAuthEmailsTask({ mailId: queuedDigest?.id }, {} as never);
+
+    const digestMail = await getLatestDigestMail(recipient.accountId);
 
     expect(digestMail?.status).toBe("skipped");
     expect(digestMail?.text_body).toContain(`New need ${stamp}`);
@@ -493,26 +503,14 @@ describe("out-of-app delivery integration", () => {
     );
 
     await issueNotificationDigestsTask({ nowIso: new Date(stamp + 2 * 24 * 60 * 60 * 1000).toISOString() }, {} as never);
-    await deliverAuthEmailsTask({}, {} as never);
 
-    const digestMail = await withDbClient(async client => {
-      const result = await client.query<{
-        status: string;
-        text_body: string | null;
-      }>(
-        `
-          select status::text, text_body
-          from app_private.mail_outbox
-          where account_id = $1::uuid
-            and mail_kind = 'notification_digest'
-          order by created_at desc
-          limit 1
-        `,
-        [recipient.accountId]
-      );
+    const queuedDigest = await getLatestDigestMail(recipient.accountId);
 
-      return result.rows[0];
-    });
+    expect(queuedDigest?.id).toBeTruthy();
+
+    await deliverAuthEmailsTask({ mailId: queuedDigest?.id }, {} as never);
+
+    const digestMail = await getLatestDigestMail(recipient.accountId);
 
     expect(digestMail?.status).toBe("skipped");
     expect(digestMail?.text_body).toContain("New resources:");
