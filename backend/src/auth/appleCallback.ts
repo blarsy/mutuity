@@ -5,7 +5,7 @@ import { logWebApiError } from "../logging/operationalLogger.js";
 import { verifySocialAuthState } from "./socialState.js";
 
 const RESOLVE_EXTERNAL_IDENTITY_SQL =
-  "select account_id, resolution from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
+  "select * from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
 
 type ResolveAccountResult = {
   account_id: string | null;

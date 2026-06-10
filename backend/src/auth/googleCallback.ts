@@ -6,7 +6,7 @@ import { verifySocialAuthState } from "./socialState.js";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const GOOGLE_TOKEN_INFO_ENDPOINT = "https://oauth2.googleapis.com/tokeninfo";
 const RESOLVE_EXTERNAL_IDENTITY_SQL =
-  "select account_id, resolution from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
+  "select * from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
 
 type ResolveAccountResult = {
   account_id: string | null;
