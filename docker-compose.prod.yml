@@ -1,0 +1,161 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-mutuity}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-mutuity}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - internal
+
+  migrate:
+    image: postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace:ro
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mutuity}
+    entrypoint: ["bash", "./database/migrate.sh"]
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      ALLOW_GRAPHIQL: "false"
+      POSTGRAPHILE_WATCH_PG: "false"
+      BACKEND_PORT: 5050
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mutuity}
+      PG_DEFAULT_ROLE: anonymous
+      GRAPHILE_SCHEMA: app_public
+      GRAPHILE_EXTENDED_ERRORS: hint,detail,errcode
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:?Set BACKEND_CORS_ORIGINS in .env.prod}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env.prod}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-mutuity_session}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-168}
+      ALLOW_DEV_AUTH_HEADERS: "false"
+      PASSWORD_HASH_ROUNDS: ${PASSWORD_HASH_ROUNDS:-12}
+      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-300000}
+      LOGIN_RATE_LIMIT_MAX_ATTEMPTS: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:-5}
+      MAIL_DELIVERY_ENABLED: ${MAIL_DELIVERY_ENABLED:-true}
+      MAIL_WEB_APP_URL: ${MAIL_WEB_APP_URL:?Set MAIL_WEB_APP_URL in .env.prod}
+      MAIL_PRODUCT_NAME: ${MAIL_PRODUCT_NAME:-Mutuity}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:?Set MAIL_FROM_ADDRESS in .env.prod}
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY:-}
+      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN:-}
+      MAILGUN_API_URL: ${MAILGUN_API_URL:-}
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      GOOGLE_OAUTH_CALLBACK_URL: ${GOOGLE_OAUTH_CALLBACK_URL:-}
+      GOOGLE_OAUTH_SCOPES: ${GOOGLE_OAUTH_SCOPES:-openid email profile}
+      SOCIAL_AUTH_STATE_SECRET: ${SOCIAL_AUTH_STATE_SECRET:?Set SOCIAL_AUTH_STATE_SECRET in .env.prod}
+      APPLE_OAUTH_CLIENT_ID: ${APPLE_OAUTH_CLIENT_ID:-}
+      APPLE_OAUTH_TEAM_ID: ${APPLE_OAUTH_TEAM_ID:-}
+      APPLE_OAUTH_KEY_ID: ${APPLE_OAUTH_KEY_ID:-}
+      APPLE_OAUTH_PRIVATE_KEY: ${APPLE_OAUTH_PRIVATE_KEY:-}
+      APPLE_OAUTH_CALLBACK_URL: ${APPLE_OAUTH_CALLBACK_URL:-}
+      FRONTEND_URL: ${FRONTEND_URL:?Set FRONTEND_URL in .env.prod}
+    expose:
+      - "5050"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5050/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    networks:
+      - internal
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mutuity}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
+      WORKER_POLL_INTERVAL: ${WORKER_POLL_INTERVAL:-2000}
+      MAIL_DELIVERY_ENABLED: ${MAIL_DELIVERY_ENABLED:-true}
+      MAIL_WEB_APP_URL: ${MAIL_WEB_APP_URL:?Set MAIL_WEB_APP_URL in .env.prod}
+      MAIL_PRODUCT_NAME: ${MAIL_PRODUCT_NAME:-Mutuity}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:?Set MAIL_FROM_ADDRESS in .env.prod}
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY:-}
+      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN:-}
+      MAILGUN_API_URL: ${MAILGUN_API_URL:-}
+    command: ["npm", "--workspace", "backend", "run", "start:worker"]
+    networks:
+      - internal
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL:?Set NEXT_PUBLIC_GRAPHQL_URL in .env.prod}
+        NEXT_PUBLIC_GRAPHQL_WS_URL: ${NEXT_PUBLIC_GRAPHQL_WS_URL:?Set NEXT_PUBLIC_GRAPHQL_WS_URL in .env.prod}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:?Set NEXT_PUBLIC_BACKEND_URL in .env.prod}
+        NEXT_PUBLIC_DEFAULT_LOCALE: ${NEXT_PUBLIC_DEFAULT_LOCALE:-fr}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL:?Set NEXT_PUBLIC_GRAPHQL_URL in .env.prod}
+      NEXT_PUBLIC_GRAPHQL_WS_URL: ${NEXT_PUBLIC_GRAPHQL_WS_URL:?Set NEXT_PUBLIC_GRAPHQL_WS_URL in .env.prod}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:?Set NEXT_PUBLIC_BACKEND_URL in .env.prod}
+      NEXT_PUBLIC_DEFAULT_LOCALE: ${NEXT_PUBLIC_DEFAULT_LOCALE:-fr}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  internal:
+    driver: bridge
