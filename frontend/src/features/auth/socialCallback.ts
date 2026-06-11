@@ -22,6 +22,7 @@ export type SocialCallbackOutcome = {
   shouldRedirectToLoginForLink: boolean;
   registerPrefillHref: string;
   loginLinkHref: string;
+  pendingLinkToken: string;
 };
 
 export function resolveSocialCallbackOutcome(
@@ -35,6 +36,7 @@ export function resolveSocialCallbackOutcome(
   const suggestedEmail = asSingleValue(query.email);
   const suggestedName = asSingleValue(query.name) || asSingleValue(query.suggestedName);
   const providerSubject = asSingleValue(query.providerSubject);
+  const pendingLinkToken = asSingleValue(query.pendingLinkToken);
 
   const shouldRedirectToRegister =
     callbackStatus === "register_required"
@@ -65,6 +67,9 @@ export function resolveSocialCallbackOutcome(
       loginParams.set("providerSubject", providerSubject);
     }
   }
+  if (pendingLinkToken) {
+    loginParams.set("pendingLinkToken", pendingLinkToken);
+  }
 
   return {
     nextDestination,
@@ -73,6 +78,7 @@ export function resolveSocialCallbackOutcome(
     shouldRedirectToRegister,
     shouldRedirectToLoginForLink,
     registerPrefillHref: `/register?${params.toString()}`,
-    loginLinkHref: `/login?${loginParams.toString()}`
+    loginLinkHref: `/login?${loginParams.toString()}`,
+    pendingLinkToken
   };
 }

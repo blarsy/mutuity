@@ -117,3 +117,62 @@ export function verifySocialAuthState(state: string, secret: string) {
 
   return payload;
 }
+// ── Pending link token ──────────────────────────────────────────────────────
+
+const PENDING_LINK_TOKEN_TTL_SECONDS = 15 * 60;
+
+type PendingLinkTokenInput = {
+  provider: "google" | "apple";
+  providerSubject: string;
+  providerEmail: string;
+  providerEmailVerified: boolean;
+  next: string;
+};
+
+export type PendingLinkTokenPayload = PendingLinkTokenInput & {
+  issuedAt: number;
+  expiresAt: number;
+};
+
+export function signPendingLinkToken(input: PendingLinkTokenInput, secret: string): string {
+  if (!secret) {
+    throw new Error("Missing SOCIAL_AUTH_STATE_SECRET");
+  }
+
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const payload: PendingLinkTokenPayload = {
+    ...input,
+    issuedAt,
+    expiresAt: issuedAt + PENDING_LINK_TOKEN_TTL_SECONDS,
+  };
+
+  const payloadBase64Url = toBase64Url(JSON.stringify(payload));
+  const signature = signPayload(payloadBase64Url, secret);
+  return `${payloadBase64Url}.${signature}`;
+}
+
+export function verifyPendingLinkToken(token: string, secret: string): PendingLinkTokenPayload | null {
+  if (!token || !secret) return null;
+
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+
+  const [payloadBase64Url, signatureBase64Url] = parts;
+  if (!payloadBase64Url || !signatureBase64Url) return null;
+
+  if (!isSignatureValid(payloadBase64Url, signatureBase64Url, secret)) return null;
+
+  let payload: PendingLinkTokenPayload;
+  try {
+    payload = JSON.parse(fromBase64Url(payloadBase64Url).toString("utf8")) as PendingLinkTokenPayload;
+  } catch {
+    return null;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.expiresAt < now) return null;
+  if (payload.provider !== "google" && payload.provider !== "apple") return null;
+  if (!payload.providerSubject || !payload.next.startsWith("/")) return null;
+
+  return payload;
+}

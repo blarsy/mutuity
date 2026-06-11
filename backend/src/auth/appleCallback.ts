@@ -54,6 +54,7 @@ export type AppleCallbackResult =
       email: string;
       name: string;
       providerSubject: string;
+      providerEmailVerified: boolean;
     }
   | {
       kind: "error";
@@ -200,7 +201,8 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
         nextDestination: parsedState.next,
         email: profile.email,
         name: profileName,
-        providerSubject: profile.providerSubject
+        providerSubject: profile.providerSubject,
+        providerEmailVerified: profile.emailVerified
       };
     }
 

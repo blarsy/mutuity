@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { LoginForm } from "../features/auth/LoginForm";
+import { confirmPendingLink } from "../features/auth/auth.api";
 
 export function resolveNextDestination(candidate: unknown): string {
   return typeof candidate === "string" && candidate.startsWith("/") ? candidate : "/";
@@ -28,12 +29,27 @@ export default function LoginPage() {
   const socialLinkRequired = router.query.social_link_required === "1";
   const socialEmail = typeof router.query.email === "string" ? router.query.email : "";
   const socialProviderLabel = resolveSocialProviderLabel(router.query.provider);
+  const pendingLinkToken = typeof router.query.pendingLinkToken === "string"
+   ? router.query.pendingLinkToken
+   : "";
 
   useEffect(() => {
     if (status === "authenticated") {
       void router.replace(nextDestination);
     }
   }, [nextDestination, router, status]);
+
+  const handleLoginSuccess = async () => {
+    if (socialLinkRequired && pendingLinkToken) {
+      try {
+        await confirmPendingLink(pendingLinkToken);
+      } catch {
+        // Non-fatal: user is signed in; identity link failed silently.
+        // A production improvement would surface a dismissible error banner here.
+      }
+    }
+    await router.replace(nextDestination);
+  };
 
   return (
     <Container maxWidth="sm">
@@ -72,7 +88,11 @@ export default function LoginPage() {
           </Alert>
         ) : null}
 
-        <LoginForm nextDestination={nextDestination} showSecondaryActions />
+        <LoginForm
+          nextDestination={nextDestination}
+          showSecondaryActions
+          onSuccess={handleLoginSuccess}
+        />
       </Box>
     </Container>
   );

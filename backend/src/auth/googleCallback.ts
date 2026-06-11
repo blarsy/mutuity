@@ -57,6 +57,7 @@ export type GoogleCallbackResult =
       email: string;
       name: string;
       providerSubject: string;
+      providerEmailVerified: boolean;
     }
   | {
       kind: "error";
@@ -178,7 +179,8 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
         nextDestination: parsedState.next,
         email: profile.email,
         name: profile.name,
-        providerSubject: profile.providerSubject
+        providerSubject: profile.providerSubject,
+        providerEmailVerified: profile.emailVerified
       };
     }
 

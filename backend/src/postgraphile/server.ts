@@ -11,7 +11,7 @@ import PgPubSub from "@graphile/pg-pubsub";
 
 import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
-import { generateSocialAuthNonce, signSocialAuthState } from "../auth/socialState";
+import { generateSocialAuthNonce, signSocialAuthState, signPendingLinkToken, verifyPendingLinkToken } from "../auth/socialState";
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
@@ -211,6 +211,8 @@ const APPLE_OAUTH_PRIVATE_KEY = process.env.APPLE_OAUTH_PRIVATE_KEY?.trim() || "
 const APPLE_OAUTH_CALLBACK_URL = process.env.APPLE_OAUTH_CALLBACK_URL?.trim() || "";
 const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const APPLE_OAUTH_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize";
+const UPSERT_IDENTITY_SQL =
+  "select app_private.upsert_account_identity($1, $2, $3, $4, $5, '{}'::jsonb)";
 
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -399,6 +401,7 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
   name?: string;
   providerSubject?: string;
   error?: string;
+  pendingLinkToken?: string;
 }) {
   const callbackUrl = new URL(`/auth/${provider}/callback`, frontendBaseUrl);
   callbackUrl.searchParams.set("status", input.status);
@@ -418,6 +421,10 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
 
   if (input.error) {
     callbackUrl.searchParams.set("error", input.error);
+  }
+
+  if (input.pendingLinkToken) {
+    callbackUrl.searchParams.set("pendingLinkToken", input.pendingLinkToken);
   }
 
   return callbackUrl;
@@ -560,15 +567,27 @@ app.get("/auth/google/callback", async (req, res) => {
   }
 
   if (result.kind === "link_confirmation_required") {
-    const callbackUrl = buildFrontendSocialCallbackUrl("google", {
-      status: "link_confirmation_required",
-      nextDestination: result.nextDestination,
-      email: result.email,
-      name: result.name,
-      providerSubject: result.providerSubject
-    });
-    res.redirect(302, callbackUrl.toString());
-    return;
+      if (result.kind === "link_confirmation_required") {
+        const pendingLinkToken = SOCIAL_AUTH_STATE_SECRET
+         ? signPendingLinkToken({
+             provider: "google",
+             providerSubject: result.providerSubject,
+             providerEmail: result.email,
+             providerEmailVerified: result.providerEmailVerified,
+             next: result.nextDestination,
+           }, SOCIAL_AUTH_STATE_SECRET)
+         : undefined;   
+        const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+          status: "link_confirmation_required",
+          nextDestination: result.nextDestination,
+          email: result.email,
+          name: result.name,
+          providerSubject: result.providerSubject,
+          pendingLinkToken
+        });
+        res.redirect(302, callbackUrl.toString());
+        return;
+    }
   }
 
   const callbackUrl = buildFrontendSocialCallbackUrl("google", {
@@ -665,12 +684,22 @@ app.post("/auth/apple/callback", express.urlencoded({ extended: false }), async 
   }
 
   if (result.kind === "link_confirmation_required") {
+       const pendingLinkToken = SOCIAL_AUTH_STATE_SECRET
+        ? signPendingLinkToken({
+            provider: "apple",
+            providerSubject: result.providerSubject,
+            providerEmail: result.email,
+            providerEmailVerified: result.providerEmailVerified,
+            next: result.nextDestination,
+          }, SOCIAL_AUTH_STATE_SECRET)
+        : undefined;
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "link_confirmation_required",
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
-      providerSubject: result.providerSubject
+      providerSubject: result.providerSubject,
+      pendingLinkToken
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -759,6 +788,41 @@ const postgraphileMiddleware = postgraphile(
     })
   }
 );
+
+app.post("/auth/social/confirm-link", express.json(), async (req, res) => {
+  if (!req.authSession) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const rawToken = typeof req.body?.pendingLinkToken === "string" ? req.body.pendingLinkToken : "";
+  if (!rawToken) {
+    res.status(400).json({ error: "Missing pendingLinkToken" });
+    return;
+  }
+
+  const pending = verifyPendingLinkToken(rawToken, SOCIAL_AUTH_STATE_SECRET);
+  if (!pending) {
+    res.status(400).json({ error: "Invalid or expired pending link token" });
+    return;
+  }
+
+  try {
+    await pool.query(UPSERT_IDENTITY_SQL, [
+      req.authSession.accountId,
+      pending.provider,
+      pending.providerSubject,
+      pending.providerEmail,
+      pending.providerEmailVerified,
+    ]);
+    res.status(200).json({ status: "linked" });
+  } catch (error) {
+    await logWebApiError("[auth] Failed to confirm pending social link", error, {
+      context: "confirm_pending_link",
+    });
+    res.status(500).json({ error: "Failed to link identity" });
+  }
+});
 
 app.use(postgraphileMiddleware);
 

@@ -223,3 +223,17 @@ export function changePassword(input: { currentPassword: string; newPassword: st
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
     });
 }
+
+export async function confirmPendingLink(pendingLinkToken: string): Promise<void> {
+  const backendBaseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/$/, "");
+  const response = await fetch(`${backendBaseUrl}/auth/social/confirm-link`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ pendingLinkToken }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to link social identity");
+  }
+}
