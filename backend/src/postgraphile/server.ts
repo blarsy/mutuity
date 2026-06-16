@@ -11,7 +11,7 @@ import PgPubSub from "@graphile/pg-pubsub";
 
 import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
-import { generateSocialAuthNonce, signSocialAuthState, signPendingLinkToken, verifyPendingLinkToken } from "../auth/socialState";
+import { generateSocialAuthNonce, signSocialAuthState, signPendingLinkToken, verifyPendingLinkToken } from "../auth/socialState.js";
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
@@ -213,7 +213,7 @@ const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth
 const APPLE_OAUTH_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize";
 const UPSERT_IDENTITY_SQL =
   "select app_private.upsert_account_identity($1, $2, $3, $4, $5, '{}'::jsonb)";
-
+const APPLE_OAUTH_CALLBACK_ROUTE = "/auth/apple/callback";
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
 }
@@ -432,11 +432,16 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
 
 app.use(cookieParser(sessionSecret));
 app.use(createAuthSessionMiddleware(pool));
-app.use(
+
+app.use((req, res, next) => {
+  if (req.path === APPLE_OAUTH_CALLBACK_ROUTE) {
+    next();
+    return;
+  }
+
   cors({
     credentials: true,
     origin: (origin, callback) => {
-      // Allow same-origin and non-browser requests (no Origin header).
       if (!origin) {
         callback(null, true);
         return;
@@ -454,8 +459,8 @@ app.use(
 
       callback(new Error(`Origin ${origin} is not allowed by CORS`));
     }
-  })
-);
+  })(req, res, next);
+});
 
 app.get("/auth/:provider/start", (req, res) => {
   const provider = req.params.provider;
@@ -598,13 +603,13 @@ app.get("/auth/google/callback", async (req, res) => {
   res.redirect(302, callbackUrl.toString());
 });
 
-app.get("/auth/apple/callback", (_req, res) => {
+app.get(APPLE_OAUTH_CALLBACK_ROUTE, (_req, res) => {
   res.status(405).json({
     error: "Method not allowed. Apple callback expects POST."
   });
 });
 
-app.post("/auth/apple/callback", express.urlencoded({ extended: false }), async (req, res) => {
+app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), async (req, res) => {
   if (!hasAppleOauthCallbackConfig()) {
     res.status(501).json({
       error: "Missing APPLE_OAUTH_CLIENT_ID, APPLE_OAUTH_TEAM_ID, APPLE_OAUTH_KEY_ID, APPLE_OAUTH_PRIVATE_KEY, APPLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"

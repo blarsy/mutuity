@@ -2,8 +2,15 @@
   email topela.tech@gmail.com
 }
 
-app.test.topela.com {
+test.tope-la.com {
   encode zstd gzip
+
+  handle_path /api/* {
+    reverse_proxy backend:5050
+  }
+
+  # Optional: normalize /api to /api/
+  redir /api /api/ 308
 
   @staticAssets {
     path /_next/* /favicon.ico /robots.txt /sitemap.xml
@@ -11,25 +18,4 @@ app.test.topela.com {
   header @staticAssets Cache-Control "public, max-age=31536000, immutable"
 
   reverse_proxy frontend:3000
-}
-
-api.test.topela.com {
-  encode zstd gzip
-
-  header {
-    X-Content-Type-Options nosniff
-    X-Frame-Options SAMEORIGIN
-    Referrer-Policy strict-origin-when-cross-origin
-  }
-
-  @graphql {
-    path /graphql
-  }
-
-  reverse_proxy @graphql backend:5050 {
-    # Caddy forwards Upgrade/Connection headers automatically; this keeps GraphQL WS working.
-    flush_interval -1
-  }
-
-  reverse_proxy backend:5050
 }
