@@ -11,7 +11,14 @@ import PgPubSub from "@graphile/pg-pubsub";
 
 import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
-import { generateSocialAuthNonce, signSocialAuthState, signPendingLinkToken, verifyPendingLinkToken } from "../auth/socialState.js";
+import {
+  generateSocialAuthNonce,
+  signPendingLinkToken,
+  signPendingRegistrationToken,
+  signSocialAuthState,
+  verifyPendingLinkToken,
+  verifyPendingRegistrationToken
+} from "../auth/socialState.js";
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
@@ -91,6 +98,7 @@ const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
   ["Recipient account not found", "NOT_FOUND"],
   ["Gift amount must be greater than zero", "BAD_USER_INPUT"],
   ["You cannot gift tokens to your own account", "BAD_USER_INPUT"],
+  ["Password reset is required before sign in.", "PASSWORD_RESET_REQUIRED"],
   ["Only administrators can create or modify grants", "FORBIDDEN"],
   ["Only administrators can modify grant targets", "FORBIDDEN"],
   ["Only administrators can access admin support data", "FORBIDDEN"],
@@ -213,6 +221,8 @@ const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth
 const APPLE_OAUTH_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize";
 const UPSERT_IDENTITY_SQL =
   "select app_private.upsert_account_identity($1, $2, $3, $4, $5, '{}'::jsonb)";
+const RESOLVE_EXTERNAL_IDENTITY_SQL =
+  "select * from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
 const APPLE_OAUTH_CALLBACK_ROUTE = "/auth/apple/callback";
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -395,13 +405,14 @@ function createAppleOAuthAuthorizeUrl(nextDestination: string) {
 }
 
 function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
-  status: "success" | "register_required" | "link_confirmation_required" | "error";
+  status: "success" | "register_required" | "link_confirmation_required" | "password_reset_required" | "error";
   nextDestination: string;
   email?: string;
   name?: string;
   providerSubject?: string;
   error?: string;
   pendingLinkToken?: string;
+  pendingRegistrationToken?: string;
 }) {
   const callbackUrl = new URL(`/auth/${provider}/callback`, frontendBaseUrl);
   callbackUrl.searchParams.set("status", input.status);
@@ -425,6 +436,10 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
 
   if (input.pendingLinkToken) {
     callbackUrl.searchParams.set("pendingLinkToken", input.pendingLinkToken);
+  }
+
+  if (input.pendingRegistrationToken) {
+    callbackUrl.searchParams.set("pendingRegistrationToken", input.pendingRegistrationToken);
   }
 
   return callbackUrl;
@@ -560,12 +575,26 @@ app.get("/auth/google/callback", async (req, res) => {
   }
 
   if (result.kind === "register_required") {
+    const pendingRegistrationToken = SOCIAL_AUTH_STATE_SECRET
+      ? signPendingRegistrationToken(
+          {
+            provider: "google",
+            providerSubject: result.providerSubject,
+            providerEmail: result.email,
+            providerEmailVerified: result.providerEmailVerified,
+            next: result.nextDestination
+          },
+          SOCIAL_AUTH_STATE_SECRET
+        )
+      : undefined;
+
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "register_required",
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
-      providerSubject: result.providerSubject
+      providerSubject: result.providerSubject,
+      pendingRegistrationToken
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -593,6 +622,18 @@ app.get("/auth/google/callback", async (req, res) => {
         res.redirect(302, callbackUrl.toString());
         return;
     }
+  }
+
+  if (result.kind === "password_reset_required") {
+    const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+      status: "password_reset_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name,
+      providerSubject: result.providerSubject
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
   }
 
   const callbackUrl = buildFrontendSocialCallbackUrl("google", {
@@ -677,12 +718,26 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
   }
 
   if (result.kind === "register_required") {
+    const pendingRegistrationToken = SOCIAL_AUTH_STATE_SECRET
+      ? signPendingRegistrationToken(
+          {
+            provider: "apple",
+            providerSubject: result.providerSubject,
+            providerEmail: result.email,
+            providerEmailVerified: result.providerEmailVerified,
+            next: result.nextDestination
+          },
+          SOCIAL_AUTH_STATE_SECRET
+        )
+      : undefined;
+
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "register_required",
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
-      providerSubject: result.providerSubject
+      providerSubject: result.providerSubject,
+      pendingRegistrationToken
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -705,6 +760,18 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
       name: result.name,
       providerSubject: result.providerSubject,
       pendingLinkToken
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
+  }
+
+  if (result.kind === "password_reset_required") {
+    const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
+      status: "password_reset_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name,
+      providerSubject: result.providerSubject
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -826,6 +893,46 @@ app.post("/auth/social/confirm-link", express.json(), async (req, res) => {
       context: "confirm_pending_link",
     });
     res.status(500).json({ error: "Failed to link identity" });
+  }
+});
+
+app.post("/auth/social/complete-registration", express.json(), async (req, res) => {
+  const rawToken = typeof req.body?.pendingRegistrationToken === "string" ? req.body.pendingRegistrationToken : "";
+  if (!rawToken) {
+    res.status(400).json({ error: "Missing pendingRegistrationToken" });
+    return;
+  }
+
+  const pending = verifyPendingRegistrationToken(rawToken, SOCIAL_AUTH_STATE_SECRET);
+  if (!pending) {
+    res.status(400).json({ error: "Invalid or expired pending registration token" });
+    return;
+  }
+
+  try {
+    const { rows } = await pool.query<{ account_id: string | null; resolution: string }>(
+      RESOLVE_EXTERNAL_IDENTITY_SQL,
+      [pending.provider, pending.providerSubject, pending.providerEmail, pending.providerEmailVerified]
+    );
+
+    const resolution = rows[0];
+    if (!resolution || resolution.resolution !== "subject_match" || !resolution.account_id) {
+      res.status(400).json({ error: "Social identity is not linked to an account" });
+      return;
+    }
+
+    const nextSession = await createSessionForAccount(pool, {
+      accountId: resolution.account_id,
+      role: "identified_account"
+    });
+
+    res.cookie(SESSION_COOKIE_NAME, nextSession.sessionToken, getSessionCookieOptions());
+    res.status(200).json({ status: "authenticated", next: pending.next });
+  } catch (error) {
+    await logWebApiError("[auth] Failed to complete social registration", error, {
+      context: "complete_social_registration"
+    });
+    res.status(500).json({ error: "Failed to complete registration" });
   }
 });
 

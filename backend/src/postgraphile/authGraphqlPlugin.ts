@@ -17,6 +17,7 @@ const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 const INVALID_CREDENTIALS_MESSAGE = "Unable to sign in with those credentials.";
 const PASSWORD_CHANGE_INVALID_CURRENT_MESSAGE = "Current password is incorrect.";
 const PASSWORD_CHANGE_REQUIRE_AUTH_MESSAGE = "You must be signed in to change your password.";
+const PASSWORD_RESET_REQUIRED_MESSAGE = "Password reset is required before sign in.";
 const PASSWORD_MIN_LENGTH = Number(process.env.PASSWORD_MIN_LENGTH ?? 8);
 const TOO_MANY_ATTEMPTS_MESSAGE = "Too many sign-in attempts. Please wait a moment and try again.";
 const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 5 * 60 * 1000);
@@ -43,6 +44,7 @@ type LoginCandidate = {
   role_name: string;
   email_verified_at: Date | null;
   preferred_language: string | null | undefined;
+  require_password_reset_on_next_login: boolean;
 };
 
 type PasswordHashRow = {
@@ -238,6 +240,19 @@ export function createAuthGraphqlPlugin(pool: Pool) {
           try {
             const { rows } = await pool.query<LoginCandidate>(SELECT_LOGIN_CANDIDATE_SQL, [identifier]);
             const candidate = rows[0];
+
+            if (candidate?.require_password_reset_on_next_login) {
+              throw new GraphQLError(
+                PASSWORD_RESET_REQUIRED_MESSAGE,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                { code: "PASSWORD_RESET_REQUIRED" }
+              );
+            }
+
             const isValid = candidate ? await verifyPassword(password, candidate.password_hash) : false;
 
             if (!candidate || !isValid) {

@@ -31,6 +31,10 @@ export function LoginForm({
   const { t } = useTranslation("auth");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const isPasswordResetRequired =
+    typeof submitError === "string"
+    && submitError.toLowerCase().includes("password reset is required");
+
   const handleSubmit = async (values: LoginValues) => {
     setSubmitError(null);
     await signIn({
@@ -63,7 +67,25 @@ export function LoginForm({
       {({ values, errors, touched, handleBlur, handleChange, isSubmitting }) => (
         <Form>
           <Stack spacing={2}>
-            {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+            {submitError ? (
+              <Alert
+                severity="error"
+                action={
+                  isPasswordResetRequired ? (
+                    <Button
+                      color="inherit"
+                      component={NextLink}
+                      href={`/restore-access${values.identifier.trim() ? `?identifier=${encodeURIComponent(values.identifier.trim())}` : ""}`}
+                      size="small"
+                    >
+                      {t("signIn.passwordResetRequiredButton")}
+                    </Button>
+                  ) : undefined
+                }
+              >
+                {submitError}
+              </Alert>
+            ) : null}
 
             <TextField
               autoComplete="username"

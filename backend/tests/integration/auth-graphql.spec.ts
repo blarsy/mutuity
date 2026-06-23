@@ -122,6 +122,35 @@ async function ageSessionByCookie(sessionCookie: string, hoursAgo: number) {
   });
 }
 
+async function setRequirePasswordResetOnNextLogin(identifier: string, required: boolean) {
+  await withDbClient(async client => {
+    await client.query(
+      `
+        update app_public.account
+        set require_password_reset_on_next_login = $2
+        where lower(external_subject) = lower($1)
+      `,
+      [identifier, required]
+    );
+  });
+}
+
+async function readRequirePasswordResetOnNextLogin(identifier: string) {
+  return withDbClient(async client => {
+    const result = await client.query<{ require_password_reset_on_next_login: boolean }>(
+      `
+        select require_password_reset_on_next_login
+        from app_public.account
+        where lower(external_subject) = lower($1)
+        limit 1
+      `,
+      [identifier]
+    );
+
+    return result.rows[0]?.require_password_reset_on_next_login ?? false;
+  });
+}
+
 describe("auth graphql operations", () => {
   it("supports authSession, authLogin, and authLogout with cookie-backed session state", async () => {
     const account = await seedDemoAccount({
@@ -245,6 +274,108 @@ describe("auth graphql operations", () => {
       role: "anonymous",
       account: null
     });
+  });
+
+  it("blocks login when password reset is required and clears the flag after reset", async () => {
+    const account = await seedDemoAccount({
+      identifier: `graphql-reset-required-${Date.now()}@example.com`
+    });
+
+    await setRequirePasswordResetOnNextLogin(account.identifier, true);
+
+    const blockedLogin = await graphQLRequest(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          authSession {
+            authenticated
+          }
+        }
+      }`,
+      {
+        identifier: account.identifier,
+        password: account.password
+      }
+    );
+
+    expect(blockedLogin.response.status).toBe(200);
+    expect(blockedLogin.payload.errors?.[0]?.message).toBe("Password reset is required before sign in.");
+    expect(blockedLogin.payload.errors?.[0]?.extensions?.code).toBe("PASSWORD_RESET_REQUIRED");
+
+    const requestReset = await graphQLRequest<{
+      requestPasswordReset: {
+        boolean: boolean;
+      };
+    }>(
+      `mutation RequestPasswordReset($identifier: String!, $resetTtlMs: BigInt, $throttleMs: BigInt) {
+        requestPasswordReset(
+          input: {
+            identifier: $identifier
+            resetTtlMs: $resetTtlMs
+            throttleMs: $throttleMs
+          }
+        ) {
+          boolean
+        }
+      }`,
+      {
+        identifier: account.identifier,
+        resetTtlMs: 3600000,
+        throttleMs: 0
+      }
+    );
+
+    expect(requestReset.payload.errors).toBeUndefined();
+    expect(requestReset.payload.data?.requestPasswordReset.boolean).toBe(true);
+
+    const resetToken = await readLatestOutboxToken(account.identifier, "auth_password_reset");
+    expect(resetToken).toBeTruthy();
+
+    const nextPassword = "ResetRequiredNextPassword123!";
+
+    const confirmReset = await graphQLRequest<{
+      confirmPasswordResetWithPassword: {
+        boolean: boolean;
+      };
+    }>(
+      `mutation ConfirmPasswordResetWithPassword($token: String!, $nextPassword: String!) {
+        confirmPasswordResetWithPassword(input: { token: $token, nextPassword: $nextPassword }) {
+          boolean
+        }
+      }`,
+      {
+        token: resetToken,
+        nextPassword
+      }
+    );
+
+    expect(confirmReset.payload.errors).toBeUndefined();
+    expect(confirmReset.payload.data?.confirmPasswordResetWithPassword.boolean).toBe(true);
+
+    const flagAfterReset = await readRequirePasswordResetOnNextLogin(account.identifier);
+    expect(flagAfterReset).toBe(false);
+
+    const loginAfterReset = await graphQLRequest<{
+      authLogin: {
+        authSession: {
+          authenticated: boolean;
+        };
+      };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          authSession {
+            authenticated
+          }
+        }
+      }`,
+      {
+        identifier: account.identifier,
+        password: nextPassword
+      }
+    );
+
+    expect(loginAfterReset.payload.errors).toBeUndefined();
+    expect(loginAfterReset.payload.data?.authLogin.authSession.authenticated).toBe(true);
   });
 
   it("supports authenticated authChangePassword and invalidates old credentials", async () => {

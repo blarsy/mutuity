@@ -176,3 +176,63 @@ export function verifyPendingLinkToken(token: string, secret: string): PendingLi
 
   return payload;
 }
+
+// ── Pending registration token ───────────────────────────────────────────────
+
+const PENDING_REGISTRATION_TOKEN_TTL_SECONDS = 15 * 60;
+
+type PendingRegistrationTokenInput = {
+  provider: "google" | "apple";
+  providerSubject: string;
+  providerEmail: string;
+  providerEmailVerified: boolean;
+  next: string;
+};
+
+export type PendingRegistrationTokenPayload = PendingRegistrationTokenInput & {
+  issuedAt: number;
+  expiresAt: number;
+};
+
+export function signPendingRegistrationToken(input: PendingRegistrationTokenInput, secret: string): string {
+  if (!secret) {
+    throw new Error("Missing SOCIAL_AUTH_STATE_SECRET");
+  }
+
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const payload: PendingRegistrationTokenPayload = {
+    ...input,
+    issuedAt,
+    expiresAt: issuedAt + PENDING_REGISTRATION_TOKEN_TTL_SECONDS,
+  };
+
+  const payloadBase64Url = toBase64Url(JSON.stringify(payload));
+  const signature = signPayload(payloadBase64Url, secret);
+  return `${payloadBase64Url}.${signature}`;
+}
+
+export function verifyPendingRegistrationToken(token: string, secret: string): PendingRegistrationTokenPayload | null {
+  if (!token || !secret) return null;
+
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+
+  const [payloadBase64Url, signatureBase64Url] = parts;
+  if (!payloadBase64Url || !signatureBase64Url) return null;
+
+  if (!isSignatureValid(payloadBase64Url, signatureBase64Url, secret)) return null;
+
+  let payload: PendingRegistrationTokenPayload;
+  try {
+    payload = JSON.parse(fromBase64Url(payloadBase64Url).toString("utf8")) as PendingRegistrationTokenPayload;
+  } catch {
+    return null;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.expiresAt < now) return null;
+  if (payload.provider !== "google" && payload.provider !== "apple") return null;
+  if (!payload.providerSubject || !payload.next.startsWith("/")) return null;
+
+  return payload;
+}

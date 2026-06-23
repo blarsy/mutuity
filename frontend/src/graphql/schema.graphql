@@ -123,6 +123,7 @@ type Account implements Node {
     """The method to use when ordering `AccountNotification`."""
     orderBy: [AccountNotificationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): AccountNotificationsConnection!
+  activationVerifiedAt: Datetime
   avatarUrl: String
   bio: String
   """
@@ -567,6 +568,7 @@ type Account implements Node {
   """
   preferredLanguage: String!
   profileLinks: JSON!
+  requirePasswordResetOnNextLogin: Boolean!
   """
   Reads and enables pagination through a set of `ResourceBidNotification`.
   """
@@ -895,6 +897,7 @@ enum AccountDeliveryPreferencesOrderBy {
 
 """An input for mutations affecting `Account`"""
 input AccountInput {
+  activationVerifiedAt: Datetime
   avatarUrl: String
   bio: String
   createdAt: Datetime
@@ -909,6 +912,7 @@ input AccountInput {
   """
   preferredLanguage: String
   profileLinks: JSON
+  requirePasswordResetOnNextLogin: Boolean
   updatedAt: Datetime
 }
 
@@ -1008,6 +1012,7 @@ enum AccountNotificationsOrderBy {
 Represents an update to a `Account`. Fields that are set will be updated.
 """
 input AccountPatch {
+  activationVerifiedAt: Datetime
   avatarUrl: String
   bio: String
   createdAt: Datetime
@@ -1022,6 +1027,7 @@ input AccountPatch {
   """
   preferredLanguage: String
   profileLinks: JSON
+  requirePasswordResetOnNextLogin: Boolean
   updatedAt: Datetime
 }
 

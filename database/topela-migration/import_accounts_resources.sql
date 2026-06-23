@@ -297,6 +297,7 @@ insert into app_public.account (
   longitude,
   avatar_url,
   profile_links,
+  require_password_reset_on_next_login,
   preferred_language,
   created_at,
   updated_at
@@ -311,6 +312,7 @@ select
   s.longitude,
   s.avatar_url,
   s.profile_links,
+  true,
   s.preferred_language,
   s.created_at,
   s.created_at

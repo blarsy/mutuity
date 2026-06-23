@@ -103,7 +103,7 @@ export const REGISTER_LOCAL_ACCOUNT_WITH_SOCIAL_IDENTITY_MUTATION = gql`
   mutation RegisterLocalAccountWithSocialIdentity(
     $identifier: String!
     $displayName: String!
-    $password: String!
+    $password: String
     $provider: String!
     $providerSubject: String!
     $providerEmail: String

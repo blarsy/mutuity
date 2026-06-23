@@ -39,6 +39,11 @@ export function SocialCallbackPage({ provider }: SocialCallbackPageProps) {
         return;
       }
 
+      if (outcome.shouldRedirectToLoginForPasswordReset && !session.authenticated) {
+        await router.replace(outcome.loginLinkHref);
+        return;
+      }
+
       if (outcome.shouldRedirectToRegister && !session.authenticated) {
         await router.replace(outcome.registerPrefillHref);
         return;
@@ -54,6 +59,7 @@ export function SocialCallbackPage({ provider }: SocialCallbackPageProps) {
     outcome.nextDestination,
     outcome.registerPrefillHref,
     outcome.shouldRedirectToLoginForLink,
+    outcome.shouldRedirectToLoginForPasswordReset,
     outcome.shouldRedirectToRegister,
     refreshSession,
     router,

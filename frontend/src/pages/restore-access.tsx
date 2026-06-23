@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
@@ -9,17 +9,27 @@ import { confirmPasswordReset, requestPasswordReset } from "../features/auth/aut
 export default function RestoreAccessPage() {
   const router = useRouter();
   const { t } = useTranslation("auth");
+  const identifierFromQuery = useMemo(
+    () => (typeof router.query.identifier === "string" ? router.query.identifier.trim().toLowerCase() : ""),
+    [router.query.identifier]
+  );
   const tokenFromQuery = useMemo(
     () => (typeof router.query.token === "string" ? router.query.token.trim() : ""),
     [router.query.token]
   );
 
-  const [identifier, setIdentifier] = useState("");
+  const [identifier, setIdentifier] = useState(identifierFromQuery);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (identifierFromQuery && identifier.trim().length === 0) {
+      setIdentifier(identifierFromQuery);
+    }
+  }, [identifier, identifierFromQuery]);
 
   const handleRequestReset = async () => {
     setLoading(true);

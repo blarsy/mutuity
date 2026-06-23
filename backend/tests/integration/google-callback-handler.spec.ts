@@ -17,7 +17,10 @@ describe("handleGoogleCallback", () => {
     fetchMock.mockRestore();
   });
 
-  function createPoolMock(resolution: "subject_match" | "explicit_link_required" | "no_match", accountId?: string) {
+  function createPoolMock(
+    resolution: "subject_match" | "password_reset_required" | "explicit_link_required" | "no_match",
+    accountId?: string
+  ) {
     return {
       query: jest.fn().mockResolvedValue({
         rows: [
@@ -138,6 +141,43 @@ describe("handleGoogleCallback", () => {
       kind: "register_required",
       nextDestination: "/",
       email: "new@example.com"
+    });
+  });
+
+  it("returns password_reset_required when matched account requires reset", async () => {
+    const pool = createPoolMock("password_reset_required", "7b15d747-2f5c-4078-9d7c-6a453734ce7a");
+    const state = signSocialAuthState({ next: "/" }, stateSecret);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id_token: "id-token-value" })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          aud: clientId,
+          sub: "google-subject-reset-required",
+          email: "reset-required@example.com",
+          email_verified: "true",
+          name: "Reset Required"
+        })
+      } as Response);
+
+    const result = await handleGoogleCallback({
+      pool,
+      code: "oauth-code",
+      state,
+      stateSecret,
+      clientId,
+      clientSecret,
+      callbackUrl
+    });
+
+    expect(result).toMatchObject({
+      kind: "password_reset_required",
+      nextDestination: "/",
+      email: "reset-required@example.com"
     });
   });
 

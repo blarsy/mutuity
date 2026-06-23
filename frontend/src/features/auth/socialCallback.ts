@@ -20,9 +20,11 @@ export type SocialCallbackOutcome = {
   errorMessage: string | null;
   shouldRedirectToRegister: boolean;
   shouldRedirectToLoginForLink: boolean;
+  shouldRedirectToLoginForPasswordReset: boolean;
   registerPrefillHref: string;
   loginLinkHref: string;
   pendingLinkToken: string;
+  pendingRegistrationToken: string;
 };
 
 export function resolveSocialCallbackOutcome(
@@ -37,11 +39,13 @@ export function resolveSocialCallbackOutcome(
   const suggestedName = asSingleValue(query.name) || asSingleValue(query.suggestedName);
   const providerSubject = asSingleValue(query.providerSubject);
   const pendingLinkToken = asSingleValue(query.pendingLinkToken);
+  const pendingRegistrationToken = asSingleValue(query.pendingRegistrationToken);
 
   const shouldRedirectToRegister =
     callbackStatus === "register_required"
     || (!errorMessage && callbackStatus === "no_account");
   const shouldRedirectToLoginForLink = callbackStatus === "link_confirmation_required";
+  const shouldRedirectToLoginForPasswordReset = callbackStatus === "password_reset_required";
 
   const params = new URLSearchParams();
   params.set("provider", normalizedProvider);
@@ -54,6 +58,10 @@ export function resolveSocialCallbackOutcome(
   if (providerSubject) {
     params.set("providerSubject", providerSubject);
   }
+  if (pendingRegistrationToken) {
+    params.set("pendingRegistrationToken", pendingRegistrationToken);
+  }
+  params.set("next", nextDestination);
 
   const loginParams = new URLSearchParams();
   loginParams.set("next", nextDestination);
@@ -67,6 +75,13 @@ export function resolveSocialCallbackOutcome(
       loginParams.set("providerSubject", providerSubject);
     }
   }
+  if (shouldRedirectToLoginForPasswordReset) {
+    loginParams.set("password_reset_required", "1");
+    loginParams.set("provider", normalizedProvider);
+    if (suggestedEmail) {
+      loginParams.set("email", suggestedEmail);
+    }
+  }
   if (pendingLinkToken) {
     loginParams.set("pendingLinkToken", pendingLinkToken);
   }
@@ -77,8 +92,10 @@ export function resolveSocialCallbackOutcome(
     errorMessage,
     shouldRedirectToRegister,
     shouldRedirectToLoginForLink,
+    shouldRedirectToLoginForPasswordReset,
     registerPrefillHref: `/register?${params.toString()}`,
     loginLinkHref: `/login?${loginParams.toString()}`,
-    pendingLinkToken
+    pendingLinkToken,
+    pendingRegistrationToken
   };
 }

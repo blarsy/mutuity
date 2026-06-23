@@ -12,7 +12,7 @@ type RegistrationResult = {
 type RegisterSocialInput = {
   identifier: string;
   displayName: string;
-  password: string;
+  password?: string;
   provider: "google" | "apple";
   providerSubject: string;
   providerEmail: string;
@@ -41,12 +41,13 @@ export function shouldUseSocialRegistration(provider: string, providerSubject: s
 
 export async function submitRegistration(input: SubmitRegistrationInput) {
   const normalizedIdentifier = normalizeIdentifier(input.identifier);
+  const trimmedPassword = input.password.trim();
 
   if (shouldUseSocialRegistration(input.provider, input.providerSubject)) {
     return input.registerSocial({
       identifier: normalizedIdentifier,
       displayName: input.displayName.trim(),
-      password: input.password,
+      password: trimmedPassword.length > 0 ? input.password : undefined,
       provider: input.provider as "google" | "apple",
       providerSubject: input.providerSubject.trim(),
       providerEmail: normalizedIdentifier,

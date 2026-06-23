@@ -107,7 +107,7 @@ export function registerLocalAccount(input: {
 export function registerLocalAccountWithSocialIdentity(input: {
   identifier: string;
   displayName: string;
-  password: string;
+  password?: string;
   provider: "google" | "apple";
   providerSubject: string;
   providerEmail?: string;
@@ -236,4 +236,21 @@ export async function confirmPendingLink(pendingLinkToken: string): Promise<void
   if (!response.ok) {
     throw new Error("Failed to link social identity");
   }
+}
+
+export async function completeSocialRegistration(pendingRegistrationToken: string): Promise<{ next: string }> {
+  const backendBaseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/$/, "");
+  const response = await fetch(`${backendBaseUrl}/auth/social/complete-registration`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ pendingRegistrationToken }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to complete social registration");
+  }
+
+  const payload = (await response.json()) as { next?: string };
+  return { next: typeof payload.next === "string" ? payload.next : "/" };
 }

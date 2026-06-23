@@ -9,7 +9,7 @@ const RESOLVE_EXTERNAL_IDENTITY_SQL =
 
 type ResolveAccountResult = {
   account_id: string | null;
-  resolution: "subject_match" | "explicit_link_required" | "no_match";
+  resolution: "subject_match" | "password_reset_required" | "explicit_link_required" | "no_match";
 };
 
 type AppleCallbackInput = {
@@ -47,6 +47,7 @@ export type AppleCallbackResult =
       email: string;
       name: string;
       providerSubject: string;
+      providerEmailVerified: boolean;
     }
   | {
       kind: "link_confirmation_required";
@@ -55,6 +56,13 @@ export type AppleCallbackResult =
       name: string;
       providerSubject: string;
       providerEmailVerified: boolean;
+    }
+  | {
+      kind: "password_reset_required";
+      nextDestination: string;
+      email: string;
+      name: string;
+      providerSubject: string;
     }
   | {
       kind: "error";
@@ -206,12 +214,23 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
       };
     }
 
+    if (resolution.resolution === "password_reset_required") {
+      return {
+        kind: "password_reset_required",
+        nextDestination: parsedState.next,
+        email: profile.email,
+        name: profileName,
+        providerSubject: profile.providerSubject
+      };
+    }
+
     return {
       kind: "register_required",
       nextDestination: parsedState.next,
       email: profile.email,
       name: profileName,
-      providerSubject: profile.providerSubject
+      providerSubject: profile.providerSubject,
+      providerEmailVerified: profile.emailVerified
     };
   } catch (error) {
     await logWebApiError("[auth] Apple callback failed", error, {

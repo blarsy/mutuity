@@ -5,10 +5,15 @@ import { useRouter } from "next/router";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { registerLocalAccount, registerLocalAccountWithSocialIdentity } from "../features/auth/auth.api";
+import {
+  completeSocialRegistration,
+  registerLocalAccount,
+  registerLocalAccountWithSocialIdentity
+} from "../features/auth/auth.api";
 import { useAuth } from "../features/auth/AuthProvider";
-import { submitRegistration } from "../features/auth/registerSubmission";
+import { shouldUseSocialRegistration, submitRegistration } from "../features/auth/registerSubmission";
 import { SocialAuthButtons } from "../features/auth/SocialAuthButtons";
+import { getSocialAuthStartUrl, type SocialProvider } from "../features/auth/socialAuth";
 
 export function resolveSocialPrefill(query: ParsedUrlQuery) {
   const suggestedName =
@@ -22,13 +27,17 @@ export function resolveSocialPrefill(query: ParsedUrlQuery) {
     suggestedName,
     suggestedEmail: typeof query.email === "string" ? query.email : "",
     provider: typeof query.provider === "string" ? query.provider.toLowerCase() : "",
-    providerSubject: typeof query.providerSubject === "string" ? query.providerSubject : ""
+    providerSubject: typeof query.providerSubject === "string" ? query.providerSubject : "",
+    pendingRegistrationToken:
+      typeof query.pendingRegistrationToken === "string" ? query.pendingRegistrationToken : "",
+    nextDestination:
+      typeof query.next === "string" && query.next.startsWith("/") ? query.next : "/"
   };
 }
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, refreshSession } = useAuth();
   const { t, i18n } = useTranslation("auth");
   const [displayName, setDisplayName] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -36,7 +45,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { suggestedName, suggestedEmail, provider, providerSubject } = resolveSocialPrefill(router.query);
+  const {
+    suggestedName,
+    suggestedEmail,
+    provider,
+    providerSubject,
+    pendingRegistrationToken,
+    nextDestination
+  } = resolveSocialPrefill(router.query);
 
   useEffect(() => {
     if (suggestedName && displayName.trim().length === 0) {
@@ -48,8 +64,13 @@ export default function RegisterPage() {
     }
   }, [suggestedEmail, suggestedName]);
 
+  const isSocialRegistration = shouldUseSocialRegistration(provider, providerSubject);
+
   const canSubmit =
-    displayName.trim().length > 0 && identifier.trim().length > 0 && password.length >= 8 && !loading;
+    displayName.trim().length > 0
+    && identifier.trim().length > 0
+    && (isSocialRegistration || password.length >= 8)
+    && !loading;
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -70,6 +91,26 @@ export default function RegisterPage() {
         registerSocial: registerLocalAccountWithSocialIdentity
       });
 
+      if (isSocialRegistration) {
+        if (pendingRegistrationToken) {
+          const completion = await completeSocialRegistration(pendingRegistrationToken);
+          await refreshSession();
+          await router.replace(completion.next || nextDestination);
+          return;
+        }
+
+        const startUrl = getSocialAuthStartUrl(provider as SocialProvider, nextDestination);
+        setSuccess(response?.message ?? t("register.successFallback"));
+
+        if (startUrl) {
+          window.location.assign(startUrl);
+          return;
+        }
+
+        await router.replace(`/login?next=${encodeURIComponent(nextDestination)}`);
+        return;
+      }
+
       const normalizedIdentifier = identifier.trim().toLowerCase();
 
       await signIn({
@@ -78,7 +119,7 @@ export default function RegisterPage() {
       });
 
       setSuccess(response?.message ?? t("register.successFallback"));
-      await router.replace("/");
+      await router.replace(nextDestination);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : t("errors.genericRetry", { ns: "common" }));
     } finally {
@@ -113,14 +154,16 @@ export default function RegisterPage() {
             type="email"
             value={identifier}
           />
-          <TextField
-            helperText={t("register.passwordHelper")}
-            label={t("register.passwordLabel")}
-            onChange={event => setPassword(event.target.value)}
-            required
-            type="password"
-            value={password}
-          />
+          {isSocialRegistration ? null : (
+            <TextField
+              helperText={t("register.passwordHelper")}
+              label={t("register.passwordLabel")}
+              onChange={event => setPassword(event.target.value)}
+              required
+              type="password"
+              value={password}
+            />
+          )}
 
           <Button disabled={!canSubmit} onClick={handleSubmit} variant="contained">
             {t("register.submitButton")}

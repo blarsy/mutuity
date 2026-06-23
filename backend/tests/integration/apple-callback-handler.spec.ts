@@ -24,7 +24,10 @@ describe("handleAppleCallback", () => {
     verifyIdTokenMock.mockReset();
   });
 
-  function createPoolMock(resolution: "subject_match" | "explicit_link_required" | "no_match", accountId?: string) {
+  function createPoolMock(
+    resolution: "subject_match" | "password_reset_required" | "explicit_link_required" | "no_match",
+    accountId?: string
+  ) {
     return {
       query: jest.fn().mockResolvedValue({
         rows: [
@@ -134,6 +137,37 @@ describe("handleAppleCallback", () => {
       kind: "register_required",
       nextDestination: "/",
       email: "new@example.com"
+    });
+  });
+
+  it("returns password_reset_required when matched account requires reset", async () => {
+    const pool = createPoolMock("password_reset_required", "7b15d747-2f5c-4078-9d7c-6a453734ce7a");
+    const state = signSocialAuthState({ next: "/", nonce: "nonce-reset-required" }, stateSecret);
+
+    getAuthorizationTokenMock.mockResolvedValue({ id_token: "apple-id-token" });
+    verifyIdTokenMock.mockResolvedValue({
+      sub: "apple-subject-reset-required",
+      email: "reset-required@example.com",
+      email_verified: "true",
+      nonce: "nonce-reset-required"
+    });
+
+    const result = await handleAppleCallback({
+      pool,
+      code: "oauth-code",
+      state,
+      stateSecret,
+      clientId,
+      teamId,
+      keyId,
+      privateKey,
+      callbackUrl
+    });
+
+    expect(result).toMatchObject({
+      kind: "password_reset_required",
+      nextDestination: "/",
+      email: "reset-required@example.com"
     });
   });
 

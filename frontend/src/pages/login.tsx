@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
-import { Alert, Box, Container, Typography } from "@mui/material";
+import NextLink from "next/link";
+import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const nextDestination = useMemo(() => resolveNextDestination(router.query.next), [router.query.next]);
   const isProtectedRedirect = nextDestination !== "/";
   const socialLinkRequired = router.query.social_link_required === "1";
+  const passwordResetRequired = router.query.password_reset_required === "1";
   const socialEmail = typeof router.query.email === "string" ? router.query.email : "";
   const socialProviderLabel = resolveSocialProviderLabel(router.query.provider);
   const pendingLinkToken = typeof router.query.pendingLinkToken === "string"
@@ -70,6 +72,28 @@ export default function LoginPage() {
         {socialLinkRequired && !session.authenticated ? (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {t("signIn.socialLinkRequiredHint", {
+              provider: socialProviderLabel,
+              email: socialEmail || t("signIn.socialLinkRequiredNoEmail")
+            })}
+          </Alert>
+        ) : null}
+
+        {passwordResetRequired && !session.authenticated ? (
+          <Alert
+            severity="warning"
+            sx={{ mb: 2 }}
+            action={(
+              <Button
+                color="inherit"
+                component={NextLink}
+                href={`/restore-access${socialEmail ? `?identifier=${encodeURIComponent(socialEmail)}` : ""}`}
+                size="small"
+              >
+                {t("signIn.passwordResetRequiredButton")}
+              </Button>
+            )}
+          >
+            {t("signIn.passwordResetRequiredHint", {
               provider: socialProviderLabel,
               email: socialEmail || t("signIn.socialLinkRequiredNoEmail")
             })}
