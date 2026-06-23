@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { loginViaUi } from "../../helpers/auth";
+import { urlRegexForPath } from "../../helpers/routes";
 import { E2E_CLAIMER_IDENTIFIER, E2E_PASSWORD } from "../../helpers/testUsers";
 
 // Spec: specs/004-login-flow
@@ -16,7 +17,7 @@ test("@smoke @spec-004-us2 signed-out user is redirected to login and returned t
   await page.locator('input[name="password"]').fill(E2E_PASSWORD);
   await page.locator('button[type="submit"]').click();
 
-  await expect(page).toHaveURL(/\/profile(\?.*)?$/);
+  await expect(page).toHaveURL(urlRegexForPath("/profile"));
 });
 
 test("@smoke @spec-004-us1 invalid credentials are rejected", async ({ page }) => {
@@ -27,7 +28,7 @@ test("@smoke @spec-004-us1 invalid credentials are rejected", async ({ page }) =
   await page.locator('button[type="submit"]').click();
 
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.locator('.MuiAlert-standardError, .MuiAlert-filledError').first()).toBeVisible();
+  await expect(page.getByRole("alert").first()).toBeVisible();
 });
 
 test("@smoke @spec-004-us3 authenticated session persists across refresh", async ({ page }) => {
@@ -37,9 +38,9 @@ test("@smoke @spec-004-us3 authenticated session persists across refresh", async
     nextPath: "/needs"
   });
 
-  await page.reload();
+  await page.reload({ waitUntil: "domcontentloaded" });
 
-  await expect(page).toHaveURL(/\/needs(\?.*)?$/);
+  await expect(page).toHaveURL(urlRegexForPath("/needs"));
 });
 
 test("@smoke @spec-004-us4 signed-in user can log out and protected pages require login again", async ({ page }) => {

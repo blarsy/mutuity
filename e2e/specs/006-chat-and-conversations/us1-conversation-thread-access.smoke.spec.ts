@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { loginViaUi } from "../../helpers/auth";
+import { urlRegexForPath } from "../../helpers/routes";
 import { E2E_CLAIMER_IDENTIFIER, E2E_PASSWORD } from "../../helpers/testUsers";
 
 // Spec: specs/006-chat-and-conversations
@@ -20,7 +21,7 @@ test("@smoke @spec-006-us1 authenticated user can access chat page with conversa
     nextPath: "/chat"
   });
 
-  await expect(page).toHaveURL("/chat");
+  await expect(page).toHaveURL(urlRegexForPath("/chat"));
   
   const mainContent = page.locator('main, section').first();
   await expect(mainContent).toBeVisible();
@@ -35,7 +36,7 @@ test("@smoke @spec-006-us1 chat page message composer is visible for authenticat
 
   await page.goto("/chat");
 
-  const messageInput = page.locator('textarea[placeholder*="Message"], textarea[placeholder*="message"], input[type="text"]').first();
+  const messageInput = page.getByPlaceholder(/message/i).first();
   const composer = page.locator('[data-testid*="composer"], form').first();
   
   if (await composer.isVisible()) {

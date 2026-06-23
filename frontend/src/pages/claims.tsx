@@ -11,70 +11,46 @@ import { useRequireAuth } from "../features/auth/requireAuth";
 import {
   CANCEL_NEED_CLAIM_MUTATION,
   DECLINE_NEED_CLAIM_MUTATION,
-  SETTLE_NEED_CLAIM_MUTATION,
-  VIEWER_CLAIM_OVERVIEW_QUERY
+  SETTLE_NEED_CLAIM_MUTATION
 } from "../features/needs/needClaims.queries";
 import { NeedClaimManagementPage } from "../features/needs/NeedClaimManagementPage";
 import { NeedClaimStatusChip } from "../features/needs/NeedClaimStatusChip";
 import { NeedCard } from "../features/ui/NeedCard";
 import { listingCardGridSx } from "../features/ui/listingCardGrid";
+import {
+  ViewerClaimOverviewDocument,
+  type ViewerClaimOverviewQuery,
+  type ViewerClaimOverviewQueryVariables
+} from "../graphql/generated";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
-type ClaimOverviewNode = {
-  id: string;
-  needId: string;
-  claimerAccountId: string;
-  message: string | null;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  settledAt: string | null;
-  settledByAccountId: string | null;
-  needByNeedId: {
-    id: string;
-    title: string;
-    creatorAccountId: string;
-    proposedTopesAmount: number | null;
-    imageUrls: string[];
-  };
-  accountByClaimerAccountId: {
-    id: string;
-    displayName: string | null;
-    externalSubject: string;
-  } | null;
-  claimConversationsByNeedClaimId: {
-    nodes: Array<{ id: string }>;
-  };
+type ClaimOverviewNode = NonNullable<ViewerClaimOverviewQuery["sentNeedClaims"]>["nodes"][number];
+type ClaimOverviewNodeWithNeed = ClaimOverviewNode & {
+  needByNeedId: NonNullable<ClaimOverviewNode["needByNeedId"]>;
 };
-
-type ClaimNotificationNode = {
-  id: string;
+type ClaimNotificationLike = {
+  id?: string;
   needClaimId: string;
   eventType: string;
   payload: {
     reason?: string;
   } | null;
   createdAt: string;
-  readAt: string | null;
-};
-
-type ViewerClaimOverviewData = {
-  currentTokenBalance: number | null;
-  sentNeedClaims: {
-    nodes: ClaimOverviewNode[];
-  };
-  receivedNeedClaims: {
-    nodes: ClaimOverviewNode[];
-  };
-  allNeedClaimNotifications: {
-    nodes: ClaimNotificationNode[];
-  };
+  readAt?: string | null;
 };
 
 type AutoClosureReason = "need_deactivated" | "need_expired";
 
-export function buildAutoClosureReasonByClaimId(notifications: ClaimNotificationNode[]): Map<string, AutoClosureReason> {
+function hasNeedByNeedId(claim: ClaimOverviewNode): claim is ClaimOverviewNodeWithNeed {
+  return claim.needByNeedId != null;
+}
+
+function isCreatedByCurrentAccount(claim: ClaimOverviewNode, currentAccountId: string | null): claim is ClaimOverviewNodeWithNeed {
+  return hasNeedByNeedId(claim) && claim.needByNeedId.creatorAccountId === currentAccountId;
+}
+
+export function buildAutoClosureReasonByClaimId(notifications: ClaimNotificationLike[]): Map<string, AutoClosureReason> {
   const latestByClaimId = new Map<string, { createdAt: string; reason: AutoClosureReason }>();
 
   for (const notification of notifications) {
@@ -174,7 +150,7 @@ export default function ClaimsPage() {
     }, 0);
   };
 
-  const { data, loading, error, refetch } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
+  const { data, loading, error, refetch } = useQuery<ViewerClaimOverviewQuery, ViewerClaimOverviewQueryVariables>(ViewerClaimOverviewDocument, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
@@ -206,12 +182,12 @@ export default function ClaimsPage() {
   const currentAccountId = session.account?.id ?? null;
   const viewerBalance = data?.currentTokenBalance ?? null;
   const allClaims = useMemo(() => {
-    const sent = data?.sentNeedClaims.nodes ?? [];
-    const received = data?.receivedNeedClaims.nodes ?? [];
+    const sent = data?.sentNeedClaims?.nodes ?? [];
+    const received = data?.receivedNeedClaims?.nodes ?? [];
     return [...sent, ...received].sort(
       (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
     );
-  }, [data?.sentNeedClaims.nodes, data?.receivedNeedClaims.nodes]);
+  }, [data?.sentNeedClaims?.nodes, data?.receivedNeedClaims?.nodes]);
 
   useEffect(() => {
     if (!router.isReady) {
@@ -228,14 +204,18 @@ export default function ClaimsPage() {
     }
   }, [allClaims, router.isReady, router.query.claimId]);
 
-  const applyFilter = (claims: ClaimOverviewNode[], filter: "active" | "inactive" | "all") => {
+  const applyFilter = (claims: ClaimOverviewNodeWithNeed[], filter: "active" | "inactive" | "all") => {
     if (filter === "active") return claims.filter(c => c.status === "OPEN");
     if (filter === "inactive") return claims.filter(c => c.status !== "OPEN");
     return claims;
   };
 
-  const sentAll = allClaims.filter(claim => claim.claimerAccountId === currentAccountId);
-  const receivedAll = allClaims.filter(claim => claim.needByNeedId.creatorAccountId === currentAccountId);
+  const sentAll = allClaims.filter(
+    (claim): claim is ClaimOverviewNodeWithNeed => claim.claimerAccountId === currentAccountId && hasNeedByNeedId(claim)
+  );
+  const receivedAll = allClaims.filter(
+    (claim): claim is ClaimOverviewNodeWithNeed => isCreatedByCurrentAccount(claim, currentAccountId)
+  );
   const autoClosureReasonByClaimId = useMemo(
     () => buildAutoClosureReasonByClaimId(data?.allNeedClaimNotifications?.nodes ?? []),
     [data?.allNeedClaimNotifications?.nodes]
@@ -319,6 +299,7 @@ export default function ClaimsPage() {
                 <Box sx={listingCardGridSx}>
                   {sentClaims.map(claim => {
                     const need = claim.needByNeedId;
+                    const imageUrls = (need.imageUrls ?? []).filter((url: string | null): url is string => typeof url === "string" && url.length > 0);
                     const claimConversationId = claim.claimConversationsByNeedClaimId.nodes[0]?.id ?? null;
                     const isOpen = claim.status === "OPEN";
 
@@ -375,7 +356,7 @@ export default function ClaimsPage() {
                           ? t("yourNote", { message: claim.message })
                           : isOpen ? t("openClaimHint") : null
                       }
-                      imageUrls={need.imageUrls}
+                      imageUrls={imageUrls}
                       footer={
                         <Stack spacing={0.5}>
                           {!isOpen ? (
@@ -440,6 +421,7 @@ export default function ClaimsPage() {
                 <Box sx={listingCardGridSx}>
                   {receivedClaims.map(claim => {
                     const need = claim.needByNeedId;
+                    const imageUrls = (need.imageUrls ?? []).filter((url: string | null): url is string => typeof url === "string" && url.length > 0);
                     const claimerLabel = claim.accountByClaimerAccountId?.displayName
                       ?? claim.accountByClaimerAccountId?.externalSubject
                       ?? claim.claimerAccountId;
@@ -520,7 +502,7 @@ export default function ClaimsPage() {
                           ? t("helperNote", { message: claim.message })
                           : isOpen ? t("reviewClaimHint") : null
                       }
-                      imageUrls={need.imageUrls}
+                      imageUrls={imageUrls}
                       footer={
                         <Stack spacing={0.5}>
                             {!isOpen ? (

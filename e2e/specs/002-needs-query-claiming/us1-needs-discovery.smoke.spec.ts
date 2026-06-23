@@ -15,6 +15,6 @@ test("@smoke @spec-002-us1 claimer can sign in and see active seeded need on /ne
   });
 
   // Narrow results to the deterministic seeded need title.
-  await page.getByRole("textbox").first().fill(E2E_NEED_TITLE);
+  await page.getByLabel(/search needs|rechercher des besoins/i).fill(E2E_NEED_TITLE);
   await expect(page.getByText(E2E_NEED_TITLE).first()).toBeVisible();
 });

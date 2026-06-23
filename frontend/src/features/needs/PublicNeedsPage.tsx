@@ -31,7 +31,11 @@ import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
 import { NeedClaimDialog } from "./NeedClaimDialog";
 import { TOURNAI_CITY_CENTRE, TOURNAI_CENTRE_ADDRESS, getBrowserLocation } from "./locationFallback";
-import { VIEWER_CLAIM_OVERVIEW_QUERY } from "./needClaims.queries";
+import {
+  ViewerClaimOverviewDocument,
+  type ViewerClaimOverviewQuery,
+  type ViewerClaimOverviewQueryVariables
+} from "../../graphql/generated";
 import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { NeedCard } from "../ui/NeedCard";
 import { listingCardGridSx } from "../ui/listingCardGrid";
@@ -69,35 +73,20 @@ type PublicNeedsQueryData = {
   };
 };
 
-type ClaimOverviewNode = {
-  id: string;
-  needId: string;
-  claimerAccountId: string;
-  message: string | null;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  settledAt: string | null;
-  needByNeedId: {
-    id: string;
-    title: string;
-    creatorAccountId: string;
-  };
-  accountByClaimerAccountId: {
-    id: string;
-    displayName: string | null;
-    externalSubject: string;
-  } | null;
-};
+type ClaimOverviewNode = NonNullable<ViewerClaimOverviewQuery["sentNeedClaims"]>["nodes"][number];
 
-type ViewerClaimOverviewData = {
-  sentNeedClaims: {
-    nodes: ClaimOverviewNode[];
-  };
-  receivedNeedClaims: {
-    nodes: ClaimOverviewNode[];
-  };
-};
+function hasNeedByNeedId(claim: ClaimOverviewNode): claim is ClaimOverviewNode & {
+  needByNeedId: NonNullable<ClaimOverviewNode["needByNeedId"]>;
+} {
+  return claim.needByNeedId != null;
+}
+
+function isIncomingClaimForViewer(
+  claim: ClaimOverviewNode,
+  currentAccountId: string | null | undefined
+): claim is ClaimOverviewNode & { needByNeedId: NonNullable<ClaimOverviewNode["needByNeedId"]> } {
+  return hasNeedByNeedId(claim) && claim.needByNeedId.creatorAccountId === currentAccountId;
+}
 
 type ToggleFilterKey = Exclude<keyof NeedSearchFilters, "searchText" | "favorLocalResources" | "maxDistanceKm">;
 
@@ -238,22 +227,25 @@ export default function PublicNeedsPage() {
   const {
     data: claimOverviewData,
     refetch: refetchClaimOverview
-  } = useQuery<ViewerClaimOverviewData>(VIEWER_CLAIM_OVERVIEW_QUERY, {
+  } = useQuery<ViewerClaimOverviewQuery, ViewerClaimOverviewQueryVariables>(ViewerClaimOverviewDocument, {
     skip: !session.authenticated,
     pollInterval: session.authenticated ? 15000 : 0,
     variables: { viewerId: session.account?.id ?? "" }
   });
 
   const needs = data?.searchNeeds.nodes ?? [];
-  const sentClaims = claimOverviewData?.sentNeedClaims.nodes ?? [];
-  const receivedClaims = claimOverviewData?.receivedNeedClaims.nodes ?? [];
+  const sentClaims = claimOverviewData?.sentNeedClaims?.nodes ?? [];
+  const receivedClaims = claimOverviewData?.receivedNeedClaims?.nodes ?? [];
   const myClaimsByNeedId = new Map(
     sentClaims.map(claim => [claim.needId, claim] as const)
   );
   const incomingClaimCountsByNeedId = new Map<string, number>();
 
   receivedClaims
-    .filter(claim => claim.needByNeedId.creatorAccountId === session.account?.id)
+    .filter(
+      (claim): claim is ClaimOverviewNode & { needByNeedId: NonNullable<ClaimOverviewNode["needByNeedId"]> } =>
+        isIncomingClaimForViewer(claim, session.account?.id)
+    )
     .forEach(claim => {
       incomingClaimCountsByNeedId.set(
         claim.needId,

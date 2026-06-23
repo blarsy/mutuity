@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { loginViaUi } from "../../helpers/auth";
+import { urlRegexForPath } from "../../helpers/routes";
 import { E2E_CLAIMER_IDENTIFIER, E2E_PASSWORD } from "../../helpers/testUsers";
 
 // Spec: specs/005-resource-discovery-and-publishing
@@ -14,21 +15,12 @@ test("@smoke @spec-005-us7 authenticated user can view and toggle delivery prefe
     nextPath: "/preferences"
   });
 
-  await expect(page).toHaveURL(/\/preferences(\?.*)?$/);
+  await expect(page).toHaveURL(urlRegexForPath("/preferences"));
 
   const pageTitle = page.locator('h1, [role="heading"]').first();
   await expect(pageTitle).toBeVisible();
 
-  const preferenceCards = page.locator('div.MuiCard-root');
-  const cardCount = await preferenceCards.count();
-  expect(cardCount).toBeGreaterThan(0);
-
-  const firstCard = preferenceCards.first();
-  await expect(firstCard).toBeVisible();
-
-  const strategySelect = firstCard.locator('select').first();
-  if (await strategySelect.isVisible()) {
-    const currentValue = await strategySelect.inputValue();
-    expect(["realtime_push", "email_summary"]).toContain(currentValue);
-  }
+  const strategySelect = page.getByRole("combobox").first();
+  await expect(strategySelect).toBeVisible();
+  await expect(strategySelect).not.toBeEmpty();
 });

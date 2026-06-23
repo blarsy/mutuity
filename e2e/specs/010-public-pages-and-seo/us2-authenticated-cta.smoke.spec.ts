@@ -16,7 +16,7 @@ test("@smoke @spec-010-us2 authenticated non-owner sees conversation CTA on need
     nextPath: `/needs/${E2E_NEED_ID}`
   });
 
-  await expect(page).toHaveURL(/\/needs\//);
+  await expect(page).toHaveURL(/\/(?:app\/)?needs\//);
 
   const conversationButton = page.getByRole("button", {
     name: /message creator|ecrire au createur|écrire au créateur/i
@@ -39,5 +39,5 @@ test("@smoke @spec-010-us2 authenticated user clicking conversation CTA opens dr
   await expect(conversationButton).toBeVisible();
   await conversationButton.click();
 
-  await expect(page).toHaveURL(/\/chat\?kind=need&(id=|draft=1&contextId=)/);
+  await expect(page).toHaveURL(/\/(?:app\/)?chat\?kind=need&(id=|draft=1&contextId=)/);
 });

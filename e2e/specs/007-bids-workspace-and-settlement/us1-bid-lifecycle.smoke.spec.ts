@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { loginViaUi } from "../../helpers/auth";
+import { urlRegexForPath } from "../../helpers/routes";
 import {
   E2E_CLAIMER_IDENTIFIER,
   E2E_CREATOR_IDENTIFIER,
@@ -28,11 +29,11 @@ test("@smoke @spec-007-us1 claimer creates a bid and creator accepts it", async 
 
   const bidDialog = bidderPage.getByRole("dialog");
   await expect(bidDialog).toBeVisible();
-  await bidDialog.getByRole("textbox").first().fill("E2E smoke bid message");
+  await bidDialog.getByRole("textbox", { name: /optional message|message optionnel/i }).fill("E2E smoke bid message");
   await bidDialog.getByRole("button", { name: /Send bid|Save bid|Envoyer|Enregistrer/i }).click();
 
-  await bidderPage.goto("/bids");
-  await expect(bidderPage).toHaveURL(/\/bids/);
+  await bidderPage.goto("/app/bids");
+  await expect(bidderPage).toHaveURL(urlRegexForPath("/bids"));
 
   await bidderPage.close();
 

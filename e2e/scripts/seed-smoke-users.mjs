@@ -25,12 +25,22 @@ const SETTLEMENT_SIBLING_CLAIM_ID = "99999999-9999-4999-8999-999999999999";
 async function upsertAccount(client, identifier, displayName) {
   const result = await client.query(
     `
-      insert into app_public.account (external_subject, display_name, latitude, longitude)
-      values ($1, $2, 50.6072, 3.3889)
+      insert into app_public.account (
+        external_subject,
+        display_name,
+        latitude,
+        longitude,
+        activation_verified_at
+      )
+      values ($1, $2, 50.6072, 3.3889, now())
       on conflict (external_subject) do update
       set display_name = excluded.display_name,
           latitude = excluded.latitude,
           longitude = excluded.longitude,
+          activation_verified_at = coalesce(
+            app_public.account.activation_verified_at,
+            excluded.activation_verified_at
+          ),
           updated_at = now()
       returning id
     `,

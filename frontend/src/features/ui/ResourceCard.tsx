@@ -60,6 +60,7 @@ export function ResourceCard({
 
   return (
     <Card
+      data-testid="resource-card"
       sx={(theme) => ({
         display: "flex",
         flexDirection: "column",

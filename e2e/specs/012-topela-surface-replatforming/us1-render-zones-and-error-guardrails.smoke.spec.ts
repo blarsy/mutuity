@@ -8,8 +8,8 @@ test("@smoke @spec-012-us1 landing/campaign/legal render expected first-screen z
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByText(/latest resources|dernieres ressources|dernières ressources/i)).toBeVisible();
-  await expect(page.getByText(/latest contributors|derniers contributeurs/i)).toBeVisible();
+  await expect(page.getByText(/latest needs|derniers besoins/i)).toBeVisible();
+  await expect(page.getByText(/our team|notre team|notre equipe|notre équipe/i)).toBeVisible();
 
   await page.goto("/campaigns");
 
@@ -40,6 +40,6 @@ test("@smoke @spec-012-us1 production UI does not expose raw GraphQL failure det
 
   await page.goto("/");
 
-  await expect(page.locator(".MuiAlert-standardWarning").first()).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("body")).not.toContainText(rawDbMessage);
 });

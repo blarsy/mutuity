@@ -51,7 +51,7 @@ export function NeedCard({
   };
 
   return (
-    <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }} variant="outlined">
+    <Card data-testid="need-card" sx={{ display: "flex", flexDirection: "column", height: "100%" }} variant="outlined">
       <ListingHeader
         creatorImageUrl={creatorImageUrl}
         creatorName={creatorName}

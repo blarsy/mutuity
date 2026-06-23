@@ -13,7 +13,7 @@ import {
 // Tags: @smoke @spec-009-us1
 
 async function getListingCardByTitle(page: Parameters<typeof test>[0]["page"], title: string) {
-  return page.locator(".MuiCard-root").filter({ hasText: title }).first();
+  return page.locator('[data-testid="resource-card"], [data-testid="need-card"]').filter({ hasText: title }).first();
 }
 
 test("@smoke @spec-009-us1 needs and resources render a consistent listing header strip", async ({ page }) => {
@@ -29,7 +29,7 @@ test("@smoke @spec-009-us1 needs and resources render a consistent listing heade
   await expect(resourceCard.getByText(/Expires|Expire/i).first()).toBeVisible();
 
   await page.goto("/needs");
-  await page.getByRole("textbox").first().fill(E2E_NEED_TITLE);
+  await page.getByLabel(/search needs|rechercher des besoins/i).fill(E2E_NEED_TITLE);
   const needCard = await getListingCardByTitle(page, E2E_NEED_TITLE);
   await expect(needCard).toBeVisible();
   await expect(needCard.getByText(/Expires|Expire/i).first()).toBeVisible();
@@ -55,7 +55,7 @@ test("@smoke @spec-009-us1 listing cards do not render broken thumbnail images",
   expect(resourceBrokenImageCount).toBe(0);
 
   await page.goto("/needs");
-  await page.getByRole("textbox").first().fill(E2E_NEED_TITLE);
+  await page.getByLabel(/search needs|rechercher des besoins/i).fill(E2E_NEED_TITLE);
   const needCard = await getListingCardByTitle(page, E2E_NEED_TITLE);
   await expect(needCard).toBeVisible();
 

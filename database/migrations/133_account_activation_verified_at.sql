@@ -15,6 +15,8 @@ create or replace function app_private.is_account_email_verified(p_account_id uu
 returns boolean
 language sql
 stable
+security definer
+set search_path = app_public, app_private, public
 as $$
   select exists (
     select 1

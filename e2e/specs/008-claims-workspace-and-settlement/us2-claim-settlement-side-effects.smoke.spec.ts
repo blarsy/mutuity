@@ -22,7 +22,7 @@ test("@smoke @spec-008-us2-settle settling one claim auto-declines sibling claim
     nextPath: "/claims"
   });
 
-  const receivedClaimCard = creatorPage.locator(".MuiCard-root")
+  const receivedClaimCard = creatorPage.locator('[data-testid="need-card"]')
     .filter({ hasText: E2E_SETTLEMENT_NEED_TITLE })
     .filter({ hasText: "E2E settlement primary smoke claim message" })
     .first();
@@ -49,7 +49,7 @@ test("@smoke @spec-008-us2-settle settling one claim auto-declines sibling claim
 
   await siblingClaimerPage.getByRole("button", { name: /All|Toutes/i }).first().click();
 
-  const siblingClaimCard = siblingClaimerPage.locator(".MuiCard-root")
+  const siblingClaimCard = siblingClaimerPage.locator('[data-testid="need-card"]')
     .filter({ hasText: E2E_SETTLEMENT_NEED_TITLE })
     .filter({ hasText: "E2E settlement sibling smoke claim message" })
     .first();
@@ -69,7 +69,7 @@ test("@smoke @spec-008-us2-settle settling one claim auto-declines sibling claim
 
   await primaryClaimerPage.getByRole("button", { name: /All|Toutes/i }).first().click();
 
-  const settledClaimCard = primaryClaimerPage.locator(".MuiCard-root")
+  const settledClaimCard = primaryClaimerPage.locator('[data-testid="need-card"]')
     .filter({ hasText: E2E_SETTLEMENT_NEED_TITLE })
     .filter({ hasText: "E2E settlement primary smoke claim message" })
     .first();

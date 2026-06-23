@@ -18,7 +18,7 @@ test("@smoke @spec-008-us2 claimer can cancel a seeded sent claim", async ({ pag
     nextPath: "/claims"
   });
 
-  const claimCard = page.locator(".MuiCard-root").filter({ has: page.getByText(E2E_ACTION_NEED_TITLE) }).first();
+  const claimCard = page.locator('[data-testid="need-card"]').filter({ has: page.getByText(E2E_ACTION_NEED_TITLE) }).first();
   const cancelAction = claimCard.getByRole("button", { name: /^(Cancel claim|Annuler la demande)$/i });
 
   await expect(claimCard).toBeVisible();

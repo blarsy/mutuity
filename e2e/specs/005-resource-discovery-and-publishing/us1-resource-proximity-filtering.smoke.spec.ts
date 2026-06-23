@@ -50,7 +50,7 @@ test("@smoke @spec-005-proximity seeded resource appears in search results", asy
   await page.goto("/resources");
 
   // Search for the seeded resource
-  await page.getByLabel(/search/i).first().fill(E2E_RESOURCE_TITLE);
+  await page.getByLabel(/search resources|rechercher des ressources/i).fill(E2E_RESOURCE_TITLE);
 
   // Wait for results to appear
   await page.waitForTimeout(300);

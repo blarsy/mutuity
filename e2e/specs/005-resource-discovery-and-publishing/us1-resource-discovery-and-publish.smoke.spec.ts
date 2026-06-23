@@ -37,6 +37,6 @@ test("@smoke @spec-005-us2 authenticated user can publish a resource and see it 
   await expect(page).toHaveURL(/\/resources\/manage(\?.*)?$/);
 
   await page.goto("/resources");
-  await page.locator('input[type="text"]').first().fill(resourceTitle);
+  await page.getByLabel(/search resources|rechercher des ressources/i).fill(resourceTitle);
   await expect(page.getByText(resourceTitle).first()).toBeVisible();
 });

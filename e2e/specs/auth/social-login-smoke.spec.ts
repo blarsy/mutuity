@@ -38,5 +38,5 @@ test("@smoke @spec-013-exception link confirmation callback redirects to guarded
   await page.goto("/auth/google/callback?status=link_confirmation_required&email=person%40example.com&providerSubject=google-link-sub-1");
 
   await expect(page).toHaveURL(/\/login\?next=%2F&social_link_required=1&provider=google&email=person%40example.com&providerSubject=google-link-sub-1/);
-  await expect(page.locator(".MuiAlert-standardWarning").first()).toContainText(/already exists|compte existant/i);
+  await expect(page.getByRole("alert").first()).toContainText(/already exists|compte existant/i);
 });

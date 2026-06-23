@@ -3,7 +3,7 @@
 **Created**: 2026-03-23  
 **Scope**: All development on the Mutuity platform
 **Purpose**: Governing principles that guide every specification, plan, and implementation decision.
-**Document version**: 1.2.0
+**Document version**: 1.3.0
 
 ## 1. Mission & Product Principles
 
@@ -56,6 +56,8 @@ Tope-là already helps users offer underused resources. Mutuity provides the mis
 - Async/await over raw Promises. No unhandled promise rejections.
 - Use established patterns already in the codebase (Apollo Client, Formik+Yup, MUI) before introducing new libraries.
 - Business SQL logic must not be embedded in TypeScript source files. TypeScript may call stable SQL functions, but filtering/locking/update business rules must live in PostgreSQL functions/views and migrations.
+- GraphQL UI result shapes MUST come from generated GraphQL operation types/documents. Handwritten optimistic substitutes for operation payloads are forbidden.
+- Nullable GraphQL relationship fields MUST be narrowed with explicit runtime guards before dereferencing in UI code.
 
 ### PostgreSQL / PL/pgSQL
 - All schema changes via versioned migration files. Never modify the DB schema by hand in production.
@@ -70,6 +72,11 @@ Tope-là already helps users offer underused resources. Mutuity provides the mis
 - Internationalise all user-facing strings at creation time; never retrofit i18n later.
 - Any user-authored rich HTML rendered in the UI must be sanitized through a shared allowlist-based sanitization utility before rendering.
 - Direct rendering of unsanitized HTML is forbidden.
+
+### Test Selector Discipline
+- E2E/integration tests MUST prefer semantic selectors (`getByRole`, `getByLabel`, `getByPlaceholder`, explicit `data-testid`) tied to product contracts.
+- CSS framework internals (for example MUI class selectors such as `.Mui*`) are forbidden in acceptance and smoke tests.
+- Broad locators that rely on positional selection (for example generic `getByRole("textbox").first()`) are forbidden unless no stable semantic selector exists and the exception is documented inline.
 
 ## 4. UX Consistency
 
@@ -86,6 +93,8 @@ A feature is done when the repository owner has verified the following:
 - [ ] DB migration file created and tested for any schema changes
 - [ ] `quickstart.md` updated if setup steps changed
 - [ ] No TypeScript errors, no failing tests
+- [ ] GraphQL UI consumers use generated operation types/documents, with nullable relationship guards where required
+- [ ] Smoke/integration tests use semantic selectors and avoid CSS-framework/internal selectors
 
 ---
 
@@ -109,7 +118,7 @@ A feature is done when the repository owner has verified the following:
 	- minor for new principles or materially expanded requirements,
 	- patch for wording clarifications that do not change meaning.
 - The document version must be updated whenever this constitution is amended.
-- Last amended: 2026-05-12 (added mandatory HTML sanitization rule for rendered rich content).
+- Last amended: 2026-06-21 (added generated GraphQL nullability discipline and semantic test selector rules).
 - Each amendment must also update the `Created` or amendment metadata as appropriate so the current governing version is visible at a glance.
 - If an implementation cannot comply with this constitution, the pull request must explicitly document the exception, the reason, and the follow-up plan.
 - Temporary exceptions are allowed only when they are time-boxed and tracked as follow-up work.
