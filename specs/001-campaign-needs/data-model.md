@@ -77,6 +77,7 @@
 - `required_competence_text`: text, nullable
 - `required_tooling_text`: text, nullable
 - `required_people_count`: integer, nullable
+- `image_urls`: text[], nullable, default `array[]::text[]`
 - `is_active`: boolean, required, default `true`
 - `expires_at`: timestamptz, nullable
 - `created_at`: timestamptz, required
@@ -137,3 +138,37 @@ Includes:
 - ordered moderation events (most recent first)
 - editability flag derived from moderation status (`pending` or `awaiting_adaptation` only)
 - linked needs with triage status
+
+## NeedMilestoneReward (Trigger-Based)
+
+Issued by a database trigger (`issue_need_milestone_rewards`) that fires on INSERT
+and UPDATE of `app_public.need`. The trigger compares the OLD and NEW values of the
+relevant columns to determine whether a milestone was just crossed for the first time.
+
+### Milestones and amounts
+
+| Milestone | Reward | Event Type | Idempotency Key |
+|---|---|---|---|
+| First image added (`image_urls` goes from empty to non-empty) | **10 Topes** | `need_first_image_reward` | `need:{id}:first-image` |
+| First default Topes amount set (`proposed_topes_amount` goes from null to non-null) | **10 Topes** | `need_first_default_token_amount_reward` | `need:{id}:first-default-token-amount` |
+
+### INSERT behavior
+
+When a need is created with images already present, the OLD value is treated as empty
+(no prior row), so the transition from empty to non-empty is detected and the reward
+fires on insert. The same applies when a need is created with a non-null
+`proposed_topes_amount`: the trigger treats the prior state as null and grants the
+reward on insert.
+
+### UPDATE behavior
+
+When a need is updated and the relevant column transitions from empty/null to
+non-empty/non-null for the first time, the reward fires. Subsequent updates that
+keep the column non-empty/non-null do not trigger the reward again.
+
+### Rules
+- Each milestone is idempotent per need: the reward fires at most once per need
+  regardless of how many times the field is updated afterward.
+- Rewards are issued atomically within the same transaction as the need insert/update.
+- The need creator account receives the Topes via `app_private.create_token_movement`.
+

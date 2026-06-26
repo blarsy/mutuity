@@ -200,7 +200,7 @@ As a campaign creator, I can accept or reject resources joined to my campaign so
 - **Campaign**: User-created campaign with title, theme, rewards multiplier, start datetime, airdrop datetime, airdrop amount, end datetime, optional administrator note from creator, creator account id, and moderation status (`pending`, `awaiting adaptation`, `approved`).
 - **CampaignModerationNote**: Administrator-authored note attached to a campaign, with campaign id, admin account id, note body, and created datetime.
 - **CampaignModerationEvent**: Creator-facing moderation timeline record or read-model item for a campaign, representing one of: initial creation, administrator note received, or creator modification; each event includes campaign id, event type, actor account id when applicable, human-readable body or change summary when applicable, and created datetime.
-- **Need**: User-created need with title, description, nature, intensity, location, optional proposed Topes amount, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
+- **Need**: User-created need with title, description, nature, intensity, location, optional proposed Topes amount, optional image URLs, creator account id, 'is active' flag, optional expiration datetime, optional number of people required, optional required tooling, optional required competence, and optional campaign association.
 
 ### Intensity To Topes Reference
 
@@ -229,3 +229,6 @@ Safety Note: Avoid wording such as "100 Topes = EUR 1". Prefer wording such as "
 - **SC-007**: 100 percent of unauthenticated mutation attempts return sanitized user-facing messages and MUST NOT expose internal schema/database details.
 - **SC-008**: 100 percent of backend-handled unexpected GraphQL errors are logged with full technical details server-side.
 - **SC-009**: 100 percent of moderation-related notifications route to the intended destination state: creator notifications open the campaign moderation context, and administrator adaptation notifications prefill the admin campaigns search and awaiting-adaptation filter.
+- **SC-010**: 100 percent of needs that receive a first image — whether at creation time or via a later update — grant exactly 10 Topes to the creator exactly once. A second image on the same need does not trigger a second reward.
+- **SC-011**: 100 percent of needs that receive a first default Topes amount — whether at creation time or via a later update — grant exactly 10 Topes to the creator exactly once. Subsequent amount changes on the same need do not trigger a second reward.
+

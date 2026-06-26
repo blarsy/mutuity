@@ -82,6 +82,19 @@ database/
   - creator note/approval notifications -> campaign moderation page with the relevant campaign context opened
   - administrator creator-adaptation notifications -> admin campaigns page with creator-name query prefilled and `awaiting adaptation` status selected
 
+### Need Milestone Rewards (Post-MVP Enhancement)
+
+- **First image on a need**: one-time **10 Topes** reward when `image_urls` transitions
+  from empty to non-empty for the first time. A need created with images already
+  present is eligible (the reward fires on insert).
+- **First default Topes amount on a need**: one-time **10 Topes** reward when
+  `proposed_topes_amount` transitions from null to non-null for the first time.
+  A need created with a Topes amount already set is eligible (the reward fires on insert).
+- Both rewards use the same DB trigger pattern (`issue_need_milestone_rewards` firing
+  on INSERT and UPDATE) and idempotency-key guard established for resource milestone
+  rewards.
+- This complements the already-implemented **need age ≥ 24h** delayed reward (10 Topes).
+
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
@@ -89,3 +102,5 @@ database/
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | None | N/A | N/A |
+
+

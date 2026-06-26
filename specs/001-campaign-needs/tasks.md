@@ -173,6 +173,35 @@
 - [ ] T067 Update the admin campaigns workflow to filter by `awaiting adaptation`, show moderation status consistently, and support notification-driven prefilled filters in `frontend/src/features/admin/` and related GraphQL queries
 - [ ] T068 Add end-to-end verification for creator/admin notification routing into moderation surfaces and for post-approval read-only moderation history behavior
 
+## Phase 11: Need Milestone Rewards (Post-MVP)
+
+**Goal**: Grant one-time 10-Topes rewards to need creators for first image and first
+default Topes amount. The trigger must handle both initial creation (INSERT) and later
+updates (UPDATE).
+
+### Implementation
+
+- [x] T079 [P] Add SQL trigger function `issue_need_milestone_rewards` in
+  `database/functions/token/need_milestone_rewards.sql`, mirroring the resource trigger
+  (`issue_resource_milestone_rewards`) with:
+  - On INSERT: grant `need_first_image_reward` (10 Topes) when `NEW.image_urls` is
+    non-empty; grant `need_first_default_token_amount_reward` (10 Topes) when
+    `NEW.proposed_topes_amount` is non-null
+  - On UPDATE: grant each reward only when OLD value is empty/null and NEW value is
+    non-empty/non-null
+  - Idempotency keys: `need:{id}:first-image` and `need:{id}:first-default-token-amount`
+- [x] T080 Register the trigger on `app_public.need` (AFTER INSERT OR UPDATE) in a new
+  migration file `database/migrations/136_need_milestone_rewards.sql`
+- [x] T081 [P] Add integration tests verifying:
+  - Creating a need with images awards exactly 10 Topes once
+  - Creating a need with a Topes amount awards exactly 10 Topes once
+  - Creating a need without images, then updating it to add an image, awards exactly
+    10 Topes on the update and not a second time on further updates
+  - Creating a need without a Topes amount, then updating it to set one, awards exactly
+    10 Topes on the update and not a second time on further updates
+  - Creating a need with both images and a Topes amount awards 20 Topes total (10 + 10)
+  in `backend/tests/integration/need-milestone-rewards.spec.ts`
+
 ## Dependencies & Execution Order
 
 - Setup tasks (T001-T007) first.
@@ -181,6 +210,7 @@
 - US5 depends on US4 relation model and campaign ownership checks.
 - US7 depends on resource-campaign relation model and campaign ownership checks.
 - Polish phase follows completion of targeted user stories.
+- Phase 11 (Need Milestone Rewards) depends on the need `image_urls` column and the existing token movement infrastructure.
 
 ## Parallel Execution Examples
 
@@ -190,6 +220,7 @@
 - T046 and T047 can run in parallel.
 - T069 and T070 can run in parallel.
 - T053 and T054 can run in parallel.
+- T079 and T081 can run in parallel.
 
 ## Implementation Strategy
 
@@ -197,3 +228,5 @@
 2. Validate full moderation and creation loops end-to-end.
 3. Add US5 and US6 triage workflows.
 4. Complete polish and compliance checks before release.
+5. Implement Phase 11 need milestone rewards as a post-MVP enhancement.
+
