@@ -177,6 +177,7 @@ export default function CampaignsPage() {
     fetchMore
   } = useQuery<MyCampaignsData, MyCampaignsVariables>(MY_CAMPAIGNS_CONNECTION_QUERY, {
     skip: !session.authenticated || !session.account?.id,
+    fetchPolicy: "cache-and-network",
     variables: {
       creatorAccountId: session.account?.id ?? "",
       first: PAGE_SIZE

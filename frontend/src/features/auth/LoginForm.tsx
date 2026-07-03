@@ -30,13 +30,11 @@ export function LoginForm({
   const { signIn, status } = useAuth();
   const { t } = useTranslation("auth");
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const isPasswordResetRequired =
-    typeof submitError === "string"
-    && submitError.toLowerCase().includes("password reset is required");
+  const [passwordResetRequired, setPasswordResetRequired] = useState(false);
 
   const handleSubmit = async (values: LoginValues) => {
     setSubmitError(null);
+    setPasswordResetRequired(false);
     await signIn({
       identifier: values.identifier.trim(),
       password: values.password
@@ -58,7 +56,12 @@ export function LoginForm({
         try {
           await handleSubmit(values);
         } catch (error) {
-          setSubmitError(error instanceof Error ? error.message : t("form.submitError", { ns: "common", defaultValue: "Something went wrong. Please try again." }));
+          const message = error instanceof Error ? error.message : t("form.submitError", { ns: "common", defaultValue: "Something went wrong. Please try again." });
+          const code = (error as { code?: string }).code;
+          setSubmitError(message);
+          if (code === "PASSWORD_RESET_REQUIRED") {
+            setPasswordResetRequired(true);
+          }
         } finally {
           helpers.setSubmitting(false);
         }
@@ -71,7 +74,7 @@ export function LoginForm({
               <Alert
                 severity="error"
                 action={
-                  isPasswordResetRequired ? (
+                  passwordResetRequired ? (
                     <Button
                       color="inherit"
                       component={NextLink}
@@ -148,3 +151,4 @@ export function LoginForm({
     </Formik>
   );
 }
+

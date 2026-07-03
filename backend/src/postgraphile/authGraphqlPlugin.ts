@@ -4,6 +4,8 @@ import { gql, makeExtendSchemaPlugin } from "graphile-utils";
 import type { Pool } from "pg";
 
 import { hashPassword, verifyPassword } from "../auth/credentials.js";
+import { translate } from "../i18n/index.js";
+import { getLanguage } from "../i18n/getLanguage.js";
 import { logWebApiError } from "../logging/operationalLogger.js";
 import {
   createSessionForAccount,
@@ -13,13 +15,7 @@ import {
   SESSION_COOKIE_NAME
 } from "../auth/session.js";
 
-const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
-const INVALID_CREDENTIALS_MESSAGE = "Unable to sign in with those credentials.";
-const PASSWORD_CHANGE_INVALID_CURRENT_MESSAGE = "Current password is incorrect.";
-const PASSWORD_CHANGE_REQUIRE_AUTH_MESSAGE = "You must be signed in to change your password.";
-const PASSWORD_RESET_REQUIRED_MESSAGE = "Password reset is required before sign in.";
 const PASSWORD_MIN_LENGTH = Number(process.env.PASSWORD_MIN_LENGTH ?? 8);
-const TOO_MANY_ATTEMPTS_MESSAGE = "Too many sign-in attempts. Please wait a moment and try again.";
 const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 5 * 60 * 1000);
 const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = Number(process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS ?? 5);
 const SELECT_LOGIN_CANDIDATE_SQL = "select * from app_private.find_login_candidate($1);";
@@ -84,7 +80,7 @@ function getRequestAndResponse(context: AuthGraphQLContext) {
 
   if (!req || !res) {
     throw new GraphQLError(
-      GENERIC_ERROR_MESSAGE,
+      translate("auth.generic_error", "en"),
       undefined,
       undefined,
       undefined,
@@ -124,10 +120,10 @@ function clearFailedLoginAttempts(key: string) {
   loginAttemptTracker.delete(key);
 }
 
-function assertStrongPassword(password: string) {
+function assertStrongPassword(password: string, language: string) {
   if (password.length < PASSWORD_MIN_LENGTH) {
     throw new GraphQLError(
-      `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`,
+      translate("auth.password_too_short", language, { minLength: PASSWORD_MIN_LENGTH }),
       undefined,
       undefined,
       undefined,
@@ -208,13 +204,14 @@ export function createAuthGraphqlPlugin(pool: Pool) {
       Mutation: {
         authLogin: async (_mutation, args: { input: { identifier: string; password: string; clientMutationId?: string | null } }, context: AuthGraphQLContext) => {
           const { req, res } = getRequestAndResponse(context);
+          const language = getLanguage(req);
           const identifier = String(args.input.identifier ?? "").trim();
           const password = String(args.input.password ?? "");
           const rateLimitKey = getRateLimitKey(req, identifier || "anonymous");
 
           if (isLoginRateLimited(rateLimitKey)) {
             throw new GraphQLError(
-              TOO_MANY_ATTEMPTS_MESSAGE,
+              translate("auth.too_many_attempts", language),
               undefined,
               undefined,
               undefined,
@@ -227,7 +224,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
           if (identifier.length === 0 || password.length === 0) {
             recordFailedLoginAttempt(rateLimitKey);
             throw new GraphQLError(
-              INVALID_CREDENTIALS_MESSAGE,
+              translate("auth.invalid_credentials", language),
               undefined,
               undefined,
               undefined,
@@ -243,7 +240,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
 
             if (candidate?.require_password_reset_on_next_login) {
               throw new GraphQLError(
-                PASSWORD_RESET_REQUIRED_MESSAGE,
+                translate("auth.password_reset_required", language),
                 undefined,
                 undefined,
                 undefined,
@@ -258,7 +255,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
             if (!candidate || !isValid) {
               recordFailedLoginAttempt(rateLimitKey);
               throw new GraphQLError(
-                INVALID_CREDENTIALS_MESSAGE,
+                translate("auth.invalid_credentials", language),
                 undefined,
                 undefined,
                 undefined,
@@ -306,7 +303,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
               }
             });
             throw new GraphQLError(
-              GENERIC_ERROR_MESSAGE,
+              translate("auth.generic_error", language),
               undefined,
               undefined,
               undefined,
@@ -346,11 +343,12 @@ export function createAuthGraphqlPlugin(pool: Pool) {
           context: AuthGraphQLContext
         ) => {
           const { req, res } = getRequestAndResponse(context);
+          const language = getLanguage(req);
           const session = req.authSession ?? null;
 
           if (!session) {
             throw new GraphQLError(
-              PASSWORD_CHANGE_REQUIRE_AUTH_MESSAGE,
+              translate("auth.password_change_require_auth", language),
               undefined,
               undefined,
               undefined,
@@ -363,7 +361,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
           const currentPassword = String(args.input.currentPassword ?? "");
           const newPassword = String(args.input.newPassword ?? "");
 
-          assertStrongPassword(newPassword);
+          assertStrongPassword(newPassword, language);
 
           try {
             const { rows } = await pool.query<PasswordHashRow>(READ_ACCOUNT_PASSWORD_HASH_SQL, [session.accountId]);
@@ -374,7 +372,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
 
             if (!validCurrentPassword) {
               throw new GraphQLError(
-                PASSWORD_CHANGE_INVALID_CURRENT_MESSAGE,
+                translate("auth.password_change_invalid_current", language),
                 undefined,
                 undefined,
                 undefined,
@@ -415,7 +413,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
               accountId: session.accountId
             });
             throw new GraphQLError(
-              GENERIC_ERROR_MESSAGE,
+              translate("auth.generic_error", language),
               undefined,
               undefined,
               undefined,

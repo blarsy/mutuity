@@ -1,11 +1,13 @@
 import { ApolloClient, from, HttpLink, InMemoryCache, split } from "@apollo/client";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { onError } from "@apollo/client/link/error";
+import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
 
 import { notifyAuthRequired } from "../../features/auth/events";
+import i18n from "../../i18n";
 
 const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:5050/graphql";
 const graphqlWsUrl = process.env.NEXT_PUBLIC_GRAPHQL_WS_URL ?? graphqlUrl.replace(/^http/i, "ws");
@@ -28,6 +30,13 @@ const httpLink = new HttpLink({
   uri: graphqlUrl,
   credentials: "include"
 });
+
+const languageLink = setContext((_, { headers }) => ({
+  headers: {
+    ...headers,
+    "x-selected-language": (i18n.language ?? "fr").slice(0, 2),
+  },
+}));
 
 const wsLink =
   typeof window !== "undefined"
@@ -53,5 +62,6 @@ const transportLink = wsLink
 
 export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
-  link: from([errorLink, transportLink])
+  link: from([errorLink, languageLink, transportLink])
 });
+

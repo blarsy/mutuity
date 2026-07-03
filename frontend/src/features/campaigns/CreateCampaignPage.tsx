@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client/react";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
+import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
 import { CREATE_CAMPAIGN_MUTATION, CREATE_CAMPAIGN_MUTATION_LEGACY } from "./campaigns.queries";
 import { useRequireAuth } from "../../features/auth/requireAuth";
@@ -51,21 +52,20 @@ function isUnsupportedCampaignImageFieldError(error: unknown) {
 
 export default function CreateCampaignPage() {
   const { t } = useTranslation("campaigns");
-  const [createCampaign, { loading, error, data }] = useMutation<
+  const router = useRouter();
+  const [createCampaign, { loading, error }] = useMutation<
     CreateCampaignMutationData,
     CreateCampaignMutationVariables
   >(CREATE_CAMPAIGN_MUTATION);
   const [createCampaignLegacy, {
     loading: legacyLoading,
-    error: legacyError,
-    data: legacyData
+    error: legacyError
   }] = useMutation<
     CreateCampaignMutationData,
     Omit<CreateCampaignMutationVariables, "imageUrl">
   >(CREATE_CAMPAIGN_MUTATION_LEGACY);
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const createdCampaign = data?.createCampaign?.campaign ?? legacyData?.createCampaign?.campaign;
-  const mutationError = createdCampaign ? null : (legacyError ?? error);
+  const mutationError = legacyError ?? error;
   const errorMessage = getUserFacingGraphQLErrorMessage(mutationError);
 
   const submit = async (values: CreateCampaignValues) => {
@@ -123,19 +123,13 @@ export default function CreateCampaignPage() {
         </Typography>
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
-        {createdCampaign ? (
-          <Alert sx={{ mb: 2 }} severity="success">
-            {t("create.success", { status: createdCampaign.moderationStatus })}
-          </Alert>
-        ) : null}
-
         <Formik
           initialValues={createCampaignInitialValues}
           validationSchema={createCampaignValidationSchema}
           onSubmit={async (values, helpers) => {
             try {
               await submit(values);
-              helpers.resetForm();
+              await router.push("/app/campaigns");
             } finally {
               helpers.setSubmitting(false);
             }

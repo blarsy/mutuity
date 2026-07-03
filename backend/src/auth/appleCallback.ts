@@ -2,6 +2,7 @@ import type { Pool } from "pg";
 import * as appleSigninAuth from "apple-signin-auth";
 
 import { logWebApiError } from "../logging/operationalLogger.js";
+import { translate } from "../i18n/index.js";
 import { verifySocialAuthState } from "./socialState.js";
 
 const RESOLVE_EXTERNAL_IDENTITY_SQL =
@@ -23,6 +24,7 @@ type AppleCallbackInput = {
   privateKey: string;
   callbackUrl: string;
   userPayload?: string;
+  language: string;
 };
 
 type AppleTokenPayload = {
@@ -161,7 +163,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
     return {
       kind: "error",
       nextDestination: "/",
-      errorMessage: "Invalid or expired social auth state"
+      errorMessage: translate("auth.invalid_social_auth_state", input.language)
     };
   }
 
@@ -240,7 +242,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
     return {
       kind: "error",
       nextDestination: parsedState.next,
-      errorMessage: "Apple authentication failed"
+      errorMessage: translate("auth.apple_auth_failed", input.language)
     };
   }
 }

@@ -27,8 +27,8 @@ function normalizeAuthSession(payload: Partial<AuthSession> | null | undefined):
 
 function toGraphQLErrorMessage(error: unknown, fallback: string) {
   if (!error) {
-    return fallback;
-  }
+  return fallback;
+}
 
   if (CombinedGraphQLErrors.is(error) && error.errors[0]?.message) {
     return error.errors[0].message;
@@ -39,6 +39,28 @@ function toGraphQLErrorMessage(error: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+/**
+ * Like toGraphQLErrorMessage but also preserves the GraphQL error code
+ * (e.g. "PASSWORD_RESET_REQUIRED") so the UI can branch on it.
+ */
+function throwErrorWithCode(error: unknown, fallback: string): never {
+  if (CombinedGraphQLErrors.is(error) && error.errors[0]?.message) {
+    const message = error.errors[0].message;
+    const code = error.errors[0].extensions?.code as string | undefined;
+    const err = new Error(message) as Error & { code?: string };
+    err.code = code;
+    throw err;
+  }
+
+  if (error instanceof Error && error.message) {
+    const err = new Error(error.message) as Error & { code?: string };
+    throw err;
+  }
+
+  const err = new Error(fallback) as Error & { code?: string };
+  throw err;
 }
 
 export function getCurrentSession() {
@@ -64,7 +86,7 @@ export function login(input: LoginInput) {
     })
     .then(result => normalizeAuthSession(result.data?.authLogin?.authSession))
     .catch(error => {
-      throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
+      throwErrorWithCode(error, "Something went wrong. Please try again.");
     });
 }
 
@@ -228,7 +250,10 @@ export async function confirmPendingLink(pendingLinkToken: string): Promise<void
   const backendBaseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/$/, "");
   const response = await fetch(`${backendBaseUrl}/auth/social/confirm-link`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-selected-language": (i18n.language ?? "fr").slice(0, 2),
+    },
     credentials: "include",
     body: JSON.stringify({ pendingLinkToken }),
   });
@@ -242,7 +267,10 @@ export async function completeSocialRegistration(pendingRegistrationToken: strin
   const backendBaseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/$/, "");
   const response = await fetch(`${backendBaseUrl}/auth/social/complete-registration`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-selected-language": (i18n.language ?? "fr").slice(0, 2),
+    },
     credentials: "include",
     body: JSON.stringify({ pendingRegistrationToken }),
   });
@@ -254,3 +282,4 @@ export async function completeSocialRegistration(pendingRegistrationToken: strin
   const payload = (await response.json()) as { next?: string };
   return { next: typeof payload.next === "string" ? payload.next : "/" };
 }
+

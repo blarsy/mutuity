@@ -1,6 +1,7 @@
 import type { Pool } from "pg";
 
 import { logWebApiError } from "../logging/operationalLogger.js";
+import { translate } from "../i18n/index.js";
 import { verifySocialAuthState } from "./socialState.js";
 
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
@@ -33,6 +34,7 @@ type GoogleCallbackInput = {
   clientId: string;
   clientSecret: string;
   callbackUrl: string;
+  language: string;
 };
 
 export type GoogleCallbackResult =
@@ -149,7 +151,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
     return {
       kind: "error",
       nextDestination: "/",
-      errorMessage: "Invalid or expired social auth state"
+      errorMessage: translate("auth.invalid_social_auth_state", input.language)
     };
   }
 
@@ -218,7 +220,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
     return {
       kind: "error",
       nextDestination: parsedState.next,
-      errorMessage: "Google authentication failed"
+      errorMessage: translate("auth.google_auth_failed", input.language)
     };
   }
 }

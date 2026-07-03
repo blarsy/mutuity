@@ -14,7 +14,7 @@ import {
   resolveNeedAvailabilityState,
   type PublicAvailabilityState
 } from "../../features/shared/publicPageSeo";
-import { fetchServerGraphql } from "../../features/shared/serverGraphql";
+import { fetchServerGraphql, getLanguageFromHeaders } from "../../features/shared/serverGraphql";
 
 type PublicNeedDetailData = {
   needById: {
@@ -179,10 +179,11 @@ export const getServerSideProps: GetServerSideProps<NeedDetailsPageProps> = asyn
     return { notFound: true };
   }
 
+  const language = getLanguageFromHeaders(context.req.headers);
+
   const data = await fetchServerGraphql<PublicNeedDetailData>(PUBLIC_NEED_DETAIL_SSR_QUERY, {
     needId: rawNeedId
-  });
-
+  }, language);
   if (!data?.needById) {
     return { notFound: true };
   }
@@ -194,3 +195,5 @@ export const getServerSideProps: GetServerSideProps<NeedDetailsPageProps> = asyn
     }
   };
 };
+
+

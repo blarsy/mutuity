@@ -8,9 +8,12 @@ import { GraphQLError } from "graphql";
 import { Pool } from "pg";
 import { postgraphile, makePluginHook, enhanceHttpServerWithSubscriptions } from "postgraphile";
 import PgPubSub from "@graphile/pg-pubsub";
+import { IncomingMessage } from "http";
 
 import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
+import { translate } from "../i18n/index.js";
+import { getLanguage } from "../i18n/getLanguage.js";
 import {
   generateSocialAuthNonce,
   signPendingLinkToken,
@@ -31,83 +34,89 @@ const PgPubSubPlugin =
   (PgPubSub as unknown as object);
 const pluginHook = makePluginHook([PgPubSubPlugin]);
 const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "admin"]);
-const AUTHENTICATION_ERROR_MESSAGE = "You must sign in to continue.";
-const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
-const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([
-  ["Campaign start_at must be before end_at", "BAD_USER_INPUT"],
-  ["Campaign airdrop_at must be between start_at and end_at", "BAD_USER_INPUT"],
-  ["Topes amount must be greater than zero", "BAD_USER_INPUT"],
-  ["Topes for leg_up must be between 10 and 99", "BAD_USER_INPUT"],
-  ["Topes for sharing must be between 100 and 999", "BAD_USER_INPUT"],
-  ["Topes for commitment must be between 1000 and 4999", "BAD_USER_INPUT"],
-  ["Topes for rare_contribution must be at least 5000", "BAD_USER_INPUT"],
-  ["Resource title is required", "BAD_USER_INPUT"],
-  ["Resource location is required", "BAD_USER_INPUT"],
-  ["Resource description must be 8000 characters or fewer", "BAD_USER_INPUT"],
-  ["Resource expiration must be in the future", "BAD_USER_INPUT"],
-  ["Resource must be marked as a product, a service, or both", "BAD_USER_INPUT"],
-  ["One or more resource categories are invalid", "BAD_USER_INPUT"],
-  ["Resource not found", "NOT_FOUND"],
-  ["Resource is no longer active", "BAD_USER_INPUT"],
-  ["Resource has expired", "BAD_USER_INPUT"],
-  ["Resource creators cannot bid on their own resources", "FORBIDDEN"],
-  ["Resource bid not found", "NOT_FOUND"],
-  ["Resource bid is no longer open", "BAD_USER_INPUT"],
-  ["Resource bid response must be accepted or declined", "BAD_USER_INPUT"],
-  ["Only the resource creator can respond to bids", "FORBIDDEN"],
-  ["required_people_count must be at least 2 when multiple_people_required is true", "BAD_USER_INPUT"],
-  ["required_people_count must be positive", "BAD_USER_INPUT"],
-  ["Need not found", "NOT_FOUND"],
-  ["Need is no longer active", "BAD_USER_INPUT"],
-  ["Need claim not found", "NOT_FOUND"],
-  ["Need claim is no longer open", "BAD_USER_INPUT"],
-  ["Need claim is closed", "BAD_USER_INPUT"],
-  ["Only the claimer can cancel this claim", "FORBIDDEN"],
-  ["Only the need creator can decline this claim", "FORBIDDEN"],
-  ["Claim conversation not found", "NOT_FOUND"],
-  ["Message body is required", "BAD_USER_INPUT"],
-  ["Only administrators can add moderation notes", "FORBIDDEN"],
-  ["Only managers can add moderation notes", "FORBIDDEN"],
-  ["Moderation notes are not allowed for approved campaigns", "BAD_USER_INPUT"],
-  ["Only need creator can settle claims", "FORBIDDEN"],
-  ["Only claim participants can send messages", "FORBIDDEN"],
-  ["Only claim participants can read messages", "FORBIDDEN"],
-  ["Only resource conversation participants can send messages", "FORBIDDEN"],
-  ["Only resource conversation participants can read messages", "FORBIDDEN"],
-  ["Only conversation participants can update typing state", "FORBIDDEN"],
-  ["Conversation can only be started by the need creator", "FORBIDDEN"],
-  ["Need creator cannot message themselves", "BAD_USER_INPUT"],
-  ["Resource owner cannot message themselves", "BAD_USER_INPUT"],
-  ["Campaign not found", "NOT_FOUND"],
-  ["Moderation notes are allowed only for pending campaigns", "BAD_USER_INPUT"],
-  ["Moderation note body is required", "BAD_USER_INPUT"],
-  ["Only administrators can approve campaigns", "FORBIDDEN"],
-  ["Only managers can approve campaigns", "FORBIDDEN"],
-  ["Campaign can only be approved from pending or awaiting adaptation status", "BAD_USER_INPUT"],
-  ["Campaign can only be approved from pending status", "BAD_USER_INPUT"],
-  ["Only the campaign creator can edit this campaign", "FORBIDDEN"],
-  ["Campaign can only be edited while pending or awaiting adaptation", "BAD_USER_INPUT"],
-  ["Only the campaign creator or administrator can view moderation events", "FORBIDDEN"],
-  ["Campaign is not eligible for need linking", "BAD_USER_INPUT"],
-  ["Campaign need relation not found", "NOT_FOUND"],
-  ["Only the campaign creator can triage joined needs", "FORBIDDEN"],
-  ["Campaign need can only be triaged from pending status", "BAD_USER_INPUT"],
-  ["Campaign resource relation not found", "NOT_FOUND"],
-  ["Only the campaign creator can triage joined resources", "FORBIDDEN"],
-  ["Campaign resource can only be triaged from pending status", "BAD_USER_INPUT"],
-  ["Recipient account not found", "NOT_FOUND"],
-  ["Gift amount must be greater than zero", "BAD_USER_INPUT"],
-  ["You cannot gift tokens to your own account", "BAD_USER_INPUT"],
-  ["Password reset is required before sign in.", "PASSWORD_RESET_REQUIRED"],
-  ["Only administrators can create or modify grants", "FORBIDDEN"],
-  ["Only administrators can modify grant targets", "FORBIDDEN"],
-  ["Only administrators can access admin support data", "FORBIDDEN"],
-  ["Administrator account context is required", "UNAUTHENTICATED"],
-  ["Grant title is required", "BAD_USER_INPUT"],
-  ["Grant awarded token amount must be a positive integer", "BAD_USER_INPUT"],
-  ["Grant max successful claim count must be positive", "BAD_USER_INPUT"],
-  ["Grant not found", "NOT_FOUND"],
-  ["Recent re-authentication is required to link social identities", "UNAUTHENTICATED"]
+const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([]);
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign start_at must be before end_at", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign airdrop_at must be between start_at and end_at", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Topes amount must be greater than zero", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Topes for leg_up must be between 10 and 99", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Topes for sharing must be between 100 and 999", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Topes for commitment must be between 1000 and 4999", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Topes for rare_contribution must be at least 5000", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource title is required", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource location is required", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource description must be 8000 characters or fewer", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource expiration must be in the future", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource must be marked as a product, a service, or both", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("One or more resource categories are invalid", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource is no longer active", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource has expired", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource creators cannot bid on their own resources", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource bid not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource bid is no longer open", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource bid response must be accepted or declined", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the resource creator can respond to bids", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("required_people_count must be at least 2 when multiple_people_required is true", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("required_people_count must be positive", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Need not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Need is no longer active", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Need claim not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Need claim is no longer open", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Need claim is closed", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the claimer can cancel this claim", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the need creator can decline this claim", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Claim conversation not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Message body is required", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only administrators can add moderation notes", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only managers can add moderation notes", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Moderation notes are not allowed for approved campaigns", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only need creator can settle claims", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only claim participants can send messages", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only claim participants can read messages", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only resource conversation participants can send messages", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only resource conversation participants can read messages", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only conversation participants can update typing state", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Conversation can only be started by the need creator", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Need creator cannot message themselves", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Resource owner cannot message themselves", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Moderation notes are allowed only for pending campaigns", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Moderation note body is required", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only administrators can approve campaigns", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only managers can approve campaigns", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign can only be approved from pending or awaiting adaptation status", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign can only be approved from pending status", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the campaign creator can edit this campaign", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign can only be edited while pending or awaiting adaptation", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the campaign creator or administrator can view moderation events", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign is not eligible for need linking", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign need relation not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the campaign creator can triage joined needs", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign need can only be triaged from pending status", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign resource relation not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Only the campaign creator can triage joined resources", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Campaign resource can only be triaged from pending status", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Recipient account not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Gift amount must be greater than zero", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("You cannot gift tokens to your own account", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Password reset is required before sign in.", "PASSWORD_RESET_REQUIRED");
+SAFE_GRAPHQL_ERROR_CODES.set("Only administrators can create or modify grants", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only administrators can modify grant targets", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Only administrators can access admin support data", "FORBIDDEN");
+SAFE_GRAPHQL_ERROR_CODES.set("Administrator account context is required", "UNAUTHENTICATED");
+SAFE_GRAPHQL_ERROR_CODES.set("Grant title is required", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Grant awarded token amount must be a positive integer", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Grant max successful claim count must be positive", "BAD_USER_INPUT");
+SAFE_GRAPHQL_ERROR_CODES.set("Grant not found", "NOT_FOUND");
+SAFE_GRAPHQL_ERROR_CODES.set("Recent re-authentication is required to link social identities", "UNAUTHENTICATED");
+/**
+ * Error codes set by our own code (auth plugin etc.) whose messages are
+ * already user‑safe and translated.  These always pass through as‑is.
+ */
+const PRESERVE_ERROR_CODES = new Set([
+  "PASSWORD_RESET_REQUIRED",
+  "RATE_LIMITED",
+  "GRAPHQL_AUTH_ERROR",
 ]);
 const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
   pattern: RegExp;
@@ -254,12 +263,20 @@ function toLoggedError(error: GraphQLError) {
   };
 }
 
-function sanitizeGraphQLError(error: GraphQLError) {
+function sanitizeGraphQLError(error: GraphQLError, req: IncomingMessage) {
+  const language = getLanguage(req);
   const message = error.message;
+  const code = error.extensions?.code as string | undefined;
+
+  // Errors thrown by our own code with a known safe code are already
+  // translated and safe to return as‑is.
+  if (code && PRESERVE_ERROR_CODES.has(code)) {
+    return error;
+  }
 
   if (AUTHENTICATION_ERROR_PATTERNS.some(pattern => pattern.test(message))) {
     return new GraphQLError(
-      AUTHENTICATION_ERROR_MESSAGE,
+      translate("auth.authentication_required", language),
       error.nodes,
       error.source,
       error.positions,
@@ -298,7 +315,7 @@ function sanitizeGraphQLError(error: GraphQLError) {
   }
 
   return new GraphQLError(
-    GENERIC_ERROR_MESSAGE,
+    translate("auth.generic_error", language),
     error.nodes,
     error.source,
     error.positions,
@@ -481,7 +498,7 @@ app.get("/auth/:provider/start", (req, res) => {
   const provider = req.params.provider;
 
   if (provider !== "google" && provider !== "apple") {
-    res.status(404).json({ error: "Unsupported social provider" });
+    res.status(404).json({ error: translate("auth.unsupported_social_provider", getLanguage(req)) });
     return;
   }
 
@@ -512,6 +529,8 @@ app.get("/auth/:provider/start", (req, res) => {
 });
 
 app.get("/auth/google/callback", async (req, res) => {
+  const language = getLanguage(req);
+
   if (!hasGoogleOauthCallbackConfig()) {
     res.status(501).json({
       error: "Missing GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"
@@ -526,7 +545,7 @@ app.get("/auth/google/callback", async (req, res) => {
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "error",
       nextDestination: "/",
-      error: "Missing OAuth callback parameters"
+      error: translate("auth.missing_oauth_params", language)
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -536,6 +555,7 @@ app.get("/auth/google/callback", async (req, res) => {
     pool,
     code,
     state,
+    language,
     stateSecret: SOCIAL_AUTH_STATE_SECRET,
     clientId: GOOGLE_OAUTH_CLIENT_ID,
     clientSecret: GOOGLE_OAUTH_CLIENT_SECRET,
@@ -567,7 +587,7 @@ app.get("/auth/google/callback", async (req, res) => {
       const callbackUrl = buildFrontendSocialCallbackUrl("google", {
         status: "error",
         nextDestination: result.nextDestination,
-        error: "Could not create a session"
+        error: translate("auth.could_not_create_session", language)
       });
       res.redirect(302, callbackUrl.toString());
       return;
@@ -601,29 +621,26 @@ app.get("/auth/google/callback", async (req, res) => {
   }
 
   if (result.kind === "link_confirmation_required") {
-      if (result.kind === "link_confirmation_required") {
-        const pendingLinkToken = SOCIAL_AUTH_STATE_SECRET
-         ? signPendingLinkToken({
-             provider: "google",
-             providerSubject: result.providerSubject,
-             providerEmail: result.email,
-             providerEmailVerified: result.providerEmailVerified,
-             next: result.nextDestination,
-           }, SOCIAL_AUTH_STATE_SECRET)
-         : undefined;   
-        const callbackUrl = buildFrontendSocialCallbackUrl("google", {
-          status: "link_confirmation_required",
-          nextDestination: result.nextDestination,
-          email: result.email,
-          name: result.name,
+    const pendingLinkToken = SOCIAL_AUTH_STATE_SECRET
+      ? signPendingLinkToken({
+          provider: "google",
           providerSubject: result.providerSubject,
-          pendingLinkToken
-        });
-        res.redirect(302, callbackUrl.toString());
-        return;
-    }
+          providerEmail: result.email,
+          providerEmailVerified: result.providerEmailVerified,
+          next: result.nextDestination,
+        }, SOCIAL_AUTH_STATE_SECRET)
+      : undefined;
+    const callbackUrl = buildFrontendSocialCallbackUrl("google", {
+      status: "link_confirmation_required",
+      nextDestination: result.nextDestination,
+      email: result.email,
+      name: result.name,
+      providerSubject: result.providerSubject,
+      pendingLinkToken
+    });
+    res.redirect(302, callbackUrl.toString());
+    return;
   }
-
   if (result.kind === "password_reset_required") {
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "password_reset_required",
@@ -644,13 +661,15 @@ app.get("/auth/google/callback", async (req, res) => {
   res.redirect(302, callbackUrl.toString());
 });
 
-app.get(APPLE_OAUTH_CALLBACK_ROUTE, (_req, res) => {
+app.get(APPLE_OAUTH_CALLBACK_ROUTE, (req, res) => {
   res.status(405).json({
-    error: "Method not allowed. Apple callback expects POST."
+    error: translate("auth.method_not_allowed_apple_callback", getLanguage(req))
   });
 });
 
 app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), async (req, res) => {
+  const language = getLanguage(req);
+
   if (!hasAppleOauthCallbackConfig()) {
     res.status(501).json({
       error: "Missing APPLE_OAUTH_CLIENT_ID, APPLE_OAUTH_TEAM_ID, APPLE_OAUTH_KEY_ID, APPLE_OAUTH_PRIVATE_KEY, APPLE_OAUTH_CALLBACK_URL, or SOCIAL_AUTH_STATE_SECRET configuration"
@@ -666,7 +685,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "error",
       nextDestination: "/",
-      error: "Missing OAuth callback parameters"
+      error: translate("auth.missing_oauth_params", language)
     });
     res.redirect(302, callbackUrl.toString());
     return;
@@ -676,6 +695,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
     pool,
     code,
     state,
+    language,
     userPayload,
     stateSecret: SOCIAL_AUTH_STATE_SECRET,
     clientId: APPLE_OAUTH_CLIENT_ID,
@@ -710,7 +730,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
       const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
         status: "error",
         nextDestination: result.nextDestination,
-        error: "Could not create a session"
+        error: translate("auth.could_not_create_session", language)
       });
       res.redirect(302, callbackUrl.toString());
       return;
@@ -744,15 +764,15 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
   }
 
   if (result.kind === "link_confirmation_required") {
-       const pendingLinkToken = SOCIAL_AUTH_STATE_SECRET
-        ? signPendingLinkToken({
-            provider: "apple",
-            providerSubject: result.providerSubject,
-            providerEmail: result.email,
-            providerEmailVerified: result.providerEmailVerified,
-            next: result.nextDestination,
-          }, SOCIAL_AUTH_STATE_SECRET)
-        : undefined;
+    const pendingLinkToken = SOCIAL_AUTH_STATE_SECRET
+      ? signPendingLinkToken({
+          provider: "apple",
+          providerSubject: result.providerSubject,
+          providerEmail: result.email,
+          providerEmailVerified: result.providerEmailVerified,
+          next: result.nextDestination,
+        }, SOCIAL_AUTH_STATE_SECRET)
+      : undefined;
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "link_confirmation_required",
       nextDestination: result.nextDestination,
@@ -810,7 +830,7 @@ const postgraphileMiddleware = postgraphile(
     ignoreRBAC: false,
     ignoreIndexes: false,
     appendPlugins: [createAuthGraphqlPlugin(pool)],
-    handleErrors: errors => {
+    handleErrors: (errors, req) => {
       for (const error of errors) {
         console.error("[postgraphile] GraphQL request failed", toLoggedError(error));
         void logWebApiError("GraphQL request failed", error, {
@@ -820,7 +840,7 @@ const postgraphileMiddleware = postgraphile(
         });
       }
 
-      return errors.map(sanitizeGraphQLError);
+      return errors.map(e => sanitizeGraphQLError(e, req));
     },
     pgSettings: req => {
       const session = (
@@ -862,20 +882,22 @@ const postgraphileMiddleware = postgraphile(
 );
 
 app.post("/auth/social/confirm-link", express.json(), async (req, res) => {
+  const language = getLanguage(req);
+
   if (!req.authSession) {
-    res.status(401).json({ error: "Authentication required" });
+    res.status(401).json({ error: translate("auth.authentication_required", language) });
     return;
   }
 
   const rawToken = typeof req.body?.pendingLinkToken === "string" ? req.body.pendingLinkToken : "";
   if (!rawToken) {
-    res.status(400).json({ error: "Missing pendingLinkToken" });
+    res.status(400).json({ error: translate("auth.missing_pending_link_token", language) });
     return;
   }
 
   const pending = verifyPendingLinkToken(rawToken, SOCIAL_AUTH_STATE_SECRET);
   if (!pending) {
-    res.status(400).json({ error: "Invalid or expired pending link token" });
+    res.status(400).json({ error: translate("auth.invalid_pending_link_token", language) });
     return;
   }
 
@@ -892,20 +914,21 @@ app.post("/auth/social/confirm-link", express.json(), async (req, res) => {
     await logWebApiError("[auth] Failed to confirm pending social link", error, {
       context: "confirm_pending_link",
     });
-    res.status(500).json({ error: "Failed to link identity" });
+    res.status(500).json({ error: translate("auth.failed_to_link_identity", language) });
   }
 });
 
 app.post("/auth/social/complete-registration", express.json(), async (req, res) => {
+  const language = getLanguage(req);
   const rawToken = typeof req.body?.pendingRegistrationToken === "string" ? req.body.pendingRegistrationToken : "";
   if (!rawToken) {
-    res.status(400).json({ error: "Missing pendingRegistrationToken" });
+    res.status(400).json({ error: translate("auth.missing_pending_registration_token", language) });
     return;
   }
 
   const pending = verifyPendingRegistrationToken(rawToken, SOCIAL_AUTH_STATE_SECRET);
   if (!pending) {
-    res.status(400).json({ error: "Invalid or expired pending registration token" });
+    res.status(400).json({ error: translate("auth.invalid_pending_registration_token", language) });
     return;
   }
 
@@ -917,7 +940,7 @@ app.post("/auth/social/complete-registration", express.json(), async (req, res) 
 
     const resolution = rows[0];
     if (!resolution || resolution.resolution !== "subject_match" || !resolution.account_id) {
-      res.status(400).json({ error: "Social identity is not linked to an account" });
+      res.status(400).json({ error: translate("auth.social_identity_not_linked", language) });
       return;
     }
 
@@ -932,7 +955,7 @@ app.post("/auth/social/complete-registration", express.json(), async (req, res) 
     await logWebApiError("[auth] Failed to complete social registration", error, {
       context: "complete_social_registration"
     });
-    res.status(500).json({ error: "Failed to complete registration" });
+    res.status(500).json({ error: translate("auth.failed_to_complete_registration", language) });
   }
 });
 
@@ -955,3 +978,4 @@ httpServer.listen(port, () => {
     watchPg
   });
 });
+

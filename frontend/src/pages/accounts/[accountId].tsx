@@ -16,7 +16,7 @@ import {
   resolveAccountAvailabilityState,
   type PublicAvailabilityState
 } from "../../features/shared/publicPageSeo";
-import { fetchServerGraphql } from "../../features/shared/serverGraphql";
+import { fetchServerGraphql, getLanguageFromHeaders } from "../../features/shared/serverGraphql";
 import { ResourceCard } from "../../features/ui/ResourceCard";
 import { listingCardGridSx } from "../../features/ui/listingCardGrid";
 
@@ -325,10 +325,11 @@ export const getServerSideProps: GetServerSideProps<AccountDetailsPageProps> = a
     return { notFound: true };
   }
 
+  const language = getLanguageFromHeaders(context.req.headers);
+
   const data = await fetchServerGraphql<PublicAccountDetailData>(PUBLIC_ACCOUNT_DETAIL_SSR_QUERY, {
     accountId: rawAccountId
-  });
-
+  }, language);
   if (!data) {
     return {
       props: {
@@ -349,3 +350,4 @@ export const getServerSideProps: GetServerSideProps<AccountDetailsPageProps> = a
     }
   };
 };
+

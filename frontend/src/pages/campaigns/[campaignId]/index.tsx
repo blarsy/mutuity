@@ -33,7 +33,7 @@ import {
 } from "../../../features/shared/publicPageSeo";
 import { formatPublicDateTime } from "../../../features/shared/publicDateTime";
 import { resolveMobileStoreLinks } from "../../../features/shared/mobileStoreLinks";
-import { fetchServerGraphql } from "../../../features/shared/serverGraphql";
+import { fetchServerGraphql, getLanguageFromHeaders } from "../../../features/shared/serverGraphql";
 import { NeedCard } from "../../../features/ui/NeedCard";
 import { ResourceCard } from "../../../features/ui/ResourceCard";
 import { listingCardGridSx } from "../../../features/ui/listingCardGrid";
@@ -1021,18 +1021,15 @@ export const getServerSideProps: GetServerSideProps<PublicCampaignDetailPageProp
     return { notFound: true };
   }
 
+  const locale = getLanguageFromHeaders(context.req.headers);
+
   const data = await fetchServerGraphql<PublicCampaignDetailData>(PUBLIC_CAMPAIGN_DETAIL_SSR_QUERY, {
     campaignId: rawCampaignId
-  });
+  }, locale);
 
   if (!data?.campaignById) {
     return { notFound: true };
   }
-
-  const localeHeader = context.req.headers["accept-language"];
-  const locale = Array.isArray(localeHeader)
-    ? localeHeader[0]
-    : localeHeader?.split(",")[0]?.trim() || "en-US";
 
   return {
     props: {
@@ -1046,3 +1043,5 @@ export const getServerSideProps: GetServerSideProps<PublicCampaignDetailPageProp
     }
   };
 };
+
+
