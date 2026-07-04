@@ -35,7 +35,6 @@ Tope-là already helps users offer underused resources. Mutuity provides the mis
 
 ### Multi-platform by design
 - Any feature shipped must be accessible on **both** a web app and a mobile app, unless explicitly scoped otherwise
-- A mobile app must **not** be implemented now, but should be easy to add in the future
 - API-first: the backend must not assume any specific frontend.
 
 ### Security defaults
