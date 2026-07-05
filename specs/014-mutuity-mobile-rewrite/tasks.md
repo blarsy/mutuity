@@ -73,15 +73,15 @@
 - [x] T023 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "edit resource title/price/images and persist" in mobile-app/tests/integration/us1-manage-resources.acceptance.test.ts
 - [x] T024 [P] [US1] Add acceptance exception test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "offline during resource save must not show false success" in mobile-app/tests/integration/us1-resource-save-offline.exception.test.ts
 - [x] T025 [P] [US1] Add contract test for resource query filters in mobile-app/tests/contract/us1-search-resources.contract.test.ts
-- [ ] T025A [P] [US1] Add acceptance test matrix for anonymous access behavior across canonical main screens (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/integration/us1-anonymous-access-matrix.acceptance.test.ts
-- [ ] T025B [P] [US1] Add navigation/deep-link guard acceptance test for anonymous access to My profile, My preferences, and My economics in mobile-app/tests/integration/us1-anonymous-restricted-routes.acceptance.test.ts
+- [x] T025A [P] [US1] Add acceptance test matrix for anonymous access behavior across canonical main screens (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/integration/us1-anonymous-access-matrix.acceptance.test.ts
+- [x] T025B [P] [US1] Add navigation/deep-link guard acceptance test for anonymous access to My profile, My preferences, and Contribution in mobile-app/tests/integration/us1-anonymous-restricted-routes.acceptance.test.ts
 
 ### Implementation for User Story 1
 
-- [ ] T026 [P] [US1] Finalize and approve UI contracts for Search resources and My resources in specs/014-mutuity-mobile-rewrite/ui-contracts/search-resources.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-resources.md
-- [ ] T027 [P] [US1] Finalize and approve UI contracts for My bids and Chat in specs/014-mutuity-mobile-rewrite/ui-contracts/my-bids.md and specs/014-mutuity-mobile-rewrite/ui-contracts/chat.md
-- [ ] T028 [P] [US1] Finalize and approve UI contracts for Notifications and My profile in specs/014-mutuity-mobile-rewrite/ui-contracts/notifications.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-profile.md
-- [ ] T029 [P] [US1] Finalize and approve UI contracts for My preferences and My economics in specs/014-mutuity-mobile-rewrite/ui-contracts/my-preferences.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-economics.md
+- [x] T026 [P] [US1] Finalize and approve UI contracts for Search resources and My resources in specs/014-mutuity-mobile-rewrite/ui-contracts/search-resources.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-resources.md
+- [x] T027 [P] [US1] Finalize and approve UI contracts for My bids and Chat in specs/014-mutuity-mobile-rewrite/ui-contracts/my-bids.md and specs/014-mutuity-mobile-rewrite/ui-contracts/chat.md
+- [x] T028 [P] [US1] Finalize and approve UI contracts for Notifications and My profile in specs/014-mutuity-mobile-rewrite/ui-contracts/notifications.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-profile.md
+- [x] T029 [P] [US1] Finalize and approve UI contracts for My preferences and Contribution in specs/014-mutuity-mobile-rewrite/ui-contracts/my-preferences.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-economics.md
 - [ ] T030 [US1] Port Search resources screen after gate pass in mobile-app/src/screens/resources/SearchResourcesScreen.tsx
 - [ ] T031 [US1] Port My resources list and CRUD entry points after gate pass in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
 - [ ] T032 [P] [US1] Port My bids workspace after gate pass in mobile-app/src/screens/bids/MyBidsScreen.tsx
@@ -89,7 +89,7 @@
 - [ ] T034 [P] [US1] Port Notifications feed after gate pass in mobile-app/src/screens/notifications/NotificationsScreen.tsx
 - [ ] T035 [P] [US1] Port My profile screen after gate pass in mobile-app/src/screens/profile/MyProfileScreen.tsx
 - [ ] T036 [P] [US1] Port My preferences screen after gate pass in mobile-app/src/screens/profile/MyPreferencesScreen.tsx
-- [ ] T037 [P] [US1] Port My economics screen after gate pass in mobile-app/src/screens/economics/MyEconomicsScreen.tsx
+- [ ] T037 [P] [US1] Port Contribution screen after gate pass in mobile-app/src/screens/economics/MyEconomicsScreen.tsx
 - [ ] T038 [US1] Wire US1 navigation routes in mobile-app/src/navigation/US1Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
 - [ ] T039 [US1] Ensure fr/en labels for US1 screens in mobile-app/src/i18n/locales/en/us1.json and mobile-app/src/i18n/locales/fr/us1.json
 - [ ] T039A [US1] Implement anonymous browse-only route policy and restricted-surface auth prompts in mobile-app/src/navigation/AppNavigator.tsx and mobile-app/src/navigation/US1Navigator.tsx

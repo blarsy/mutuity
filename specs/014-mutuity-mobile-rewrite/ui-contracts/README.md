@@ -19,6 +19,15 @@ This folder tracks UI-first approval status per canonical main screen.
 - Primary actions are defined.
 - French and English labels are defined.
 
+## Navigation Baseline (Feature 14)
+
+- Main shell uses exactly 5 bottom tabs in this order: Explore, My Hub, Campaigns, Chat, Notifications.
+- Account surfaces are accessed from a top-right account menu (drawer or modal sheet), not from a bottom tab.
+- Logged out account icon: generic silhouette that opens sign-in/registration sheet.
+- Logged in account icon: user avatar that opens account menu.
+- Explore must contract for segmented Search resources/Search needs plus campaign filter chips.
+- My Hub must contract for add actions, My listings previews, active bids, active claims, and archive links.
+
 ## Canonical Main Screens
 
 - [Search resources](./search-resources.md)
@@ -32,4 +41,4 @@ This folder tracks UI-first approval status per canonical main screen.
 - [My campaigns](./my-campaigns.md)
 - [My profile](./my-profile.md)
 - [My preferences](./my-preferences.md)
-- [My economics](./my-economics.md)
+- [Contribution](./my-economics.md)

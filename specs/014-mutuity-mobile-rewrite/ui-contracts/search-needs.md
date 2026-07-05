@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location:
-- Entry points:
-- Exit/back behavior:
+- Tab/stack location: MainTabs -> ExploreStack -> ExploreScreen (needs segment in segmented control).
+- Entry points: Bottom tab Explore then segmented control to Search needs, deep link mutuity://explore/needs.
+- Exit/back behavior: Navigating to a need detail pushes on ExploreStack; back returns to Explore needs list with previous query/filter state preserved.
 - [ ] Approved
 
 ## States

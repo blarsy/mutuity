@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location:
-- Entry points:
-- Exit/back behavior:
+- Tab/stack location: MainTabs -> CampaignsStack -> MyCampaignsScreen (tab landing).
+- Entry points: Bottom tab Campaigns, deep link mutuity://campaign/{campaignId} resolves through campaigns surface.
+- Exit/back behavior: Campaign detail back returns to MyCampaignsScreen list; active tab remains Campaigns.
 - [ ] Approved
 
 ## States

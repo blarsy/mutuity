@@ -44,7 +44,7 @@ Hard Gate
 | My campaigns | No | No | No | No | No |
 | My profile | No | No | No | No | No |
 | My preferences | No | No | No | No | No |
-| My economics | No | No | No | No | No |
+| Contribution | No | No | No | No | No |
 
 ### Anonymous Access Behavior Matrix
 
@@ -61,10 +61,10 @@ Hard Gate
 | My campaigns | Displays a message inviting to log in or create an account |
 | My profile | Not accessible through any UI action when no user is logged in |
 | My preferences | Not accessible through any UI action when no user is logged in |
-| My economics | Not accessible through any UI action when no user is logged in |
+| Contribution | Not accessible through any UI action when no user is logged in |
 
 Rule:
-- Every canonical main screen except My profile, My preferences, and My economics must define explicit anonymous behavior in its UI contract.
+- Every canonical main screen except My profile, My preferences, and Contribution must define explicit anonymous behavior in its UI contract.
 
 ## Technical Context
 
@@ -76,7 +76,7 @@ Rule:
 **Project Type**: Mobile app (React Native + Expo)  
 **Performance Goals**: App startup <2s, smooth 60 fps UI on mid-range devices, GraphQL queries <500ms p95  
 **Constraints**: Offline-capable (caching), <150 MB bundle size, support French/English from day one, preserve Tope-là operational behaviors that users and support depend on  
-**Scale/Scope**: Tabs are migration containers with 12 canonical screens, 25+ total screens, operational foundation services for logging/session/push/support/update control, and 40+ GraphQL operations reused from the web backend over an estimated 8 weeks.
+**Scale/Scope**: The main shell uses 5 bottom tabs with account surfaces exposed via a top-right account menu, while still tracking 12 canonical screens for migration, 25+ total screens, operational foundation services for logging/session/push/support/update control, and 40+ GraphQL operations reused from the web backend over an estimated 8 weeks.
 
 ## Constitution Check
 
@@ -236,15 +236,17 @@ Mobile app will consume the following GraphQL operations (already defined in web
 
 ### Navigation Structure
 
-Main tab navigation (React Navigation BottomTabNavigator):
-1. **Search** → Browse resources, view detail, send bid
-2. **Resources** → Manage own resources, create resource
-3. **Needs** → Browse needs, create need, manage claims
-4. **Campaigns** → Browse campaigns, create campaign, moderate items
-5. **Bids** → View sent/received bids, track settlement
-6. **Chat** → Conversations, message history
-7. **Notifications** → Activity feed, mark read/unread
-8. **Profile** → Account settings, preferences, tokens, language
+Main shell navigation (React Navigation BottomTabNavigator + anchored account menu):
+1. **Explore** → Unified discovery with segmented Search resources/Search needs and campaign filter chips
+2. **My Hub** → Dashboard for My resources, My needs, active bids, active claims, and add actions
+3. **Campaigns** → Joined/ongoing/upcoming campaigns, detail, and campaign-linked creation shortcuts
+4. **Chat** → Conversations and message history
+5. **Notifications** → Activity feed and alerts
+6. **Top-right account menu anchor** → My profile, My preferences, Contribution
+
+Authentication-sensitive account anchor behavior:
+- Logged out: generic silhouette icon opens sign-in/registration sheet.
+- Logged in: avatar icon opens account drawer/sheet.
 
 ### State Management Pattern
 

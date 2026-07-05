@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location:
-- Entry points:
-- Exit/back behavior:
+- Tab/stack location: MainTabs -> MyHubStack -> MyClaimsScreen (Active claims section surface).
+- Entry points: Bottom tab My Hub then Active claims section entry, contextual links from need claim flows.
+- Exit/back behavior: Back returns to MyHubScreen Active claims section; active tab remains My Hub.
 - [ ] Approved
 
 ## States

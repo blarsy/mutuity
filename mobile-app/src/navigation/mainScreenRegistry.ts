@@ -17,5 +17,5 @@ export const mainScreenRegistry: MainScreenEntry[] = [
   { key: "my-campaigns", label: "My campaigns", routeName: "MyCampaigns", uiApproved: false },
   { key: "my-profile", label: "My profile", routeName: "MyProfile", uiApproved: false },
   { key: "my-preferences", label: "My preferences", routeName: "MyPreferences", uiApproved: false },
-  { key: "my-economics", label: "My economics", routeName: "MyEconomics", uiApproved: false }
+  { key: "my-economics", label: "Contribution", routeName: "MyEconomics", uiApproved: false }
 ];

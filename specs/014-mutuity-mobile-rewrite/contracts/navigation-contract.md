@@ -1,15 +1,27 @@
 # Contract: Navigation Architecture
 
-**Feature**: Mutuity Mobile Rewrite  
-**Date**: 2026-07-03
+**Feature**: Mutuity Mobile Rewrite
+**Date**: 2026-07-05
 
 ## Overview
 
-The mobile app uses React Navigation with a bottom-tab navigator as the main navigation pattern, inherited from Tope-là 1.0. Each tab hosts a nested stack navigator for screen hierarchies.
+The mobile app uses React Navigation with a fixed 5-tab bottom navigator for core workflows and a top-right account menu anchor (drawer or modal sheet) for account and settings surfaces.
+
+This contract supersedes the previous multi-tab profile/settings model.
+
+## Top-Level Navigation Paradigm
+
+- Bottom navigation has exactly 5 tabs in this order: Explore, My Hub, Campaigns, Chat, Notifications.
+- Account surfaces are not exposed as a bottom tab.
+- The top-right account anchor appears globally on main-shell screens.
+
+Authentication-sensitive account anchor behavior:
+- Logged out: icon is a generic silhouette; tap opens Sign In / Registration sheet.
+- Logged in: icon is the user avatar; tap opens Account Menu drawer/sheet.
 
 ## Canonical Main Screens for UI-First Migration
 
-The following main screens are the mandatory migration units for this rewrite:
+The canonical screen set remains the migration baseline:
 
 - Search resources
 - Search needs
@@ -22,384 +34,242 @@ The following main screens are the mandatory migration units for this rewrite:
 - My campaigns
 - My profile
 - My preferences
-- My economics
+- Contribution
 
 Migration rule:
-- For each main screen, UI rework and approval is required before any porting from Tope-là mobile begins.
+- For each canonical screen, UI rework and approval is required before any porting from Tope-la mobile begins.
 
-UI contract checklist per main screen:
-- Navigation placement is explicit (tab, stack, or profile section)
+UI contract checklist per canonical screen:
+- Navigation placement is explicit (tab, nested stack, or account menu section)
 - Empty state is defined
 - Loading state is defined
 - Error state is defined
 - Primary actions are defined
 - French and English labels are defined
 
-Note:
-- This canonical list is the planning and tracking baseline even if tab layout evolves later.
+## Surface Mapping (Canonical Screen -> Navigation Placement)
 
-Anonymous access rule:
-- Search resources and Search needs are browse-accessible while anonymous.
-- My resources, My needs, My bids, My claims, Chat, Notifications, and My campaigns are visible entry points but must render a login/create-account invitation when anonymous.
-- My profile, My preferences, and My economics are not accessible through any UI action while anonymous.
-- Deep links to restricted screens must be blocked for anonymous users and rerouted to an allowed surface.
+| Canonical screen | Placement |
+|---|---|
+| Search resources | Explore tab -> segmented mode: resources |
+| Search needs | Explore tab -> segmented mode: needs |
+| My resources | My Hub tab -> My listings section -> View all |
+| My needs | My Hub tab -> My listings section -> View all |
+| My bids | My Hub tab -> Active bids section |
+| My claims | My Hub tab -> Active claims section |
+| Chat | Chat tab landing |
+| Notifications | Notifications tab landing |
+| My campaigns | Campaigns tab landing |
+| My profile | Account menu -> Profile |
+| My preferences | Account menu -> Preferences |
+| Contribution | Account menu -> Contribution |
 
----
+## Anonymous Access Rules
+
+- Browse-accessible while anonymous:
+  - Search resources
+  - Search needs
+- Visible entry points with inline auth prompt when anonymous:
+  - My resources
+  - My needs
+  - My bids
+  - My claims
+  - Chat
+  - Notifications
+  - My campaigns
+- Hidden from anonymous UI entry points:
+  - My profile
+  - My preferences
+  - Contribution
+- Deep links to hidden/restricted destinations must be blocked for anonymous users and rerouted to an allowed surface.
 
 ## Navigation Structure
 
-```
+```text
 AppNavigator (RootNavigator)
-├── BottomTabNavigator (always mounted)
-│   ├── SearchStack
-│   │   ├── SearchScreen (tab landing)
-│   │   ├── ResourceDetailScreen
-│   │   ├── SendBidScreen
-│   │   └── AccountDetailScreen
+├── MainShellStack
+│   ├── MainTabs (BottomTabNavigator, always mounted)
+│   │   ├── ExploreStack (Tab 1)
+│   │   │   ├── ExploreScreen (landing: segmented Search resources/Search needs)
+│   │   │   ├── ResourceDetailScreen
+│   │   │   ├── NeedDetailScreen
+│   │   │   ├── SendBidScreen (modal)
+│   │   │   └── ClaimNeedScreen (modal)
+│   │   │
+│   │   ├── MyHubStack (Tab 2)
+│   │   │   ├── MyHubScreen (landing dashboard)
+│   │   │   ├── MyResourcesScreen
+│   │   │   ├── MyNeedsScreen
+│   │   │   ├── MyBidsScreen
+│   │   │   ├── MyClaimsScreen
+│   │   │   ├── ArchivedBidsScreen
+│   │   │   ├── ArchivedClaimsScreen
+│   │   │   ├── CreateResourceScreen (modal)
+│   │   │   └── CreateNeedScreen (modal)
+│   │   │
+│   │   ├── CampaignsStack (Tab 3)
+│   │   │   ├── MyCampaignsScreen (landing)
+│   │   │   ├── CampaignDetailScreen
+│   │   │   ├── CreateCampaignScreen
+│   │   │   └── CampaignModerationScreen
+│   │   │
+│   │   ├── ChatStack (Tab 4)
+│   │   │   ├── ChatListScreen (landing)
+│   │   │   └── ChatDetailScreen
+│   │   │
+│   │   └── NotificationsStack (Tab 5)
+│   │       ├── NotificationsScreen (landing)
+│   │       └── NotificationDetailScreen
 │   │
-│   ├── ResourcesStack
-│   │   ├── ResourcesScreen (tab landing - my resources)
-│   │   ├── CreateResourceScreen
-│   │   ├── EditResourceScreen
-│   │   ├── ResourceDetailScreen
-│   │   └── ManageResourcesScreen
-│   │
-│   ├── NeedsStack
-│   │   ├── NeedsScreen (tab landing - browse needs)
-│   │   ├── CreateNeedScreen
-│   │   ├── EditNeedScreen
-│   │   ├── NeedDetailScreen
-│   │   ├── ClaimNeedScreen
-│   │   └── MyNeedsScreen (my needs)
-│   │
-│   ├── CampaignsStack
-│   │   ├── CampaignsScreen (tab landing - browse campaigns)
-│   │   ├── CreateCampaignScreen
-│   │   ├── CampaignDetailScreen
-│   │   ├── MyCampaignsScreen (my campaigns)
-│   │   ├── CampaignModerationScreen
-│   │   │   ├── PendingNeedsModeration
-│   │   │   └── PendingResourcesModeration
-│   │   └── CampaignModerationHistoryScreen
-│   │
-│   ├── BidsStack
-│   │   ├── BidsScreen (tab landing - all bids)
-│   │   ├── SentBidsScreen
-│   │   ├── ReceivedBidsScreen
-│   │   └── BidDetailScreen
-│   │
-│   ├── ChatStack
-│   │   ├── ChatListScreen (tab landing - conversations)
-│   │   ├── ChatDetailScreen
-│   │   ├── UserProfileFromChatScreen
-│   │   └── SendTokenFromChatScreen
-│   │
-│   ├── NotificationsStack
-│   │   ├── NotificationsScreen (tab landing - activity feed)
-│   │   └── NotificationDetailScreen
-│   │
-│   └── ProfileStack
-│       ├── ProfileScreen (tab landing - my account)
-│       ├── EditProfileScreen
-│       ├── PreferencesScreen
-│       ├── LanguageSettingScreen
-│       ├── TokensScreen (balance and purchase)
-│       ├── ChangePasswordScreen
-│       ├── SocialLinksScreen
-│       ├── DeleteAccountScreen
-│       └── AboutScreen
+│   └── AccountMenuOverlay (anchored from header right)
+│       ├── AccountMenuSheet
+│       ├── MyProfileScreen
+│       ├── MyPreferencesScreen
+│       └── MyEconomicsScreen
 │
 └── AuthStack (presented on demand)
-  ├── LoginScreen
-  ├── SignUpScreen
-  └── PasswordResetScreen
+    ├── LoginScreen
+    ├── SignUpScreen
+    └── PasswordResetScreen
 ```
 
----
+## Tab Definitions
 
-## Bottom Tab Navigation
+1. **Explore**
+- Purpose: Unified discovery for resources and needs.
+- Landing: ExploreScreen with segmented control.
+- Required controls:
+  - Segment toggle: Search resources / Search needs
+  - Campaign multi-select chips below search bar
 
-### Tab Order (Left to Right)
+2. **My Hub**
+- Purpose: Personal operations dashboard.
+- Landing: MyHubScreen with fixed section order:
+  - Global actions: Add Resource, Add Need
+  - My listings: My resources and My needs previews with View all links
+  - Active bids list with item actions (View item, Chat, Cancel)
+  - Active claims list with item actions (View item, Chat, Cancel)
+  - Archive links for inactive bids and claims
 
-1. **Search** (Icon: magnifying glass)
-   - Purpose: Discover resources posted by other users
-   - Landing Screen: SearchScreen
-   - Independent Feature: P1 (Parity)
+3. **Campaigns**
+- Purpose: Simultaneous campaign ecosystem hub.
+- Landing: MyCampaignsScreen (ongoing, upcoming, joined campaigns).
+- Drill-in: CampaignDetailScreen (rules, rewards, shortcuts).
 
-2. **Resources** (Icon: briefcase)
-   - Purpose: Manage your own resources (products/services)
-   - Landing Screen: ResourcesScreen (displays "My Resources")
-   - Independent Feature: P1 (Parity)
+4. **Chat**
+- Purpose: Peer-to-peer conversations tied to active transactions.
+- Landing: ChatListScreen.
 
-3. **Needs** (Icon: hands)
-   - Purpose: Create, search, claim needs
-   - Landing Screen: NeedsScreen (displays "Browse Needs")
-   - Independent Feature: P2 (New Mutuity)
+5. **Notifications**
+- Purpose: Chronological transactional alerts.
+- Landing: NotificationsScreen.
 
-4. **Campaigns** (Icon: flag)
-   - Purpose: Create campaigns, participate, moderate
-   - Landing Screen: CampaignsScreen (displays "Browse Campaigns")
-   - Independent Feature: P3 (New Mutuity)
+## Account Menu Contract
 
-5. **Bids** (Icon: handshake)
-   - Purpose: View sent and received offers
-   - Landing Screen: BidsScreen (displays all bids)
-   - Independent Feature: P1 (Parity)
+Account menu sections:
+- Profile (view/edit profile and verification state)
+- Contribution (impact, statistics, reward history)
+- Preferences (localization, privacy, app settings)
 
-6. **Chat** (Icon: message)
-   - Purpose: 1:1 conversations
-   - Landing Screen: ChatListScreen (displays conversation list)
-   - Independent Feature: P1 (Parity)
-
-7. **Notifications** (Icon: bell)
-   - Purpose: Activity feed
-   - Landing Screen: NotificationsScreen (displays notification list)
-   - Independent Feature: P1 (Parity)
-
-8. **Profile** (Icon: person)
-   - Purpose: Account settings, preferences, profile
-   - Landing Screen: ProfileScreen
-   - Independent Feature: P1 (Parity)
-
----
-
-## Screen Patterns
-
-### Landing Screen (Tab)
-
-Each tab lands on a "listing" or "summary" screen:
-- **Anonymous Behavior**: Search resources and Search needs remain browsable while anonymous.
-- **Restricted-When-Anonymous Behavior**: My resources, My needs, My bids, My claims, Chat, Notifications, and My campaigns must show a login/create-account invitation when anonymous.
-- **Hidden-When-Anonymous Behavior**: My profile, My preferences, and My economics must not be reachable through any UI action while anonymous.
-- **Empty State**: Shows helpful message if no data (e.g., "No resources yet").
-- **Loading State**: Shows spinner while fetching data.
-- **Error State**: Shows error message with retry button.
-- **Pull-to-Refresh**: Implemented via FlatList refreshing.
-- **Pagination**: Infinite scroll with "Load More" indicator.
-
-### Detail Screens
-
-Accessed by tapping an item in the listing. Common patterns:
-- **Header**: Item title, creator info, status badge.
-- **Content**: Description, location, images, timestamps.
-- **Actions**: Buttons appropriate to user role (edit, claim, send bid, moderate, etc.).
-- **Error Handling**: Shows error alert if fetch fails; allows back navigation.
-
-### Modals/Overlays
-
-Non-critical flows (e.g., sending a bid, changing language) use modals:
-- **Presentation**: Modal stacks on top of current screen.
-- **Dismissal**: Cancel button or swipe-down (iOS convention).
-- **Confirmation**: Submit button with loading state feedback.
-
-### Edit Screens
-
-Used for creating or updating resources, needs, campaigns:
-- **Form Fields**: Text inputs, pickers, date/time selectors, image uploads.
-- **Validation**: Real-time field validation (show error under field).
-- **Submission**: Submit button disabled until form valid; shows loading spinner.
-- **Success**: Navigation back with success message (via toast or snackbar).
-- **Error**: Inline error alerts with retry option.
-
----
+Required behavior:
+- Account menu opens from top-right icon only.
+- Account menu is available from all main-shell tabs.
+- Opening account menu must not reset active tab state.
 
 ## Deep Linking
 
-### Deep Link Scheme
+### Supported deep links
 
-The app supports deep linking for push notifications and external URLs:
-
+```text
+mutuity://explore/resources                -> ExploreScreen (resources segment)
+mutuity://explore/needs                    -> ExploreScreen (needs segment)
+mutuity://resource/{resourceId}            -> ResourceDetailScreen
+mutuity://need/{needId}                    -> NeedDetailScreen
+mutuity://campaign/{campaignId}            -> CampaignDetailScreen
+mutuity://chat/{accountId}                 -> ChatDetailScreen
+mutuity://notification/{notificationId}    -> NotificationDetailScreen
+mutuity://account/profile                  -> MyProfileScreen (auth required)
+mutuity://account/preferences              -> MyPreferencesScreen (auth required)
+mutuity://account/contribution             -> MyEconomicsScreen (auth required)
 ```
-mutuity://resource/{resourceId}           → ResourceDetailScreen
-mutuity://need/{needId}                   → NeedDetailScreen
-mutuity://campaign/{campaignId}           → CampaignDetailScreen
-mutuity://bid/{bidId}                     → BidDetailScreen
-mutuity://chat/{accountId}                → ChatDetailScreen
-mutuity://profile/{accountId}             → UserProfileScreen
-mutuity://notification/{notificationId}   → NotificationDetailScreen + mark read
-```
 
-### Implementation
+### Anonymous deep-link guard
 
-React Navigation's `linking` configuration maps URLs to screens. On notification tap, the deep link is passed to the navigation container, which routes appropriately.
-
----
+- If anonymous user targets an auth-required destination, route to the nearest allowed surface:
+  - Prefer ExploreScreen (resources segment).
+  - Show non-blocking invitation to sign in.
 
 ## Navigation State Management
 
-### Auth State
+Auth state contract:
+- AuthContext provides:
+  - authenticated (boolean)
+  - account (Account or null)
+  - token (string or null)
+  - loading (boolean)
 
-- **AuthContext**: Provides `session` object with:
-  - `authenticated` (boolean)
-  - `account` (Account or null)
-  - `token` (JWT token or null)
-  - `loading` (boolean, true during initial auth check)
+Root behavior:
+- loading=true: show splash/loading shell.
+- authenticated=true: full tab and account menu behavior.
+- authenticated=false: browse-only with guarded routes and prompts.
 
-- **Effect in RootNavigator**: 
-  - If `loading`, show splash screen.
-  - If `authenticated`, full tab behaviors are enabled.
-  - If not authenticated, browse-only tabs remain available and restricted surfaces use inline auth prompts or hidden routes per the anonymous access rule.
+State continuity:
+- Each tab retains its own stack history.
+- Re-tapping active tab returns to that tab landing screen.
+- Account menu open/close preserves tab stack state.
 
-### Tab History
+## Localization and Labels
 
-- React Navigation tracks tab history automatically.
-- Each tab maintains its own stack history (e.g., navigating back from ResourceDetail returns to SearchScreen).
-- **Bottom tab bar persists** across navigation; tapping the same tab returns to that tab's landing screen.
-
-### Modal Navigation
-
-- Modals use React Navigation's `presentation: 'modal'` option.
-- Modals are declared separately from the main stacks to float above tabs.
-- Dismissing a modal returns to the underlying stack.
-
----
-
-## Accessibility & Localization
-
-### Tab Labels & Icons
-
-All tab labels and action buttons are localized (i18n):
+Navigation label keys:
 
 ```json
 {
   "navigation": {
     "tabs": {
-      "search": "Search",
-      "resources": "Resources",
-      "needs": "Needs",
+      "explore": "Explore",
+      "myHub": "My Hub",
       "campaigns": "Campaigns",
-      "bids": "Bids",
       "chat": "Chat",
-      "notifications": "Notifications",
-      "profile": "Profile"
+      "notifications": "Notifications"
+    },
+    "accountMenu": {
+      "profile": "Profile",
+      "contribution": "Contribution",
+      "preferences": "Preferences",
+      "signIn": "Sign in",
+      "register": "Create account"
     }
   }
 }
 ```
 
-French translations in `src/i18n/locales/fr/navigation.json`.
+French labels must exist with equivalent meaning in fr locale files.
 
-### Screen Headers
+## Testing Strategy
 
-Each screen declares a header (via React Navigation's `screenOptions`):
-
-```typescript
-function ResourceDetailScreen() {
-  const { t } = useTranslation();
-  return (
-    <Stack.Screen
-      options={{
-        title: t('resourceDetail.title'),
-        headerBackTitle: t('common.back')
-      }}
-    />
-  );
-}
-```
-
-### Semantic Accessibility
-
-All interactive elements use `accessibilityLabel` and `accessibilityRole`:
-
-```typescript
-<TouchableOpacity accessibilityLabel="Send bid" accessibilityRole="button">
-  <Text>Send Offer</Text>
-</TouchableOpacity>
-```
-
----
-
-## Navigation Flow Examples
-
-### User Story 2: Create and Claim a Need (P2)
-
-```
-Needs Tab (landing)
-  ↓
-User taps "Create Need" button
-  ↓
-CreateNeedScreen (form modal)
-  ↓
-User fills form and submits
-  ↓
-Success toast, modal dismissed
-  ↓
-NeedDetailScreen (newly created need)
-  ↓
-User taps "Back"
-  ↓
-NeedsScreen (returns to browsing)
-
----
-
-Later, user finds a need to claim:
-
-NeedsScreen
-  ↓
-User taps a need item
-  ↓
-NeedDetailScreen
-  ↓
-User taps "Claim This Need" button
-  ↓
-ClaimNeedScreen (confirmation modal)
-  ↓
-User confirms
-  ↓
-Success, modal dismissed
-  ↓
-NeedDetailScreen (updated with "Claimed" status)
-```
-
-### User Story 3: Campaign Moderation (P3)
-
-```
-Campaigns Tab (landing)
-  ↓
-User taps "My Campaigns" link
-  ↓
-MyCampaignsScreen (lists campaigns created by user)
-  ↓
-User taps an APPROVED campaign
-  ↓
-CampaignDetailScreen
-  ↓
-User taps "Moderate" button
-  ↓
-CampaignModerationScreen (shows pending needs/resources)
-  ↓
-User taps "Accept" on a pending need
-  ↓
-Confirmation dialog, mutation sent
-  ↓
-CampaignModerationScreen (list updated)
-```
-
----
-
-## Navigation Testing Strategy
-
-- **Unit Tests**: Navigation actions (push, pop, replace) tested in isolation.
-- **Integration Tests**: Screen flows (e.g., create need → see it in list) tested end-to-end.
-- **E2E Tests** (Detox): User journeys tested on simulator (e.g., tap tab, navigate to detail, go back).
-
----
+- Unit tests:
+  - Tab configuration and order are fixed to 5 entries.
+  - Account icon mode switches by auth state.
+- Integration tests:
+  - Explore segmented switching and campaign chip filtering.
+  - My Hub actions and section rendering.
+  - Anonymous prompts on restricted visible surfaces.
+- E2E tests:
+  - Logged-out account icon opens auth sheet.
+  - Logged-in avatar opens account menu.
+  - Deep-link guard reroutes anonymous users from account screens.
 
 ## Summary
 
-| Feature | Pattern | Implementation |
-|---------|---------|-----------------|
-| Tab Navigation | Bottom tabs | React Navigation BottomTabNavigator |
-| Stack Navigation | Nested stacks per tab | React Navigation NativeStack |
-| Deep Linking | URL scheme | React Navigation linking config |
-| Auth Flow | Conditional rendering | AuthContext + RootNavigator logic |
-| Modals | Non-blocking overlays | React Navigation modal presentation |
-| Localization | i18n keys for labels | react-i18next + JSON files |
-| State Persistence | Apollo Client cache | Automatic across navigation |
-| Back Navigation | Stack-based history | React Navigation default behavior |
-
----
+| Area | Required pattern | Implementation |
+|---|---|---|
+| Primary navigation | 5 bottom tabs | React Navigation BottomTabNavigator |
+| Secondary account navigation | Top-right account menu overlay | Drawer or modal sheet anchored from header right |
+| Screen hierarchy | Nested stacks per tab | React Navigation NativeStack |
+| Auth routing | Browse-only + guards | AuthContext + root route guards |
+| Deep links | URL mapping + anonymous reroute | React Navigation linking config |
+| Localization | fr/en nav labels | react-i18next + locale JSON |
 
 ## Next Steps
 
-See `state-management.md` for Apollo Client cache strategy and offline mutation queueing.
+See state-management.md for cache, session continuity, and route-intent handling across app relaunch and notification entry points.

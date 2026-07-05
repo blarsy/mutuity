@@ -53,8 +53,8 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
 
   return {
     name: "Tope Là",
-    "slug": "tope-la",
-    "scheme": "topela",
+    slug: "tope-la",
+    scheme: "topela",
     version: APP_VERSION,
     orientation: "portrait",
     userInterfaceStyle: "light",
