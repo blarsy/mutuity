@@ -1,7 +1,9 @@
 import React from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
 
 import { useTranslation } from "react-i18next";
+import { ScreenContainer } from "../primitives";
 
 export interface LoadingStateProps {
   label?: string;
@@ -12,20 +14,16 @@ export function LoadingState({ label }: LoadingStateProps): React.JSX.Element {
   const resolvedLabel = label ?? t("loading");
 
   return (
-    <View accessibilityRole="progressbar" style={styles.container}>
+    <ScreenContainer accessibilityRole="progressbar">
       <ActivityIndicator size="large" />
-      <Text style={styles.label}>{resolvedLabel}</Text>
-    </View>
+      <Text style={styles.label} variant="bodyMedium">
+        {resolvedLabel}
+      </Text>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 160,
-    padding: 24
-  },
   label: {
     marginTop: 12
   }

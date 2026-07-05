@@ -13,13 +13,16 @@ As a returning mobile user, I can keep using the app for the everyday actions I 
 
 **Why this priority**: The rewrite only succeeds if the existing mobile experience remains trustworthy for current users.
 
-**Independent Test**: A tester can sign in on mobile and complete the core existing flows without needing the new campaign or needs features.
+**Independent Test**: A tester can validate both authenticated parity flows and anonymous browse-only behavior on mobile without needing the new campaign or needs features.
 
 **Acceptance Scenarios**:
 
 1. **Given** an existing mobile user, **When** they browse and search available resources, **Then** they can find items by category and location as they do today.
 2. **Given** an existing mobile user, **When** they view bids, chat, notifications, token balance, and profile settings, **Then** those sections are still available and function as expected.
 3. **Given** an existing mobile user, **When** they create, edit, or delete a resource, **Then** the resource lifecycle still works end to end.
+4. **Given** an anonymous user, **When** they open Search resources or Search needs, **Then** they can browse those screens without authentication.
+5. **Given** an anonymous user, **When** they open My resources, My needs, My bids, My claims, Chat, Notifications, or My campaigns, **Then** each screen shows a clear prompt to log in or create an account.
+6. **Given** an anonymous user, **When** they try to reach My profile, My preferences, or My economics, **Then** those screens are not reachable from any UI action.
 
 **Examples**:
 
@@ -28,6 +31,7 @@ As a returning mobile user, I can keep using the app for the everyday actions I 
 | Returning user opens the app | User signs in and lands on the main navigation | The same familiar mobile sections are available |
 | User searches resources | User filters by category and distance | Matching resources are shown |
 | User manages their own resource | User edits title, price, or images | The update is saved and visible |
+| Anonymous user explores the app | User opens Search resources or Search needs without signing in | Browse-only screens are usable and restricted screens show the expected auth prompt or are not reachable |
 
 ---
 
@@ -115,6 +119,7 @@ As a mobile user, I can continue using the app in French or English with reliabl
 - If a stored session token is expired or invalid, the app must clear it and return to a safe signed-out state instead of looping indefinitely.
 - If client logging or diagnostics submission fails, the app must not crash or block the primary user flow.
 - If the backend marks the installed build as unsupported, the app must stop the normal flow and show update guidance.
+- If an anonymous user opens a deep link to My profile, My preferences, or My economics, the app must block access and route to an allowed surface.
 
 ## Requirements *(mandatory)*
 
@@ -142,6 +147,8 @@ As a mobile user, I can continue using the app in French or English with reliabl
 - **FR-020**: The mobile app MUST expose a support/report-issue flow that includes app and session diagnostics needed to investigate user-reported issues.
 - **FR-021**: The mobile app MUST block unsupported client versions and provide a clear update path.
 - **FR-022**: The mobile app MUST preserve notification preference controls for immediate versus summary-style delivery when those backend capabilities are available.
+- **FR-023**: The mobile app MUST support browse-only anonymous access with the following canonical behavior: Search resources and Search needs are accessible without authentication; My resources, My needs, My bids, My claims, Chat, Notifications, and My campaigns show a login/create-account invitation; My profile, My preferences, and My economics are not accessible through any UI action while anonymous.
+- **FR-024**: The mobile app MUST enforce anonymous route guards for all restricted main screens, including deep-link entry points.
 
 ### Key Entities
 

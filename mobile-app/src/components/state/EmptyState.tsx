@@ -1,7 +1,9 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
 
 import { useTranslation } from "react-i18next";
+import { PrimaryButton, ScreenContainer } from "../primitives";
 
 export interface EmptyStateProps {
   message?: string;
@@ -15,33 +17,19 @@ export function EmptyState({ message, actionLabel, onActionPress }: EmptyStatePr
   const resolvedActionLabel = actionLabel ?? t("retry");
 
   return (
-    <View style={styles.container} accessibilityRole="alert">
-      <Text style={styles.message}>{resolvedMessage}</Text>
+    <ScreenContainer>
+      <Text accessibilityRole="alert" style={styles.message} variant="bodyMedium">
+        {resolvedMessage}
+      </Text>
       {onActionPress ? (
-        <Pressable accessibilityRole="button" onPress={onActionPress} style={styles.button}>
-          <Text style={styles.buttonLabel}>{resolvedActionLabel}</Text>
-        </Pressable>
+        <PrimaryButton label={resolvedActionLabel} onPress={onActionPress} />
       ) : null}
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 160,
-    padding: 24
-  },
   message: {
     textAlign: "center"
-  },
-  button: {
-    marginTop: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 10
-  },
-  buttonLabel: {
-    fontWeight: "600"
   }
 });

@@ -1,8 +1,19 @@
 {
   "appName": "Mutuity",
+  "mainNavigation": "Main navigation",
   "loading": "Loading...",
   "error": "Something went wrong",
   "retry": "Retry",
   "signIn": "Sign in",
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "resourceSearchLabel": "Search resources",
+  "resourceSearchPlaceholder": "Search resources",
+  "resourceCategoryFilterLabel": "Category filter",
+  "resourceDistanceFilterLabel": "Distance filter",
+  "resourceTitleEditLabel": "Edit resource title",
+  "resourcePriceEditLabel": "Edit resource price",
+  "resourceImagesEditLabel": "Edit resource images",
+  "saveResource": "Save resource",
+  "offlineResourceSaveWarningLabel": "Offline resource save warning",
+  "offlineResourceSaveWarning": "Saving is unavailable while offline"
 }

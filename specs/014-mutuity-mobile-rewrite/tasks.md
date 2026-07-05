@@ -64,15 +64,17 @@
 
 **Goal**: Preserve existing daily flows for returning users with UI-first per-screen gating.
 
-**Independent Test**: User can sign in, access main navigation, search resources, manage resources, and use bids/chat/notifications/profile/preferences/economics without using needs/campaigns.
+**Independent Test**: User can validate signed-in parity flows and anonymous browse-only behavior (with restricted-surface prompts and hidden profile/preferences/economics entry points) without using needs/campaigns.
 
 ### Business Acceptance Tests for User Story 1 (MANDATORY)
 
-- [ ] T021 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "returning user opens app and lands on main navigation" in mobile-app/tests/integration/us1-main-navigation.acceptance.test.ts
-- [ ] T022 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "search resources by category and distance" in mobile-app/tests/integration/us1-search-resources.acceptance.test.ts
-- [ ] T023 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "edit resource title/price/images and persist" in mobile-app/tests/integration/us1-manage-resources.acceptance.test.ts
-- [ ] T024 [P] [US1] Add acceptance exception test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "offline during resource save must not show false success" in mobile-app/tests/integration/us1-resource-save-offline.exception.test.ts
-- [ ] T025 [P] [US1] Add contract test for resource query filters in mobile-app/tests/contract/us1-search-resources.contract.test.ts
+- [x] T021 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "returning user opens app and lands on main navigation" in mobile-app/tests/integration/us1-main-navigation.acceptance.test.ts
+- [x] T022 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "search resources by category and distance" in mobile-app/tests/integration/us1-search-resources.acceptance.test.ts
+- [x] T023 [P] [US1] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "edit resource title/price/images and persist" in mobile-app/tests/integration/us1-manage-resources.acceptance.test.ts
+- [x] T024 [P] [US1] Add acceptance exception test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "offline during resource save must not show false success" in mobile-app/tests/integration/us1-resource-save-offline.exception.test.ts
+- [x] T025 [P] [US1] Add contract test for resource query filters in mobile-app/tests/contract/us1-search-resources.contract.test.ts
+- [ ] T025A [P] [US1] Add acceptance test matrix for anonymous access behavior across canonical main screens (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/integration/us1-anonymous-access-matrix.acceptance.test.ts
+- [ ] T025B [P] [US1] Add navigation/deep-link guard acceptance test for anonymous access to My profile, My preferences, and My economics in mobile-app/tests/integration/us1-anonymous-restricted-routes.acceptance.test.ts
 
 ### Implementation for User Story 1
 
@@ -90,6 +92,7 @@
 - [ ] T037 [P] [US1] Port My economics screen after gate pass in mobile-app/src/screens/economics/MyEconomicsScreen.tsx
 - [ ] T038 [US1] Wire US1 navigation routes in mobile-app/src/navigation/US1Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
 - [ ] T039 [US1] Ensure fr/en labels for US1 screens in mobile-app/src/i18n/locales/en/us1.json and mobile-app/src/i18n/locales/fr/us1.json
+- [ ] T039A [US1] Implement anonymous browse-only route policy and restricted-surface auth prompts in mobile-app/src/navigation/AppNavigator.tsx and mobile-app/src/navigation/US1Navigator.tsx
 
 **Checkpoint**: US1 is independently functional and releasable.
 

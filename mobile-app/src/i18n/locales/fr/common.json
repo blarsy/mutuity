@@ -1,8 +1,19 @@
 {
   "appName": "Mutuity",
+  "mainNavigation": "Navigation principale",
   "loading": "Chargement...",
   "error": "Une erreur s'est produite",
   "retry": "Réessayer",
   "signIn": "Se connecter",
-  "signOut": "Se déconnecter"
+  "signOut": "Se déconnecter",
+  "resourceSearchLabel": "Rechercher des ressources",
+  "resourceSearchPlaceholder": "Search resources",
+  "resourceCategoryFilterLabel": "Category filter",
+  "resourceDistanceFilterLabel": "Distance filter",
+  "resourceTitleEditLabel": "Edit resource title",
+  "resourcePriceEditLabel": "Edit resource price",
+  "resourceImagesEditLabel": "Edit resource images",
+  "saveResource": "Save resource",
+  "offlineResourceSaveWarningLabel": "Offline resource save warning",
+  "offlineResourceSaveWarning": "L'enregistrement est indisponible hors ligne"
 }

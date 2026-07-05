@@ -2,19 +2,14 @@ import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/clien
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 
+import { appSettings } from "../../config/appSettings";
 import { logAppEvent } from "../monitoring/logger";
-
-const DEFAULT_GRAPHQL_URL = "http://localhost:5000/graphql";
 
 export type TokenProvider = () => Promise<string | null>;
 
 export interface ApolloClientOptions {
   getToken?: TokenProvider;
   graphqlUrl?: string;
-}
-
-function resolveGraphqlUrl(explicitUrl?: string): string {
-  return explicitUrl ?? process.env.EXPO_PUBLIC_GRAPHQL_URL ?? DEFAULT_GRAPHQL_URL;
 }
 
 function createErrorLink(): ApolloLink {
@@ -44,7 +39,7 @@ function createAuthLink(getToken?: TokenProvider): ApolloLink {
 
 export function createApolloClient(options: ApolloClientOptions = {}): ApolloClient {
   const httpLink = new HttpLink({
-    uri: resolveGraphqlUrl(options.graphqlUrl),
+    uri: options.graphqlUrl ?? appSettings.graphQlApiUrl,
     credentials: "include"
   });
 

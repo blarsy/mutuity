@@ -1,5 +1,8 @@
 import React from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
+
+import { PrimaryButton, ScreenContainer } from "../../components/primitives";
 
 export interface UpdateRequiredScreenProps {
   onDismiss?: () => void;
@@ -7,24 +10,20 @@ export interface UpdateRequiredScreenProps {
 
 export function UpdateRequiredScreen({ onDismiss }: UpdateRequiredScreenProps): React.JSX.Element {
   return (
-    <View style={styles.container} accessibilityRole="alert">
-      <Text style={styles.title}>Update required</Text>
-      <Text style={styles.body}>Please update the app to continue.</Text>
-      {onDismiss ? <Button title="Dismiss" onPress={onDismiss} /> : null}
-    </View>
+    <ScreenContainer>
+      <Text accessibilityRole="alert" style={styles.title} variant="headlineSmall">
+        Update required
+      </Text>
+      <Text style={styles.body} variant="bodyMedium">
+        Please update the app to continue.
+      </Text>
+      {onDismiss ? <PrimaryButton label="Dismiss" onPress={onDismiss} /> : null}
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-    padding: 24
-  },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
     marginBottom: 12
   },
   body: {

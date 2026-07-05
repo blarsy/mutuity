@@ -13,8 +13,18 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "types": ["jest", "react"]
+    "types": [
+      "jest",
+      "react"
+    ]
   },
-  "include": ["src", "tests", "jest.config.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src",
+    "tests",
+    "jest.config.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "extends": "expo/tsconfig.base"
 }

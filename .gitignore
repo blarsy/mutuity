@@ -9,3 +9,6 @@ frontend/tsconfig.tsbuildinfo
 .DS_Store
 playwright-report/
 test-results/
+mobile-app/ios/
+mobile-app/android/
+mobile-app/.expo/

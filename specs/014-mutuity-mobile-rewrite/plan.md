@@ -46,6 +46,26 @@ Hard Gate
 | My preferences | No | No | No | No | No |
 | My economics | No | No | No | No | No |
 
+### Anonymous Access Behavior Matrix
+
+| Main Screen | Anonymous behavior |
+|---|---|
+| Search resources | Allowed |
+| Search needs | Allowed |
+| My resources | Displays a message inviting to log in or create an account |
+| My needs | Displays a message inviting to log in or create an account |
+| My bids | Displays a message inviting to log in or create an account |
+| My claims | Displays a message inviting to log in or create an account |
+| Chat | Displays a message inviting to log in or create an account |
+| Notifications | Displays a message inviting to log in or create an account |
+| My campaigns | Displays a message inviting to log in or create an account |
+| My profile | Not accessible through any UI action when no user is logged in |
+| My preferences | Not accessible through any UI action when no user is logged in |
+| My economics | Not accessible through any UI action when no user is logged in |
+
+Rule:
+- Every canonical main screen except My profile, My preferences, and My economics must define explicit anonymous behavior in its UI contract.
+
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x, React Native (Expo managed workflow)  

@@ -38,75 +38,81 @@ UI contract checklist per main screen:
 Note:
 - This canonical list is the planning and tracking baseline even if tab layout evolves later.
 
+Anonymous access rule:
+- Search resources and Search needs are browse-accessible while anonymous.
+- My resources, My needs, My bids, My claims, Chat, Notifications, and My campaigns are visible entry points but must render a login/create-account invitation when anonymous.
+- My profile, My preferences, and My economics are not accessible through any UI action while anonymous.
+- Deep links to restricted screens must be blocked for anonymous users and rerouted to an allowed surface.
+
 ---
 
 ## Navigation Structure
 
 ```
 AppNavigator (RootNavigator)
-├── AuthStack (if not authenticated)
-│   ├── LoginScreen
-│   ├── SignUpScreen
-│   └── PasswordResetScreen
+├── BottomTabNavigator (always mounted)
+│   ├── SearchStack
+│   │   ├── SearchScreen (tab landing)
+│   │   ├── ResourceDetailScreen
+│   │   ├── SendBidScreen
+│   │   └── AccountDetailScreen
+│   │
+│   ├── ResourcesStack
+│   │   ├── ResourcesScreen (tab landing - my resources)
+│   │   ├── CreateResourceScreen
+│   │   ├── EditResourceScreen
+│   │   ├── ResourceDetailScreen
+│   │   └── ManageResourcesScreen
+│   │
+│   ├── NeedsStack
+│   │   ├── NeedsScreen (tab landing - browse needs)
+│   │   ├── CreateNeedScreen
+│   │   ├── EditNeedScreen
+│   │   ├── NeedDetailScreen
+│   │   ├── ClaimNeedScreen
+│   │   └── MyNeedsScreen (my needs)
+│   │
+│   ├── CampaignsStack
+│   │   ├── CampaignsScreen (tab landing - browse campaigns)
+│   │   ├── CreateCampaignScreen
+│   │   ├── CampaignDetailScreen
+│   │   ├── MyCampaignsScreen (my campaigns)
+│   │   ├── CampaignModerationScreen
+│   │   │   ├── PendingNeedsModeration
+│   │   │   └── PendingResourcesModeration
+│   │   └── CampaignModerationHistoryScreen
+│   │
+│   ├── BidsStack
+│   │   ├── BidsScreen (tab landing - all bids)
+│   │   ├── SentBidsScreen
+│   │   ├── ReceivedBidsScreen
+│   │   └── BidDetailScreen
+│   │
+│   ├── ChatStack
+│   │   ├── ChatListScreen (tab landing - conversations)
+│   │   ├── ChatDetailScreen
+│   │   ├── UserProfileFromChatScreen
+│   │   └── SendTokenFromChatScreen
+│   │
+│   ├── NotificationsStack
+│   │   ├── NotificationsScreen (tab landing - activity feed)
+│   │   └── NotificationDetailScreen
+│   │
+│   └── ProfileStack
+│       ├── ProfileScreen (tab landing - my account)
+│       ├── EditProfileScreen
+│       ├── PreferencesScreen
+│       ├── LanguageSettingScreen
+│       ├── TokensScreen (balance and purchase)
+│       ├── ChangePasswordScreen
+│       ├── SocialLinksScreen
+│       ├── DeleteAccountScreen
+│       └── AboutScreen
 │
-└── BottomTabNavigator (if authenticated)
-    ├── SearchStack
-    │   ├── SearchScreen (tab landing)
-    │   ├── ResourceDetailScreen
-    │   ├── SendBidScreen
-    │   └── AccountDetailScreen
-    │
-    ├── ResourcesStack
-    │   ├── ResourcesScreen (tab landing - my resources)
-    │   ├── CreateResourceScreen
-    │   ├── EditResourceScreen
-    │   ├── ResourceDetailScreen
-    │   └── ManageResourcesScreen
-    │
-    ├── NeedsStack
-    │   ├── NeedsScreen (tab landing - browse needs)
-    │   ├── CreateNeedScreen
-    │   ├── EditNeedScreen
-    │   ├── NeedDetailScreen
-    │   ├── ClaimNeedScreen
-    │   └── MyNeedsScreen (my needs)
-    │
-    ├── CampaignsStack
-    │   ├── CampaignsScreen (tab landing - browse campaigns)
-    │   ├── CreateCampaignScreen
-    │   ├── CampaignDetailScreen
-    │   ├── MyCampaignsScreen (my campaigns)
-    │   ├── CampaignModerationScreen
-    │   │   ├── PendingNeedsModeration
-    │   │   └── PendingResourcesModeration
-    │   └── CampaignModerationHistoryScreen
-    │
-    ├── BidsStack
-    │   ├── BidsScreen (tab landing - all bids)
-    │   ├── SentBidsScreen
-    │   ├── ReceivedBidsScreen
-    │   └── BidDetailScreen
-    │
-    ├── ChatStack
-    │   ├── ChatListScreen (tab landing - conversations)
-    │   ├── ChatDetailScreen
-    │   ├── UserProfileFromChatScreen
-    │   └── SendTokenFromChatScreen
-    │
-    ├── NotificationsStack
-    │   ├── NotificationsScreen (tab landing - activity feed)
-    │   └── NotificationDetailScreen
-    │
-    └── ProfileStack
-        ├── ProfileScreen (tab landing - my account)
-        ├── EditProfileScreen
-        ├── PreferencesScreen
-        ├── LanguageSettingScreen
-        ├── TokensScreen (balance and purchase)
-        ├── ChangePasswordScreen
-        ├── SocialLinksScreen
-        ├── DeleteAccountScreen
-        └── AboutScreen
+└── AuthStack (presented on demand)
+  ├── LoginScreen
+  ├── SignUpScreen
+  └── PasswordResetScreen
 ```
 
 ---
@@ -162,7 +168,9 @@ AppNavigator (RootNavigator)
 ### Landing Screen (Tab)
 
 Each tab lands on a "listing" or "summary" screen:
-- **Authorized Access**: Only authenticated users can access.
+- **Anonymous Behavior**: Search resources and Search needs remain browsable while anonymous.
+- **Restricted-When-Anonymous Behavior**: My resources, My needs, My bids, My claims, Chat, Notifications, and My campaigns must show a login/create-account invitation when anonymous.
+- **Hidden-When-Anonymous Behavior**: My profile, My preferences, and My economics must not be reachable through any UI action while anonymous.
 - **Empty State**: Shows helpful message if no data (e.g., "No resources yet").
 - **Loading State**: Shows spinner while fetching data.
 - **Error State**: Shows error message with retry button.
@@ -229,8 +237,8 @@ React Navigation's `linking` configuration maps URLs to screens. On notification
 
 - **Effect in RootNavigator**: 
   - If `loading`, show splash screen.
-  - If `authenticated`, show BottomTabNavigator.
-  - If not authenticated, show AuthStack.
+  - If `authenticated`, full tab behaviors are enabled.
+  - If not authenticated, browse-only tabs remain available and restricted surfaces use inline auth prompts or hidden routes per the anonymous access rule.
 
 ### Tab History
 
