@@ -1,23 +1,24 @@
 import { MD3LightTheme, type MD3Theme, configureFonts } from "react-native-paper";
 
 import { designTokens } from "./tokens";
+import { appFontFamilies } from "./fonts";
 
 const fontConfig = {
-  displayLarge: { fontFamily: "System" },
-  displayMedium: { fontFamily: "System" },
-  displaySmall: { fontFamily: "System" },
-  headlineLarge: { fontFamily: "System" },
-  headlineMedium: { fontFamily: "System" },
-  headlineSmall: { fontFamily: "System" },
-  titleLarge: { fontFamily: "System" },
-  titleMedium: { fontFamily: "System" },
-  titleSmall: { fontFamily: "System" },
-  bodyLarge: { fontFamily: "System" },
-  bodyMedium: { fontFamily: "System" },
-  bodySmall: { fontFamily: "System" },
-  labelLarge: { fontFamily: "System" },
-  labelMedium: { fontFamily: "System" },
-  labelSmall: { fontFamily: "System" }
+  displayLarge: { fontFamily: appFontFamilies.title },
+  displayMedium: { fontFamily: appFontFamilies.title },
+  displaySmall: { fontFamily: appFontFamilies.title },
+  headlineLarge: { fontFamily: appFontFamilies.title },
+  headlineMedium: { fontFamily: appFontFamilies.title },
+  headlineSmall: { fontFamily: appFontFamilies.title },
+  titleLarge: { fontFamily: appFontFamilies.title },
+  titleMedium: { fontFamily: appFontFamilies.title },
+  titleSmall: { fontFamily: appFontFamilies.title },
+  bodyLarge: { fontFamily: appFontFamilies.general },
+  bodyMedium: { fontFamily: appFontFamilies.general },
+  bodySmall: { fontFamily: appFontFamilies.sugar },
+  labelLarge: { fontFamily: appFontFamilies.altGeneral },
+  labelMedium: { fontFamily: appFontFamilies.altGeneral },
+  labelSmall: { fontFamily: appFontFamilies.altGeneral }
 } as const;
 
 export const mutuityTheme: MD3Theme = {

@@ -12,3 +12,6 @@ test-results/
 mobile-app/ios/
 mobile-app/android/
 mobile-app/.expo/
+
+*storybook.log
+storybook-static

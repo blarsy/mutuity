@@ -82,7 +82,7 @@
 - [x] T027 [P] [US1] Finalize and approve UI contracts for My bids and Chat in specs/014-mutuity-mobile-rewrite/ui-contracts/my-bids.md and specs/014-mutuity-mobile-rewrite/ui-contracts/chat.md
 - [x] T028 [P] [US1] Finalize and approve UI contracts for Notifications and My profile in specs/014-mutuity-mobile-rewrite/ui-contracts/notifications.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-profile.md
 - [x] T029 [P] [US1] Finalize and approve UI contracts for My preferences and Contribution in specs/014-mutuity-mobile-rewrite/ui-contracts/my-preferences.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-economics.md
-- [ ] T030 [US1] Port Search resources screen after gate pass in mobile-app/src/screens/resources/SearchResourcesScreen.tsx
+- [x] T030 [US1] Port Search resources screen after gate pass in mobile-app/src/screens/resources/SearchResourcesScreen.tsx
 - [ ] T031 [US1] Port My resources list and CRUD entry points after gate pass in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
 - [ ] T032 [P] [US1] Port My bids workspace after gate pass in mobile-app/src/screens/bids/MyBidsScreen.tsx
 - [ ] T033 [P] [US1] Port Chat list and detail after gate pass in mobile-app/src/screens/chat/ChatListScreen.tsx and mobile-app/src/screens/chat/ChatDetailScreen.tsx
@@ -204,8 +204,8 @@
 - [ ] T072 Add CI job for smoke matrix and gate checks in .github/workflows/mobile-smoke.yml
 - [ ] T073 [P] Update quickstart test commands and UX gate notes in specs/014-mutuity-mobile-rewrite/quickstart.md
 - [ ] T074 Run full quickstart validation and capture evidence in specs/014-mutuity-mobile-rewrite/checklists/requirements.md
-- [ ] T075 [P] Set up Storybook for mobile reusable components in mobile-app/.storybook/main.ts and mobile-app/.storybook/preview.ts
-- [ ] T076 [P] Add Storybook stories for reusable state and form components in mobile-app/src/components/state/LoadingState.stories.tsx, mobile-app/src/components/state/EmptyState.stories.tsx, mobile-app/src/components/state/ErrorState.stories.tsx, and mobile-app/src/components/forms/PrimaryField.stories.tsx
+- [x] T075 [P] Set up Storybook for mobile reusable components in mobile-app/.storybook/main.ts and mobile-app/.storybook/preview.ts
+- [x] T076 [P] Add Storybook stories for reusable state and form components in mobile-app/src/components/state/LoadingState.stories.tsx, mobile-app/src/components/state/EmptyState.stories.tsx, mobile-app/src/components/state/ErrorState.stories.tsx, and mobile-app/src/components/forms/PrimaryField.stories.tsx
 - [ ] T077 Add CI Storybook build verification in .github/workflows/mobile-storybook.yml
 
 ---

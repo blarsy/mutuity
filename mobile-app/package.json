@@ -14,16 +14,23 @@
     "test:integration": "jest --testPathPattern=tests/integration",
     "e2e": "detox test",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "storybook": "EXPO_PUBLIC_STORYBOOK_ENABLED=true expo start",
+    "storybook:ios": "EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:ios",
+    "storybook:android": "EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:android"
   },
   "dependencies": {
     "@apollo/client": "^4.2.5",
+    "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/netinfo": "11.4.1",
+    "@react-navigation/bottom-tabs": "^7.18.7",
     "@react-navigation/native": "^7.3.7",
     "@react-navigation/native-stack": "^7.17.9",
     "@types/react": "~19.0.10",
     "expo": "~53.0.0",
-    "expo-font": "^57.0.0",
+    "expo-asset": "~11.1.7",
+    "expo-dev-client": "~5.2.4",
+    "expo-font": "~13.3.2",
     "expo-secure-store": "~14.2.4",
     "graphql": "^16.14.2",
     "i18next": "^26.3.4",
@@ -42,6 +49,9 @@
     "@graphql-codegen/typed-document-node": "^7.0.3",
     "@graphql-codegen/typescript": "^6.0.2",
     "@graphql-codegen/typescript-operations": "^6.0.5",
+    "@storybook/addon-ondevice-actions": "^10.4.7",
+    "@storybook/react-native": "^10.4.7",
+    "@storybook/react-native-ui-lite": "^10.4.7",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.0.0",
     "@types/jest": "^29.5.12",
@@ -54,6 +64,7 @@
     "jest-expo": "~53.0.0",
     "prettier": "^3.4.2",
     "react-test-renderer": "19.0.0",
+    "storybook": "^10.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }
