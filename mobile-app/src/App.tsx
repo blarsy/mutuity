@@ -1,14 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import "./i18n";
+import { Splash } from "./components/state/Splash";
 import { AppNavigator } from "./navigation/AppNavigator";
 import { MutuityThemeProvider } from "./theme/MutuityThemeProvider";
 import { appFontAssets } from "./theme/fonts";
 
 const isStorybookEnabled = process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === "true";
+const MINIMUM_SPLASH_DURATION_MS = 2000;
 
 export default function App(): React.JSX.Element {
   if (isStorybookEnabled) {
@@ -20,6 +21,17 @@ export default function App(): React.JSX.Element {
     ...appFontAssets,
     ...MaterialCommunityIcons.font
   });
+  const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setMinimumSplashElapsed(true);
+    }, MINIMUM_SPLASH_DURATION_MS);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
 
   useEffect(() => {
     if (fontsLoadError) {
@@ -27,13 +39,10 @@ export default function App(): React.JSX.Element {
     }
   }, [fontsLoadError]);
 
-  if (!fontsLoaded && !fontsLoadError) {
-    return (
-      <View accessibilityRole="progressbar" style={styles.bootScreen}>
-        <ActivityIndicator size="small" />
-        <Text style={styles.bootLabel}>Loading Mutuity...</Text>
-      </View>
-    );
+  const isBootReady = fontsLoaded || Boolean(fontsLoadError);
+
+  if (!isBootReady || !minimumSplashElapsed) {
+    return <Splash />;
   }
 
   return (
@@ -42,15 +51,3 @@ export default function App(): React.JSX.Element {
     </MutuityThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  bootScreen: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8
-  },
-  bootLabel: {
-    color: "#111"
-  }
-});
