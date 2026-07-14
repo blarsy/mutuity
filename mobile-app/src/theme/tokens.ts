@@ -1,6 +1,7 @@
 export const designTokens = {
   colors: {
     primary: "#ff4401",
+    secondary: "#fef0e3",
     primaryContainer: "#fef0e3",
     deleted: "#E0E0E0",
     backdrop: "rgba(227,94,30,0.3)"

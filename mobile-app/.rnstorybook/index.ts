@@ -1,7 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useFonts } from 'expo-font';
+import React from 'react';
 import { LiteUI } from '@storybook/react-native-ui-lite';
 
 import { view } from './storybook.requires';
+import { appFontAssets } from '../src/theme/fonts';
 
 /**
  * This file is user-editable.
@@ -18,4 +22,15 @@ const StorybookUIRoot = view.getStorybookUI({
   CustomUIComponent: LiteUI,
 });
 
-export default StorybookUIRoot;
+export default function StorybookRoot(): React.JSX.Element | null {
+  const [fontsLoaded] = useFonts({
+    ...appFontAssets,
+    ...MaterialCommunityIcons.font,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  return React.createElement(StorybookUIRoot);
+}

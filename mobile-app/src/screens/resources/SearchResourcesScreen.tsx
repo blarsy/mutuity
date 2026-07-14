@@ -1,18 +1,49 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   View
 } from "react-native";
-import { Button, Checkbox, Chip, Divider, IconButton, SegmentedButtons, Text, TextInput } from "react-native-paper";
+import Slider from "@react-native-community/slider";
+import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AppCard, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import {
+  AppCard,
+  AppSegmentedButtons,
+  PickerDialog,
+  ProximityLocationEditor,
+  type ProximityLocationValue,
+  ScreenContainer
+} from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { designTokens } from "../../theme/tokens";
+
+const MAX_DISTANCE_KM = 100;
+
+interface ProximityOptionRowProps {
+  title: string;
+  value: boolean;
+  onChange: (newValue: boolean) => void;
+}
+
+function ProximityOptionRow({ title, value, onChange }: ProximityOptionRowProps): React.JSX.Element {
+  const color = value ? designTokens.colors.primary : "#000";
+
+  return (
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: value }} onPress={() => onChange(!value)}>
+      <View style={styles.optionSelectRow}>
+        <Icon source={value ? "checkbox-marked" : "checkbox-blank-outline"} size={28} color={color} />
+        <Text variant="bodyMedium" style={[styles.optionSelectText, { color }]}>
+          {title}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
 
 export interface SearchResourceItem {
   id: string;
@@ -91,6 +122,22 @@ function resolveCategories(resources: SearchResourceItem[]): string[] {
   return Array.from(new Set(resources.map((resource) => resource.category))).sort();
 }
 
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delayMs);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [delayMs, value]);
+
+  return debouncedValue;
+}
+
 export function SearchResourcesScreen({
   resources = DEFAULT_RESOURCES,
   loading = false,
@@ -100,6 +147,7 @@ export function SearchResourcesScreen({
   onOpenResource
 }: SearchResourcesScreenProps): React.JSX.Element {
   const { t } = useTranslation();
+  const defaultLocationLabel = t("locationAroundMeLabel", { defaultValue: "Around me" });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [distanceFilter, setDistanceFilter] = useState("10");
@@ -107,47 +155,87 @@ export function SearchResourcesScreen({
   const [natureOptions, setNatureOptions] = useState({ isProduct: false, isService: false });
   const [transportOptions, setTransportOptions] = useState({ canBeTakenAway: false, canBeDelivered: false });
   const [exchangeOptions, setExchangeOptions] = useState({ canBeExchanged: false, canBeGifted: false });
-  const [showOptions, setShowOptions] = useState(true);
-  const [showProximity, setShowProximity] = useState(true);
-  const [activeCampaignOnly, setActiveCampaignOnly] = useState(false);
+  const [showCategoriesDialog, setShowCategoriesDialog] = useState(false);
+  const [showCampaignsDialog, setShowCampaignsDialog] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showProximity, setShowProximity] = useState(false);
+  const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
+    label: defaultLocationLabel
+  });
   const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
 
   const allCampaignIds = useMemo(() => resolveCampaignIds(resources), [resources]);
   const allCategories = useMemo(() => resolveCategories(resources), [resources]);
+  const distanceKmValue = useMemo(() => {
+    const parsed = Number.parseFloat(distanceFilter);
+    if (!Number.isFinite(parsed)) {
+      return 10;
+    }
+    return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
+  }, [distanceFilter]);
+  const hasReferenceLocation = referenceLocation !== null;
+
+  const filterSnapshot = useMemo(
+    () => ({
+      searchTerm,
+      selectedCategories,
+      distanceFilter,
+      excludeUnlocated,
+      referenceLocationLabel: referenceLocation?.label ?? null,
+      natureOptions,
+      transportOptions,
+      exchangeOptions,
+      selectedCampaignIds
+    }),
+    [
+      distanceFilter,
+      excludeUnlocated,
+      exchangeOptions,
+      natureOptions,
+      referenceLocation,
+      searchTerm,
+      selectedCampaignIds,
+      selectedCategories,
+      transportOptions
+    ]
+  );
+  const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
 
   const filteredResources = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-    const maxDistance = Number.parseFloat(distanceFilter);
+    const normalizedSearch = debouncedFilters.searchTerm.trim().toLowerCase();
+    const maxDistance = Number.parseFloat(debouncedFilters.distanceFilter);
     const hasDistanceFilter = Number.isFinite(maxDistance);
-    const hasNatureFilter = natureOptions.isProduct || natureOptions.isService;
-    const hasTransportFilter = transportOptions.canBeTakenAway || transportOptions.canBeDelivered;
-    const hasExchangeFilter = exchangeOptions.canBeExchanged || exchangeOptions.canBeGifted;
-    const activeCampaign = selectedCampaignIds[0];
+    const hasNatureFilter = debouncedFilters.natureOptions.isProduct || debouncedFilters.natureOptions.isService;
+    const hasTransportFilter =
+      debouncedFilters.transportOptions.canBeTakenAway || debouncedFilters.transportOptions.canBeDelivered;
+    const hasExchangeFilter =
+      debouncedFilters.exchangeOptions.canBeExchanged || debouncedFilters.exchangeOptions.canBeGifted;
 
     return resources.filter((resource) => {
       const searchableText = `${resource.title} ${resource.description}`.toLowerCase();
       const matchesSearch = normalizedSearch.length === 0 || searchableText.includes(normalizedSearch);
       const matchesCategory =
-        selectedCategories.length === 0 || selectedCategories.includes(resource.category);
-      const matchesDistance = !hasDistanceFilter || (resource.located && resource.distanceKm <= maxDistance);
-      const matchesUnlocated = !excludeUnlocated || resource.located;
+        debouncedFilters.selectedCategories.length === 0 ||
+        debouncedFilters.selectedCategories.includes(resource.category);
+      const hasDebouncedReferenceLocation = debouncedFilters.referenceLocationLabel !== null;
+      const matchesDistance =
+        !hasDebouncedReferenceLocation || !hasDistanceFilter || (resource.located && resource.distanceKm <= maxDistance);
+      const matchesUnlocated = !debouncedFilters.excludeUnlocated || resource.located;
       const matchesNature =
         !hasNatureFilter ||
-        (natureOptions.isProduct && resource.type === "product") ||
-        (natureOptions.isService && resource.type === "service");
+        (debouncedFilters.natureOptions.isProduct && resource.type === "product") ||
+        (debouncedFilters.natureOptions.isService && resource.type === "service");
       const matchesTransport =
         !hasTransportFilter ||
-        (transportOptions.canBeTakenAway && resource.canBeTakenAway) ||
-        (transportOptions.canBeDelivered && resource.canBeDelivered);
+        (debouncedFilters.transportOptions.canBeTakenAway && resource.canBeTakenAway) ||
+        (debouncedFilters.transportOptions.canBeDelivered && resource.canBeDelivered);
       const matchesExchange =
         !hasExchangeFilter ||
-        (exchangeOptions.canBeExchanged && resource.canBeExchanged) ||
-        (exchangeOptions.canBeGifted && resource.canBeGifted);
+        (debouncedFilters.exchangeOptions.canBeExchanged && resource.canBeExchanged) ||
+        (debouncedFilters.exchangeOptions.canBeGifted && resource.canBeGifted);
       const matchesCampaigns =
-        selectedCampaignIds.length === 0 ||
-        selectedCampaignIds.every((campaignId) => resource.campaignIds.includes(campaignId));
-      const matchesActiveCampaign =
-        !activeCampaignOnly || (activeCampaign !== undefined && resource.campaignIds.includes(activeCampaign));
+        debouncedFilters.selectedCampaignIds.length === 0 ||
+        debouncedFilters.selectedCampaignIds.every((campaignId) => resource.campaignIds.includes(campaignId));
 
       return (
         matchesSearch &&
@@ -157,24 +245,12 @@ export function SearchResourcesScreen({
         matchesNature &&
         matchesTransport &&
         matchesExchange &&
-        matchesCampaigns &&
-        matchesActiveCampaign
+        matchesCampaigns
       );
     });
   }, [
-    activeCampaignOnly,
-    distanceFilter,
-    excludeUnlocated,
-    exchangeOptions.canBeExchanged,
-    exchangeOptions.canBeGifted,
-    natureOptions.isProduct,
-    natureOptions.isService,
-    resources,
-    searchTerm,
-    selectedCampaignIds,
-    selectedCategories,
-    transportOptions.canBeDelivered,
-    transportOptions.canBeTakenAway
+    debouncedFilters,
+    resources
   ]);
 
   const clearFilters = (): void => {
@@ -185,7 +261,7 @@ export function SearchResourcesScreen({
     setNatureOptions({ isProduct: false, isService: false });
     setTransportOptions({ canBeTakenAway: false, canBeDelivered: false });
     setExchangeOptions({ canBeExchanged: false, canBeGifted: false });
-    setActiveCampaignOnly(false);
+    setReferenceLocation({ label: defaultLocationLabel });
     setSelectedCampaignIds([]);
   };
 
@@ -199,7 +275,7 @@ export function SearchResourcesScreen({
 
   return (
     <ScreenContainer testID="search-resources-screen" style={styles.root}>
-      <SegmentedButtons
+      <AppSegmentedButtons
         value="resources"
         onValueChange={(value) => {
           if (value === "needs") {
@@ -209,19 +285,18 @@ export function SearchResourcesScreen({
         buttons={[
           {
             value: "resources",
-            label: t("resourceSearchLabel", { defaultValue: "Search resources" }),
+            label: t("resourcesLabel", { defaultValue: "Resources" }),
             accessibilityLabel: t("resourceSearchLabel", { defaultValue: "Search resources" })
           },
           {
             value: "needs",
-            label: t("searchNeedsLabel", { defaultValue: "Search needs" }),
+            label: t("needsLabel", { defaultValue: "Needs" }),
             accessibilityLabel: t("searchNeedsLabel", { defaultValue: "Search needs" })
           }
         ]}
       />
 
-      <View style={styles.bodySplit}>
-        <ScrollView style={styles.filtersPane} contentContainerStyle={styles.filtersPaneContent}>
+      <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentScrollContent}>
           <View style={styles.searchRow}>
             <TextInput
               mode="outlined"
@@ -237,88 +312,92 @@ export function SearchResourcesScreen({
             <IconButton
               icon="refresh"
               mode="outlined"
-              onPress={() => undefined}
+              onPress={onRetry ?? (() => undefined)}
               accessibilityLabel={t("retry", { defaultValue: "Retry" })}
             />
           </View>
 
-          {allCampaignIds.length > 0 ? (
-            <AppCard>
-              <View style={styles.campaignHeader}>
-                <View>
-                  <Text variant="bodySmall">{t("activeCampaign", { defaultValue: "Active campaign" })}</Text>
-                  <Text variant="bodyMedium" style={styles.campaignTitle}>
-                    {selectedCampaignIds[0] ?? allCampaignIds[0]}
-                  </Text>
-                </View>
-                <Checkbox
-                  status={activeCampaignOnly ? "checked" : "unchecked"}
-                  color={designTokens.colors.primaryContainer}
-                  uncheckedColor="#fff"
-                  onPress={() => setActiveCampaignOnly((previous) => !previous)}
-                />
+          <Divider />
+
+          <Pressable accessibilityRole="button" onPress={() => setShowCategoriesDialog(true)}>
+            <View style={styles.accordionHeader}>
+              <View>
+                <Text variant="titleSmall">{t("categoriesTitle", { defaultValue: "Categories" })}</Text>
+                <Text variant="bodySmall" style={styles.accordionSubtitle}>
+                  {selectedCategories.length === 0
+                    ? t("allCategoriesLabel", { defaultValue: "All categories" })
+                    : `${selectedCategories.length} ${t("selectedLabel", { defaultValue: "selected" })}`}
+                </Text>
               </View>
-            </AppCard>
-          ) : null}
+              <IconButton icon="chevron-right" size={18} onPress={() => setShowCategoriesDialog(true)} />
+            </View>
+          </Pressable>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-            {allCategories.map((category) => {
-              const selected = selectedCategories.includes(category);
-
-              return (
+          {selectedCategories.length > 0 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+              {selectedCategories.map((category) => (
                 <Chip
                   key={category}
-                  selected={selected}
-                  mode={selected ? "flat" : "outlined"}
-                  onPress={() => {
-                    setSelectedCategories((previous) =>
-                      previous.includes(category)
-                        ? previous.filter((value) => value !== category)
-                        : [...previous, category]
-                    );
-                  }}
+                  selected
+                  mode="flat"
+                  onClose={() =>
+                    setSelectedCategories((previous) => previous.filter((value) => value !== category))
+                  }
                 >
                   {category}
                 </Chip>
-              );
-            })}
-          </ScrollView>
+              ))}
+            </ScrollView>
+          ) : null}
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-            {allCampaignIds.map((campaignId) => {
-              const selected = selectedCampaignIds.includes(campaignId);
+          <Divider />
 
-              return (
+          <Pressable accessibilityRole="button" onPress={() => setShowCampaignsDialog(true)}>
+            <View style={styles.accordionHeader}>
+              <View>
+                <Text variant="titleSmall">{t("campaignsLabel", { defaultValue: "Campaigns" })}</Text>
+                <Text variant="bodySmall" style={styles.accordionSubtitle}>
+                  {selectedCampaignIds.length === 0
+                    ? t("allCampaignsLabel", { defaultValue: "All campaigns" })
+                    : `${selectedCampaignIds.length} ${t("selectedLabel", { defaultValue: "selected" })}`}
+                </Text>
+              </View>
+              <IconButton icon="chevron-right" size={18} onPress={() => setShowCampaignsDialog(true)} />
+            </View>
+          </Pressable>
+
+          {selectedCampaignIds.length > 0 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+              {selectedCampaignIds.map((campaignId) => (
                 <Chip
                   key={campaignId}
-                  selected={selected}
-                  mode={selected ? "flat" : "outlined"}
-                  onPress={() => {
-                    setSelectedCampaignIds((previous) =>
-                      previous.includes(campaignId)
-                        ? previous.filter((value) => value !== campaignId)
-                        : [...previous, campaignId]
-                    );
-                  }}
-                  accessibilityLabel={`${t("campaignLabel", { defaultValue: "Campaign" })} ${campaignId}`}
+                  selected
+                  mode="flat"
+                  onClose={() =>
+                    setSelectedCampaignIds((previous) => previous.filter((value) => value !== campaignId))
+                  }
                 >
                   {campaignId}
                 </Chip>
-              );
-            })}
-          </ScrollView>
+              ))}
+            </ScrollView>
+          ) : null}
 
           <Divider />
 
           <Pressable accessibilityRole="button" onPress={() => setShowOptions((previous) => !previous)}>
             <View style={styles.accordionHeader}>
               <Text variant="titleSmall">{t("optionsTitle", { defaultValue: "Options" })}</Text>
-              <IconButton icon={showOptions ? "chevron-up" : "chevron-right"} size={18} onPress={() => setShowOptions((previous) => !previous)} />
+              <IconButton
+                icon={showOptions ? "chevron-up" : "chevron-right"}
+                size={18}
+                onPress={() => setShowOptions((previous) => !previous)}
+              />
             </View>
           </Pressable>
+
           {showOptions ? (
             <View style={styles.optionGroups}>
-              <Text variant="labelMedium">{t("natureLabel", { defaultValue: "Nature" })}</Text>
               <View style={styles.optionRow}>
                 <Checkbox.Item
                   label={t("isProductLabel", { defaultValue: "Product" })}
@@ -337,9 +416,6 @@ export function SearchResourcesScreen({
                   style={styles.checkboxItem}
                 />
               </View>
-
-              <Divider />
-              <Text variant="labelMedium">{t("transportLabel", { defaultValue: "Transport" })}</Text>
               <View style={styles.optionRow}>
                 <Checkbox.Item
                   label={t("canBeTakenAwayLabel", { defaultValue: "Pickup" })}
@@ -364,9 +440,6 @@ export function SearchResourcesScreen({
                   style={styles.checkboxItem}
                 />
               </View>
-
-              <Divider />
-              <Text variant="labelMedium">{t("exchangeTypeLabel", { defaultValue: "Exchange type" })}</Text>
               <View style={styles.optionRow}>
                 <Checkbox.Item
                   label={t("canBeExchangedLabel", { defaultValue: "Exchange" })}
@@ -388,6 +461,7 @@ export function SearchResourcesScreen({
                   style={styles.checkboxItem}
                 />
               </View>
+
             </View>
           ) : null}
 
@@ -396,39 +470,49 @@ export function SearchResourcesScreen({
           <Pressable accessibilityRole="button" onPress={() => setShowProximity((previous) => !previous)}>
             <View style={styles.accordionHeader}>
               <Text variant="titleSmall">{t("proximityTitle", { defaultValue: "Proximity" })}</Text>
-              <IconButton icon={showProximity ? "chevron-up" : "chevron-right"} size={18} onPress={() => setShowProximity((previous) => !previous)} />
+              <IconButton
+                icon={showProximity ? "chevron-up" : "chevron-right"}
+                size={18}
+                onPress={() => setShowProximity((previous) => !previous)}
+              />
             </View>
           </Pressable>
+
           {showProximity ? (
             <View style={styles.proximitySection}>
-              <TextInput
-                mode="outlined"
-                label={t("resourceDistanceFilterLabel", { defaultValue: "Distance filter (km)" })}
-                value={distanceFilter}
-                keyboardType="numeric"
-                onChangeText={setDistanceFilter}
-              />
-              <Checkbox.Item
-                label={t("excludeUnlocatedLabel", { defaultValue: "Exclude unlocated resources" })}
-                status={excludeUnlocated ? "checked" : "unchecked"}
-                onPress={() => setExcludeUnlocated((previous) => !previous)}
-                style={styles.checkboxSingle}
-              />
+              <ProximityLocationEditor value={referenceLocation} onChange={setReferenceLocation} />
+
+              {hasReferenceLocation ? (
+                <View style={styles.distanceZone}>
+                  <Text variant="bodySmall" style={styles.distanceSummaryText}>
+                    {t("maxDistanceLabel", {
+                      defaultValue: "{{distance}} km max",
+                      distance: Math.round(distanceKmValue)
+                    })}
+                  </Text>
+
+                  <Slider
+                    minimumValue={1}
+                    maximumValue={MAX_DISTANCE_KM}
+                    step={5}
+                    value={distanceKmValue}
+                    minimumTrackTintColor={designTokens.colors.primary}
+                    maximumTrackTintColor={designTokens.colors.primary}
+                    thumbTintColor={designTokens.colors.primary}
+                    style={styles.proximitySlider}
+                    onValueChange={(nextValue) => setDistanceFilter(String(Math.round(nextValue)))}
+                  />
+
+                  <ProximityOptionRow
+                    title={t("excludeUnlocatedLabel", { defaultValue: "Exclude unlocated resources" })}
+                    value={excludeUnlocated}
+                    onChange={setExcludeUnlocated}
+                  />
+                </View>
+              ) : null}
             </View>
           ) : null}
 
-          <View style={styles.actionsRow}>
-            <PrimaryButton
-              label={t("clearFiltersLabel", { defaultValue: "Clear filters" })}
-              onPress={clearFilters}
-            />
-            <Button mode="outlined" onPress={() => onSwitchToNeeds?.()}>
-              {t("searchNeedsLabel", { defaultValue: "Search needs" })}
-            </Button>
-          </View>
-        </ScrollView>
-
-        <View style={styles.resultsPane}>
           {filteredResources.length === 0 ? (
             <EmptyState
               message={t("searchResourcesEmpty", {
@@ -438,7 +522,7 @@ export function SearchResourcesScreen({
               onActionPress={clearFilters}
             />
           ) : (
-            <ScrollView contentContainerStyle={styles.resourcesList}>
+            <View style={styles.resourcesList}>
               {filteredResources.map((resource) => (
                 <Pressable
                   key={resource.id}
@@ -455,10 +539,33 @@ export function SearchResourcesScreen({
                   </AppCard>
                 </Pressable>
               ))}
-            </ScrollView>
+            </View>
           )}
-        </View>
-      </View>
+      </ScrollView>
+
+      <PickerDialog
+        visible={showCategoriesDialog}
+        title={t("categoriesTitle", { defaultValue: "Categories" })}
+        items={allCategories.map((category) => ({ value: category, label: category }))}
+        selectedValues={selectedCategories}
+        onDismiss={() => setShowCategoriesDialog(false)}
+        onConfirm={(nextSelectedCategories) => {
+          setSelectedCategories(nextSelectedCategories);
+          setShowCategoriesDialog(false);
+        }}
+      />
+
+      <PickerDialog
+        visible={showCampaignsDialog}
+        title={t("campaignsLabel", { defaultValue: "Campaigns" })}
+        items={allCampaignIds.map((campaignId) => ({ value: campaignId, label: campaignId }))}
+        selectedValues={selectedCampaignIds}
+        onDismiss={() => setShowCampaignsDialog(false)}
+        onConfirm={(nextSelectedCampaignIds) => {
+          setSelectedCampaignIds(nextSelectedCampaignIds);
+          setShowCampaignsDialog(false);
+        }}
+      />
     </ScreenContainer>
   );
 }
@@ -468,19 +575,13 @@ const styles = StyleSheet.create({
     paddingTop: designTokens.spacing.lg,
     paddingBottom: designTokens.spacing.sm
   },
-  bodySplit: {
+  contentScroll: {
     flex: 1,
-    gap: designTokens.spacing.sm
+    marginTop: designTokens.spacing.sm
   },
-  filtersPane: {
-    flex: 1
-  },
-  filtersPaneContent: {
+  contentScrollContent: {
     gap: designTokens.spacing.sm,
-    paddingBottom: designTokens.spacing.sm
-  },
-  resultsPane: {
-    flex: 1
+    paddingBottom: designTokens.spacing.md
   },
   searchRow: {
     flexDirection: "row",
@@ -491,19 +592,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff"
   },
-  campaignHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: designTokens.colors.primary,
-    paddingHorizontal: designTokens.spacing.lg,
-    paddingVertical: designTokens.spacing.sm,
-    borderRadius: designTokens.radius.lg
-  },
-  campaignTitle: {
-    color: "#fff",
-    fontWeight: "700"
-  },
   chipsRow: {
     gap: 8,
     paddingVertical: 4
@@ -513,29 +601,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between"
   },
+  accordionSubtitle: {
+    opacity: 0.75
+  },
   optionGroups: {
-    gap: designTokens.spacing.xs
+    gap: 2
   },
   optionRow: {
     flexDirection: "row",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
+    marginVertical: 0
   },
   checkboxItem: {
     minWidth: "48%",
     flexShrink: 1,
-    paddingHorizontal: 0
-  },
-  checkboxSingle: {
-    paddingHorizontal: 0
+    paddingHorizontal: 0,
+    marginVertical: -4
   },
   proximitySection: {
-    gap: designTokens.spacing.xs
+    gap: 4
   },
-  actionsRow: {
-    gap: 8
+  distanceZone: {
+    gap: 2
+  },
+  distanceSummaryText: {
+    textAlign: "center"
+  },
+  proximitySlider: {
+    width: "80%",
+    alignSelf: "center",
+    paddingVertical: 20
+  },
+  optionSelectRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 5,
+    flexShrink: 1
+  },
+  optionSelectText: {
+    flexShrink: 1
+  },
+  dialogChipsContent: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.spacing.xs
   },
   resourcesList: {
     gap: 8,
-    paddingBottom: 12
+    paddingBottom: 4
   }
 });

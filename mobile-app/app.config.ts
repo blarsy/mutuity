@@ -58,17 +58,41 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
     version: APP_VERSION,
     orientation: "portrait",
     userInterfaceStyle: "light",
-    entryPoint: "./src/App.tsx",
     ios: {
       bundleIdentifier: "com.topela",
       buildNumber: String(APP_VERSION_CODE),
-      supportsTablet: true
+      supportsTablet: true,
+      infoPlist: {
+        CFBundleAllowMixedLocalizations: true,
+        GMSApiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY ?? ""
+      },
+      config: {
+        googleMapsApiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY
+      }
     },
     android: {
       package: "com.topela",
-      versionCode: APP_VERSION_CODE
+      versionCode: APP_VERSION_CODE,
+      config: {
+        googleMaps: {
+          apiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY
+        }
+      }
     },
-    plugins: ["expo-secure-store"],
+    locales: {
+      en: "./locales/en.json",
+      fr: "./locales/fr.json"
+    },
+    plugins: [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          locationWhenInUsePermission:
+            "Mutuity would like to access your location to position resources and calculate proximity."
+        }
+      ]
+    ],
     extra: {
       targetEnv,
       appSettings: defaults

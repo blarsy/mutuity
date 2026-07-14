@@ -27,8 +27,11 @@ export const mutuityTheme: MD3Theme = {
   colors: {
     ...MD3LightTheme.colors,
     primary: designTokens.colors.primary,
-    secondaryContainer: designTokens.colors.primaryContainer,
-    surfaceVariant: designTokens.colors.primaryContainer,
+    secondary: designTokens.colors.secondary,
+    secondaryContainer: designTokens.colors.primary,
+    onSecondaryContainer: "#ffffff",
+    onSurface: "#000000",
+    surfaceVariant: designTokens.colors.secondary,
     backdrop: designTokens.colors.backdrop
   },
   fonts: configureFonts({ config: fontConfig })

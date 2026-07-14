@@ -1,0 +1,6 @@
+{
+  "ios": {
+    "NSLocationWhenInUseUsageDescription": "Mutuity souhaite accéder à votre position pour localiser les ressources et calculer leur proximité.",
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Mutuity utilise votre position afin de garder la cohérence des distances et de la découverte sur carte pendant l'utilisation de l'application."
+  }
+}

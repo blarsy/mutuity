@@ -2,6 +2,7 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StyleSheet, View } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Text } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,15 +31,28 @@ interface MainTabsNavigatorProps {
 
 function MainTabsNavigator({ authenticated }: MainTabsNavigatorProps): React.JSX.Element {
   const { t } = useTranslation();
+  const tabBarIconByRoute: Record<string, string> = {
+    Explore: "compass-outline",
+    MyHub: "view-dashboard-outline",
+    Campaigns: "bullhorn-outline",
+    Chat: "chat-outline",
+    Notifications: "bell-outline"
+  };
 
   return (
     <View accessible accessibilityLabel="Main navigation" style={styles.fill}>
       <Tab.Navigator
         initialRouteName="Explore"
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarLabelStyle: styles.tabLabel
-        }}
+          tabBarLabelStyle: styles.tabLabel,
+          tabBarIcon: ({ color, size, focused }) => {
+            const outlinedIcon = tabBarIconByRoute[route.name] ?? "circle-outline";
+            const iconName = focused ? outlinedIcon.replace("-outline", "") : outlinedIcon;
+
+            return <MaterialCommunityIcons name={iconName as keyof typeof MaterialCommunityIcons.glyphMap} size={size} color={color} />;
+          }
+        })}
       >
         <Tab.Screen name="Explore" component={ExploreScreen} options={{ tabBarLabel: t("resourceSearchLabel") }} />
         <Tab.Screen
