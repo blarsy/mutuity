@@ -4,7 +4,10 @@
   "private": true,
   "main": "expo/AppEntry",
   "scripts": {
-    "start": "expo start -c",
+    "start": "TARGET_ENV=local expo start -c",
+    "start:local": "TARGET_ENV=local expo start -c",
+    "start:test": "TARGET_ENV=test expo start -c",
+    "start:prod": "TARGET_ENV=prod expo start -c",
     "graphql:schema": "graphql-codegen --config codegen.schema.cjs",
     "graphql:codegen": "graphql-codegen --config codegen.cjs",
     "typecheck": "npm run graphql:schema && npm run graphql:codegen && tsc --noEmit",
@@ -13,11 +16,15 @@
     "test": "jest",
     "test:integration": "jest --testPathPattern=tests/integration",
     "e2e": "detox test",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "storybook": "EXPO_PUBLIC_STORYBOOK_ENABLED=true expo start -c",
-    "storybook:ios": "EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:ios",
-    "storybook:android": "EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:android"
+    "android": "TARGET_ENV=local expo run:android",
+    "ios": "TARGET_ENV=local expo run:ios",
+    "android:test": "TARGET_ENV=test expo run:android",
+    "ios:test": "TARGET_ENV=test expo run:ios",
+    "android:prod": "TARGET_ENV=prod expo run:android",
+    "ios:prod": "TARGET_ENV=prod expo run:ios",
+    "storybook": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true expo start -c",
+    "storybook:ios": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:ios",
+    "storybook:android": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:android"
   },
   "dependencies": {
     "@apollo/client": "^4.2.5",
@@ -49,6 +56,7 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
+    "rxjs": "^7.8.2",
     "typescript": "~5.8.3"
   },
   "devDependencies": {

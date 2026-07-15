@@ -1,0 +1,7 @@
+{
+  "targetEnv": "test",
+  "apiUrl": "https://test.tope-la.com",
+  "graphQlApiUrl": "https://test.tope-la.com/graphql",
+  "subscriptionsUrl": "wss://test.tope-la.com/graphql",
+  "diagnostic": true
+}

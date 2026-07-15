@@ -1,8 +1,12 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-type TargetEnv = "dev" | "test" | "prod";
+type TargetEnv = "local" | "test" | "prod";
 
-interface EnvDefaults {
+interface ExternalAppSettings {
+  targetEnv: TargetEnv;
   apiUrl: string;
   graphQlApiUrl: string;
   subscriptionsUrl: string;
@@ -12,29 +16,16 @@ interface EnvDefaults {
 const APP_VERSION = "1.0.0";
 const APP_VERSION_CODE = 175;
 
-const ENV_DEFAULTS: Record<TargetEnv, EnvDefaults> = {
-  dev: {
-    apiUrl: "http://127.0.0.1:5000",
-    graphQlApiUrl: "http://127.0.0.1:5000/graphql",
-    subscriptionsUrl: "ws://127.0.0.1:5000/graphql",
-    diagnostic: true
-  },
-  test: {
-    apiUrl: "https://test.tope-la.com",
-    graphQlApiUrl: "https://test.tope-la.com/graphql",
-    subscriptionsUrl: "wss://test.tope-la.com/graphql",
-    diagnostic: true
-  },
-  prod: {
-    apiUrl: "https://www.tope-la.com",
-    graphQlApiUrl: "https://www.tope-la.com/graphql",
-    subscriptionsUrl: "wss://www.tope-la.com/graphql",
-    diagnostic: false
-  }
-};
-
 function resolveTargetEnv(value: string | undefined): TargetEnv {
   const normalized = value?.toLowerCase();
+
+  if (!normalized) {
+    throw new Error("Missing TARGET_ENV. Expected one of: local, test, prod.");
+  }
+
+  if (normalized === "local") {
+    return "local";
+  }
 
   if (normalized === "test") {
     return "test";
@@ -44,12 +35,61 @@ function resolveTargetEnv(value: string | undefined): TargetEnv {
     return "prod";
   }
 
-  return "dev";
+  throw new Error(`Invalid TARGET_ENV value: ${value}. Expected one of: local, test, prod.`);
+}
+
+function assertValidAppSettings(value: unknown, filePath: string): asserts value is ExternalAppSettings {
+  if (!value || typeof value !== "object") {
+    throw new Error(`Invalid app settings in ${filePath}: expected an object.`);
+  }
+
+  const config = value as Record<string, unknown>;
+  const missingKeys: string[] = [];
+
+  const requiredStringKeys = ["targetEnv", "apiUrl", "graphQlApiUrl", "subscriptionsUrl"];
+  for (const key of requiredStringKeys) {
+    if (typeof config[key] !== "string" || config[key].length === 0) {
+      missingKeys.push(key);
+    }
+  }
+
+  if (typeof config.diagnostic !== "boolean") {
+    missingKeys.push("diagnostic");
+  }
+
+  if (missingKeys.length > 0) {
+    throw new Error(`Invalid app settings in ${filePath}: missing or invalid ${missingKeys.join(", ")}.`);
+  }
+
+  if (config.targetEnv !== "local" && config.targetEnv !== "test" && config.targetEnv !== "prod") {
+    throw new Error(`Invalid app settings in ${filePath}: unsupported targetEnv value \"${String(config.targetEnv)}\".`);
+  }
+}
+
+function loadAppSettings(targetEnv: TargetEnv): ExternalAppSettings {
+  const filePath = path.join(__dirname, "config", "environments", `${targetEnv}.json`);
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing environment config file: ${filePath}`);
+  }
+
+  const raw = fs.readFileSync(filePath, "utf8");
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(`Invalid JSON in environment config file: ${filePath}`);
+  }
+
+  assertValidAppSettings(parsed, filePath);
+
+  return parsed;
 }
 
 export default function appConfig(_: ConfigContext): ExpoConfig {
-  const targetEnv = resolveTargetEnv(process.env.TARGET_ENV ?? process.env.EXPO_PUBLIC_TARGET_ENV);
-  const defaults = ENV_DEFAULTS[targetEnv];
+  const targetEnv = resolveTargetEnv(process.env.TARGET_ENV);
+  const appSettings = loadAppSettings(targetEnv);
 
   return {
     name: "Tope Là",
@@ -95,7 +135,7 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
     ],
     extra: {
       targetEnv,
-      appSettings: defaults
+      appSettings
     }
   };
 }

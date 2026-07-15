@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -20,6 +20,7 @@ import {
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { fetchSearchResources } from "../../services/graphql/resources";
 import { designTokens } from "../../theme/tokens";
 
 const MAX_DISTANCE_KM = 100;
@@ -69,51 +70,6 @@ export interface SearchResourcesScreenProps {
   onOpenResource?: (resource: SearchResourceItem) => void;
 }
 
-const DEFAULT_RESOURCES: SearchResourceItem[] = [
-  {
-    id: "res-1",
-    title: "Community Pantry Basket",
-    description: "Weekly basket with fresh produce and pantry staples.",
-    category: "Food",
-    distanceKm: 2.1,
-    type: "product",
-    canBeTakenAway: true,
-    canBeDelivered: true,
-    canBeExchanged: false,
-    canBeGifted: true,
-    located: true,
-    campaignIds: ["camp-solidarity"]
-  },
-  {
-    id: "res-2",
-    title: "Bike Repair Session",
-    description: "Two-hour repair help for flat tires and brake checks.",
-    category: "Services",
-    distanceKm: 4.3,
-    type: "service",
-    canBeTakenAway: false,
-    canBeDelivered: true,
-    canBeExchanged: true,
-    canBeGifted: false,
-    located: true,
-    campaignIds: ["camp-mobility", "camp-solidarity"]
-  },
-  {
-    id: "res-3",
-    title: "Children Books Bundle",
-    description: "Illustrated books for ages 5 to 9.",
-    category: "Education",
-    distanceKm: 7.6,
-    type: "product",
-    canBeTakenAway: true,
-    canBeDelivered: false,
-    canBeExchanged: true,
-    canBeGifted: true,
-    located: false,
-    campaignIds: ["camp-literacy"]
-  }
-];
-
 function resolveCampaignIds(resources: SearchResourceItem[]): string[] {
   return Array.from(new Set(resources.flatMap((resource) => resource.campaignIds))).sort();
 }
@@ -139,7 +95,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 }
 
 export function SearchResourcesScreen({
-  resources = DEFAULT_RESOURCES,
+  resources,
   loading = false,
   errorMessage,
   onRetry,
@@ -159,13 +115,20 @@ export function SearchResourcesScreen({
   const [showCampaignsDialog, setShowCampaignsDialog] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showProximity, setShowProximity] = useState(false);
+  const [remoteResources, setRemoteResources] = useState<SearchResourceItem[]>([]);
+  const [remoteLoading, setRemoteLoading] = useState(false);
+  const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
     label: defaultLocationLabel
   });
   const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
+  const requestIdRef = useRef(0);
 
-  const allCampaignIds = useMemo(() => resolveCampaignIds(resources), [resources]);
-  const allCategories = useMemo(() => resolveCategories(resources), [resources]);
+  const hasInjectedResources = resources !== undefined;
+  const sourceResources = hasInjectedResources ? resources : remoteResources;
+
+  const allCampaignIds = useMemo(() => resolveCampaignIds(sourceResources), [sourceResources]);
+  const allCategories = useMemo(() => resolveCategories(sourceResources), [sourceResources]);
   const distanceKmValue = useMemo(() => {
     const parsed = Number.parseFloat(distanceFilter);
     if (!Number.isFinite(parsed)) {
@@ -201,6 +164,54 @@ export function SearchResourcesScreen({
   );
   const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
 
+  const loadResources = useCallback(async () => {
+    if (hasInjectedResources) {
+      return;
+    }
+
+    const currentRequestId = requestIdRef.current + 1;
+    requestIdRef.current = currentRequestId;
+
+    setRemoteLoading(true);
+    setRemoteErrorMessage(null);
+
+    try {
+      const nextResources = await fetchSearchResources({
+        searchTerm: debouncedFilters.searchTerm,
+        hasReferenceLocation: debouncedFilters.referenceLocationLabel !== null,
+        distanceKm: distanceKmValue,
+        natureOptions: debouncedFilters.natureOptions,
+        transportOptions: debouncedFilters.transportOptions,
+        exchangeOptions: debouncedFilters.exchangeOptions
+      });
+
+      if (requestIdRef.current !== currentRequestId) {
+        return;
+      }
+
+      setRemoteResources(nextResources);
+    } catch {
+      if (requestIdRef.current !== currentRequestId) {
+        return;
+      }
+
+      setRemoteErrorMessage(t("resourceSearchLoadError", { defaultValue: "We could not load resources." }));
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setRemoteLoading(false);
+      }
+    }
+  }, [
+    debouncedFilters,
+    distanceKmValue,
+    hasInjectedResources,
+    t
+  ]);
+
+  useEffect(() => {
+    void loadResources();
+  }, [loadResources]);
+
   const filteredResources = useMemo(() => {
     const normalizedSearch = debouncedFilters.searchTerm.trim().toLowerCase();
     const maxDistance = Number.parseFloat(debouncedFilters.distanceFilter);
@@ -211,7 +222,7 @@ export function SearchResourcesScreen({
     const hasExchangeFilter =
       debouncedFilters.exchangeOptions.canBeExchanged || debouncedFilters.exchangeOptions.canBeGifted;
 
-    return resources.filter((resource) => {
+    return sourceResources.filter((resource) => {
       const searchableText = `${resource.title} ${resource.description}`.toLowerCase();
       const matchesSearch = normalizedSearch.length === 0 || searchableText.includes(normalizedSearch);
       const matchesCategory =
@@ -250,8 +261,20 @@ export function SearchResourcesScreen({
     });
   }, [
     debouncedFilters,
-    resources
+    sourceResources
   ]);
+
+  const resolvedLoading = loading || (!hasInjectedResources && remoteLoading);
+  const resolvedErrorMessage = errorMessage ?? (!hasInjectedResources ? remoteErrorMessage : null);
+
+  const handleRetry = (): void => {
+    if (onRetry) {
+      onRetry();
+      return;
+    }
+
+    void loadResources();
+  };
 
   const clearFilters = (): void => {
     setSearchTerm("");
@@ -265,12 +288,12 @@ export function SearchResourcesScreen({
     setSelectedCampaignIds([]);
   };
 
-  if (loading) {
+  if (resolvedLoading) {
     return <LoadingState label={t("loading", { defaultValue: "Loading..." })} />;
   }
 
-  if (errorMessage) {
-    return onRetry ? <ErrorState message={errorMessage} onRetry={onRetry} /> : <ErrorState message={errorMessage} />;
+  if (resolvedErrorMessage) {
+    return <ErrorState message={resolvedErrorMessage} onRetry={handleRetry} />;
   }
 
   return (
@@ -312,7 +335,7 @@ export function SearchResourcesScreen({
             <IconButton
               icon="refresh"
               mode="outlined"
-              onPress={onRetry ?? (() => undefined)}
+              onPress={handleRetry}
               accessibilityLabel={t("retry", { defaultValue: "Retry" })}
             />
           </View>
