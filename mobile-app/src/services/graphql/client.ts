@@ -1,6 +1,7 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
+import { print } from "graphql";
 
 import { appSettings } from "../../config/appSettings";
 import { logAppEvent } from "../monitoring/logger";
@@ -37,13 +38,37 @@ function createAuthLink(getToken?: TokenProvider): ApolloLink {
   });
 }
 
+function createDebugLink(): ApolloLink {
+  return new ApolloLink((operation, forward) => {
+    logAppEvent({
+      level: "debug",
+      message: "graphql-request",
+      details: {
+        operationName: operation.operationName,
+        query: print(operation.query),
+        variables: operation.variables
+      }
+    });
+
+    return forward(operation);
+  });
+}
+
 export function createApolloClient(options: ApolloClientOptions = {}): ApolloClient {
   const httpLink = new HttpLink({
     uri: options.graphqlUrl ?? appSettings.graphQlApiUrl,
     credentials: "include"
   });
 
-  const link = ApolloLink.from([createErrorLink(), createAuthLink(options.getToken), httpLink]);
+  const linkChain: ApolloLink[] = [createErrorLink(), createAuthLink(options.getToken)];
+
+  if (appSettings.targetEnv === "local") {
+    linkChain.push(createDebugLink());
+  }
+
+  linkChain.push(httpLink);
+
+  const link = ApolloLink.from(linkChain);
 
   return new ApolloClient({
     cache: new InMemoryCache(),
