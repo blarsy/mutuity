@@ -81,4 +81,39 @@ describe("US1 search resources contract", () => {
     expect(normalized?.canBeGifted).toBe(true);
     expect(normalized?.category).toBe("Transport");
   });
+
+  it("parses string distance values returned from BigFloat fields", () => {
+    const record: SearchResourcesRecord = {
+      __typename: "SearchResourcesRecord",
+      canBeDelivered: true,
+      canBeExchanged: false,
+      canBeGiven: false,
+      canBeTakenAway: true,
+      categoryLabels: ["Food"],
+      createdAt: null,
+      creatorAccountId: null,
+      creatorDisplayName: null,
+      defaultTokenAmount: null,
+      description: "Food basket",
+      distanceKm: "4.25",
+      expiresAt: null,
+      id: "00000000-0000-0000-0000-000000000002",
+      imageUrls: null,
+      intensity: null,
+      isActive: true,
+      isProduct: true,
+      isService: false,
+      latitude: null,
+      location: null,
+      longitude: null,
+      queryLatitude: null,
+      queryLongitude: null,
+      title: "Community Pantry Basket",
+      updatedAt: null
+    };
+
+    const normalized = normalizeSearchResource(record);
+
+    expect(normalized?.distanceKm).toBe(4.25);
+  });
 });

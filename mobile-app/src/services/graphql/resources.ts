@@ -48,6 +48,19 @@ function boolToTriState(value: boolean): TriStateFilter {
   return value ? TriStateFilter.Set : TriStateFilter.Neutral;
 }
 
+function parseBigFloat(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
 export function buildSearchResourcesVariables(filters: SearchResourcesFilters): QuerySearchResourcesArgs {
   const normalizedSearchTerm = filters.searchTerm.trim();
 
@@ -80,13 +93,14 @@ export function normalizeSearchResource(node: SearchResourcesRecord): SearchReso
 
   const firstCategory = node.categoryLabels?.find((label): label is string => typeof label === "string" && label.length > 0);
   const located = typeof node.latitude === "number" && typeof node.longitude === "number";
+  const distanceKm = parseBigFloat(node.distanceKm) ?? FALLBACK_DISTANCE_KM;
 
   return {
     id: String(node.id),
     title: node.title,
     description: node.description ?? "",
     category: firstCategory ?? "Other",
-    distanceKm: typeof node.distanceKm === "number" ? node.distanceKm : FALLBACK_DISTANCE_KM,
+    distanceKm,
     type: node.isService ? "service" : "product",
     canBeTakenAway: node.canBeTakenAway ?? false,
     canBeDelivered: node.canBeDelivered ?? false,

@@ -230,7 +230,7 @@ export function SearchResourcesScreen({
         debouncedFilters.selectedCategories.includes(resource.category);
       const hasDebouncedReferenceLocation = debouncedFilters.referenceLocationLabel !== null;
       const matchesDistance =
-        !hasDebouncedReferenceLocation || !hasDistanceFilter || (resource.located && resource.distanceKm <= maxDistance);
+        !hasDebouncedReferenceLocation || !hasDistanceFilter || resource.distanceKm <= maxDistance;
       const matchesUnlocated = !debouncedFilters.excludeUnlocated || resource.located;
       const matchesNature =
         !hasNatureFilter ||
