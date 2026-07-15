@@ -13,19 +13,48 @@ export const ACCOUNT_BY_ID_QUERY = gql`
 `;
 
 export const SEARCH_RESOURCES_QUERY = gql`
-  query SearchResources($first: Int, $after: Cursor) {
-    allResources(first: $first, after: $after) {
+  query SearchResources(
+    $first: Int
+    $after: Cursor
+    $searchText: String
+    $favorLocalResources: Boolean
+    $maxDistanceKm: BigFloat
+    $isProduct: TriStateFilter
+    $isService: TriStateFilter
+    $canBeTakenAway: TriStateFilter
+    $canBeDelivered: TriStateFilter
+    $canBeExchanged: TriStateFilter
+    $canBeGiven: TriStateFilter
+  ) {
+    searchResources(
+      first: $first
+      after: $after
+      searchText: $searchText
+      favorLocalResources: $favorLocalResources
+      maxDistanceKm: $maxDistanceKm
+      isProduct: $isProduct
+      isService: $isService
+      canBeTakenAway: $canBeTakenAway
+      canBeDelivered: $canBeDelivered
+      canBeExchanged: $canBeExchanged
+      canBeGiven: $canBeGiven
+    ) {
       nodes {
         id
         title
         description
+        distanceKm
+        latitude
+        longitude
+        isProduct
+        isService
+        canBeTakenAway
+        canBeDelivered
+        canBeExchanged
+        canBeGiven
         defaultTokenAmount
         categoryLabels
         imageUrls
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
       }
     }
   }
