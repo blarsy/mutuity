@@ -27,6 +27,9 @@ export interface SearchResourceResultItem {
   id: string;
   title: string;
   description: string;
+  createdAt: string | null;
+  creatorAccountId: string | null;
+  creatorDisplayName: string | null;
   category: string;
   distanceKm: number;
   type: "product" | "service";
@@ -36,6 +39,7 @@ export interface SearchResourceResultItem {
   canBeGifted: boolean;
   located: boolean;
   campaignIds: string[];
+  imageUrls: string[];
 }
 
 interface SearchResourcesQueryResult {
@@ -99,6 +103,9 @@ export function normalizeSearchResource(node: SearchResourcesRecord): SearchReso
     id: String(node.id),
     title: node.title,
     description: node.description ?? "",
+    createdAt: typeof node.createdAt === "string" ? node.createdAt : null,
+    creatorAccountId: typeof node.creatorAccountId === "string" ? node.creatorAccountId : null,
+    creatorDisplayName: typeof node.creatorDisplayName === "string" ? node.creatorDisplayName : null,
     category: firstCategory ?? "Other",
     distanceKm,
     type: node.isService ? "service" : "product",
@@ -107,7 +114,8 @@ export function normalizeSearchResource(node: SearchResourcesRecord): SearchReso
     canBeExchanged: node.canBeExchanged ?? false,
     canBeGifted: node.canBeGiven ?? false,
     located,
-    campaignIds: []
+    campaignIds: [],
+    imageUrls: (node.imageUrls ?? []).filter((value): value is string => typeof value === "string" && value.length > 0)
   };
 }
 

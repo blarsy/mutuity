@@ -12,6 +12,9 @@ const SAMPLE_RESOURCES: SearchResourceItem[] = [
     id: "res-a",
     title: "Laptop Stand",
     description: "Adjustable aluminum stand for remote work setups.",
+    createdAt: "2026-06-01T10:00:00.000Z",
+    creatorAccountId: "00000000-0000-0000-0000-000000000101",
+    creatorDisplayName: "Alex",
     category: "Office",
     distanceKm: 1.8,
     type: "product",
@@ -20,12 +23,16 @@ const SAMPLE_RESOURCES: SearchResourceItem[] = [
     canBeExchanged: true,
     canBeGifted: false,
     located: true,
-    campaignIds: ["camp-work"]
+    campaignIds: ["camp-work"],
+    imageUrls: []
   },
   {
     id: "res-b",
     title: "Legal Guidance Session",
     description: "30-minute consultation for housing paperwork.",
+    createdAt: "2026-06-12T09:30:00.000Z",
+    creatorAccountId: "00000000-0000-0000-0000-000000000102",
+    creatorDisplayName: "Nadia",
     category: "Services",
     distanceKm: 5.2,
     type: "service",
@@ -34,12 +41,16 @@ const SAMPLE_RESOURCES: SearchResourceItem[] = [
     canBeExchanged: false,
     canBeGifted: true,
     located: true,
-    campaignIds: ["camp-rights", "camp-work"]
+    campaignIds: ["camp-rights", "camp-work"],
+    imageUrls: ["https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400"]
   },
   {
     id: "res-c",
     title: "School Starter Kit",
     description: "Notebooks, pencils, and ruler for primary school students.",
+    createdAt: "2026-06-19T13:45:00.000Z",
+    creatorAccountId: "00000000-0000-0000-0000-000000000103",
+    creatorDisplayName: "Samira",
     category: "Education",
     distanceKm: 9.4,
     type: "product",
@@ -48,7 +59,8 @@ const SAMPLE_RESOURCES: SearchResourceItem[] = [
     canBeExchanged: true,
     canBeGifted: true,
     located: false,
-    campaignIds: ["camp-education"]
+    campaignIds: ["camp-education"],
+    imageUrls: []
   }
 ];
 

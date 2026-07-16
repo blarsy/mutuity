@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,7 +11,6 @@ import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "reac
 import { useTranslation } from "react-i18next";
 
 import {
-  AppCard,
   AppSegmentedButtons,
   PickerDialog,
   ProximityLocationEditor,
@@ -50,6 +50,9 @@ export interface SearchResourceItem {
   id: string;
   title: string;
   description: string;
+  createdAt: string | null;
+  creatorAccountId: string | null;
+  creatorDisplayName: string | null;
   category: string;
   distanceKm: number;
   type: "product" | "service";
@@ -59,6 +62,7 @@ export interface SearchResourceItem {
   canBeGifted: boolean;
   located: boolean;
   campaignIds: string[];
+  imageUrls: string[];
 }
 
 export interface SearchResourcesScreenProps {
@@ -68,6 +72,21 @@ export interface SearchResourcesScreenProps {
   onRetry?: () => void;
   onSwitchToNeeds?: () => void;
   onOpenResource?: (resource: SearchResourceItem) => void;
+  onOpenResourceChat?: (resource: SearchResourceItem) => void;
+  currentAccountId?: string | null;
+}
+
+function formatPublishedDate(value: string | null, locale: string): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
 }
 
 function resolveCampaignIds(resources: SearchResourceItem[]): string[] {
@@ -100,9 +119,11 @@ export function SearchResourcesScreen({
   errorMessage,
   onRetry,
   onSwitchToNeeds,
-  onOpenResource
+  onOpenResource,
+  onOpenResourceChat,
+  currentAccountId = null
 }: SearchResourcesScreenProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const defaultLocationLabel = t("locationAroundMeLabel", { defaultValue: "Around me" });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -552,14 +573,57 @@ export function SearchResourcesScreen({
                   accessibilityRole="button"
                   accessibilityLabel={`${resource.title}. ${resource.category}. ${resource.distanceKm.toFixed(1)} km.`}
                   onPress={() => onOpenResource?.(resource)}
+                  style={styles.foundCard}
+                  testID={`resource-card-${resource.id}`}
                 >
-                  <AppCard testID={`resource-card-${resource.id}`}>
-                    <Text variant="titleMedium">{resource.title}</Text>
-                    <Text variant="bodySmall">{resource.description}</Text>
-                    <Text variant="labelSmall">
-                      {resource.category} | {resource.distanceKm.toFixed(1)} km
+                  {resource.imageUrls[0] ? (
+                    <Image source={{ uri: resource.imageUrls[0] }} style={styles.foundCardImage} />
+                  ) : (
+                    <View style={styles.foundCardImageFallback}>
+                      <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
+                    </View>
+                  )}
+
+                  <View style={styles.foundCardContent}>
+                    <Text variant="labelSmall" style={styles.foundCardPublishedAt}>
+                      {`${t("publishedAtLabel", { defaultValue: "Published" })} ${formatPublishedDate(resource.createdAt, i18n.language) ?? "-"}`}
                     </Text>
-                  </AppCard>
+
+                    <View style={styles.foundCardBody}>
+                      <Text variant="titleMedium" numberOfLines={2}>
+                        {resource.title}
+                      </Text>
+                      <Text variant="labelSmall" style={styles.foundCardAuthor}>
+                        {`${t("broughtByLabel", { defaultValue: "Brought by" })} ${resource.creatorDisplayName ?? t("anonymousLabel", { defaultValue: "Anonymous" })}`}
+                      </Text>
+
+                      <View style={styles.foundCardFlagsRow}>
+                        {resource.canBeGifted ? (
+                          <Text variant="labelSmall" style={styles.foundCardFlagText}>
+                            {t("canBeGiftedLabel", { defaultValue: "Gift" })}
+                          </Text>
+                        ) : null}
+                        {resource.canBeExchanged ? (
+                          <Text variant="labelSmall" style={styles.foundCardFlagText}>
+                            {t("canBeExchangedLabel", { defaultValue: "Exchange" })}
+                          </Text>
+                        ) : null}
+                      </View>
+                    </View>
+
+                    {onOpenResourceChat && resource.creatorAccountId !== currentAccountId ? (
+                      <IconButton
+                        icon="chat-outline"
+                        size={15}
+                        style={styles.foundCardChatButton}
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          onOpenResourceChat(resource);
+                        }}
+                        testID={`resource-card-chat-${resource.id}`}
+                      />
+                    ) : null}
+                  </View>
                 </Pressable>
               ))}
             </View>
@@ -673,5 +737,60 @@ const styles = StyleSheet.create({
   resourcesList: {
     gap: 8,
     paddingBottom: 4
+  },
+  foundCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    backgroundColor: designTokens.colors.primaryContainer,
+    borderRadius: designTokens.radius.md
+  },
+  foundCardImage: {
+    width: 82,
+    height: 82,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff"
+  },
+  foundCardImageFallback: {
+    width: 82,
+    height: 82,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  foundCardContent: {
+    flex: 1,
+    marginRight: 2,
+    position: "relative"
+  },
+  foundCardPublishedAt: {
+    color: designTokens.colors.primary,
+    alignSelf: "flex-end",
+    fontSize: 10
+  },
+  foundCardBody: {
+    flex: 1,
+    justifyContent: "center"
+  },
+  foundCardAuthor: {
+    color: designTokens.colors.primary,
+    fontSize: 10
+  },
+  foundCardFlagsRow: {
+    flexDirection: "row",
+    gap: 12
+  },
+  foundCardFlagText: {
+    textTransform: "uppercase",
+    fontSize: 10
+  },
+  foundCardChatButton: {
+    borderRadius: 0,
+    position: "absolute",
+    right: 0,
+    bottom: -6
   }
 });

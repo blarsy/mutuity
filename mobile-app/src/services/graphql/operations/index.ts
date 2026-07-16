@@ -43,6 +43,9 @@ export const SEARCH_RESOURCES_QUERY = gql`
         id
         title
         description
+        createdAt
+        creatorAccountId
+        creatorDisplayName
         distanceKm
         latitude
         longitude
