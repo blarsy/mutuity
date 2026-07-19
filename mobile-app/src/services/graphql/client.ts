@@ -2,6 +2,7 @@ import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/clien
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { print } from "graphql";
+import { tap } from "rxjs";
 
 import { appSettings } from "../../config/appSettings";
 import { logAppEvent } from "../monitoring/logger";
@@ -50,7 +51,18 @@ function createDebugLink(): ApolloLink {
       }
     });
 
-    return forward(operation);
+    return forward(operation).pipe(
+      tap((result) => {
+        logAppEvent({
+          level: "debug",
+          message: "graphql-response",
+          details: {
+            operationName: operation.operationName,
+            result
+          }
+        });
+      })
+    );
   });
 }
 

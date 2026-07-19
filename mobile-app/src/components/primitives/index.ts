@@ -1,4 +1,5 @@
 export { AppCard } from "./AppCard";
+export { AuthDialog } from "./AuthDialog";
 export { AppSegmentedButtons } from "./AppSegmentedButtons";
 export { AppTextField } from "./AppTextField";
 export { PickerDialog } from "./PickerDialog";

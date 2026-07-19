@@ -87,9 +87,9 @@
 - [x] T030B [US1] Implement resource discovery data adapter and filter-to-query variable mapping in mobile-app/src/services/graphql/resources.ts
 - [x] T030C [US1] Wire Search resources screen to live backend query state (loading/error/retry/refetch) and remove default hardcoded dataset dependency in mobile-app/src/screens/resources/SearchResourcesScreen.tsx
 - [x] T030D [US1] Add contract coverage for Search resources adapter variable mapping and response normalization in mobile-app/tests/contract/us1-search-resources.contract.test.ts
-- [ ] T031 [US1] Port My resources list and CRUD entry points after gate pass in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
-- [ ] T031A [US1] Implement My resources list and resource CRUD GraphQL operations/adapters (list own resources, create, update, soft delete) in mobile-app/src/services/graphql/resources.ts and mobile-app/src/services/graphql/operations/index.ts
-- [ ] T031B [US1] Wire My resources list and edit screens to backend mutations/queries with optimistic-safe loading and error states in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
+- [x] T031 [US1] Port My resources list and CRUD entry points after gate pass in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
+- [x] T031A [US1] Implement My resources list and resource CRUD GraphQL operations/adapters (list own resources, create, update, soft delete) in mobile-app/src/services/graphql/resources.ts and mobile-app/src/services/graphql/operations/index.ts
+- [x] T031B [US1] Wire My resources list and edit screens to backend mutations/queries with optimistic-safe loading and error states in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
 - [ ] T032 [P] [US1] Port My bids workspace after gate pass in mobile-app/src/screens/bids/MyBidsScreen.tsx
 - [ ] T033 [P] [US1] Port Chat list and detail after gate pass in mobile-app/src/screens/chat/ChatListScreen.tsx and mobile-app/src/screens/chat/ChatDetailScreen.tsx
 - [ ] T034 [P] [US1] Port Notifications feed after gate pass in mobile-app/src/screens/notifications/NotificationsScreen.tsx
@@ -106,6 +106,9 @@
 - [ ] T038 [US1] Wire US1 navigation routes in mobile-app/src/navigation/US1Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
 - [ ] T039 [US1] Ensure fr/en labels for US1 screens in mobile-app/src/i18n/locales/en/us1.json and mobile-app/src/i18n/locales/fr/us1.json
 - [ ] T039A [US1] Implement anonymous browse-only route policy and restricted-surface auth prompts in mobile-app/src/navigation/AppNavigator.tsx and mobile-app/src/navigation/US1Navigator.tsx
+- [ ] T039B [US1] Draft and approve supporting auth contract in specs/014-mutuity-mobile-rewrite/ui-contracts/auth-entry.md
+- [ ] T039C [US1] Implement sign-in/create-account/password-reset entry surfaces and switch flow in mobile-app/src/screens/auth/LoginScreen.tsx, mobile-app/src/screens/auth/RegisterScreen.tsx, mobile-app/src/screens/auth/ForgotPasswordScreen.tsx, and mobile-app/src/navigation/AppNavigator.tsx
+- [ ] T039D [US1] Add acceptance coverage for restricted-surface auth entry and post-login return routing in mobile-app/tests/integration/us1-anonymous-access-matrix.acceptance.test.ts and mobile-app/tests/integration/us1-anonymous-restricted-routes.acceptance.test.ts
 
 **Checkpoint**: US1 is independently functional and releasable.
 

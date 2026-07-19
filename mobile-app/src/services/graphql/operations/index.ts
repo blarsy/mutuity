@@ -66,14 +66,29 @@ export const SEARCH_RESOURCES_QUERY = gql`
 export const MY_RESOURCES_QUERY = gql`
   query MyResources($creatorAccountId: UUID!, $first: Int, $after: Cursor) {
     allResources(
-      condition: { creatorAccountId: $creatorAccountId }
+      condition: { creatorAccountId: $creatorAccountId, isActive: true }
+      orderBy: ID_DESC
       first: $first
       after: $after
     ) {
       nodes {
         id
         title
+        description
         defaultTokenAmount
+        imageUrls
+        isActive
+        isProduct
+        isService
+        canBeTakenAway
+        canBeDelivered
+        canBeExchanged
+        canBeGiven
+        location
+        latitude
+        longitude
+        expiresAt
+        updatedAt
       }
       pageInfo {
         hasNextPage
@@ -220,7 +235,28 @@ export const UPDATE_RESOURCE_BY_ID_MUTATION = gql`
         title
         description
         defaultTokenAmount
+        imageUrls
+        isActive
+        isProduct
+        isService
+        canBeTakenAway
+        canBeDelivered
+        canBeExchanged
+        canBeGiven
+        location
+        latitude
+        longitude
+        expiresAt
+        updatedAt
       }
+    }
+  }
+`;
+
+export const DELETE_RESOURCE_BY_ID_MUTATION = gql`
+  mutation DeleteResourceById($id: UUID!) {
+    deleteResourceById(input: { id: $id }) {
+      deletedResourceId
     }
   }
 `;

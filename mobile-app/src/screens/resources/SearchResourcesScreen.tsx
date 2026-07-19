@@ -21,6 +21,7 @@ import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchSearchResources } from "../../services/graphql/resources";
+import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
 const MAX_DISTANCE_KM = 100;
@@ -590,7 +591,7 @@ export function SearchResourcesScreen({
                     </Text>
 
                     <View style={styles.foundCardBody}>
-                      <Text variant="titleMedium" numberOfLines={2}>
+                      <Text variant="titleMedium" numberOfLines={2} style={styles.foundCardTitle}>
                         {resource.title}
                       </Text>
                       <Text variant="labelSmall" style={styles.foundCardAuthor}>
@@ -735,27 +736,27 @@ const styles = StyleSheet.create({
     gap: designTokens.spacing.xs
   },
   resourcesList: {
-    gap: 8,
+    gap: 10,
     paddingBottom: 4
   },
   foundCard: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 5,
-    paddingVertical: 5,
+    alignItems: "stretch",
+    gap: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     backgroundColor: designTokens.colors.primaryContainer,
     borderRadius: designTokens.radius.md
   },
   foundCardImage: {
-    width: 82,
-    height: 82,
+    width: 92,
+    height: 92,
     borderRadius: designTokens.radius.md,
     backgroundColor: "#fff"
   },
   foundCardImageFallback: {
-    width: 82,
-    height: 82,
+    width: 92,
+    height: 92,
     borderRadius: designTokens.radius.md,
     backgroundColor: "#fff",
     alignItems: "center",
@@ -763,29 +764,43 @@ const styles = StyleSheet.create({
   },
   foundCardContent: {
     flex: 1,
-    marginRight: 2,
+    marginRight: 4,
     position: "relative"
   },
   foundCardPublishedAt: {
     color: designTokens.colors.primary,
     alignSelf: "flex-end",
-    fontSize: 10
+    fontFamily: appFontFamilies.general,
+    fontSize: 10,
+    lineHeight: 12
   },
   foundCardBody: {
     flex: 1,
-    justifyContent: "center"
+    justifyContent: "center",
+    gap: 2
+  },
+  foundCardTitle: {
+    fontFamily: appFontFamilies.altGeneral,
+    fontSize: 16,
+    lineHeight: 20
   },
   foundCardAuthor: {
     color: designTokens.colors.primary,
-    fontSize: 10
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: appFontFamilies.general
   },
   foundCardFlagsRow: {
     flexDirection: "row",
-    gap: 12
+    gap: 10,
+    marginTop: 1
   },
   foundCardFlagText: {
     textTransform: "uppercase",
-    fontSize: 10
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: appFontFamilies.altGeneral,
+    letterSpacing: 0.35
   },
   foundCardChatButton: {
     borderRadius: 0,

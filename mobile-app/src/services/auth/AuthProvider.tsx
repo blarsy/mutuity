@@ -4,6 +4,7 @@ import { bootstrapSession, clearPersistedToken, setPersistedToken } from "./sess
 
 export interface AuthSession {
   token: string | null;
+  accountId: string | null;
   authenticated: boolean;
   loading: boolean;
 }
@@ -17,9 +18,57 @@ export interface AuthContextValue {
 
 const initialSession: AuthSession = {
   token: null,
+  accountId: null,
   authenticated: false,
   loading: true
 };
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  const payloadSegment = parts[1];
+
+  if (!payloadSegment || typeof globalThis.atob !== "function") {
+    return null;
+  }
+
+  try {
+    const payloadBase64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = payloadBase64.padEnd(Math.ceil(payloadBase64.length / 4) * 4, "=");
+    const payloadJson = globalThis.atob(normalized);
+    const parsed = JSON.parse(payloadJson) as unknown;
+    return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveAccountIdFromToken(token: string | null): string | null {
+  if (!token) {
+    return null;
+  }
+
+  if (UUID_PATTERN.test(token)) {
+    return token;
+  }
+
+  if (token.startsWith("mock:")) {
+    const accountId = token.slice("mock:".length);
+    return UUID_PATTERN.test(accountId) ? accountId : null;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) {
+    return null;
+  }
+
+  const candidates = [payload.accountId, payload.account_id, payload.sub];
+  const accountId = candidates.find((value) => typeof value === "string" && UUID_PATTERN.test(value));
+
+  return typeof accountId === "string" ? accountId : null;
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -33,17 +82,26 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   useEffect(() => {
     let isMounted = true;
 
-    void bootstrapSession().then(({ token }) => {
-      if (!isMounted) {
-        return;
-      }
+    void bootstrapSession()
+      .then(({ token }) => {
+        if (!isMounted) {
+          return;
+        }
 
-      setSession({
-        token,
-        authenticated: Boolean(token),
-        loading: false
+        setSession({
+          token,
+          accountId: resolveAccountIdFromToken(token),
+          authenticated: Boolean(token),
+          loading: false
+        });
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSession({ token: null, accountId: null, authenticated: false, loading: false });
       });
-    });
 
     return () => {
       isMounted = false;
@@ -54,20 +112,32 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     () => ({
       session,
       signIn: async (token: string) => {
-        await setPersistedToken(token);
-        setSession({ token, authenticated: true, loading: false });
+        setSession({ token, accountId: resolveAccountIdFromToken(token), authenticated: true, loading: false });
+        try {
+          await setPersistedToken(token);
+        } catch (error) {
+          console.warn("[auth:persist-token-failed]", error);
+        }
       },
       signOut: async () => {
-        await clearPersistedToken();
-        setSession({ token: null, authenticated: false, loading: false });
+        setSession({ token: null, accountId: null, authenticated: false, loading: false });
+        try {
+          await clearPersistedToken();
+        } catch (error) {
+          console.warn("[auth:clear-token-failed]", error);
+        }
       },
       invalidateSession: async (reason?: string) => {
         if (reason) {
           console.warn("[auth:invalid-session]", reason);
         }
 
-        await clearPersistedToken();
-        setSession({ token: null, authenticated: false, loading: false });
+        setSession({ token: null, accountId: null, authenticated: false, loading: false });
+        try {
+          await clearPersistedToken();
+        } catch (error) {
+          console.warn("[auth:clear-token-failed]", error);
+        }
       }
     }),
     [session]

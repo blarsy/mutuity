@@ -42,3 +42,9 @@ This folder tracks UI-first approval status per canonical main screen.
 - [My profile](./my-profile.md)
 - [My preferences](./my-preferences.md)
 - [Contribution](./my-economics.md)
+
+## Supporting Auth Surfaces (Non-Canonical)
+
+These contracts support manual validation and route-guard behavior but are not part of the FR-014 canonical main-screen list and are not blocked by FR-013 main-screen gating.
+
+- [Auth entry (sign-in/create-account/reset)](./auth-entry.md)

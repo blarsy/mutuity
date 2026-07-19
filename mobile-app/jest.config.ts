@@ -8,7 +8,7 @@ const config: Config = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   collectCoverageFrom: ["src/**/*.{ts,tsx}"],
   transformIgnorePatterns: [
-    "node_modules/(?!((jest-)?react-native|@react-native|react-clone-referenced-element|@expo|expo(nent)?|@expo(nent)?/.*|expo-modules-core|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-gesture-handler|react-native-paper)/)"
+    "node_modules/(?!((jest-)?react-native|@react-native|react-clone-referenced-element|@expo|expo(nent)?|expo-.*|@expo(nent)?/.*|expo-modules-core|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-gesture-handler|react-native-paper)/)"
   ]
 };
 

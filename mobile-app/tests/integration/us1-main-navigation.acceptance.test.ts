@@ -39,7 +39,7 @@ describe("US1 main navigation acceptance", () => {
 
     await waitFor(() => {
       expect(screen.getByLabelText("Main navigation")).toBeTruthy();
-      expect(screen.getByRole("header", { name: "Mutuity" })).toBeTruthy();
+      expect(screen.getByRole("header", { name: "Explore" })).toBeTruthy();
     });
   });
 });

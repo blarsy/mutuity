@@ -154,6 +154,10 @@ As a mobile user, I can continue using the app in French or English with reliabl
 - **FR-027**: The Explore tab MUST provide a segmented control for Search resources and Search needs, plus campaign multi-select filter chips visible beneath the search bar.
 - **FR-028**: The My Hub tab MUST provide global add actions (Add Resource, Add Need), My listings previews (My resources and My needs with View All links), Active bids, Active claims, and archive links for inactive bids and claims.
 - **FR-029**: The top-right account entry point MUST show a generic profile icon for anonymous users and open a sign-in/registration sheet, and MUST show the user avatar for authenticated users and open the account menu.
+- **FR-030**: Anonymous users MUST be able to open sign-in and create-account surfaces from restricted-screen prompts and from the top-right account entry point.
+- **FR-031**: The sign-in and create-account surfaces MUST allow switching between each other and MUST provide a password-reset entry point.
+- **FR-032**: After successful authentication from a restricted flow, the app MUST return the user to the originally requested destination when allowed by route policy.
+- **FR-033**: Authentication flows MUST define loading, validation, and error states in both French and English.
 
 ### Key Entities
 

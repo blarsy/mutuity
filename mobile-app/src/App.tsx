@@ -10,6 +10,7 @@ import { appFontAssets } from "./theme/fonts";
 
 const isStorybookEnabled = process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === "true";
 const MINIMUM_SPLASH_DURATION_MS = 2000;
+const resolvedMinimumSplashDurationMs = process.env.NODE_ENV === "test" ? 0 : MINIMUM_SPLASH_DURATION_MS;
 
 export default function App(): React.JSX.Element {
   if (isStorybookEnabled) {
@@ -26,7 +27,7 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setMinimumSplashElapsed(true);
-    }, MINIMUM_SPLASH_DURATION_MS);
+    }, resolvedMinimumSplashDurationMs);
 
     return () => {
       clearTimeout(timeout);
