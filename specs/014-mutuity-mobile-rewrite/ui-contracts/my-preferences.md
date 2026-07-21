@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainShellStack -> AccountMenuOverlay -> MyPreferencesScreen (account menu section, not a bottom tab).
-- Entry points: Top-right account icon -> Account Menu -> Preferences, deep link mutuity://account/preferences (auth required).
-- Exit/back behavior: Close/back returns to previously active tab screen with tab stack state preserved.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyPreferencesScreen.
+- Entry points: Bottom tab My Hub then left drawer bottom item Preferences, deep link mutuity://account/preferences (auth required).
+- Exit/back behavior: Close/back returns to My Hub drawer shell with selected tab state preserved.
 - [x] Approved
 
 ## States
@@ -51,7 +51,7 @@
 	1. Select realtime vs summary mode per notification domain
 	2. Select summary cadence (1/3/7/30 days) when summary mode is enabled
 	3. Save preferences
-- Permission/visibility rules: Preferences is hidden from anonymous users and accessible only from authenticated account menu.
+- Permission/visibility rules: Preferences is hidden from anonymous users and accessible only from authenticated My Hub drawer navigation.
 - Success feedback: Save displays operation feedback success message and persists the selected schedule values.
 - [x] Approved
 

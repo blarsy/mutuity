@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainTabs -> MyHubStack -> MyNeedsScreen (reachable from My Hub listings section).
-- Entry points: Bottom tab My Hub then View all in My needs preview, post-create success path from Add Need action.
-- Exit/back behavior: Back returns to MyHubScreen listings section; active tab remains My Hub and dashboard state is preserved.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyNeedsScreen.
+- Entry points: Bottom tab My Hub then left drawer top item My needs.
+- Exit/back behavior: Back returns to My Hub drawer shell; active tab remains My Hub.
 - [ ] Approved
 
 ## States

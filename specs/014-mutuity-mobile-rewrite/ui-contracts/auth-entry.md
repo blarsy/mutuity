@@ -18,6 +18,9 @@
 	- Successful authentication returns to originally requested destination when route policy allows it.
 - [x] Approved
 
+Authenticated top-right avatar behavior note:
+- The authenticated top-right avatar menu does not route to account surfaces; it contains only one item, Log out.
+
 ## States
 
 ### Empty State

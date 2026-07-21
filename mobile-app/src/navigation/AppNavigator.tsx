@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Appbar, Text } from "react-native-paper";
+import { Appbar, Menu, Text } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -13,6 +13,14 @@ import { authenticateWithPassword } from "../services/graphql/auth";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
 import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScreen";
+import { MyBidsScreen } from "../screens/bids/MyBidsScreen";
+import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
+import { ChatListScreen } from "../screens/chat/ChatListScreen";
+import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
+import { NotificationsScreen as MobileNotificationsScreen } from "../screens/notifications/NotificationsScreen";
+import { MyProfileScreen } from "../screens/profile/MyProfileScreen";
+import { MyPreferencesScreen } from "../screens/profile/MyPreferencesScreen";
+import { MyEconomicsScreen } from "../screens/economics/MyEconomicsScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
@@ -20,6 +28,16 @@ import type { MyResourceItem } from "../services/graphql/resources";
 
 type MainRouteName = "Explore" | "MyHub" | "Campaigns" | "Chat" | "Notifications";
 type AuthEntryScreen = "login" | "register" | "forgotPassword";
+type MyHubDrawerItem =
+  | "myResources"
+  | "receivedBids"
+  | "sentBids"
+  | "myNeeds"
+  | "receivedClaims"
+  | "sentClaims"
+  | "profile"
+  | "preferences"
+  | "contribution";
 
 interface AuthEntryState {
   screen: AuthEntryScreen;
@@ -35,6 +53,10 @@ interface RestrictedTabPlaceholderScreenProps {
 interface MainTabScreenProps {
   authenticated: boolean;
   onRequestAuth: (screen: AuthEntryScreen, routeName: MainRouteName) => void;
+}
+
+interface MyHubScreenProps extends MainTabScreenProps {
+  drawerVisible: boolean;
 }
 
 interface AuthScreenShellProps {
@@ -139,16 +161,115 @@ function AuthScreenShell({
   );
 }
 
-function MyHubScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
+function MyHubDrawerPlaceholderSurface({ title, body }: { title: string; body: string }): React.JSX.Element {
+  return (
+    <ScreenContainer>
+      <AppCard accessibilityLabel={title}>
+        <Text accessibilityRole="header" variant="headlineSmall">
+          {title}
+        </Text>
+        <Text variant="bodyMedium">{body}</Text>
+      </AppCard>
+    </ScreenContainer>
+  );
+}
+
+function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const {
-    session: { accountId }
+    session: { accountId },
+    signOut
   } = useAuth();
   const [editingResource, setEditingResource] = useState<MyResourceItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [activeDrawerItem, setActiveDrawerItem] = useState<MyHubDrawerItem>("myResources");
 
   const canAccessMyHub = authenticated && Boolean(accountId);
+
+  const topDrawerItems: Array<{ key: MyHubDrawerItem; label: string }> = [
+    { key: "myResources", label: t("myHubDrawerMyResources", { ns: "us1", defaultValue: "My resources" }) },
+    { key: "receivedBids", label: t("myHubDrawerReceivedBids", { ns: "us1", defaultValue: "Received bids" }) },
+    { key: "sentBids", label: t("myHubDrawerSentBids", { ns: "us1", defaultValue: "Sent bids" }) },
+    { key: "myNeeds", label: t("myHubDrawerMyNeeds", { ns: "us1", defaultValue: "My needs" }) },
+    { key: "receivedClaims", label: t("myHubDrawerReceivedClaims", { ns: "us1", defaultValue: "Received claims" }) },
+    { key: "sentClaims", label: t("myHubDrawerSentClaims", { ns: "us1", defaultValue: "Sent claims" }) }
+  ];
+
+  const bottomDrawerItems: Array<{ key: MyHubDrawerItem; label: string }> = [
+    { key: "profile", label: t("myHubDrawerProfile", { ns: "us1", defaultValue: "Profile" }) },
+    { key: "preferences", label: t("myHubDrawerPreferences", { ns: "us1", defaultValue: "Preferences" }) },
+    { key: "contribution", label: t("myHubDrawerContribution", { ns: "us1", defaultValue: "Contribution" }) }
+  ];
+
+  const drawerIconByItem: Record<MyHubDrawerItem, keyof typeof MaterialCommunityIcons.glyphMap> = {
+    myResources: "cube-outline",
+    receivedBids: "arrow-down-circle-outline",
+    sentBids: "arrow-up-circle-outline",
+    myNeeds: "clipboard-list-outline",
+    receivedClaims: "download-circle-outline",
+    sentClaims: "arrow-up-circle-outline",
+    profile: "account-circle-outline",
+    preferences: "tune-variant",
+    contribution: "cash-multiple"
+  };
+
+  const renderActiveSurface = (): React.JSX.Element => {
+    if (!accountId) {
+      return <LoadingScreen />;
+    }
+
+    if (activeDrawerItem === "myResources") {
+      return (
+        <MyResourcesScreen
+          creatorAccountId={accountId}
+          refreshToken={refreshToken}
+          onAddResource={() => {
+            setIsCreating(true);
+            setEditingResource(null);
+          }}
+          onEditResource={(resource) => {
+            setIsCreating(false);
+            setEditingResource(resource);
+          }}
+        />
+      );
+    }
+
+    if (activeDrawerItem === "receivedBids" || activeDrawerItem === "sentBids") {
+      return <MyBidsScreen direction={activeDrawerItem === "receivedBids" ? "received" : "sent"} />;
+    }
+
+    if (activeDrawerItem === "myNeeds") {
+      return (
+        <MyHubDrawerPlaceholderSurface
+          title={t("myHubDrawerMyNeeds", { ns: "us1", defaultValue: "My needs" })}
+          body={t("screenComingSoon", { defaultValue: "This screen is not implemented yet." })}
+        />
+      );
+    }
+
+    if (activeDrawerItem === "receivedClaims" || activeDrawerItem === "sentClaims") {
+      return <MyClaimsScreen direction={activeDrawerItem === "receivedClaims" ? "received" : "sent"} />;
+    }
+
+    if (activeDrawerItem === "profile") {
+      return (
+        <MyProfileScreen
+          accountId={accountId}
+          onLogout={async () => {
+            await signOut();
+          }}
+        />
+      );
+    }
+
+    if (activeDrawerItem === "preferences") {
+      return <MyPreferencesScreen accountId={accountId} />;
+    }
+
+    return <MyEconomicsScreen accountId={accountId} />;
+  };
 
   if (!canAccessMyHub) {
     return (
@@ -179,18 +300,59 @@ function MyHubScreen({ authenticated, onRequestAuth }: MainTabScreenProps): Reac
   }
 
   return (
-    <MyResourcesScreen
-      creatorAccountId={accountId}
-      refreshToken={refreshToken}
-      onAddResource={() => {
-        setIsCreating(true);
-        setEditingResource(null);
-      }}
-      onEditResource={(resource) => {
-        setIsCreating(false);
-        setEditingResource(resource);
-      }}
-    />
+    <View style={styles.myHubLayout}>
+      {drawerVisible ? (
+        <View style={styles.myHubDrawer}>
+          <View style={styles.myHubDrawerSection}>
+            {topDrawerItems.map((item) => {
+              const selected = activeDrawerItem === item.key;
+
+              return (
+                <Pressable
+                  key={item.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.label}
+                  onPress={() => setActiveDrawerItem(item.key)}
+                  style={[styles.drawerItem, selected ? styles.drawerItemSelected : null]}
+                >
+                  <MaterialCommunityIcons
+                    name={drawerIconByItem[item.key]}
+                    size={20}
+                    color={selected ? "#ffffff" : "#7a3a15"}
+                  />
+                  <Text style={[styles.drawerItemLabel, selected ? styles.drawerItemLabelSelected : null]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={styles.myHubDrawerSection}>
+            {bottomDrawerItems.map((item) => {
+              const selected = activeDrawerItem === item.key;
+
+              return (
+                <Pressable
+                  key={item.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.label}
+                  onPress={() => setActiveDrawerItem(item.key)}
+                  style={[styles.drawerItem, selected ? styles.drawerItemSelected : null]}
+                >
+                  <MaterialCommunityIcons
+                    name={drawerIconByItem[item.key]}
+                    size={20}
+                    color={selected ? "#ffffff" : "#7a3a15"}
+                  />
+                  <Text style={[styles.drawerItemLabel, selected ? styles.drawerItemLabelSelected : null]}>{item.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
+
+      <View style={styles.myHubContent}>{renderActiveSurface()}</View>
+    </View>
   );
 }
 
@@ -212,6 +374,10 @@ function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): 
 
 function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
+  const {
+    session: { accountId }
+  } = useAuth();
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   if (!authenticated) {
     return (
@@ -223,11 +389,34 @@ function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React
     );
   }
 
-  return <PlaceholderScreen title={t("chatLabel", { ns: "us1" })} />;
+  if (!accountId) {
+    return <LoadingScreen />;
+  }
+
+  if (activeConversationId) {
+    return (
+      <ChatDetailScreen
+        conversationId={activeConversationId}
+        currentAccountId={accountId}
+        conversation={null}
+        onBackToList={() => setActiveConversationId(null)}
+      />
+    );
+  }
+
+  return (
+    <ChatListScreen
+      onOpenMyHub={() => undefined}
+      onOpenConversation={(conversationId) => setActiveConversationId(conversationId)}
+    />
+  );
 }
 
 function NotificationsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
+  const {
+    session: { accountId }
+  } = useAuth();
 
   if (!authenticated) {
     return (
@@ -239,18 +428,30 @@ function NotificationsScreen({ authenticated, onRequestAuth }: MainTabScreenProp
     );
   }
 
-  return <PlaceholderScreen title={t("notificationsLabel", { ns: "us1" })} />;
+  if (!accountId) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <MobileNotificationsScreen
+      accountId={accountId}
+      onOpenNotification={() => undefined}
+    />
+  );
 }
 
 function RootNavigator(): React.JSX.Element {
   const {
-    session: { authenticated, loading },
-    signIn
+    session: { authenticated, loading, accountId },
+    signIn,
+    signOut
   } = useAuth();
   const { t } = useTranslation(["common", "us1"]);
   const [authEntry, setAuthEntry] = useState<AuthEntryState | null>(null);
   const [activeRouteName, setActiveRouteName] = useState<MainRouteName>("Explore");
   const [mainNavigatorVersion, setMainNavigatorVersion] = useState(0);
+  const [accountMenuVisible, setAccountMenuVisible] = useState(false);
+  const [myHubDrawerVisible, setMyHubDrawerVisible] = useState(true);
 
   const requestAuth = (screen: AuthEntryScreen, routeName: MainRouteName): void => {
     setAuthEntry({ screen, returnTo: routeName });
@@ -301,25 +502,66 @@ function RootNavigator(): React.JSX.Element {
     <SafeAreaProvider>
       <SafeAreaView edges={["top", "right", "left"]} style={styles.fill}>
         <Appbar.Header mode="center-aligned" statusBarHeight={0} style={styles.header}>
-          <Appbar.Action
-            accessibilityLabel="Support"
-            icon="help-circle-outline"
-            size={24}
-            color="#000"
-            style={styles.headerAction}
-            onPress={() => undefined}
-          />
+          <View style={styles.headerLeadingActions}>
+            {activeRouteName === "MyHub" ? (
+              <Appbar.Action
+                accessibilityLabel={t("toggleDrawer", { ns: "us1", defaultValue: "Toggle drawer" })}
+                icon={myHubDrawerVisible ? "menu-open" : "menu"}
+                size={24}
+                color="#000"
+                style={styles.headerAction}
+                onPress={() => setMyHubDrawerVisible((previous) => !previous)}
+              />
+            ) : (
+              <View style={styles.headerActionSpacer} />
+            )}
+            <Appbar.Action
+              accessibilityLabel={t("support", { ns: "common", defaultValue: "Support" })}
+              icon="question"
+              size={24}
+              color="#000"
+              style={styles.headerAction}
+              onPress={() => undefined}
+            />
+          </View>
           <Text accessibilityRole="header" style={styles.title}>
             {currentHeaderTitle}
           </Text>
-          <Appbar.Action
-            accessibilityLabel="Account"
-            icon="account-outline"
-            size={24}
-            color="#000"
-            style={styles.headerAction}
-            onPress={() => requestAuth("login", "Explore")}
-          />
+          {authenticated ? (
+            <Menu
+              visible={accountMenuVisible}
+              onDismiss={() => setAccountMenuVisible(false)}
+              anchor={(
+                <Appbar.Action
+                  accessibilityLabel="Account"
+                  icon="account-outline"
+                  size={24}
+                  color="#000"
+                  style={styles.headerAction}
+                  onPress={() => setAccountMenuVisible(true)}
+                />
+              )}
+            >
+              <Menu.Item
+                title={t("logout", { ns: "us1", defaultValue: "Log out" })}
+                onPress={async () => {
+                  setAccountMenuVisible(false);
+                  await signOut();
+                }}
+              />
+            </Menu>
+          ) : (
+            <Appbar.Action
+              accessibilityLabel="Account"
+              icon="account-outline"
+              size={24}
+              color="#000"
+              style={styles.headerAction}
+              onPress={() => {
+                requestAuth("login", "Explore");
+              }}
+            />
+          )}
         </Appbar.Header>
 
         {loading ? (
@@ -370,7 +612,13 @@ function RootNavigator(): React.JSX.Element {
                   options={{ tabBarLabel: t("exploreLabel", { ns: "us1" }) }}
                 />
                 <Tab.Screen name="MyHub" options={{ tabBarLabel: t("myHubLabel", { ns: "us1" }) }}>
-                  {() => <MyHubScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
+                  {() => (
+                    <MyHubScreen
+                      authenticated={authenticated}
+                      onRequestAuth={requestAuth}
+                      drawerVisible={myHubDrawerVisible}
+                    />
+                  )}
                 </Tab.Screen>
                 <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }) }}>
                   {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
@@ -426,5 +674,59 @@ const styles = StyleSheet.create({
   },
   headerAction: {
     backgroundColor: "#fef0e3"
+  },
+  headerActionSpacer: {
+    width: 40,
+    height: 40
+  },
+  headerLeadingActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4
+  },
+  myHubLayout: {
+    flex: 1,
+    flexDirection: "row"
+  },
+  myHubDrawer: {
+    backgroundColor: "#fff2e6",
+    borderRightWidth: 1,
+    borderRightColor: "#f1d6bf",
+    paddingVertical: 4,
+    paddingRight: 8,
+    paddingLeft: 0,
+    justifyContent: "space-between"
+  },
+  myHubDrawerSection: {
+    gap: 8
+  },
+  drawerItem: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderColor: "#f1d6bf"
+  },
+  drawerItemSelected: {
+    backgroundColor: "#ff4401",
+    borderColor: "#ff4401",
+    paddingVertical: 4,
+  },
+  drawerItemLabel: {
+    color: "#7a3a15",
+    textAlign: "center",
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: "600"
+  },
+  drawerItemLabelSelected: {
+    color: "#ffffff"
+  },
+  myHubContent: {
+    flex: 1
   }
 });

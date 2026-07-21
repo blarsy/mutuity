@@ -18,7 +18,7 @@ As a returning mobile user, I can keep using the app for the everyday actions I 
 **Acceptance Scenarios**:
 
 1. **Given** an existing mobile user, **When** they browse and search available resources, **Then** they can find items by category and location as they do today.
-2. **Given** an existing mobile user, **When** they use the 5-tab navigation (Explore, My Hub, Campaigns, Chat, Notifications) and the top-right account menu, **Then** bids, claims, chat, notifications, token balance, profile, and preferences remain available and function as expected.
+2. **Given** an existing mobile user, **When** they use the 5-tab navigation (Explore, My Hub, Campaigns, Chat, Notifications), the My Hub left drawer, and the top-right avatar menu, **Then** resources, bids, needs, claims, profile, preferences, contribution, chat, and notifications remain available and function as expected.
 3. **Given** an existing mobile user, **When** they create, edit, or delete a resource, **Then** the resource lifecycle still works end to end.
 4. **Given** an anonymous user, **When** they open Search resources or Search needs, **Then** they can browse those screens without authentication.
 5. **Given** an anonymous user, **When** they open My resources, My needs, My bids, My claims, Chat, Notifications, or My campaigns, **Then** each screen shows a clear prompt to log in or create an account.
@@ -28,7 +28,7 @@ As a returning mobile user, I can keep using the app for the everyday actions I 
 
 | Condition | Example | Expected Outcome |
 |---|---|---|
-| Returning user opens the app | User signs in and lands on the main navigation | The 5-tab navigation and top-right account menu expose the same familiar mobile sections |
+| Returning user opens the app | User signs in and lands on the main navigation | The 5-tab navigation plus the My Hub drawer expose workspace/account sections, while the top-right avatar menu exposes logout |
 | User searches resources | User filters by category and distance | Matching resources are shown |
 | User manages their own resource | User edits title, price, or images | The update is saved and visible |
 | Anonymous user explores the app | User opens Search resources or Search needs without signing in | Browse-only screens are usable and restricted screens show the expected auth prompt or are not reachable |
@@ -150,10 +150,10 @@ As a mobile user, I can continue using the app in French or English with reliabl
 - **FR-023**: The mobile app MUST support browse-only anonymous access with the following canonical behavior: Search resources and Search needs are accessible without authentication; My resources, My needs, My bids, My claims, Chat, Notifications, and My campaigns show a login/create-account invitation; My profile, My preferences, and Contribution are not accessible through any UI action while anonymous.
 - **FR-024**: The mobile app MUST enforce anonymous route guards for all restricted main screens, including deep-link entry points.
 - **FR-025**: The mobile app MUST implement a 5-tab bottom navigator with the following fixed order: Explore, My Hub, Campaigns, Chat, Notifications.
-- **FR-026**: The mobile app MUST expose account/profile surfaces through a top-right account menu (drawer or modal sheet), not through an additional bottom tab.
+- **FR-026**: The mobile app MUST expose account/profile surfaces through the My Hub left drawer (bottom section), not through an additional bottom tab.
 - **FR-027**: The Explore tab MUST provide a segmented control for Search resources and Search needs, plus campaign multi-select filter chips visible beneath the search bar.
-- **FR-028**: The My Hub tab MUST provide global add actions (Add Resource, Add Need), My listings previews (My resources and My needs with View All links), Active bids, Active claims, and archive links for inactive bids and claims.
-- **FR-029**: The top-right account entry point MUST show a generic profile icon for anonymous users and open a sign-in/registration sheet, and MUST show the user avatar for authenticated users and open the account menu.
+- **FR-028**: The My Hub tab MUST provide a left drawer with top items in this order: My resources, Received bids, Sent bids, My needs, Received claims, Sent claims; and bottom items in this order: Profile, Preferences, Contribution.
+- **FR-029**: The top-right account entry point MUST show a generic profile icon for anonymous users and open a sign-in/registration sheet, and MUST show the user avatar for authenticated users and open a menu that contains only one item: Log out.
 - **FR-030**: Anonymous users MUST be able to open sign-in and create-account surfaces from restricted-screen prompts and from the top-right account entry point.
 - **FR-031**: The sign-in and create-account surfaces MUST allow switching between each other and MUST provide a password-reset entry point.
 - **FR-032**: After successful authentication from a restricted flow, the app MUST return the user to the originally requested destination when allowed by route policy.

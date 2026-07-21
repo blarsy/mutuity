@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainShellStack -> AccountMenuOverlay -> MyProfileScreen (account menu section, not a bottom tab).
-- Entry points: Top-right account icon -> Account Menu -> Profile, deep link mutuity://account/profile (auth required).
-- Exit/back behavior: Close/back returns to previously active tab screen with tab stack state preserved.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyProfileScreen.
+- Entry points: Bottom tab My Hub then left drawer bottom item Profile, deep link mutuity://account/profile (auth required).
+- Exit/back behavior: Close/back returns to My Hub drawer shell with selected tab state preserved.
 - [x] Approved
 
 ## States
@@ -50,10 +50,8 @@
 - Action list and order:
 	1. Edit profile fields and save
 	2. Open change password flow
-	3. Open preferences subsection
-	4. Open contribution/tokens subsection
-	5. Logout
-	6. Delete account (two-step confirmation)
+	3. Logout
+	4. Delete account (two-step confirmation)
 - Permission/visibility rules: My profile is hidden from anonymous navigation; all actions require authenticated account context.
 - Success feedback: Save/password success surfaces confirmation toast/snackbar; logout and delete account reset navigation to allowed signed-out surface.
 - [x] Approved
@@ -62,7 +60,7 @@
 
 - English labels verified: Profile, Edit profile, Change password, Preferences, Logout, Delete account.
 - French labels verified: Profil, Modifier le profil, Changer le mot de passe, Preferences, Deconnexion, Supprimer le compte.
-- Terminology alignment notes: Keep account-menu naming aligned with Profile/Preferences/Contribution sections defined in navigation contract.
+- Terminology alignment notes: Keep drawer naming aligned with Profile/Preferences/Contribution sections defined in navigation contract.
 - [x] Approved
 
 ## Notes

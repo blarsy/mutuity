@@ -3,6 +3,15 @@
   "mainNavigation": "Navigation principale",
   "exploreLabel": "Explorer",
   "myHubLabel": "Mon espace",
+  "myHubDrawerMyResources": "Mes ressources",
+  "myHubDrawerReceivedBids": "Offres recues",
+  "myHubDrawerSentBids": "Offres envoyees",
+  "myHubDrawerMyNeeds": "Mes besoins",
+  "myHubDrawerReceivedClaims": "Claims recus",
+  "myHubDrawerSentClaims": "Claims envoyes",
+  "myHubDrawerProfile": "Profil",
+  "myHubDrawerPreferences": "Preferences",
+  "myHubDrawerContribution": "Contribution",
   "campaignsLabel": "Campagnes",
   "chatLabel": "Chat",
   "notificationsLabel": "Notifications",
@@ -22,6 +31,7 @@
   "backToSignIn": "Retour a la connexion",
   "continue": "Continuer",
   "sendResetLink": "Envoyer le lien de reinitialisation",
+  "logout": "Se deconnecter",
   "authSuccessReturn": "Retour vers votre ecran demande",
   "authFailedMessage": "La connexion a echoue. Verifiez vos identifiants et reessayez."
 }

@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainTabs -> MyHubStack -> MyClaimsScreen (Active claims section surface).
-- Entry points: Bottom tab My Hub then Active claims section entry, contextual links from need claim flows.
-- Exit/back behavior: Back returns to MyHubScreen Active claims section; active tab remains My Hub.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyClaimsScreen.
+- Entry points: Bottom tab My Hub then left drawer top item Received claims or Sent claims.
+- Exit/back behavior: Back returns to My Hub drawer shell and preserves the previously selected claim segment.
 - [ ] Approved
 
 ## States

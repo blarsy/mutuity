@@ -286,3 +286,287 @@ export const UPDATE_CAMPAIGN_BY_ID_MUTATION = gql`
     }
   }
 `;
+
+export const SENT_RESOURCE_BIDS_QUERY = gql`
+  query SentResourceBids($first: Int, $after: Cursor, $activeOnly: Boolean) {
+    sentResourceBids(first: $first, after: $after, activeOnly: $activeOnly) {
+      nodes {
+        id
+        message
+        proposedTokenAmount
+        isActive
+        status
+        updatedAt
+        resourceByResourceId {
+          id
+          title
+        }
+        accountByBidderAccountId {
+          id
+          displayName
+        }
+        accountByRespondedByAccountId {
+          id
+          displayName
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const RECEIVED_RESOURCE_BIDS_QUERY = gql`
+  query ReceivedResourceBids($first: Int, $after: Cursor, $activeOnly: Boolean) {
+    receivedResourceBids(first: $first, after: $after, activeOnly: $activeOnly) {
+      nodes {
+        id
+        message
+        proposedTokenAmount
+        isActive
+        status
+        updatedAt
+        resourceByResourceId {
+          id
+          title
+        }
+        accountByBidderAccountId {
+          id
+          displayName
+        }
+        accountByRespondedByAccountId {
+          id
+          displayName
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const CHAT_CONVERSATIONS_QUERY = gql`
+  query ChatConversations($first: Int, $after: Cursor) {
+    allChatConversationSummaries(first: $first, after: $after) {
+      nodes {
+        conversationId
+        conversationKind
+        contextTitle
+        lastMessagePreview
+        lastActivityAt
+        otherAccountId
+        unreadCount
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const RESOURCE_CONVERSATION_BY_ID_QUERY = gql`
+  query ResourceConversationById($id: UUID!) {
+    resourceConversationById(id: $id) {
+      id
+      resourceId
+      ownerAccountId
+      bidderAccountId
+      resourceByResourceId {
+        id
+        title
+      }
+      accountByOwnerAccountId {
+        id
+        displayName
+      }
+      accountByBidderAccountId {
+        id
+        displayName
+      }
+    }
+  }
+`;
+
+export const RESOURCE_MESSAGES_QUERY = gql`
+  query ResourceMessages($conversationId: UUID!, $first: Int, $after: Cursor) {
+    allResourceMessages(
+      condition: { conversationId: $conversationId }
+      first: $first
+      after: $after
+      orderBy: ID_ASC
+    ) {
+      nodes {
+        id
+        body
+        createdAt
+        senderAccountId
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const CREATE_RESOURCE_MESSAGE_MUTATION = gql`
+  mutation CreateResourceMessage($input: CreateResourceMessageInput!) {
+    createResourceMessage(input: $input) {
+      resourceMessage {
+        id
+        body
+        createdAt
+        senderAccountId
+      }
+    }
+  }
+`;
+
+export const MARK_RESOURCE_MESSAGES_READ_MUTATION = gql`
+  mutation MarkResourceMessagesRead($input: MarkResourceMessagesReadInput!) {
+    markResourceMessagesRead(input: $input) {
+      integer
+    }
+  }
+`;
+
+export const ACCOUNT_NOTIFICATIONS_QUERY = gql`
+  query AccountNotifications($accountId: UUID!, $first: Int, $after: Cursor) {
+    allAccountNotifications(
+      condition: { recipientAccountId: $accountId }
+      first: $first
+      after: $after
+      orderBy: CREATED_AT_DESC
+    ) {
+      nodes {
+        id
+        eventType
+        payload
+        createdAt
+        readAt
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const MARK_ACCOUNT_NOTIFICATION_READ_MUTATION = gql`
+  mutation MarkAccountNotificationRead($input: MarkAccountNotificationReadInput!) {
+    markAccountNotificationRead(input: $input) {
+      accountNotification {
+        id
+        readAt
+      }
+    }
+  }
+`;
+
+export const MARK_ALL_NOTIFICATIONS_READ_MUTATION = gql`
+  mutation MarkAllNotificationsRead($input: MarkAllNotificationsReadInput!) {
+    markAllNotificationsRead(input: $input) {
+      integer
+    }
+  }
+`;
+
+export const ACCOUNT_PROFILE_QUERY = gql`
+  query AccountProfile($id: UUID!) {
+    accountById(id: $id) {
+      id
+      displayName
+      bio
+      location
+      preferredLanguage
+    }
+  }
+`;
+
+export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
+  mutation UpdateAccountProfile($id: UUID!, $accountPatch: AccountPatch!) {
+    updateAccountById(input: { id: $id, accountPatch: $accountPatch }) {
+      account {
+        id
+        displayName
+        bio
+        location
+      }
+    }
+  }
+`;
+
+export const CURRENT_TOKEN_BALANCE_QUERY = gql`
+  query CurrentTokenBalance {
+    currentTokenBalance
+  }
+`;
+
+export const TOKEN_HISTORY_QUERY = gql`
+  query TokenHistory($accountId: UUID!, $first: Int, $after: Cursor) {
+    allTokenMovements(
+      condition: { accountId: $accountId }
+      first: $first
+      after: $after
+      orderBy: CREATED_AT_DESC
+    ) {
+      nodes {
+        id
+        amountDelta
+        eventType
+        createdAt
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const ACCOUNT_DELIVERY_PREFERENCES_QUERY = gql`
+  query AccountDeliveryPreferences($accountId: UUID!, $first: Int) {
+    allAccountDeliveryPreferences(condition: { accountId: $accountId }, first: $first) {
+      nodes {
+        accountId
+        eventCategory
+        deliveryStrategy
+        summaryFrequencyDays
+      }
+    }
+  }
+`;
+
+export const UPDATE_ACCOUNT_DELIVERY_PREFERENCE_MUTATION = gql`
+  mutation UpdateAccountDeliveryPreference(
+    $input: UpdateAccountDeliveryPreferenceByAccountIdAndEventCategoryInput!
+  ) {
+    updateAccountDeliveryPreferenceByAccountIdAndEventCategory(input: $input) {
+      accountDeliveryPreference {
+        accountId
+        eventCategory
+        deliveryStrategy
+        summaryFrequencyDays
+      }
+    }
+  }
+`;
+
+export const CREATE_ACCOUNT_DELIVERY_PREFERENCE_MUTATION = gql`
+  mutation CreateAccountDeliveryPreference($input: CreateAccountDeliveryPreferenceInput!) {
+    createAccountDeliveryPreference(input: $input) {
+      accountDeliveryPreference {
+        accountId
+        eventCategory
+        deliveryStrategy
+        summaryFrequencyDays
+      }
+    }
+  }
+`;

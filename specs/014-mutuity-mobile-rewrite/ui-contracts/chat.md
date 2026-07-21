@@ -9,7 +9,7 @@
 ## Navigation Placement
 
 - Tab/stack location: MainTabs -> ChatStack -> ChatListScreen (tab landing).
-- Entry points: Bottom tab Chat, contextual Chat actions from My Hub active bids/claims rows, deep link mutuity://chat/{accountId}.
+- Entry points: Bottom tab Chat, contextual Chat actions from My Hub drawer-led bids/claims workflows, deep link mutuity://chat/{accountId}.
 - Exit/back behavior: Chat detail back returns to ChatListScreen conversation list; active tab remains Chat.
 - [x] Approved
 
@@ -20,11 +20,11 @@
 - Trigger: User has no active/past conversations, or anonymous user accesses Chat.
 - Copy (en/fr):
 	- en: No conversation yet.
-	- en supporting: Start from a bid or claim action to open a conversation.
+	- en supporting: Start from a bid or claim workflow to open a conversation.
 	- fr: Aucune conversation pour le moment.
 	- fr supporting: Demarrez depuis une action d'offre ou de claim pour ouvrir une conversation.
 - CTA:
-	- Primary (authenticated): Open My Hub active bids/claims
+	- Primary (authenticated): Open My Hub drawer bids/claims entries
 	- Primary (anonymous): Sign in / Create account
 - [x] Approved
 

@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainTabs -> MyHubStack -> MyResourcesScreen (reachable from My Hub listings section).
-- Entry points: Bottom tab My Hub then View all in My resources preview, post-create success path from Add Resource action.
-- Exit/back behavior: Back returns to MyHubScreen listings section; active tab remains My Hub and dashboard state is preserved.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyResourcesScreen.
+- Entry points: Bottom tab My Hub then left drawer top item My resources.
+- Exit/back behavior: Back returns to My Hub drawer shell; active tab remains My Hub.
 - [ ] Approved
 
 ## States

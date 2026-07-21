@@ -76,7 +76,7 @@ Rule:
 **Project Type**: Mobile app (React Native + Expo)  
 **Performance Goals**: App startup <2s, smooth 60 fps UI on mid-range devices, GraphQL queries <500ms p95  
 **Constraints**: Offline-capable (caching), <150 MB bundle size, support French/English from day one, preserve Tope-là operational behaviors that users and support depend on  
-**Scale/Scope**: The main shell uses 5 bottom tabs with account surfaces exposed via a top-right account menu, while still tracking 12 canonical screens for migration, 25+ total screens, operational foundation services for logging/session/push/support/update control, and 40+ GraphQL operations reused from the web backend over an estimated 8 weeks.
+**Scale/Scope**: The main shell uses 5 bottom tabs with My Hub drawer-driven workspace/account navigation and a logout-only top-right avatar menu, while still tracking 12 canonical screens for migration, 25+ total screens, operational foundation services for logging/session/push/support/update control, and 40+ GraphQL operations reused from the web backend over an estimated 8 weeks.
 
 ## Constitution Check
 
@@ -236,17 +236,19 @@ Mobile app will consume the following GraphQL operations (already defined in web
 
 ### Navigation Structure
 
-Main shell navigation (React Navigation BottomTabNavigator + anchored account menu):
+Main shell navigation (React Navigation BottomTabNavigator + My Hub left drawer + avatar anchor):
 1. **Explore** → Unified discovery with segmented Search resources/Search needs and campaign filter chips
-2. **My Hub** → Dashboard for My resources, My needs, active bids, active claims, and add actions
+2. **My Hub** → Drawer-based workspace/account hub
+   - Top drawer items (order): My resources, Received bids, Sent bids, My needs, Received claims, Sent claims
+   - Bottom drawer items (order): Profile, Preferences, Contribution
 3. **Campaigns** → Joined/ongoing/upcoming campaigns, detail, and campaign-linked creation shortcuts
 4. **Chat** → Conversations and message history
 5. **Notifications** → Activity feed and alerts
-6. **Top-right account menu anchor** → My profile, My preferences, Contribution
+6. **Top-right avatar anchor** → Logout-only menu item (authenticated); sign-in/create-account entry for anonymous users
 
 Authentication-sensitive account anchor behavior:
 - Logged out: generic silhouette icon opens sign-in/registration sheet.
-- Logged in: avatar icon opens account drawer/sheet.
+- Logged in: avatar icon opens a menu with a single Log out action.
 
 ### State Management Pattern
 

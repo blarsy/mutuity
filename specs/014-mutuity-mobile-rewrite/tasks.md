@@ -90,21 +90,21 @@
 - [x] T031 [US1] Port My resources list and CRUD entry points after gate pass in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
 - [x] T031A [US1] Implement My resources list and resource CRUD GraphQL operations/adapters (list own resources, create, update, soft delete) in mobile-app/src/services/graphql/resources.ts and mobile-app/src/services/graphql/operations/index.ts
 - [x] T031B [US1] Wire My resources list and edit screens to backend mutations/queries with optimistic-safe loading and error states in mobile-app/src/screens/resources/MyResourcesScreen.tsx and mobile-app/src/screens/resources/EditResourceScreen.tsx
-- [ ] T032 [P] [US1] Port My bids workspace after gate pass in mobile-app/src/screens/bids/MyBidsScreen.tsx
-- [ ] T033 [P] [US1] Port Chat list and detail after gate pass in mobile-app/src/screens/chat/ChatListScreen.tsx and mobile-app/src/screens/chat/ChatDetailScreen.tsx
-- [ ] T034 [P] [US1] Port Notifications feed after gate pass in mobile-app/src/screens/notifications/NotificationsScreen.tsx
-- [ ] T035 [P] [US1] Port My profile screen after gate pass in mobile-app/src/screens/profile/MyProfileScreen.tsx
-- [ ] T036 [P] [US1] Port My preferences screen after gate pass in mobile-app/src/screens/profile/MyPreferencesScreen.tsx
-- [ ] T037 [P] [US1] Port Contribution screen after gate pass in mobile-app/src/screens/economics/MyEconomicsScreen.tsx
-- [ ] T037A [US1] Implement bids and chat GraphQL data adapters (workspace lists, detail fetches, and required actions) in mobile-app/src/services/graphql/bids.ts, mobile-app/src/services/graphql/chat.ts, and mobile-app/src/services/graphql/operations/index.ts
-- [ ] T037B [US1] Wire My bids and Chat screens to backend adapters, including pagination and refresh behavior in mobile-app/src/screens/bids/MyBidsScreen.tsx, mobile-app/src/screens/chat/ChatListScreen.tsx, and mobile-app/src/screens/chat/ChatDetailScreen.tsx
-- [ ] T037C [US1] Implement notifications data adapter (feed query, read/unread actions, set-all-read) in mobile-app/src/services/graphql/notifications.ts and mobile-app/src/services/graphql/operations/index.ts
-- [ ] T037D [US1] Wire Notifications screen to backend feed and read-state mutations in mobile-app/src/screens/notifications/NotificationsScreen.tsx
-- [ ] T037E [US1] Implement profile and contribution data adapters (account profile, token balance, token history) in mobile-app/src/services/graphql/profile.ts, mobile-app/src/services/graphql/economics.ts, and mobile-app/src/services/graphql/operations/index.ts
-- [ ] T037F [US1] Wire My profile and Contribution screens to backend adapters with loading/error/retry handling in mobile-app/src/screens/profile/MyProfileScreen.tsx and mobile-app/src/screens/economics/MyEconomicsScreen.tsx
-- [ ] T037G [US1] Extend My preferences backend wiring to full preference fetch/update flow parity (beyond bootstrap service scaffolding) in mobile-app/src/screens/profile/MyPreferencesScreen.tsx and mobile-app/src/services/graphql/notificationPreferences.ts
-- [ ] T038 [US1] Wire US1 navigation routes in mobile-app/src/navigation/US1Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
-- [ ] T039 [US1] Ensure fr/en labels for US1 screens in mobile-app/src/i18n/locales/en/us1.json and mobile-app/src/i18n/locales/fr/us1.json
+- [x] T032 [P] [US1] Port My bids workspace after gate pass in mobile-app/src/screens/bids/MyBidsScreen.tsx
+- [x] T033 [P] [US1] Port Chat list and detail after gate pass in mobile-app/src/screens/chat/ChatListScreen.tsx and mobile-app/src/screens/chat/ChatDetailScreen.tsx
+- [x] T034 [P] [US1] Port Notifications feed after gate pass in mobile-app/src/screens/notifications/NotificationsScreen.tsx
+- [x] T035 [P] [US1] Port My profile screen after gate pass in mobile-app/src/screens/profile/MyProfileScreen.tsx
+- [x] T036 [P] [US1] Port My preferences screen after gate pass in mobile-app/src/screens/profile/MyPreferencesScreen.tsx
+- [x] T037 [P] [US1] Port Contribution screen after gate pass in mobile-app/src/screens/economics/MyEconomicsScreen.tsx
+- [x] T037A [US1] Implement bids and chat GraphQL data adapters (workspace lists, detail fetches, and required actions) in mobile-app/src/services/graphql/bids.ts, mobile-app/src/services/graphql/chat.ts, and mobile-app/src/services/graphql/operations/index.ts
+- [x] T037B [US1] Wire My bids and Chat screens to backend adapters, including pagination and refresh behavior in mobile-app/src/screens/bids/MyBidsScreen.tsx, mobile-app/src/screens/chat/ChatListScreen.tsx, and mobile-app/src/screens/chat/ChatDetailScreen.tsx
+- [x] T037C [US1] Implement notifications data adapter (feed query, read/unread actions, set-all-read) in mobile-app/src/services/graphql/notifications.ts and mobile-app/src/services/graphql/operations/index.ts
+- [x] T037D [US1] Wire Notifications screen to backend feed and read-state mutations in mobile-app/src/screens/notifications/NotificationsScreen.tsx
+- [x] T037E [US1] Implement profile and contribution data adapters (account profile, token balance, token history) in mobile-app/src/services/graphql/profile.ts, mobile-app/src/services/graphql/economics.ts, and mobile-app/src/services/graphql/operations/index.ts
+- [x] T037F [US1] Wire My profile and Contribution screens to backend adapters with loading/error/retry handling in mobile-app/src/screens/profile/MyProfileScreen.tsx and mobile-app/src/screens/economics/MyEconomicsScreen.tsx
+- [x] T037G [US1] Extend My preferences backend wiring to full preference fetch/update flow parity (beyond bootstrap service scaffolding) in mobile-app/src/screens/profile/MyPreferencesScreen.tsx and mobile-app/src/services/graphql/notificationPreferences.ts
+- [x] T038 [US1] Wire US1 navigation routes to My Hub left drawer item groups (top: resources/bids/needs/claims, bottom: profile/preferences/contribution) in mobile-app/src/navigation/US1Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
+- [x] T039 [US1] Ensure fr/en labels for My Hub drawer items and logout-only avatar menu in mobile-app/src/i18n/locales/en/us1.json and mobile-app/src/i18n/locales/fr/us1.json
 - [ ] T039A [US1] Implement anonymous browse-only route policy and restricted-surface auth prompts in mobile-app/src/navigation/AppNavigator.tsx and mobile-app/src/navigation/US1Navigator.tsx
 - [ ] T039B [US1] Draft and approve supporting auth contract in specs/014-mutuity-mobile-rewrite/ui-contracts/auth-entry.md
 - [ ] T039C [US1] Implement sign-in/create-account/password-reset entry surfaces and switch flow in mobile-app/src/screens/auth/LoginScreen.tsx, mobile-app/src/screens/auth/RegisterScreen.tsx, mobile-app/src/screens/auth/ForgotPasswordScreen.tsx, and mobile-app/src/navigation/AppNavigator.tsx

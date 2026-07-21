@@ -22,11 +22,13 @@ This folder tracks UI-first approval status per canonical main screen.
 ## Navigation Baseline (Feature 14)
 
 - Main shell uses exactly 5 bottom tabs in this order: Explore, My Hub, Campaigns, Chat, Notifications.
-- Account surfaces are accessed from a top-right account menu (drawer or modal sheet), not from a bottom tab.
+- My Hub exposes a left drawer that is the canonical workspace/account navigation surface.
+- Drawer top items (order): My resources, Received bids, Sent bids, My needs, Received claims, Sent claims.
+- Drawer bottom items (order): Profile, Preferences, Contribution.
 - Logged out account icon: generic silhouette that opens sign-in/registration sheet.
-- Logged in account icon: user avatar that opens account menu.
+- Logged in account icon: user avatar that opens a menu with a single Log out item.
 - Explore must contract for segmented Search resources/Search needs plus campaign filter chips.
-- My Hub must contract for add actions, My listings previews, active bids, active claims, and archive links.
+- My Hub must contract for drawer-based navigation and remove redundant in-page navigation buttons for resources, bids, needs, and claims.
 
 ## Canonical Main Screens
 

@@ -3,6 +3,15 @@
   "mainNavigation": "Main navigation",
   "exploreLabel": "Explore",
   "myHubLabel": "My Hub",
+  "myHubDrawerMyResources": "My resources",
+  "myHubDrawerReceivedBids": "Received bids",
+  "myHubDrawerSentBids": "Sent bids",
+  "myHubDrawerMyNeeds": "My needs",
+  "myHubDrawerReceivedClaims": "Received claims",
+  "myHubDrawerSentClaims": "Sent claims",
+  "myHubDrawerProfile": "Profile",
+  "myHubDrawerPreferences": "Preferences",
+  "myHubDrawerContribution": "Contribution",
   "campaignsLabel": "Campaigns",
   "chatLabel": "Chat",
   "notificationsLabel": "Notifications",
@@ -22,6 +31,7 @@
   "backToSignIn": "Back to sign in",
   "continue": "Continue",
   "sendResetLink": "Send reset link",
+  "logout": "Log out",
   "authSuccessReturn": "Returning to your requested screen",
   "authFailedMessage": "Sign in failed. Please verify your credentials and try again."
 }

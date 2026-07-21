@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainTabs -> MyHubStack -> MyBidsScreen (Active bids section surface).
-- Entry points: Bottom tab My Hub then Active bids section entry, contextual links from related resource/need flows.
-- Exit/back behavior: Back returns to MyHubScreen Active bids section; active tab remains My Hub.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyBidsScreen.
+- Entry points: Bottom tab My Hub then left drawer top item Received bids or Sent bids.
+- Exit/back behavior: Back returns to My Hub drawer shell and preserves the previously selected bid segment.
 - [x] Approved
 
 ## States

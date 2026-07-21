@@ -5,7 +5,7 @@
 
 ## Overview
 
-The mobile app uses React Navigation with a fixed 5-tab bottom navigator for core workflows and a top-right account menu anchor (drawer or modal sheet) for account and settings surfaces.
+The mobile app uses React Navigation with a fixed 5-tab bottom navigator for core workflows, a My Hub left drawer for workspace/account surfaces, and a top-right avatar anchor for authentication entry/logout.
 
 This contract supersedes the previous multi-tab profile/settings model.
 
@@ -14,10 +14,11 @@ This contract supersedes the previous multi-tab profile/settings model.
 - Bottom navigation has exactly 5 tabs in this order: Explore, My Hub, Campaigns, Chat, Notifications.
 - Account surfaces are not exposed as a bottom tab.
 - The top-right account anchor appears globally on main-shell screens.
+- My Hub exposes the canonical left drawer navigation for workspace and account destinations.
 
 Authentication-sensitive account anchor behavior:
 - Logged out: icon is a generic silhouette; tap opens Sign In / Registration sheet.
-- Logged in: icon is the user avatar; tap opens Account Menu drawer/sheet.
+- Logged in: icon is the user avatar; tap opens a single-item menu with Log out.
 
 ## Canonical Main Screens for UI-First Migration
 
@@ -40,7 +41,7 @@ Migration rule:
 - For each canonical screen, UI rework and approval is required before any porting from Tope-la mobile begins.
 
 UI contract checklist per canonical screen:
-- Navigation placement is explicit (tab, nested stack, or account menu section)
+- Navigation placement is explicit (tab, nested stack, or My Hub drawer section)
 - Empty state is defined
 - Loading state is defined
 - Error state is defined
@@ -53,16 +54,16 @@ UI contract checklist per canonical screen:
 |---|---|
 | Search resources | Explore tab -> segmented mode: resources |
 | Search needs | Explore tab -> segmented mode: needs |
-| My resources | My Hub tab -> My listings section -> View all |
-| My needs | My Hub tab -> My listings section -> View all |
-| My bids | My Hub tab -> Active bids section |
-| My claims | My Hub tab -> Active claims section |
+| My resources | My Hub tab -> left drawer top item: My resources |
+| My needs | My Hub tab -> left drawer top item: My needs |
+| My bids | My Hub tab -> left drawer top item: Received bids or Sent bids |
+| My claims | My Hub tab -> left drawer top item: Received claims or Sent claims |
 | Chat | Chat tab landing |
 | Notifications | Notifications tab landing |
 | My campaigns | Campaigns tab landing |
-| My profile | Account menu -> Profile |
-| My preferences | Account menu -> Preferences |
-| Contribution | Account menu -> Contribution |
+| My profile | My Hub tab -> left drawer bottom item: Profile |
+| My preferences | My Hub tab -> left drawer bottom item: Preferences |
+| Contribution | My Hub tab -> left drawer bottom item: Contribution |
 
 ## Anonymous Access Rules
 
@@ -97,13 +98,14 @@ AppNavigator (RootNavigator)
 │   │   │   └── ClaimNeedScreen (modal)
 │   │   │
 │   │   ├── MyHubStack (Tab 2)
-│   │   │   ├── MyHubScreen (landing dashboard)
+│   │   │   ├── MyHubScreen (landing shell with left drawer)
+│   │   │   ├── MyHubDrawer
+│   │   │   │   ├── Top group: My resources, Received bids, Sent bids, My needs, Received claims, Sent claims
+│   │   │   │   └── Bottom group: Profile, Preferences, Contribution
 │   │   │   ├── MyResourcesScreen
 │   │   │   ├── MyNeedsScreen
 │   │   │   ├── MyBidsScreen
 │   │   │   ├── MyClaimsScreen
-│   │   │   ├── ArchivedBidsScreen
-│   │   │   ├── ArchivedClaimsScreen
 │   │   │   ├── CreateResourceScreen (modal)
 │   │   │   └── CreateNeedScreen (modal)
 │   │   │
@@ -121,11 +123,8 @@ AppNavigator (RootNavigator)
 │   │       ├── NotificationsScreen (landing)
 │   │       └── NotificationDetailScreen
 │   │
-│   └── AccountMenuOverlay (anchored from header right)
-│       ├── AccountMenuSheet
-│       ├── MyProfileScreen
-│       ├── MyPreferencesScreen
-│       └── MyEconomicsScreen
+│   └── HeaderAvatarMenu (anchored from header right)
+│       └── LogoutAction (authenticated)
 │
 └── AuthStack (presented on demand)
     ├── LoginScreen
@@ -143,13 +142,11 @@ AppNavigator (RootNavigator)
   - Campaign multi-select chips below search bar
 
 2. **My Hub**
-- Purpose: Personal operations dashboard.
-- Landing: MyHubScreen with fixed section order:
-  - Global actions: Add Resource, Add Need
-  - My listings: My resources and My needs previews with View all links
-  - Active bids list with item actions (View item, Chat, Cancel)
-  - Active claims list with item actions (View item, Chat, Cancel)
-  - Archive links for inactive bids and claims
+- Purpose: Personal operations navigation hub.
+- Landing: MyHubScreen with a left drawer and fixed item order.
+- Drawer top group (order): My resources, Received bids, Sent bids, My needs, Received claims, Sent claims.
+- Drawer bottom group (order): Profile, Preferences, Contribution.
+- Redundant in-page navigation buttons for resources, bids, needs, and claims are removed.
 
 3. **Campaigns**
 - Purpose: Simultaneous campaign ecosystem hub.
@@ -164,17 +161,15 @@ AppNavigator (RootNavigator)
 - Purpose: Chronological transactional alerts.
 - Landing: NotificationsScreen.
 
-## Account Menu Contract
+## Top-Right Avatar Menu Contract
 
-Account menu sections:
-- Profile (view/edit profile and verification state)
-- Contribution (impact, statistics, reward history)
-- Preferences (localization, privacy, app settings)
+Authenticated avatar menu item set:
+- Log out
 
 Required behavior:
-- Account menu opens from top-right icon only.
-- Account menu is available from all main-shell tabs.
-- Opening account menu must not reset active tab state.
+- Avatar menu opens from top-right icon only.
+- When authenticated, avatar menu contains exactly one item (Log out).
+- Opening avatar menu must not reset active tab state.
 
 ## Deep Linking
 
@@ -210,13 +205,13 @@ Auth state contract:
 
 Root behavior:
 - loading=true: show splash/loading shell.
-- authenticated=true: full tab and account menu behavior.
+- authenticated=true: full tab and My Hub drawer behavior plus logout-only avatar menu.
 - authenticated=false: browse-only with guarded routes and prompts.
 
 State continuity:
 - Each tab retains its own stack history.
 - Re-tapping active tab returns to that tab landing screen.
-- Account menu open/close preserves tab stack state.
+- Drawer open/close and avatar menu open/close preserve tab stack state.
 
 ## Localization and Labels
 
@@ -232,12 +227,21 @@ Navigation label keys:
       "chat": "Chat",
       "notifications": "Notifications"
     },
-    "accountMenu": {
+    "myHubDrawer": {
+      "myResources": "My resources",
+      "receivedBids": "Received bids",
+      "sentBids": "Sent bids",
+      "myNeeds": "My needs",
+      "receivedClaims": "Received claims",
+      "sentClaims": "Sent claims",
       "profile": "Profile",
-      "contribution": "Contribution",
       "preferences": "Preferences",
+      "contribution": "Contribution"
+    },
+    "accountEntry": {
       "signIn": "Sign in",
-      "register": "Create account"
+      "register": "Create account",
+      "logout": "Log out"
     }
   }
 }
@@ -252,11 +256,11 @@ French labels must exist with equivalent meaning in fr locale files.
   - Account icon mode switches by auth state.
 - Integration tests:
   - Explore segmented switching and campaign chip filtering.
-  - My Hub actions and section rendering.
+  - My Hub drawer item rendering and route mapping.
   - Anonymous prompts on restricted visible surfaces.
 - E2E tests:
   - Logged-out account icon opens auth sheet.
-  - Logged-in avatar opens account menu.
+  - Logged-in avatar opens logout-only menu.
   - Deep-link guard reroutes anonymous users from account screens.
 
 ## Summary
@@ -264,7 +268,8 @@ French labels must exist with equivalent meaning in fr locale files.
 | Area | Required pattern | Implementation |
 |---|---|---|
 | Primary navigation | 5 bottom tabs | React Navigation BottomTabNavigator |
-| Secondary account navigation | Top-right account menu overlay | Drawer or modal sheet anchored from header right |
+| Secondary navigation | My Hub left drawer | Drawer with fixed top/bottom item groups |
+| Top-right avatar menu | Authentication entry/logout | Generic icon for auth entry (anonymous), logout-only menu (authenticated) |
 | Screen hierarchy | Nested stacks per tab | React Navigation NativeStack |
 | Auth routing | Browse-only + guards | AuthContext + root route guards |
 | Deep links | URL mapping + anonymous reroute | React Navigation linking config |

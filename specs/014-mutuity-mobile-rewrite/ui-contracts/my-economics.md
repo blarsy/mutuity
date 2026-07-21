@@ -8,9 +8,9 @@
 
 ## Navigation Placement
 
-- Tab/stack location: MainShellStack -> AccountMenuOverlay -> MyEconomicsScreen (Contribution section in account menu, not a bottom tab).
-- Entry points: Top-right account icon -> Account Menu -> Contribution, deep link mutuity://account/contribution (auth required).
-- Exit/back behavior: Close/back returns to previously active tab screen with tab stack state preserved.
+- Tab/stack location: MainTabs -> MyHubDrawer -> MyEconomicsScreen.
+- Entry points: Bottom tab My Hub then left drawer bottom item Contribution, deep link mutuity://account/contribution (auth required).
+- Exit/back behavior: Close/back returns to My Hub drawer shell with selected tab state preserved.
 - [x] Approved
 
 ## States
@@ -53,7 +53,7 @@
 	1. View current token balance
 	2. Expand/collapse contribution history accordion
 	3. Review informational panels (how it works / how to get)
-- Permission/visibility rules: Contribution is hidden from anonymous users and only available from authenticated account menu.
+- Permission/visibility rules: Contribution is hidden from anonymous users and only available from authenticated My Hub drawer navigation.
 - Success feedback: Expanding history shows entries immediately when available and preserves expanded state when reopened from notification routes.
 - [x] Approved
 

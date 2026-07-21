@@ -1,0 +1,278 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Snackbar, Text, TextInput } from "react-native-paper";
+import { useTranslation } from "react-i18next";
+
+import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { ErrorState } from "../../components/state/ErrorState";
+import { LoadingState } from "../../components/state/LoadingState";
+import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
+import { appFontFamilies } from "../../theme/fonts";
+import { designTokens } from "../../theme/tokens";
+
+export interface MyProfileRecord {
+  accountId: string;
+  displayName: string;
+  email: string;
+  city: string;
+  bio: string;
+}
+
+export interface MyProfileScreenProps {
+  accountId?: string | null;
+  profile?: MyProfileRecord | null;
+  loading?: boolean;
+  errorMessage?: string | null;
+  saving?: boolean;
+  onRetry?: () => void;
+  onBack?: () => void;
+  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio">) => void;
+  onOpenChangePassword?: () => void;
+  onOpenPreferences?: () => void;
+  onOpenContribution?: () => void;
+  onLogout?: () => void;
+  onDeleteAccount?: () => void;
+}
+
+export function MyProfileScreen({
+  accountId = null,
+  profile,
+  loading = false,
+  errorMessage = null,
+  saving = false,
+  onRetry,
+  onBack,
+  onSaveProfile,
+  onOpenChangePassword,
+  onOpenPreferences,
+  onOpenContribution,
+  onLogout,
+  onDeleteAccount
+}: MyProfileScreenProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
+  const [remoteLoading, setRemoteLoading] = useState(false);
+  const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const resolvedProfile = profile ?? remoteProfile;
+
+  const [displayName, setDisplayName] = useState("");
+  const [city, setCity] = useState("");
+  const [bio, setBio] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const hasInjectedProfile = profile !== undefined;
+
+  const loadProfile = useCallback(async (): Promise<void> => {
+    if (hasInjectedProfile || !accountId) {
+      return;
+    }
+
+    setRemoteLoading(true);
+    setRemoteErrorMessage(null);
+    try {
+      const nextProfile = await fetchMyProfile(accountId);
+      setRemoteProfile(nextProfile);
+      setDisplayName(nextProfile?.displayName ?? "");
+      setCity(nextProfile?.city ?? "");
+      setBio(nextProfile?.bio ?? "");
+    } catch {
+      setRemoteErrorMessage(t("profileLoadError", { defaultValue: "We could not load your profile." }));
+    } finally {
+      setRemoteLoading(false);
+    }
+  }, [accountId, hasInjectedProfile, t]);
+
+  useEffect(() => {
+    if (resolvedProfile) {
+      setDisplayName(resolvedProfile.displayName);
+      setCity(resolvedProfile.city);
+      setBio(resolvedProfile.bio);
+    }
+  }, [resolvedProfile]);
+
+  useEffect(() => {
+    void loadProfile();
+  }, [loadProfile]);
+
+  const canSave = useMemo(() => displayName.trim().length > 0, [displayName]);
+
+  const handleSave = (): void => {
+    if (!canSave) {
+      setFeedback(t("fieldRequired", { defaultValue: "Title is required." }));
+      return;
+    }
+
+    if (onSaveProfile) {
+      onSaveProfile({
+        displayName: displayName.trim(),
+        city: city.trim(),
+        bio: bio.trim()
+      });
+      setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
+      return;
+    }
+
+    if (!accountId) {
+      return;
+    }
+
+    setRemoteLoading(true);
+    void updateMyProfile(accountId, {
+      displayName: displayName.trim(),
+      city: city.trim(),
+      bio: bio.trim()
+    })
+      .then((updatedProfile) => {
+        setRemoteProfile(updatedProfile);
+        setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
+      })
+      .catch(() => {
+        setRemoteErrorMessage(t("profileSaveError", { defaultValue: "We could not save your profile changes." }));
+      })
+      .finally(() => {
+        setRemoteLoading(false);
+      });
+  };
+
+  const resolvedLoading = loading || (!hasInjectedProfile && remoteLoading);
+  const resolvedErrorMessage = errorMessage ?? (!hasInjectedProfile ? remoteErrorMessage : null);
+
+  if (resolvedLoading) {
+    return <LoadingState label={t("profileLoading", { defaultValue: "Loading profile..." })} />;
+  }
+
+  if (resolvedErrorMessage) {
+    return <ErrorState message={resolvedErrorMessage} {...(onRetry ? { onRetry } : { onRetry: () => void loadProfile() })} />;
+  }
+
+  return (
+    <ScreenContainer testID="my-profile-screen" style={styles.root}>
+      <View style={styles.headerRow}>
+        <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
+          {t("myProfileTitle", { defaultValue: "My profile" })}
+        </Text>
+        {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content}>
+        <TextInput
+          mode="outlined"
+          label={t("fullNameLabel", { defaultValue: "Full name" })}
+          accessibilityLabel={t("fullNameLabel", { defaultValue: "Full name" })}
+          value={displayName}
+          onChangeText={setDisplayName}
+        />
+
+        <TextInput
+          mode="outlined"
+          label={t("emailLabel", { defaultValue: "Email" })}
+          accessibilityLabel={t("emailLabel", { defaultValue: "Email" })}
+          value={resolvedProfile?.email ?? ""}
+          editable={false}
+        />
+
+        <TextInput
+          mode="outlined"
+          label={t("cityLabel", { defaultValue: "City" })}
+          accessibilityLabel={t("cityLabel", { defaultValue: "City" })}
+          value={city}
+          onChangeText={setCity}
+        />
+
+        <TextInput
+          mode="outlined"
+          label={t("bioLabel", { defaultValue: "Bio" })}
+          accessibilityLabel={t("bioLabel", { defaultValue: "Bio" })}
+          value={bio}
+          onChangeText={setBio}
+          multiline
+          numberOfLines={4}
+        />
+
+        <PrimaryButton
+          label={t("saveLabel", { defaultValue: "Save" })}
+          onPress={handleSave}
+          loading={saving}
+          disabled={!canSave || saving}
+        />
+
+        <View style={styles.actionsZone}>
+          <PrimaryButton
+            label={t("changePasswordLabel", { defaultValue: "Change password" })}
+            onPress={() => {
+              if (onOpenChangePassword) {
+                onOpenChangePassword();
+              }
+            }}
+          />
+
+          {onOpenPreferences ? (
+            <PrimaryButton
+              label={t("myPreferencesTitle", { defaultValue: "My preferences" })}
+              onPress={() => {
+                onOpenPreferences();
+              }}
+            />
+          ) : null}
+
+          {onOpenContribution ? (
+            <PrimaryButton
+              label={t("contributionLabel", { defaultValue: "Contribution" })}
+              onPress={() => {
+                onOpenContribution();
+              }}
+            />
+          ) : null}
+
+          <PrimaryButton
+            label={t("logoutLabel", { defaultValue: "Logout" })}
+            onPress={() => {
+              if (onLogout) {
+                onLogout();
+              }
+            }}
+          />
+
+          <PrimaryButton
+            label={t("deleteAccountLabel", { defaultValue: "Delete account" })}
+            onPress={() => {
+              if (onDeleteAccount) {
+                onDeleteAccount();
+              }
+            }}
+          />
+        </View>
+      </ScrollView>
+
+      <Snackbar visible={feedback !== null} onDismiss={() => setFeedback(null)}>
+        {feedback ?? ""}
+      </Snackbar>
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: {
+    gap: designTokens.spacing.md,
+    paddingTop: designTokens.spacing.lg
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: designTokens.spacing.sm
+  },
+  title: {
+    fontFamily: appFontFamilies.title,
+    textTransform: "uppercase",
+    letterSpacing: 0.6
+  },
+  content: {
+    gap: designTokens.spacing.sm,
+    paddingBottom: designTokens.spacing.md
+  },
+  actionsZone: {
+    gap: designTokens.spacing.sm,
+    marginTop: designTokens.spacing.sm
+  }
+});
