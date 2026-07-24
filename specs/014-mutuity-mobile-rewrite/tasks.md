@@ -105,10 +105,10 @@
 - [x] T037G [US1] Extend My preferences backend wiring to full preference fetch/update flow parity (beyond bootstrap service scaffolding) in mobile-app/src/screens/profile/MyPreferencesScreen.tsx and mobile-app/src/services/graphql/notificationPreferences.ts
 - [x] T038 [US1] Wire US1 navigation routes to My Hub left drawer item groups (top: resources/bids/needs/claims, bottom: profile/preferences/contribution) in mobile-app/src/navigation/US1Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
 - [x] T039 [US1] Ensure fr/en labels for My Hub drawer items and logout-only avatar menu in mobile-app/src/i18n/locales/en/us1.json and mobile-app/src/i18n/locales/fr/us1.json
-- [ ] T039A [US1] Implement anonymous browse-only route policy and restricted-surface auth prompts in mobile-app/src/navigation/AppNavigator.tsx and mobile-app/src/navigation/US1Navigator.tsx
-- [ ] T039B [US1] Draft and approve supporting auth contract in specs/014-mutuity-mobile-rewrite/ui-contracts/auth-entry.md
-- [ ] T039C [US1] Implement sign-in/create-account/password-reset entry surfaces and switch flow in mobile-app/src/screens/auth/LoginScreen.tsx, mobile-app/src/screens/auth/RegisterScreen.tsx, mobile-app/src/screens/auth/ForgotPasswordScreen.tsx, and mobile-app/src/navigation/AppNavigator.tsx
-- [ ] T039D [US1] Add acceptance coverage for restricted-surface auth entry and post-login return routing in mobile-app/tests/integration/us1-anonymous-access-matrix.acceptance.test.ts and mobile-app/tests/integration/us1-anonymous-restricted-routes.acceptance.test.ts
+- [x] T039A [US1] Implement anonymous browse-only route policy and restricted-surface auth prompts in mobile-app/src/navigation/AppNavigator.tsx and mobile-app/src/navigation/US1Navigator.tsx
+- [x] T039B [US1] Draft and approve supporting auth contract in specs/014-mutuity-mobile-rewrite/ui-contracts/auth-entry.md
+- [x] T039C [US1] Implement sign-in/create-account/password-reset entry surfaces and switch flow in mobile-app/src/screens/auth/LoginScreen.tsx, mobile-app/src/screens/auth/RegisterScreen.tsx, mobile-app/src/screens/auth/ForgotPasswordScreen.tsx, and mobile-app/src/navigation/AppNavigator.tsx
+- [x] T039D [US1] Add acceptance coverage for restricted-surface auth entry and post-login return routing in mobile-app/tests/integration/us1-anonymous-access-matrix.acceptance.test.ts and mobile-app/tests/integration/us1-anonymous-restricted-routes.acceptance.test.ts
 
 **Checkpoint**: US1 is independently functional and releasable.
 

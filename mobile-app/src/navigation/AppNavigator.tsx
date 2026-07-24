@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -13,7 +13,8 @@ import { authenticateWithPassword } from "../services/graphql/auth";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
 import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScreen";
-import { MyBidsScreen } from "../screens/bids/MyBidsScreen";
+import { ReceivedBidsScreen } from "../screens/bids/ReceivedBidsScreen";
+import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
 import { ChatListScreen } from "../screens/chat/ChatListScreen";
 import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
@@ -25,6 +26,14 @@ import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import type { MyResourceItem } from "../services/graphql/resources";
+import { designTokens } from "../theme/tokens";
+import { appFontFamilies } from "../theme/fonts";
+import {
+  TopelaBellIcon,
+  TopelaChatIcon,
+  TopelaModifyIcon,
+  TopelaSearchIcon
+} from "../components/icons/TopelaBottomTabIcons";
 
 type MainRouteName = "Explore" | "MyHub" | "Campaigns" | "Chat" | "Notifications";
 type AuthEntryScreen = "login" | "register" | "forgotPassword";
@@ -71,6 +80,10 @@ interface AuthScreenShellProps {
 
 const Tab = createBottomTabNavigator();
 const mockAuthenticatedToken = "mock:123e4567-e89b-12d3-a456-426614174000";
+const isCompactTabLayout = Dimensions.get("window").width < 400;
+const tabBarIconSize = 26;
+const standardAppBarTitleFontSize = 36;
+const appBarTitleFontSize = isCompactTabLayout ? 30 : standardAppBarTitleFontSize;
 
 function LoadingScreen(): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
@@ -236,8 +249,12 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
       );
     }
 
-    if (activeDrawerItem === "receivedBids" || activeDrawerItem === "sentBids") {
-      return <MyBidsScreen direction={activeDrawerItem === "receivedBids" ? "received" : "sent"} />;
+    if (activeDrawerItem === "receivedBids") {
+      return <ReceivedBidsScreen />;
+    }
+
+    if (activeDrawerItem === "sentBids") {
+      return <SentBidsScreen />;
     }
 
     if (activeDrawerItem === "myNeeds") {
@@ -481,11 +498,11 @@ function RootNavigator(): React.JSX.Element {
   };
 
   const tabBarIconByRoute: Record<MainRouteName, string> = {
-    Explore: "compass-outline",
-    MyHub: "view-dashboard-outline",
+    Explore: "circle-outline",
+    MyHub: "circle-outline",
     Campaigns: "bullhorn-outline",
-    Chat: "chat-outline",
-    Notifications: "bell-outline"
+    Chat: "circle-outline",
+    Notifications: "circle-outline"
   };
 
   const headerTitleByRoute: Record<MainRouteName, string> = {
@@ -517,7 +534,7 @@ function RootNavigator(): React.JSX.Element {
             )}
             <Appbar.Action
               accessibilityLabel={t("support", { ns: "common", defaultValue: "Support" })}
-              icon="question"
+              icon="help"
               size={24}
               color="#000"
               style={styles.headerAction}
@@ -592,14 +609,48 @@ function RootNavigator(): React.JSX.Element {
                 })}
                 screenOptions={({ route }) => ({
                   headerShown: false,
-                  tabBarIcon: ({ color, size, focused }) => {
+                  tabBarActiveTintColor: designTokens.colors.primary,
+                  tabBarInactiveTintColor: "#000000",
+                  tabBarStyle: {
+                    backgroundColor: designTokens.colors.secondary,
+                    borderTopWidth: 0,
+                    height: isCompactTabLayout ? 64 : 72,
+                    paddingTop: isCompactTabLayout ? 4 : 8,
+                    paddingBottom: isCompactTabLayout ? 6 : 10
+                  },
+                  tabBarLabelStyle: {
+                    textTransform: "uppercase",
+                    textAlign: "center",
+                    fontSize: isCompactTabLayout ? 11 : 12,
+                    lineHeight: isCompactTabLayout ? 13 : 14,
+                    fontFamily: appFontFamilies.altGeneral,
+                    letterSpacing: 0.4,
+                    marginTop: -2
+                  },
+                  tabBarIcon: ({ color, focused }) => {
+                    if (route.name === "Explore") {
+                      return <TopelaSearchIcon color={color} size={tabBarIconSize} />;
+                    }
+
+                    if (route.name === "MyHub") {
+                      return <TopelaModifyIcon color={color} size={tabBarIconSize} />;
+                    }
+
+                    if (route.name === "Chat") {
+                      return <TopelaChatIcon color={color} size={tabBarIconSize} />;
+                    }
+
+                    if (route.name === "Notifications") {
+                      return <TopelaBellIcon color={color} size={tabBarIconSize} />;
+                    }
+
                     const outlinedIcon = tabBarIconByRoute[route.name as MainRouteName] ?? "circle-outline";
                     const iconName = focused ? outlinedIcon.replace("-outline", "") : outlinedIcon;
 
                     return (
                       <MaterialCommunityIcons
                         name={iconName as keyof typeof MaterialCommunityIcons.glyphMap}
-                        size={size}
+                        size={tabBarIconSize}
                         color={color}
                       />
                     );
@@ -609,9 +660,9 @@ function RootNavigator(): React.JSX.Element {
                 <Tab.Screen
                   name="Explore"
                   component={SearchResourcesScreen}
-                  options={{ tabBarLabel: t("exploreLabel", { ns: "us1" }) }}
+                  options={{ tabBarLabel: t("exploreLabel", { ns: "us1" }).toUpperCase() }}
                 />
-                <Tab.Screen name="MyHub" options={{ tabBarLabel: t("myHubLabel", { ns: "us1" }) }}>
+                <Tab.Screen name="MyHub" options={{ tabBarLabel: t("myHubLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => (
                     <MyHubScreen
                       authenticated={authenticated}
@@ -620,13 +671,13 @@ function RootNavigator(): React.JSX.Element {
                     />
                   )}
                 </Tab.Screen>
-                <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }) }}>
+                <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
                 </Tab.Screen>
-                <Tab.Screen name="Chat" options={{ tabBarLabel: t("chatLabel", { ns: "us1" }) }}>
+                <Tab.Screen name="Chat" options={{ tabBarLabel: t("chatLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => <ChatScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
                 </Tab.Screen>
-                <Tab.Screen name="Notifications" options={{ tabBarLabel: t("notificationsLabel", { ns: "us1" }) }}>
+                <Tab.Screen name="Notifications" options={{ tabBarLabel: t("notificationsLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => <NotificationsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
                 </Tab.Screen>
               </Tab.Navigator>
@@ -664,12 +715,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#ffffff",
+    fontFamily: appFontFamilies.title,
     fontWeight: "400",
     textAlign: "center",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: appBarTitleFontSize,
+    lineHeight: appBarTitleFontSize + 4,
     flex: 1
   },
   headerAction: {

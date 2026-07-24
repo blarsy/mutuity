@@ -41,10 +41,12 @@ export async function fetchTokenHistory(accountId: string): Promise<Contribution
     fetchPolicy: "network-only"
   });
 
-  return (data?.allTokenMovements?.nodes ?? []).map((node) => ({
-    id: node.id,
-    title: node.eventType,
-    tokenChange: node.amountDelta,
-    createdAt: node.createdAt
-  }));
+  return (data?.allTokenMovements?.nodes ?? [])
+    .map((node) => ({
+      id: node.id,
+      title: node.eventType,
+      tokenChange: node.amountDelta,
+      createdAt: node.createdAt
+    }))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }

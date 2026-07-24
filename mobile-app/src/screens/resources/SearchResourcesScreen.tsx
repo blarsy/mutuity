@@ -185,6 +185,13 @@ export function SearchResourcesScreen({
     ]
   );
   const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
+  const debouncedDistanceKmValue = useMemo(() => {
+    const parsed = Number.parseFloat(debouncedFilters.distanceFilter);
+    if (!Number.isFinite(parsed)) {
+      return 10;
+    }
+    return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
+  }, [debouncedFilters.distanceFilter]);
 
   const loadResources = useCallback(async () => {
     if (hasInjectedResources) {
@@ -201,7 +208,7 @@ export function SearchResourcesScreen({
       const nextResources = await fetchSearchResources({
         searchTerm: debouncedFilters.searchTerm,
         hasReferenceLocation: debouncedFilters.referenceLocationLabel !== null,
-        distanceKm: distanceKmValue,
+        distanceKm: debouncedDistanceKmValue,
         natureOptions: debouncedFilters.natureOptions,
         transportOptions: debouncedFilters.transportOptions,
         exchangeOptions: debouncedFilters.exchangeOptions
@@ -224,8 +231,8 @@ export function SearchResourcesScreen({
       }
     }
   }, [
+    debouncedDistanceKmValue,
     debouncedFilters,
-    distanceKmValue,
     hasInjectedResources,
     t
   ]);
@@ -309,10 +316,6 @@ export function SearchResourcesScreen({
     setReferenceLocation({ label: defaultLocationLabel });
     setSelectedCampaignIds([]);
   };
-
-  if (resolvedLoading) {
-    return <LoadingState label={t("loading", { defaultValue: "Loading..." })} />;
-  }
 
   if (resolvedErrorMessage) {
     return <ErrorState message={resolvedErrorMessage} onRetry={handleRetry} />;
@@ -558,7 +561,9 @@ export function SearchResourcesScreen({
             </View>
           ) : null}
 
-          {filteredResources.length === 0 ? (
+          {resolvedLoading ? (
+            <LoadingState label={t("loading", { defaultValue: "Loading..." })} />
+          ) : filteredResources.length === 0 ? (
             <EmptyState
               message={t("searchResourcesEmpty", {
                 defaultValue: "No resources found. Try changing category, distance, or campaign filters."

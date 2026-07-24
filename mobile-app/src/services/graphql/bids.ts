@@ -1,12 +1,11 @@
 import { apolloClient } from "./client";
 import {
-  type Query,
   type QueryReceivedResourceBidsArgs,
   type QuerySentResourceBidsArgs,
   type ResourceBid
 } from "./generated";
 import { RECEIVED_RESOURCE_BIDS_QUERY, SENT_RESOURCE_BIDS_QUERY } from "./operations";
-import type { BidWorkspaceItem } from "../../screens/bids/MyBidsScreen";
+import type { BidDirection, BidWorkspaceItem } from "../../screens/bids/types";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -22,7 +21,7 @@ interface ReceivedBidsQueryResult {
   receivedResourceBids: BidsConnection | null;
 }
 
-function toBidWorkspaceItem(node: ResourceBid, direction: "sent" | "received"): BidWorkspaceItem | null {
+function toBidWorkspaceItem(node: ResourceBid, direction: BidDirection): BidWorkspaceItem | null {
   if (!node.id) {
     return null;
   }
@@ -43,37 +42,36 @@ function toBidWorkspaceItem(node: ResourceBid, direction: "sent" | "received"): 
   };
 }
 
-export async function fetchMyBids(includeInactive: boolean): Promise<BidWorkspaceItem[]> {
+export async function fetchSentBids(includeInactive: boolean): Promise<BidWorkspaceItem[]> {
   const sentVariables: QuerySentResourceBidsArgs = {
     first: DEFAULT_PAGE_SIZE,
     activeOnly: includeInactive ? false : true
   };
 
+  const sentResult = await apolloClient.query<SentBidsQueryResult, QuerySentResourceBidsArgs>({
+    query: SENT_RESOURCE_BIDS_QUERY,
+    variables: sentVariables,
+    fetchPolicy: "network-only"
+  });
+
+  return (sentResult.data?.sentResourceBids?.nodes ?? [])
+    .map((node) => toBidWorkspaceItem(node, "sent"))
+    .filter((node): node is BidWorkspaceItem => node !== null);
+}
+
+export async function fetchReceivedBids(includeInactive: boolean): Promise<BidWorkspaceItem[]> {
   const receivedVariables: QueryReceivedResourceBidsArgs = {
     first: DEFAULT_PAGE_SIZE,
     activeOnly: includeInactive ? false : true
   };
 
-  const [sentResult, receivedResult] = await Promise.all([
-    apolloClient.query<SentBidsQueryResult, QuerySentResourceBidsArgs>({
-      query: SENT_RESOURCE_BIDS_QUERY,
-      variables: sentVariables,
-      fetchPolicy: "network-only"
-    }),
-    apolloClient.query<ReceivedBidsQueryResult, QueryReceivedResourceBidsArgs>({
-      query: RECEIVED_RESOURCE_BIDS_QUERY,
-      variables: receivedVariables,
-      fetchPolicy: "network-only"
-    })
-  ]);
+  const receivedResult = await apolloClient.query<ReceivedBidsQueryResult, QueryReceivedResourceBidsArgs>({
+    query: RECEIVED_RESOURCE_BIDS_QUERY,
+    variables: receivedVariables,
+    fetchPolicy: "network-only"
+  });
 
-  const sent = (sentResult.data?.sentResourceBids?.nodes ?? [])
-    .map((node) => toBidWorkspaceItem(node, "sent"))
-    .filter((node): node is BidWorkspaceItem => node !== null);
-
-  const received = (receivedResult.data?.receivedResourceBids?.nodes ?? [])
+  return (receivedResult.data?.receivedResourceBids?.nodes ?? [])
     .map((node) => toBidWorkspaceItem(node, "received"))
     .filter((node): node is BidWorkspaceItem => node !== null);
-
-  return [...sent, ...received].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
 }

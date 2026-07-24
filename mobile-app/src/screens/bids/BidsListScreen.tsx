@@ -7,104 +7,76 @@ import { PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
-import { fetchMyBids } from "../../services/graphql/bids";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import type { BidWorkspaceItem } from "./types";
 
-export type BidDirection = "sent" | "received";
-
-export interface BidWorkspaceItem {
-  id: string;
-  direction: BidDirection;
+export interface BidsListScreenProps {
   title: string;
-  counterpartyDisplayName: string;
-  tokenAmount: number;
-  isActive: boolean;
-  updatedAt: string | null;
-}
-
-export interface MyBidsScreenProps {
-  direction: BidDirection;
-  bids?: BidWorkspaceItem[];
-  loading?: boolean;
-  errorMessage?: string | null;
+  testID: string;
+  fetchBids: (includeInactive: boolean) => Promise<BidWorkspaceItem[]>;
   includeInactiveDefault?: boolean;
   onRetry?: () => void;
   onOpenBid?: (bid: BidWorkspaceItem) => void;
   onBackToMyHub?: () => void;
 }
 
-export function MyBidsScreen({
-  direction,
-  bids,
-  loading = false,
-  errorMessage = null,
+export function BidsListScreen({
+  title,
+  testID,
+  fetchBids,
   includeInactiveDefault = false,
   onRetry,
   onOpenBid,
   onBackToMyHub
-}: MyBidsScreenProps): React.JSX.Element {
+}: BidsListScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [includeInactive, setIncludeInactive] = useState(includeInactiveDefault);
   const [remoteBids, setRemoteBids] = useState<BidWorkspaceItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
 
-  const hasInjectedBids = bids !== undefined;
-
   const loadBids = useCallback(async (): Promise<void> => {
-    if (hasInjectedBids) {
-      return;
-    }
-
     setRemoteLoading(true);
     setRemoteErrorMessage(null);
     try {
-      const nextBids = await fetchMyBids(includeInactive);
+      const nextBids = await fetchBids(includeInactive);
       setRemoteBids(nextBids);
     } catch {
       setRemoteErrorMessage(t("myBidsLoadError", { defaultValue: "We could not load your bids." }));
     } finally {
       setRemoteLoading(false);
     }
-  }, [hasInjectedBids, includeInactive, t]);
+  }, [fetchBids, includeInactive, t]);
 
   useEffect(() => {
     void loadBids();
   }, [loadBids]);
 
-  const sourceBids = bids ?? remoteBids;
-
   const filteredBids = useMemo(() => {
-    return sourceBids
-      .filter((bid) => bid.direction === direction)
+    return remoteBids
       .filter((bid) => includeInactive || bid.isActive)
       .sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
-  }, [direction, includeInactive, sourceBids]);
+  }, [includeInactive, remoteBids]);
 
-  const resolvedLoading = loading || (!hasInjectedBids && remoteLoading);
-  const resolvedErrorMessage = errorMessage ?? (!hasInjectedBids ? remoteErrorMessage : null);
-
-  if (resolvedLoading) {
+  if (remoteLoading) {
     return <LoadingState label={t("myBidsLoading", { defaultValue: "Loading your bids..." })} />;
   }
 
-  if (resolvedErrorMessage) {
+  if (remoteErrorMessage) {
     return (
       <ErrorState
-        message={resolvedErrorMessage}
+        message={remoteErrorMessage}
         {...(onRetry ? { onRetry } : { onRetry: () => void loadBids() })}
       />
     );
   }
 
   return (
-    <ScreenContainer testID="my-bids-screen" style={styles.root}>
+    <ScreenContainer testID={testID} style={styles.root}>
       <View style={styles.headerRow}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-          {direction === "received"
-            ? t("myBidsReceivedTitle", { defaultValue: "Received bids" })
-            : t("myBidsSentTitle", { defaultValue: "Sent bids" })}
+          {title}
         </Text>
         {onBackToMyHub ? (
           <PrimaryButton
@@ -121,7 +93,11 @@ export function MyBidsScreen({
         onPress={() => setIncludeInactive((previous) => !previous)}
         style={styles.includeInactiveRow}
       >
-        <Icon source={includeInactive ? "checkbox-marked" : "checkbox-blank-outline"} size={22} color={designTokens.colors.primary} />
+        <Icon
+          source={includeInactive ? "checkbox-marked" : "checkbox-blank-outline"}
+          size={22}
+          color={designTokens.colors.primary}
+        />
         <Text variant="bodyMedium">{t("myBidsIncludeInactive", { defaultValue: "Include inactive bids" })}</Text>
       </Pressable>
 

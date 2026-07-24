@@ -4,6 +4,7 @@ import { View } from "react-native";
 
 import App from "../../src/App";
 import { mainScreenRegistry } from "../../src/navigation/mainScreenRegistry";
+import { resolveAnonymousRoute } from "../../src/navigation/US1Navigator";
 
 jest.mock("../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
@@ -30,12 +31,6 @@ jest.mock("../../src/screens/resources/MyResourcesScreen", () => ({
 const hiddenAnonymousRoutes = ["MyProfile", "MyPreferences", "MyEconomics"] as const;
 const allowedAnonymousFallbackRoute = "SearchResources";
 
-function resolveAnonymousDeepLinkTarget(routeName: string): string {
-  return hiddenAnonymousRoutes.includes(routeName as (typeof hiddenAnonymousRoutes)[number])
-    ? allowedAnonymousFallbackRoute
-    : routeName;
-}
-
 describe("US1 anonymous restricted routes acceptance", () => {
   it("blocks anonymous deep links to profile, preferences, and contribution and reroutes to an allowed surface", () => {
     const restrictedEntries = mainScreenRegistry.filter((entry) =>
@@ -48,11 +43,11 @@ describe("US1 anonymous restricted routes acceptance", () => {
       "Contribution"
     ]);
 
-    expect(resolveAnonymousDeepLinkTarget("MyProfile")).toBe(allowedAnonymousFallbackRoute);
-    expect(resolveAnonymousDeepLinkTarget("MyPreferences")).toBe(allowedAnonymousFallbackRoute);
-    expect(resolveAnonymousDeepLinkTarget("MyEconomics")).toBe(allowedAnonymousFallbackRoute);
-    expect(resolveAnonymousDeepLinkTarget("SearchResources")).toBe("SearchResources");
-    expect(resolveAnonymousDeepLinkTarget("SearchNeeds")).toBe("SearchNeeds");
+    expect(resolveAnonymousRoute("MyProfile")).toBe(allowedAnonymousFallbackRoute);
+    expect(resolveAnonymousRoute("MyPreferences")).toBe(allowedAnonymousFallbackRoute);
+    expect(resolveAnonymousRoute("MyEconomics")).toBe(allowedAnonymousFallbackRoute);
+    expect(resolveAnonymousRoute("SearchResources")).toBe("SearchResources");
+    expect(resolveAnonymousRoute("SearchNeeds")).toBe("SearchNeeds");
   });
 
   it("returns to the originally requested protected tab after login", async () => {

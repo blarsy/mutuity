@@ -436,9 +436,9 @@ export const MARK_RESOURCE_MESSAGES_READ_MUTATION = gql`
 `;
 
 export const ACCOUNT_NOTIFICATIONS_QUERY = gql`
-  query AccountNotifications($accountId: UUID!, $first: Int, $after: Cursor) {
+  query AccountNotifications($condition: AccountNotificationCondition, $first: Int, $after: Cursor) {
     allAccountNotifications(
-      condition: { recipientAccountId: $accountId }
+      condition: $condition
       first: $first
       after: $after
       orderBy: CREATED_AT_DESC
@@ -509,12 +509,12 @@ export const CURRENT_TOKEN_BALANCE_QUERY = gql`
 `;
 
 export const TOKEN_HISTORY_QUERY = gql`
-  query TokenHistory($accountId: UUID!, $first: Int, $after: Cursor) {
+  query TokenHistory($condition: TokenMovementCondition, $first: Int, $after: Cursor) {
     allTokenMovements(
-      condition: { accountId: $accountId }
+      condition: $condition
       first: $first
       after: $after
-      orderBy: CREATED_AT_DESC
+      orderBy: PRIMARY_KEY_DESC
     ) {
       nodes {
         id
@@ -531,8 +531,8 @@ export const TOKEN_HISTORY_QUERY = gql`
 `;
 
 export const ACCOUNT_DELIVERY_PREFERENCES_QUERY = gql`
-  query AccountDeliveryPreferences($accountId: UUID!, $first: Int) {
-    allAccountDeliveryPreferences(condition: { accountId: $accountId }, first: $first) {
+  query AccountDeliveryPreferences($condition: AccountDeliveryPreferenceCondition, $first: Int) {
+    allAccountDeliveryPreferences(condition: $condition, first: $first) {
       nodes {
         accountId
         eventCategory

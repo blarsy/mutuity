@@ -5,6 +5,7 @@ import { print } from "graphql";
 import { tap } from "rxjs";
 
 import { appSettings } from "../../config/appSettings";
+import { getPersistedToken } from "../auth/session";
 import { logAppEvent } from "../monitoring/logger";
 
 export type TokenProvider = () => Promise<string | null>;
@@ -12,6 +13,54 @@ export type TokenProvider = () => Promise<string | null>;
 export interface ApolloClientOptions {
   getToken?: TokenProvider;
   graphqlUrl?: string;
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  const payloadSegment = parts[1];
+
+  if (!payloadSegment || typeof globalThis.atob !== "function") {
+    return null;
+  }
+
+  try {
+    const payloadBase64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = payloadBase64.padEnd(Math.ceil(payloadBase64.length / 4) * 4, "=");
+    const payloadJson = globalThis.atob(normalized);
+    const parsed = JSON.parse(payloadJson) as unknown;
+
+    return typeof parsed === "object" && parsed !== null ? parsed as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveAccountIdFromToken(token: string | null): string | null {
+  if (!token) {
+    return null;
+  }
+
+  if (UUID_PATTERN.test(token)) {
+    return token;
+  }
+
+  if (token.startsWith("mock:")) {
+    const accountId = token.slice("mock:".length);
+    return UUID_PATTERN.test(accountId) ? accountId : null;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) {
+    return null;
+  }
+
+  const candidates = [payload.accountId, payload.account_id, payload.sub];
+  const accountId = candidates.find((value) => typeof value === "string" && UUID_PATTERN.test(value));
+
+  return typeof accountId === "string" ? accountId : null;
 }
 
 function createErrorLink(): ApolloLink {
@@ -29,11 +78,19 @@ function createErrorLink(): ApolloLink {
 function createAuthLink(getToken?: TokenProvider): ApolloLink {
   return setContext(async (_, prevContext) => {
     const token = getToken ? await getToken() : null;
+    const accountId = resolveAccountIdFromToken(token);
+    const shouldSendDevAuthHeaders = appSettings.targetEnv === "local" && Boolean(accountId);
 
     return {
       headers: {
         ...prevContext.headers,
-        authorization: token ? `Bearer ${token}` : ""
+        authorization: token ? `Bearer ${token}` : "",
+        ...(shouldSendDevAuthHeaders
+          ? {
+            "x-account-id": accountId,
+            "x-role": "identified_account"
+          }
+          : {})
       }
     };
   });
@@ -88,4 +145,4 @@ export function createApolloClient(options: ApolloClientOptions = {}): ApolloCli
   });
 }
 
-export const apolloClient = createApolloClient();
+export const apolloClient = createApolloClient({ getToken: getPersistedToken });

@@ -3,6 +3,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import App from "../../src/App";
 import { mainScreenRegistry } from "../../src/navigation/mainScreenRegistry";
+import { isRestrictedMainScreen } from "../../src/navigation/US1Navigator";
 
 jest.mock("../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
@@ -65,6 +66,19 @@ describe("US1 anonymous access matrix acceptance", () => {
       { label: "My preferences", routeName: "MyPreferences", anonymousBehavior: "hidden" },
       { label: "Contribution", routeName: "MyEconomics", anonymousBehavior: "hidden" }
     ]);
+
+    expect(mainScreenRegistry.filter((entry) => isRestrictedMainScreen(entry.routeName)).map((entry) => entry.label)).toEqual([
+      "My resources",
+      "My needs",
+      "My bids",
+      "My claims",
+      "Chat",
+      "Notifications",
+      "My campaigns",
+      "My profile",
+      "My preferences",
+      "Contribution"
+    ]);
   });
 
   it("opens the restricted-surface auth entry from a protected tab for anonymous users", async () => {
@@ -88,5 +102,21 @@ describe("US1 anonymous access matrix acceptance", () => {
     expect(screen.getAllByRole("header", { name: "Create account" }).length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Email")).toBeTruthy();
     expect(screen.getByLabelText("Password")).toBeTruthy();
+  });
+
+  it("opens the auth entry from the anonymous top-right account icon", async () => {
+    const screen = render(React.createElement(App));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Main navigation")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByLabelText("Account"));
+
+    expect(screen.getAllByRole("header", { name: "Sign in" }).length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getByRole("button", { name: "Create account" }));
+
+    expect(screen.getAllByRole("header", { name: "Create account" }).length).toBeGreaterThan(0);
   });
 });
