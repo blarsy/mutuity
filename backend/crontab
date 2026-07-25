@@ -28,11 +28,13 @@
 
 # deliver_mail_outbox: process queued emails from the unified mail outbox.
 # Runs every minute to avoid noticeable delays in auth flows.
-* * * * * deliver_mail_outbox
+# Explicitly disable backfill and keep a single pending cron job to avoid replay storms.
+* * * * * deliver_mail_outbox ?fill=0s&jobKey=deliver_mail_outbox_cron&jobKeyMode=replace
 
 # deliver_push_notification_outbox: process queued realtime push notifications.
 # Runs every minute to avoid noticeable delays in push delivery.
-* * * * * deliver_push_notification_outbox
+# Explicitly disable backfill and keep a single pending cron job to avoid replay storms.
+* * * * * deliver_push_notification_outbox ?fill=0s&jobKey=deliver_push_notification_outbox_cron&jobKeyMode=replace
 
 # cleanup_operational_logs: delete unified operational logs older than the configured retention window.
 # Runs once per day at 02:30 server time.
