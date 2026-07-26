@@ -12,7 +12,8 @@ import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitive
 import { authenticateWithPassword } from "../services/graphql/auth";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
-import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScreen";
+import { EditNeedScreen } from "../screens/needs/EditNeedScreen";
+import { MyNeedsScreen } from "../screens/needs/MyNeedsScreen";
 import { ReceivedBidsScreen } from "../screens/bids/ReceivedBidsScreen";
 import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
@@ -26,8 +27,10 @@ import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import type { MyResourceItem } from "../services/graphql/resources";
+import type { NeedItem } from "../services/graphql/needs";
 import { designTokens } from "../theme/tokens";
 import { appFontFamilies } from "../theme/fonts";
+import { US2ExploreScreen } from "./US2Navigator";
 import {
   TopelaBellIcon,
   TopelaChatIcon,
@@ -194,8 +197,11 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
     signOut
   } = useAuth();
   const [editingResource, setEditingResource] = useState<MyResourceItem | null>(null);
+  const [editingNeed, setEditingNeed] = useState<NeedItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCreatingNeed, setIsCreatingNeed] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [needsRefreshToken, setNeedsRefreshToken] = useState(0);
   const [activeDrawerItem, setActiveDrawerItem] = useState<MyHubDrawerItem>("myResources");
 
   const canAccessMyHub = authenticated && Boolean(accountId);
@@ -259,15 +265,28 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
 
     if (activeDrawerItem === "myNeeds") {
       return (
-        <MyHubDrawerPlaceholderSurface
-          title={t("myHubDrawerMyNeeds", { ns: "us1", defaultValue: "My needs" })}
-          body={t("screenComingSoon", { defaultValue: "This screen is not implemented yet." })}
+        <MyNeedsScreen
+          creatorAccountId={accountId}
+          refreshToken={needsRefreshToken}
+          onAddNeed={() => {
+            setIsCreatingNeed(true);
+            setEditingNeed(null);
+          }}
+          onEditNeed={(need) => {
+            setIsCreatingNeed(false);
+            setEditingNeed(need);
+          }}
         />
       );
     }
 
     if (activeDrawerItem === "receivedClaims" || activeDrawerItem === "sentClaims") {
-      return <MyClaimsScreen direction={activeDrawerItem === "receivedClaims" ? "received" : "sent"} />;
+      return (
+        <MyClaimsScreen
+          direction={activeDrawerItem === "receivedClaims" ? "received" : "sent"}
+          accountId={accountId}
+        />
+      );
     }
 
     if (activeDrawerItem === "profile") {
@@ -311,6 +330,24 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
           setIsCreating(false);
           setEditingResource(null);
           setRefreshToken((previous) => previous + 1);
+        }}
+      />
+    );
+  }
+
+  if (isCreatingNeed || editingNeed) {
+    return (
+      <EditNeedScreen
+        creatorAccountId={accountId}
+        initialNeed={editingNeed}
+        onBack={() => {
+          setIsCreatingNeed(false);
+          setEditingNeed(null);
+        }}
+        onSaved={() => {
+          setIsCreatingNeed(false);
+          setEditingNeed(null);
+          setNeedsRefreshToken((previous) => previous + 1);
         }}
       />
     );
@@ -659,9 +696,10 @@ function RootNavigator(): React.JSX.Element {
               >
                 <Tab.Screen
                   name="Explore"
-                  component={SearchResourcesScreen}
                   options={{ tabBarLabel: t("exploreLabel", { ns: "us1" }).toUpperCase() }}
-                />
+                >
+                  {() => <US2ExploreScreen currentAccountId={accountId} />}
+                </Tab.Screen>
                 <Tab.Screen name="MyHub" options={{ tabBarLabel: t("myHubLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => (
                     <MyHubScreen

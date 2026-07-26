@@ -104,6 +104,10 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
       supportsTablet: true,
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
+        NSPhotoLibraryUsageDescription:
+          "Mutuity would like to access your photos so you can choose images for your needs and resources.",
+        NSCameraUsageDescription:
+          "Mutuity would like to access your camera so you can take photos for your needs and resources.",
         GMSApiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY ?? ""
       },
       config: {

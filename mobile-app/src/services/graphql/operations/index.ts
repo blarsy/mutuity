@@ -103,10 +103,19 @@ export const SEARCH_NEEDS_QUERY = gql`
     allNeeds(first: $first, after: $after) {
       nodes {
         id
+        creatorAccountId
         title
         description
+        createdAt
         proposedTopesAmount
         intensity
+        needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            id
+            claimerAccountId
+            status
+          }
+        }
       }
       pageInfo {
         hasNextPage
@@ -121,9 +130,36 @@ export const MY_NEEDS_QUERY = gql`
     allNeeds(condition: { creatorAccountId: $creatorAccountId }, first: $first, after: $after) {
       nodes {
         id
+        creatorAccountId
         title
+        description
+        imageUrls
+        location
+        latitude
+        longitude
+        createdAt
+        expiresAt
         proposedTopesAmount
         intensity
+        objectRequired
+        competenceRequired
+        toolingRequired
+        multiplePeopleRequired
+        requiredCompetenceText
+        requiredToolingText
+        requiredPeopleCount
+        campaignNeedsByNeedId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            campaignId
+          }
+        }
+        needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            id
+            claimerAccountId
+            status
+          }
+        }
       }
       pageInfo {
         hasNextPage
@@ -210,6 +246,19 @@ export const CREATE_NEED_MUTATION = gql`
       need {
         id
         title
+      }
+    }
+  }
+`;
+
+export const CLAIM_NEED_MUTATION = gql`
+  mutation ClaimNeed($input: ClaimNeedInput!) {
+    claimNeed(input: $input) {
+      needClaim {
+        id
+        needId
+        claimerAccountId
+        status
       }
     }
   }
@@ -339,6 +388,62 @@ export const RECEIVED_RESOURCE_BIDS_QUERY = gql`
         accountByRespondedByAccountId {
           id
           displayName
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const SENT_NEED_CLAIMS_QUERY = gql`
+  query SentNeedClaims($condition: NeedClaimCondition, $first: Int, $after: Cursor) {
+    allNeedClaims(
+      condition: $condition
+      first: $first
+      after: $after
+      orderBy: PRIMARY_KEY_DESC
+    ) {
+      nodes {
+        id
+        needId
+        claimerAccountId
+        status
+        createdAt
+        needByNeedId {
+          id
+          title
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const RECEIVED_NEED_CLAIMS_QUERY = gql`
+  query ReceivedNeedClaims($creatorAccountId: UUID!, $first: Int, $after: Cursor) {
+    allNeeds(
+      condition: { creatorAccountId: $creatorAccountId }
+      first: $first
+      after: $after
+      orderBy: PRIMARY_KEY_DESC
+    ) {
+      nodes {
+        id
+        title
+        needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            id
+            needId
+            claimerAccountId
+            status
+            createdAt
+          }
         }
       }
       pageInfo {

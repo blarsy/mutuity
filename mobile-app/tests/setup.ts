@@ -69,3 +69,47 @@ jest.mock("expo-font", () => ({
 	loadAsync: async () => undefined,
 	useFonts: () => [true, null]
 }));
+
+jest.mock("expo-image-picker", () => ({
+	MediaTypeOptions: {
+		Images: "Images"
+	},
+	requestMediaLibraryPermissionsAsync: async () => ({ granted: true }),
+	requestCameraPermissionsAsync: async () => ({ granted: true }),
+	launchImageLibraryAsync: async () => ({ canceled: true, assets: [] }),
+	launchCameraAsync: async () => ({ canceled: true, assets: [] })
+}));
+
+jest.mock("expo-linear-gradient", () => {
+	const mockReact = require("react");
+	const { View } = require("react-native");
+
+	return {
+		LinearGradient: ({ children }: { children?: React.ReactNode }) =>
+			mockReact.createElement(View, null, children ?? null)
+	};
+});
+
+jest.mock("react-native-paper-dates", () => ({
+	DatePickerModal: () => null
+}));
+
+jest.mock("react-native-safe-area-context", () => {
+	const mockReact = require("react");
+	const { View } = require("react-native");
+	const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+	const frame = { x: 0, y: 0, width: 320, height: 640 };
+	const SafeAreaInsetsContext = mockReact.createContext(insets);
+	const SafeAreaFrameContext = mockReact.createContext(frame);
+
+	return {
+		SafeAreaInsetsContext,
+		SafeAreaFrameContext,
+		SafeAreaProvider: ({ children }: { children?: React.ReactNode }) =>
+			mockReact.createElement(View, null, children ?? null),
+		SafeAreaView: ({ children }: { children?: React.ReactNode }) =>
+			mockReact.createElement(View, null, children ?? null),
+		useSafeAreaInsets: () => insets,
+		useSafeAreaFrame: () => frame
+	};
+});

@@ -101,6 +101,7 @@ export interface UpsertResourceInput {
   description: string;
   defaultTokenAmount: number;
   imageUrls: string[];
+  expiresAt: string | null;
   isProduct: boolean;
   isService: boolean;
   canBeTakenAway: boolean;
@@ -303,6 +304,7 @@ export async function createResourceForAccount(
         description: input.description.trim(),
         defaultTokenAmount: Math.max(0, Math.round(input.defaultTokenAmount)),
         imageUrls: input.imageUrls,
+        ...(input.expiresAt ? { expiresAt: input.expiresAt } : {}),
         intensity: NeedIntensity.Sharing,
         isProduct: input.isProduct,
         isService: input.isService,
@@ -340,6 +342,7 @@ export async function updateResourceById(resourceId: string, input: UpsertResour
       description: input.description.trim(),
       defaultTokenAmount: Math.max(0, Math.round(input.defaultTokenAmount)),
       imageUrls: input.imageUrls,
+      expiresAt: input.expiresAt,
       isProduct: input.isProduct,
       isService: input.isService,
       canBeTakenAway: input.canBeTakenAway,

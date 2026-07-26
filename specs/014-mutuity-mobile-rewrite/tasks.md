@@ -122,21 +122,21 @@
 
 ### Business Acceptance Tests for User Story 2
 
-- [ ] T040 [P] [US2] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "create need and see it in lists" in mobile-app/tests/integration/us2-create-need.acceptance.test.ts
-- [ ] T041 [P] [US2] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "search needs with filters" in mobile-app/tests/integration/us2-search-needs.acceptance.test.ts
-- [ ] T042 [P] [US2] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "claim need sets claimed state and blocks duplicate claim" in mobile-app/tests/integration/us2-claim-need.acceptance.test.ts
-- [ ] T043 [P] [US2] Add contract test for need claim mutation and response shape in mobile-app/tests/contract/us2-claim-need.contract.test.ts
+- [x] T040 [P] [US2] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "create need and see it in lists" in mobile-app/tests/integration/us2-create-need.acceptance.test.ts
+- [x] T041 [P] [US2] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "search needs with filters" in mobile-app/tests/integration/us2-search-needs.acceptance.test.ts
+- [x] T042 [P] [US2] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "claim need sets claimed state and blocks duplicate claim" in mobile-app/tests/integration/us2-claim-need.acceptance.test.ts
+- [x] T043 [P] [US2] Add contract test for need claim mutation and response shape in mobile-app/tests/contract/us2-claim-need.contract.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T044 [P] [US2] Finalize and approve UI contracts for Search needs and My needs in specs/014-mutuity-mobile-rewrite/ui-contracts/search-needs.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-needs.md
-- [ ] T045 [P] [US2] Finalize and approve UI contract for My claims in specs/014-mutuity-mobile-rewrite/ui-contracts/my-claims.md
-- [ ] T046 [US2] Port Search needs screen after gate pass in mobile-app/src/screens/needs/SearchNeedsScreen.tsx
-- [ ] T047 [US2] Port My needs screen and edit flow after gate pass in mobile-app/src/screens/needs/MyNeedsScreen.tsx and mobile-app/src/screens/needs/EditNeedScreen.tsx
-- [ ] T048 [US2] Port My claims workspace after gate pass in mobile-app/src/screens/claims/MyClaimsScreen.tsx
-- [ ] T049 [US2] Implement need create/update/claim data adapters in mobile-app/src/services/graphql/needs.ts
-- [ ] T050 [US2] Wire US2 navigation routes in mobile-app/src/navigation/US2Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
-- [ ] T051 [US2] Ensure fr/en labels for US2 screens in mobile-app/src/i18n/locales/en/us2.json and mobile-app/src/i18n/locales/fr/us2.json
+- [x] T044 [P] [US2] Finalize and approve UI contracts for Search needs and My needs in specs/014-mutuity-mobile-rewrite/ui-contracts/search-needs.md and specs/014-mutuity-mobile-rewrite/ui-contracts/my-needs.md
+- [x] T045 [P] [US2] Finalize and approve UI contract for My claims in specs/014-mutuity-mobile-rewrite/ui-contracts/my-claims.md
+- [x] T046 [US2] Port Search needs screen after gate pass in mobile-app/src/screens/needs/SearchNeedsScreen.tsx
+- [x] T047 [US2] Port My needs screen and edit flow after gate pass in mobile-app/src/screens/needs/MyNeedsScreen.tsx and mobile-app/src/screens/needs/EditNeedScreen.tsx
+- [x] T048 [US2] Port My claims workspace after gate pass in mobile-app/src/screens/claims/MyClaimsScreen.tsx
+- [x] T049 [US2] Implement need create/update/claim data adapters in mobile-app/src/services/graphql/needs.ts
+- [x] T050 [US2] Wire US2 navigation routes in mobile-app/src/navigation/US2Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
+- [x] T051 [US2] Ensure fr/en labels for US2 screens in mobile-app/src/i18n/locales/en/us2.json and mobile-app/src/i18n/locales/fr/us2.json
 
 **Checkpoint**: US2 works independently from campaigns.
 

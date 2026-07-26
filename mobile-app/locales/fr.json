@@ -1,6 +1,8 @@
 {
   "ios": {
     "NSLocationWhenInUseUsageDescription": "Mutuity souhaite accéder à votre position pour localiser les ressources et calculer leur proximité.",
-    "NSLocationAlwaysAndWhenInUseUsageDescription": "Mutuity utilise votre position afin de garder la cohérence des distances et de la découverte sur carte pendant l'utilisation de l'application."
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Mutuity utilise votre position afin de garder la cohérence des distances et de la découverte sur carte pendant l'utilisation de l'application.",
+    "NSPhotoLibraryUsageDescription": "Mutuity souhaite accéder à vos photos afin de vous permettre de choisir des images pour vos besoins et vos ressources.",
+    "NSCameraUsageDescription": "Mutuity souhaite accéder à votre appareil photo afin de vous permettre de prendre des images pour vos besoins et vos ressources."
   }
 }

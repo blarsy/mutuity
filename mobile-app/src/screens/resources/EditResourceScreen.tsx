@@ -3,7 +3,15 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Divider, Icon, Snackbar, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
+import {
+  DateTimePickerField,
+  PicturesField,
+  PriceSetter,
+  PrimaryButton,
+  ProximityLocationEditor,
+  type ProximityLocationValue,
+  ScreenContainer
+} from "../../components/primitives";
 import {
   createResourceForAccount,
   deleteResourceById,
@@ -31,9 +39,12 @@ export function EditResourceScreen({
   const { isConnected, isInternetReachable } = useNetworkStatus();
 
   const [title, setTitle] = useState(initialResource?.title ?? "");
-  const [priceText, setPriceText] = useState(String(initialResource?.defaultTokenAmount ?? 0));
-  const [imagesText, setImagesText] = useState((initialResource?.imageUrls ?? []).join("\n"));
+  const [tokenAmount, setTokenAmount] = useState(initialResource?.defaultTokenAmount ?? 0);
+  const [imageUrls, setImageUrls] = useState<string[]>(initialResource?.imageUrls ?? []);
   const [description, setDescription] = useState(initialResource?.description ?? "");
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(
+    initialResource?.expiresAt ? new Date(initialResource.expiresAt) : undefined
+  );
   const [natureOptions, setNatureOptions] = useState({
     isProduct: initialResource?.isProduct ?? true,
     isService: initialResource?.isService ?? false
@@ -52,19 +63,7 @@ export function EditResourceScreen({
 
   const isOffline = !isConnected || !isInternetReachable;
 
-  const parsedTokenAmount = useMemo(() => {
-    const parsed = Number.parseInt(priceText, 10);
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
-  }, [priceText]);
-
-  const parsedImageUrls = useMemo(
-    () =>
-      imagesText
-        .split("\n")
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    [imagesText]
-  );
+  const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
 
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
@@ -119,7 +118,8 @@ export function EditResourceScreen({
           title,
           description,
           defaultTokenAmount: parsedTokenAmount,
-          imageUrls: parsedImageUrls,
+          imageUrls,
+          expiresAt: expiresAt?.toISOString() ?? null,
           isProduct: natureOptions.isProduct,
           isService: natureOptions.isService,
           canBeTakenAway: transportOptions.canBeTakenAway,
@@ -133,7 +133,8 @@ export function EditResourceScreen({
           title,
           description,
           defaultTokenAmount: parsedTokenAmount,
-          imageUrls: parsedImageUrls,
+          imageUrls,
+          expiresAt: expiresAt?.toISOString() ?? null,
           isProduct: natureOptions.isProduct,
           isService: natureOptions.isService,
           canBeTakenAway: transportOptions.canBeTakenAway,
@@ -180,14 +181,13 @@ export function EditResourceScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <TextInput
-          mode="outlined"
-          label={t("resourceImagesEditLabel", { defaultValue: "Image URLs (one per line)" })}
-          accessibilityLabel={t("resourceImagesEditLabel", { defaultValue: "Image URLs (one per line)" })}
-          value={imagesText}
-          onChangeText={setImagesText}
-          multiline
-          numberOfLines={3}
+        <PicturesField
+          label={t("resourceImagesEditLabel", { defaultValue: "Pictures" })}
+          accessibilityLabel={t("resourceImagesEditLabel", { defaultValue: "Edit resource images" })}
+          imageUrls={imageUrls}
+          onChange={setImageUrls}
+          addFromCameraLabel={t("resourceAddPictureFromCameraLabel", { defaultValue: "Take picture" })}
+          addFromLibraryLabel={t("resourceAddPictureFromLibraryLabel", { defaultValue: "Add from photos" })}
         />
 
         <TextInput
@@ -224,13 +224,18 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <TextInput
-          mode="outlined"
+        <PriceSetter
           label={t("resourcePriceEditLabel", { defaultValue: "Token amount" })}
           accessibilityLabel={t("resourcePriceEditLabel", { defaultValue: "Token amount" })}
-          value={priceText}
-          onChangeText={setPriceText}
-          keyboardType="number-pad"
+          value={tokenAmount}
+          onChange={setTokenAmount}
+        />
+
+        <DateTimePickerField
+          label={t("resourceExpirationLabel", { defaultValue: "Expiration" })}
+          value={expiresAt}
+          onChange={setExpiresAt}
+          testID="resource-expiration"
         />
 
         <Divider style={styles.divider} />
