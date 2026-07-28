@@ -1,5 +1,6 @@
 import * as Yup from "yup";
 
+// Matches the generated NeedIntensity enum values for form validation
 export type NeedIntensityValue = "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
 
 export type CreateNeedValues = {

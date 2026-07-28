@@ -156,6 +156,11 @@ export const RESOURCE_DETAIL_QUERY = gql`
       isActive
       createdAt
       updatedAt
+      resourceCategoryAssignmentsByResourceId(orderBy: CATEGORY_CODE_ASC) {
+        nodes {
+          categoryCode
+        }
+      }
       accountByCreatorAccountId {
         id
         displayName

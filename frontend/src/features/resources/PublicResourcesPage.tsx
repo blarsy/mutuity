@@ -40,6 +40,7 @@ import {
   DEFAULT_RESOURCE_SEARCH_FILTERS,
   type PublicResourceCard,
   type ResourceCategoryOption,
+  type ResourceIntensity,
   type ResourceSearchFilters,
   type ResourceSearchLocation,
   type TriStateFilter
@@ -48,18 +49,7 @@ import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { ResourceCard } from "../ui/ResourceCard";
 import { listingCardGridSx } from "../ui/listingCardGrid";
 import { PUBLIC_RESOURCES_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
-
-type PublicResourcesQueryData = {
-  searchResources: {
-    nodes: PublicResourceCard[];
-  };
-};
-
-type ResourceCategoryOptionsQueryData = {
-  allResourceCategories: {
-    nodes: ResourceCategoryOption[];
-  };
-};
+import type { PublicResourcesQuery, ResourceCategoryOptionsQuery } from "../../graphql/generated";
 
 type ToggleFilterKey = Exclude<
   keyof ResourceSearchFilters,
@@ -191,18 +181,18 @@ export default function PublicResourcesPage() {
     [activeLocation, filters]
   );
 
-  const { data, loading, error } = useQuery<PublicResourcesQueryData, ResourceSearchQueryVariables>(
+  const { data, loading, error } = useQuery<PublicResourcesQuery, ResourceSearchQueryVariables>(
     PUBLIC_RESOURCES_QUERY,
     { variables }
   );
-  const { data: categoryData, error: categoryError } = useQuery<ResourceCategoryOptionsQueryData>(
+  const { data: categoryData, error: categoryError } = useQuery<ResourceCategoryOptionsQuery>(
     RESOURCE_CATEGORY_OPTIONS_QUERY
   );
 
-  const resources = data?.searchResources.nodes ?? [];
+  const resources = data?.searchResources?.nodes ?? [];
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
-  const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
+  const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
   const localizedCategoryByLabel = useMemo(() => {
     const map = new Map<string, string>();
@@ -440,10 +430,10 @@ export default function PublicResourcesPage() {
                   chips={
                     <>
                       <Chip label={t("card.distanceKm", { value: Number(resource.distanceKm).toFixed(1) })} size="small" />
-                      {buildResourceTags(resource, t).map(tag => (
+                      {buildResourceTags({ title: resource.title ?? "", creatorDisplayName: resource.creatorDisplayName ?? "", imageUrls: (resource.imageUrls ?? []).filter((u): u is string => u != null), categoryLabels: (resource.categoryLabels ?? []).filter((u): u is string => u != null), distanceKm: resource.distanceKm ?? "0", queryLatitude: resource.queryLatitude ?? "", queryLongitude: resource.queryLongitude ?? "", intensity: (resource.intensity ?? "sharing") as ResourceIntensity, id: resource.id ?? "", creatorAccountId: resource.creatorAccountId ?? "", description: resource.description, location: resource.location, latitude: resource.latitude, longitude: resource.longitude, defaultTokenAmount: resource.defaultTokenAmount, isProduct: resource.isProduct ?? false, isService: resource.isService ?? false, canBeGiven: resource.canBeGiven ?? false, canBeExchanged: resource.canBeExchanged ?? false, canBeTakenAway: resource.canBeTakenAway ?? false, canBeDelivered: resource.canBeDelivered ?? false, expiresAt: resource.expiresAt, createdAt: resource.createdAt ?? "" }, t).map(tag => (
                         <Chip key={`${resource.id}-${tag}`} label={tag} size="small" variant="outlined" />
                       ))}
-                      {resource.categoryLabels.filter((label): label is string => Boolean(label && label.trim())).map(label => (
+                      {resource.categoryLabels?.filter((label): label is string => Boolean(label && label.trim())).map(label => (
                         <Chip
                           key={`${resource.id}-category-${label}`}
                           color="primary"
@@ -455,24 +445,24 @@ export default function PublicResourcesPage() {
                       {isCreator ? <Chip color="secondary" label={t("card.yourResource")} size="small" /> : null}
                     </>
                   }
-                  creatorName={resource.creatorDisplayName}
+                  creatorName={resource.creatorDisplayName ?? ""}
                   description={resource.description}
                   expiresAt={resource.expiresAt}
-                  imageUrls={resource.imageUrls ?? []}
+                  imageUrls={(resource.imageUrls ?? []).filter((u): u is string => u != null)}
                   footer={
                     <Typography color="text.secondary" variant="body2">
                       {t("card.suggestedTokenAmount")}: {resource.defaultTokenAmount ?? t("card.notSet")} • {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
                     </Typography>
                   }
                   key={resource.id}
-                  location={resource.location}
+                  location={resource.location ?? ""}
                   onClick={() => {
                     void router.push(`/resources/${resource.id}`);
                   }}
                   onCreatorClick={() => {
                     void router.push(`/accounts/${resource.creatorAccountId}`);
                   }}
-                  title={resource.title}
+                  title={resource.title ?? ""}
                 />
               );
             })}

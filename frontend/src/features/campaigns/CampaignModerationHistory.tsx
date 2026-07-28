@@ -3,29 +3,15 @@ import { Alert, Box, CircularProgress, List, ListItem, ListItemText, Typography 
 import { useTranslation } from "react-i18next";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CAMPAIGN_MODERATION_HISTORY_QUERY } from "./campaignModeration.queries";
+import type { CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables } from "../../graphql/generated";
 
 type CampaignModerationHistoryProps = {
   campaignId: string;
 };
 
-type ModerationHistoryData = {
-  campaignModerationEvents: {
-    nodes: Array<{
-      eventType: string;
-      body: string | null;
-      actorAccountId: string | null;
-      createdAt: string;
-    }>;
-  };
-};
-
-type ModerationHistoryVariables = {
-  campaignId: string;
-};
-
 export function CampaignModerationHistory({ campaignId }: CampaignModerationHistoryProps) {
   const { t } = useTranslation("campaigns");
-  const { data, loading, error } = useQuery<ModerationHistoryData, ModerationHistoryVariables>(
+  const { data, loading, error } = useQuery<CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables>(
     CAMPAIGN_MODERATION_HISTORY_QUERY,
     {
       variables: { campaignId }
@@ -41,7 +27,7 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
     return <Alert severity="error">{errorMessage}</Alert>;
   }
 
-  const events = data?.campaignModerationEvents.nodes ?? [];
+  const events = data?.campaignModerationEvents?.nodes ?? [];
 
   if (events.length === 0) {
     return (

@@ -7,42 +7,12 @@ import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { ClaimConversationPanel } from "./ClaimConversationPanel";
 import { NEED_CLAIM_MANAGEMENT_QUERY, SETTLE_NEED_CLAIM_MUTATION } from "./needClaims.queries";
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
+import type { NeedClaimManagementQuery, NeedClaimManagementQueryVariables } from "../../graphql/generated";
 
 type NeedClaimManagementPageProps = {
   claimId: string;
   currentAccountId: string;
   onClaimsChanged?: () => void;
-};
-
-type NeedClaimManagementData = {
-  needClaimById: {
-    id: string;
-    needId: string;
-    claimerAccountId: string;
-    message: string | null;
-    status: string;
-    createdAt: string;
-    updatedAt: string;
-    settledAt: string | null;
-    settledByAccountId: string | null;
-    needByNeedId: {
-      id: string;
-      title: string;
-      creatorAccountId: string;
-      proposedTopesAmount: number | null;
-    };
-    accountByClaimerAccountId: {
-      id: string;
-      displayName: string | null;
-      externalSubject: string;
-    } | null;
-    needClaimSettlementEventByNeedClaimId: {
-      id: string;
-      topesAmount: number;
-      createdAt: string;
-      settledByAccountId: string;
-    } | null;
-  } | null;
 };
 
 export function NeedClaimManagementPage({
@@ -51,7 +21,7 @@ export function NeedClaimManagementPage({
   onClaimsChanged
 }: NeedClaimManagementPageProps) {
   const { t } = useTranslation("needs");
-  const { data, loading, error, refetch } = useQuery<NeedClaimManagementData>(NEED_CLAIM_MANAGEMENT_QUERY, {
+  const { data, loading, error, refetch } = useQuery<NeedClaimManagementQuery>(NEED_CLAIM_MANAGEMENT_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     variables: { claimId }
@@ -61,7 +31,7 @@ export function NeedClaimManagementPage({
   );
 
   const claim = data?.needClaimById ?? null;
-  const isCreator = claim?.needByNeedId.creatorAccountId === currentAccountId;
+  const isCreator = claim?.needByNeedId?.creatorAccountId === currentAccountId;
   const canSettle = isCreator && claim?.status === "OPEN";
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(settleError);
 
@@ -108,7 +78,7 @@ export function NeedClaimManagementPage({
               <Box>
                 <Typography variant="h6">{t("claimManagement.title")}</Typography>
                 <Typography color="text.secondary" variant="body2">
-                  {t("claimManagement.need")}: {claim.needByNeedId.title}
+                  {t("claimManagement.need")}: {claim.needByNeedId?.title}
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
                   {t("claimManagement.claimer")}: {participantLabel}
@@ -131,8 +101,8 @@ export function NeedClaimManagementPage({
 
             <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
               <Typography color="text.secondary" variant="body2">
-                {claim.needByNeedId.proposedTopesAmount
-                  ? t("claimManagement.topesAttached", { amount: claim.needByNeedId.proposedTopesAmount })
+                {claim.needByNeedId?.proposedTopesAmount
+                  ? t("claimManagement.topesAttached", { amount: claim.needByNeedId?.proposedTopesAmount })
                   : t("claimManagement.noTopesAttached")}
               </Typography>
 

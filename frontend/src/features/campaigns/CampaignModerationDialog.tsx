@@ -28,57 +28,13 @@ import {
   UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION
 } from "./campaignModeration.queries";
 import { CampaignModerationHistory } from "./CampaignModerationHistory";
+import type { CampaignModerationDetailsQuery, CampaignModerationDetailsQueryVariables, UpdateCampaignForModerationMutation, UpdateCampaignForModerationMutationVariables } from "../../graphql/generated";
 
 type CampaignModerationDialogProps = {
   campaignId: string;
   open: boolean;
   onClose: () => void;
   onUpdated?: () => Promise<void> | void;
-};
-
-type CampaignModerationDetailsData = {
-  campaignById: {
-    id: string;
-    title: string;
-    theme: string;
-    description: string | null;
-    imageUrl: string | null;
-    managerNoteFromCreator: string | null;
-    rewardsMultiplier: number;
-    airdropAmount: number;
-    startAt: string;
-    airdropAt: string;
-    endAt: string;
-    moderationStatus: string;
-    createdAt: string;
-  } | null;
-};
-
-type CampaignModerationDetailsVariables = {
-  campaignId: string;
-};
-
-type UpdateCampaignForModerationData = {
-  updateCampaignForModeration: {
-    campaign: {
-      id: string;
-      moderationStatus: string;
-    };
-  };
-};
-
-type UpdateCampaignForModerationVariables = {
-  pCampaignId: string;
-  pTitle: string;
-  pTheme: string;
-  pDescription: string;
-  pImageUrl?: string;
-  pManagerNoteFromCreator?: string;
-  pRewardsMultiplier: number;
-  pAirdropAmount: number;
-  pStartAt: string;
-  pAirdropAt: string;
-  pEndAt: string;
 };
 
 function toDatetimeLocalInput(value: string) {
@@ -90,7 +46,7 @@ function toDatetimeLocalInput(value: string) {
 export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated }: CampaignModerationDialogProps) {
   const { t } = useTranslation("campaigns");
   const [editOpen, setEditOpen] = useState(false);
-  const { data, loading, error, refetch } = useQuery<CampaignModerationDetailsData, CampaignModerationDetailsVariables>(
+  const { data, loading, error, refetch } = useQuery<CampaignModerationDetailsQuery, CampaignModerationDetailsQueryVariables>(
     CAMPAIGN_MODERATION_DETAILS_QUERY,
     {
       skip: !open,
@@ -99,8 +55,8 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
   );
 
   const [updateCampaign, { loading: updateLoading, error: updateError }] = useMutation<
-    UpdateCampaignForModerationData,
-    UpdateCampaignForModerationVariables
+    UpdateCampaignForModerationMutation,
+    UpdateCampaignForModerationMutationVariables
   >(UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION);
 
   const campaign = data?.campaignById ?? null;

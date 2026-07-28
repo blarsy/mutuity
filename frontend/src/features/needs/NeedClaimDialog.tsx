@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CLAIM_NEED_MUTATION } from "./needClaims.queries";
+import type { ClaimNeedMutation, ClaimNeedMutationVariables } from "../../graphql/generated";
 
 type NeedClaimDialogProps = {
   needId: string;
@@ -29,14 +30,6 @@ type NeedClaimDialogProps = {
   onClaimed?: (claimId: string) => void;
 };
 
-type ClaimNeedMutationData = {
-  claimNeed: {
-    needClaim: {
-      id: string;
-    };
-  };
-};
-
 export function NeedClaimDialog({
   needId,
   needTitle,
@@ -48,7 +41,7 @@ export function NeedClaimDialog({
   const { t } = useTranslation("needs");
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(existingClaim?.message ?? "");
-  const [claimNeed, { loading, error }] = useMutation<ClaimNeedMutationData>(CLAIM_NEED_MUTATION);
+  const [claimNeed, { loading, error }] = useMutation<ClaimNeedMutation>(CLAIM_NEED_MUTATION);
 
   useEffect(() => {
     if (!open) {
@@ -80,7 +73,7 @@ export function NeedClaimDialog({
       }
     });
 
-    const claimId = result.data?.claimNeed.needClaim.id;
+    const claimId = result.data?.claimNeed?.needClaim?.id;
 
     if (claimId) {
       setOpen(false);

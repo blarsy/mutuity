@@ -33,69 +33,8 @@ import {
   type CreateResourceValues
 } from "./createResource.validation";
 import { RESOURCE_INTENSITY_OPTIONS, type ResourceCategoryOption } from "./types";
-
-type PublishResourceMutationData = {
-  publishResource: {
-    resource: {
-      id: string;
-      title: string;
-      intensity: string;
-      defaultTokenAmount: number | null;
-    };
-  };
-};
-
-type PublishResourceMutationVariables = {
-  resourceId?: string;
-  title: string;
-  description?: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
-  intensity: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
-  defaultTokenAmount?: number;
-  categoryCodes?: number[];
-  imageUrls?: string[];
-  isProduct: boolean;
-  isService: boolean;
-  canBeGiven: boolean;
-  canBeExchanged: boolean;
-  canBeTakenAway: boolean;
-  canBeDelivered: boolean;
-  expiresAt?: string;
-};
-
-type ResourceCategoryOptionsQueryData = {
-  allResourceCategories: {
-    nodes: ResourceCategoryOption[];
-  };
-};
-
-type ResourceDetailForEditQueryData = {
-  resourceById: {
-    id: string;
-    title: string;
-    description: string | null;
-    location: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    intensity: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
-    defaultTokenAmount: number | null;
-    imageUrls: string[];
-    isProduct: boolean;
-    isService: boolean;
-    canBeGiven: boolean;
-    canBeExchanged: boolean;
-    canBeTakenAway: boolean;
-    canBeDelivered: boolean;
-    expiresAt: string | null;
-    resourceCategoryAssignmentsByResourceId: {
-      nodes: Array<{
-        categoryCode: number;
-      }>;
-    };
-  } | null;
-};
+import type { PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceDetailQuery } from "../../graphql/generated";
+import { NeedIntensity } from "../../graphql/generated";
 
 function normalizeOptionalInteger(value: number | "") {
   if (value === "") {
@@ -149,16 +88,16 @@ export default function CreateResourcePage() {
   const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
   const isEditMode = Boolean(resourceId);
   const [publishResource, { loading, error }] = useMutation<
-    PublishResourceMutationData,
+    PublishResourceMutation,
     PublishResourceMutationVariables
   >(PUBLISH_RESOURCE_MUTATION);
   const { data: categoryData, loading: loadingCategories, error: categoryError } =
-    useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
+    useQuery<ResourceCategoryOptionsQuery>(RESOURCE_CATEGORY_OPTIONS_QUERY);
   const {
     data: editData,
     loading: loadingEditResource,
     error: editResourceError
-  } = useQuery<ResourceDetailForEditQueryData>(RESOURCE_DETAIL_QUERY, {
+  } = useQuery<ResourceDetailQuery>(RESOURCE_DETAIL_QUERY, {
     skip: !resourceId,
     variables: {
       resourceId: resourceId ?? ""
@@ -169,7 +108,7 @@ export default function CreateResourcePage() {
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const editResourceErrorMessage = getUserFacingGraphQLErrorMessage(editResourceError);
 
-  const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
+  const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
   const editResource = editData?.resourceById ?? null;
 
   const initialValues = useMemo<CreateResourceValues>(() => {
@@ -180,13 +119,13 @@ export default function CreateResourcePage() {
     return {
       title: editResource.title,
       description: editResource.description ?? "",
-      imageUrls: editResource.imageUrls,
+      imageUrls: editResource.imageUrls.filter((u): u is string => u != null),
       location: editResource.location ?? "",
       latitude: editResource.latitude ?? "",
       longitude: editResource.longitude ?? "",
       intensity: fromGraphQLResourceIntensity(editResource.intensity),
       defaultTokenAmount: editResource.defaultTokenAmount ?? "",
-      categoryCodes: editResource.resourceCategoryAssignmentsByResourceId.nodes.map(node => node.categoryCode),
+      categoryCodes: (editResource.resourceCategoryAssignmentsByResourceId?.nodes ?? []).map(node => node.categoryCode),
       isProduct: editResource.isProduct,
       isService: editResource.isService,
       canBeGiven: editResource.canBeGiven,
@@ -206,7 +145,7 @@ export default function CreateResourcePage() {
         location: values.location.trim() || undefined,
         latitude: normalizeOptionalCoordinate(values.latitude),
         longitude: normalizeOptionalCoordinate(values.longitude),
-        intensity: toGraphQLResourceIntensity(values.intensity),
+        intensity: toGraphQLResourceIntensity(values.intensity) as unknown as NeedIntensity,
         defaultTokenAmount: normalizeOptionalInteger(values.defaultTokenAmount),
         categoryCodes: values.categoryCodes.length > 0 ? values.categoryCodes : undefined,
         imageUrls: values.imageUrls.length > 0 ? values.imageUrls : undefined,

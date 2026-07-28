@@ -80,15 +80,15 @@ export function getTokenRangeLabel(intensity: ResourceIntensity) {
 export function toGraphQLResourceIntensity(intensity: ResourceIntensity) {
   switch (intensity) {
     case "leg_up":
-      return "LEG_UP";
+      return "LEG_UP" as const;
     case "sharing":
-      return "SHARING";
+      return "SHARING" as const;
     case "commitment":
-      return "COMMITMENT";
+      return "COMMITMENT" as const;
     case "rare_contribution":
-      return "RARE_CONTRIBUTION";
+      return "RARE_CONTRIBUTION" as const;
     default:
-      return "SHARING";
+      return "SHARING" as const;
   }
 }
 

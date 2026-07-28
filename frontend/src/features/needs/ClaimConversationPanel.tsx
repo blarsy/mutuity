@@ -28,6 +28,7 @@ import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
 import { logBackofficeError } from "../logging/operationalLogger";
 import { parseImageUrls, MAX_IMAGE_ATTACHMENTS } from "../chat/ConversationThread";
 import { ChatImageUploadDialog } from "../chat/ChatImageUploadDialog";
+import type { NeedClaimDetailQuery, NeedClaimDetailQueryVariables, ClaimConversationByPartiesQuery, ClaimConversationByPartiesQueryVariables } from "../../graphql/generated";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -41,57 +42,6 @@ export type ClaimConversationViewMessage = {
 type ClaimConversationPanelProps = {
   claimId: string;
   currentAccountId: string;
-};
-
-type NeedClaimDetailQueryData = {
-  needClaimById: {
-    id: string;
-    needId: string;
-    claimerAccountId: string;
-    message: string | null;
-    status: string;
-    createdAt: string;
-    updatedAt: string;
-    settledAt: string | null;
-    needByNeedId: {
-      id: string;
-      title: string;
-      creatorAccountId: string;
-    };
-    accountByClaimerAccountId: {
-      id: string;
-      displayName: string | null;
-      externalSubject: string;
-    } | null;
-    needClaimSettlementEventByNeedClaimId: {
-      id: string;
-      topesAmount: number;
-      createdAt: string;
-      settledByAccountId: string;
-    } | null;
-  } | null;
-};
-
-type ClaimConversationByPartiesData = {
-  claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: {
-    id: string;
-    claimMessagesByConversationId: {
-      nodes: Array<{
-        id: string;
-        senderAccountId: string;
-        body: string;
-        createdAt: string;
-        readAt: string | null;
-        claimMessageImagesByMessageId: {
-          nodes: Array<{
-            id: string;
-            imageUrl: string;
-            sortOrder: number;
-          }>;
-        };
-      }>;
-    };
-  } | null;
 };
 
 /** @deprecated Use parseImageUrls from ConversationThread for new code. */
@@ -172,7 +122,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   );
   const [markClaimMessagesRead] = useMutation(MARK_CLAIM_MESSAGES_READ_MUTATION);
 
-  const { data, loading, error, refetch } = useQuery<NeedClaimDetailQueryData>(NEED_CLAIM_DETAIL_QUERY, {
+  const { data, loading, error, refetch } = useQuery<NeedClaimDetailQuery>(NEED_CLAIM_DETAIL_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     variables: { claimId }
@@ -180,7 +130,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
 
   const claim = data?.needClaimById ?? null;
 
-  const { data: convData, refetch: refetchConv } = useQuery<ClaimConversationByPartiesData>(
+  const { data: convData, refetch: refetchConv } = useQuery<ClaimConversationByPartiesQuery>(
     CLAIM_CONVERSATION_BY_PARTIES_QUERY,
     {
       fetchPolicy: "cache-and-network",
@@ -197,7 +147,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const conversation =
     convData?.claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId ?? null;
   const claimStatus = claim?.status ?? "OPEN";
-  const isCreator = claim?.needByNeedId.creatorAccountId === currentAccountId;
+  const isCreator = claim?.needByNeedId?.creatorAccountId === currentAccountId;
 
   const messages = useMemo<ClaimConversationViewMessage[]>(() => {
     return sortConversationMessages(
@@ -288,7 +238,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
         <Stack spacing={2}>
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
             <Box>
-              <Typography variant="h6">{t("claimConversation.title", { needTitle: claim.needByNeedId.title })}</Typography>
+              <Typography variant="h6">{t("claimConversation.title", { needTitle: claim.needByNeedId?.title })}</Typography>
               <Typography color="text.secondary" variant="body2">
                 {t("claimConversation.claimer")}: {claim.accountByClaimerAccountId?.displayName ?? claim.accountByClaimerAccountId?.externalSubject ?? claim.claimerAccountId}
               </Typography>

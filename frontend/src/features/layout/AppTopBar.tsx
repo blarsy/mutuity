@@ -18,6 +18,7 @@ import { COUNT_UNREAD_NOTIFICATIONS_QUERY } from "../notifications/notifications
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import type { AppColorMode } from "../../theme";
+import type { ListChatConversationsQuery } from "../../graphql/generated";
 
 const signedOutLinks = [
   { labelKey: "nav.search", href: "/app/resources" },
@@ -37,18 +38,6 @@ const signedInLinks = [
   { labelKey: "nav.chat", href: "/app/chat" },
   { labelKey: "nav.notifications", href: "/app/notifications" }
 ];
-
-type ListChatConversationsData = {
-  listChatConversations: {
-    nodes: {
-      conversationKind: ChatContextKind;
-      conversationId: string;
-      otherAccountDisplayName: string | null;
-      lastMessagePreview: string | null;
-      unreadCount: number;
-    }[];
-  };
-};
 
 export function AppTopBar({
   colorMode,
@@ -74,7 +63,7 @@ export function AppTopBar({
   } | null>(null);
   const previousUnreadNotificationsCountRef = useRef<number | null>(null);
   const previousUnreadChatCountRef = useRef<number | null>(null);
-  const [fetchLatestConversation] = useLazyQuery<ListChatConversationsData>(LIST_CHAT_CONVERSATIONS_QUERY, {
+  const [fetchLatestConversation] = useLazyQuery<ListChatConversationsQuery>(LIST_CHAT_CONVERSATIONS_QUERY, {
     fetchPolicy: "network-only"
   });
 
@@ -118,7 +107,7 @@ export function AppTopBar({
 
     if (prev !== null && unreadChatCount > prev && !router.pathname.startsWith("/app/chat")) {
       void fetchLatestConversation({ variables: { limit: 5, offset: 0 } }).then(result => {
-        const first = result.data?.listChatConversations.nodes.find(n => n.unreadCount > 0);
+        const first = result.data?.listChatConversations?.nodes.find(n => (n.unreadCount ?? 0) > 0);
         if (!first) return;
         const senderName = first.otherAccountDisplayName ?? "?";
         const raw = first.lastMessagePreview ?? "";
@@ -126,7 +115,7 @@ export function AppTopBar({
         setChatMessageToast({
           senderName,
           preview,
-          conversationKind: first.conversationKind,
+          conversationKind: first.conversationKind ?? "RESOURCE",
           conversationId: first.conversationId
         });
       });

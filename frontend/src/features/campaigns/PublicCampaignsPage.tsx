@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLIC_CAMPAIGNS_QUERY } from "./campaigns.queries";
 import { RichTextContent } from "../../components/richText/RichTextContent";
+import type { PublicCampaignsQuery } from "../../graphql/generated";
 
 type CampaignNode = {
   id: string;
@@ -17,12 +18,6 @@ type CampaignNode = {
   endAt: string;
 };
 
-type PublicCampaignsData = {
-  allCampaigns: {
-    nodes: CampaignNode[];
-  };
-};
-
 export function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   const startAt = new Date(startAtIso);
   const endAt = new Date(endAtIso);
@@ -32,15 +27,15 @@ export function isCampaignActive(now: Date, startAtIso: string, endAtIso: string
 
 export default function PublicCampaignsPage() {
   const { t } = useTranslation("campaigns");
-  const { data, loading, error } = useQuery<PublicCampaignsData>(PUBLIC_CAMPAIGNS_QUERY);
+  const { data, loading, error } = useQuery<PublicCampaignsQuery>(PUBLIC_CAMPAIGNS_QUERY);
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   const activeCampaigns = useMemo(() => {
     const now = new Date();
-    const nodes = data?.allCampaigns.nodes ?? [];
+    const nodes = data?.allCampaigns?.nodes ?? [];
 
     return nodes.filter(node => isCampaignActive(now, node.startAt, node.endAt));
-  }, [data?.allCampaigns.nodes]);
+  }, [data?.allCampaigns?.nodes]);
 
   return (
     <Container maxWidth="md">

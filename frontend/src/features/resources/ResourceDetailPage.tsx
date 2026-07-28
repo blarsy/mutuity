@@ -30,61 +30,12 @@ import { ResourceBidDialog } from "./ResourceBidDialog";
 import { RESOURCE_BIDS_FOR_RESOURCE_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
 import type { ResourceCategoryOption } from "./types";
+import type { ResourceDetailQuery, ResourceBidsForResourceQuery, ResourceCategoryOptionsQuery, ResourceConversationLookupQuery } from "../../graphql/generated";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
 type ResourceDetailPageProps = {
   resourceId: string;
-};
-
-type ResourceDetailData = {
-  resourceById: {
-    id: string;
-    creatorAccountId: string;
-    title: string;
-    description: string | null;
-    location: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    intensity: ResourceIntensity;
-    defaultTokenAmount: number | null;
-    imageUrls: string[];
-    categoryLabels: string[];
-    isProduct: boolean;
-    isService: boolean;
-    canBeGiven: boolean;
-    canBeExchanged: boolean;
-    canBeTakenAway: boolean;
-    canBeDelivered: boolean;
-    expiresAt: string | null;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-    accountByCreatorAccountId: {
-      id: string;
-      displayName: string | null;
-      externalSubject: string;
-      avatarUrl: string | null;
-    } | null;
-  } | null;
-};
-
-type ResourceBidsForResourceData = {
-  resourceBidsByResourceId: {
-    nodes: ResourceBidSummary[];
-  };
-};
-
-type ResourceCategoryOptionsQueryData = {
-  allResourceCategories: {
-    nodes: ResourceCategoryOption[];
-  };
-};
-
-type ResourceConversationLookupData = {
-  resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: {
-    id: string;
-  } | null;
 };
 
 function formatDate(value: string | null, noDateLabel: string) {
@@ -104,18 +55,18 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const { session, status } = useAuth();
   const { t, i18n } = useTranslation("resources");
   const currentAccountId = session.account?.id ?? null;
-  const { data, loading, error, refetch } = useQuery<ResourceDetailData>(RESOURCE_DETAIL_QUERY, {
+  const { data, loading, error, refetch } = useQuery<ResourceDetailQuery>(RESOURCE_DETAIL_QUERY, {
     variables: { resourceId }
   });
   const resource = data?.resourceById ?? null;
   const isCreatorEarly = resource?.creatorAccountId === currentAccountId;
   const isAdmin = session.authenticated && session.role === "admin";
-  const { data: bidsData } = useQuery<ResourceBidsForResourceData>(RESOURCE_BIDS_FOR_RESOURCE_QUERY, {
+  const { data: bidsData } = useQuery<ResourceBidsForResourceQuery>(RESOURCE_BIDS_FOR_RESOURCE_QUERY, {
     skip: !resource || !currentAccountId || isAdmin,
     variables: { resourceId }
   });
-  const { data: categoryData } = useQuery<ResourceCategoryOptionsQueryData>(RESOURCE_CATEGORY_OPTIONS_QUERY);
-  const { data: conversationData } = useQuery<ResourceConversationLookupData>(RESOURCE_CONVERSATION_LOOKUP_QUERY, {
+  const { data: categoryData } = useQuery<ResourceCategoryOptionsQuery>(RESOURCE_CATEGORY_OPTIONS_QUERY);
+  const { data: conversationData } = useQuery<ResourceConversationLookupQuery>(RESOURCE_CONVERSATION_LOOKUP_QUERY, {
     skip: !resource || !currentAccountId || !resource.creatorAccountId || resource.creatorAccountId === currentAccountId,
     variables: {
       resourceId,
@@ -125,7 +76,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   });
 
   const isCreator = isCreatorEarly;
-  const resourceBids = [...(bidsData?.resourceBidsByResourceId.nodes ?? [])].sort(
+  const resourceBids = [...(bidsData?.resourceBidsByResourceId?.nodes ?? [])].sort(
     (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
   const latestReceivedBid = isCreator ? resourceBids[0] ?? null : null;
@@ -141,7 +92,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const imageUrls = resource?.imageUrls ?? [];
   const currentImageUrl = imageUrls[currentImageIndex] ?? null;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
-  const categoryOptions = categoryData?.allResourceCategories.nodes ?? [];
+  const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
   const localizedCategoryByLabel = useMemo(() => {
     const map = new Map<string, string>();
@@ -452,13 +403,13 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                   {t("form.categoriesLabel")}
                 </Typography>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {resource.categoryLabels.length === 0 ? (
+                  {resource.categoryLabels?.length === 0 ? (
                     <Chip label={t("categories.noCategories")} size="small" variant="outlined" />
-                  ) : resource.categoryLabels.map(label => (
+                  ) : (resource.categoryLabels ?? []).map(label => (
                     <Chip
                       key={`${resource.id}-category-${label}`}
                       color="primary"
-                      label={localizedCategoryByLabel.get(label) ?? label}
+                      label={localizedCategoryByLabel.get(label ?? "") ?? label}
                       size="small"
                       variant="outlined"
                     />

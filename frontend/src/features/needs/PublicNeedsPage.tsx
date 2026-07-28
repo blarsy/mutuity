@@ -40,6 +40,7 @@ import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { NeedCard } from "../ui/NeedCard";
 import { listingCardGridSx } from "../ui/listingCardGrid";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
+import type { PublicNeedsQuery } from "../../graphql/generated";
 
 type NeedNode = {
   id: string;
@@ -65,12 +66,6 @@ type NeedNode = {
   expirationScore: string;
   queryLatitude: string;
   queryLongitude: string;
-};
-
-type PublicNeedsQueryData = {
-  searchNeeds: {
-    nodes: NeedNode[];
-  };
 };
 
 type ClaimOverviewNode = NonNullable<ViewerClaimOverviewQuery["sentNeedClaims"]>["nodes"][number];
@@ -216,7 +211,7 @@ export default function PublicNeedsPage() {
     [activeLocation, filters]
   );
 
-  const { data, loading, error } = useQuery<PublicNeedsQueryData, NeedSearchQueryVariables>(
+  const { data, loading, error } = useQuery<PublicNeedsQuery, NeedSearchQueryVariables>(
     PUBLIC_NEEDS_QUERY,
     {
       fetchPolicy: "cache-and-network",
@@ -233,7 +228,7 @@ export default function PublicNeedsPage() {
     variables: { viewerId: session.account?.id ?? "" }
   });
 
-  const needs = data?.searchNeeds.nodes ?? [];
+  const needs = data?.searchNeeds?.nodes ?? [];
   const sentClaims = claimOverviewData?.sentNeedClaims?.nodes ?? [];
   const receivedClaims = claimOverviewData?.receivedNeedClaims?.nodes ?? [];
   const myClaimsByNeedId = new Map(
@@ -447,8 +442,8 @@ export default function PublicNeedsPage() {
                       ) : (
                         <NeedClaimDialog
                           existingClaim={ownClaim}
-                          needId={need.id}
-                          needTitle={need.title}
+                          needId={need.id ?? ""}
+                          needTitle={need.title ?? ""}
                           onClaimed={handleClaimed}
                         />
                       )
@@ -464,7 +459,7 @@ export default function PublicNeedsPage() {
                 }
                 chips={
                   <>
-                    {buildNeedTags(need, t).filter(tag => tag.trim().length > 0).map(tag => (
+                    {buildNeedTags(need as NeedNode, t).filter(tag => tag.trim().length > 0).map(tag => (
                       <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                     ))}
                     {need.proposedTopesAmount ? (
@@ -479,10 +474,10 @@ export default function PublicNeedsPage() {
                     ) : null}
                   </>
                 }
-                creatorName={need.creatorDisplayName}
+                creatorName={need.creatorDisplayName ?? ""}
                 description={need.description}
                 expiresAt={need.expiresAt}
-                imageUrls={need.imageUrls}
+                imageUrls={(need.imageUrls ?? []).filter((u): u is string => u != null)}
                 footer={
                   <Stack spacing={1}>
                     {(need.requiredToolingText || need.requiredCompetenceText) ? (
@@ -497,7 +492,7 @@ export default function PublicNeedsPage() {
                     ) : null}
 
                     <Typography color="text.secondary" variant="caption">
-                      {need.location} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))}
+                      {need.location ?? ""} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))}
                     </Typography>
                   </Stack>
                 }
@@ -508,7 +503,7 @@ export default function PublicNeedsPage() {
                 onCreatorClick={() => {
                   void router.push(`/accounts/${need.creatorAccountId}`);
                 }}
-                title={need.title}
+                title={need.title ?? ""}
               />
             );})}
         </Box>

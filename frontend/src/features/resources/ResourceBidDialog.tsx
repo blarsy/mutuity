@@ -16,20 +16,13 @@ import { useTranslation } from "react-i18next";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CREATE_RESOURCE_BID_MUTATION } from "./resources.queries";
 import type { ResourceBidStatus } from "./types";
+import type { SubmitResourceBidMutation, SubmitResourceBidMutationVariables } from "../../graphql/generated";
 
 type ExistingResourceBid = {
   id: string;
   message: string | null;
   proposedTokenAmount: number | null;
   status: ResourceBidStatus;
-};
-
-type CreateResourceBidMutationData = {
-  submitResourceBid: {
-    resourceBid: {
-      id: string;
-    };
-  };
 };
 
 type ResourceBidDialogProps = {
@@ -62,7 +55,7 @@ export function ResourceBidDialog({
     existingBid?.proposedTokenAmount?.toString() ?? defaultTokenAmount?.toString() ?? ""
   );
   const [localError, setLocalError] = useState<string | null>(null);
-  const [createResourceBid, { loading, error }] = useMutation<CreateResourceBidMutationData>(
+  const [createResourceBid, { loading, error }] = useMutation<SubmitResourceBidMutation>(
     CREATE_RESOURCE_BID_MUTATION
   );
 
@@ -114,7 +107,7 @@ export function ResourceBidDialog({
       }
     });
 
-    const bidId = result.data?.submitResourceBid.resourceBid.id;
+    const bidId = result.data?.submitResourceBid?.resourceBid?.id;
 
     if (bidId) {
       setOpen(false);

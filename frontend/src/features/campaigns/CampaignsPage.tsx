@@ -26,6 +26,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { INSPIRATION_CAMPAIGNS_QUERY, MY_CAMPAIGNS_CONNECTION_QUERY } from "./campaigns.queries";
 import { RichTextContent } from "../../components/richText/RichTextContent";
+import type { MyCampaignsConnectionQuery, MyCampaignsConnectionQueryVariables, InspirationCampaignsQuery } from "../../graphql/generated";
 
 type CampaignNode = {
   id: string;
@@ -36,28 +37,6 @@ type CampaignNode = {
   airdropAt: string;
   endAt: string;
   createdAt: string;
-};
-
-type MyCampaignsData = {
-  allCampaigns: {
-    nodes: CampaignNode[];
-    pageInfo: {
-      hasNextPage: boolean;
-      endCursor: string | null;
-    };
-  };
-};
-
-type MyCampaignsVariables = {
-  creatorAccountId: string;
-  first: number;
-  after?: string;
-};
-
-type InspirationCampaignsData = {
-  allCampaigns: {
-    nodes: CampaignNode[];
-  };
 };
 
 const PAGE_SIZE = 10;
@@ -175,7 +154,7 @@ export default function CampaignsPage() {
     loading,
     error,
     fetchMore
-  } = useQuery<MyCampaignsData, MyCampaignsVariables>(MY_CAMPAIGNS_CONNECTION_QUERY, {
+  } = useQuery<MyCampaignsConnectionQuery, MyCampaignsConnectionQueryVariables>(MY_CAMPAIGNS_CONNECTION_QUERY, {
     skip: !session.authenticated || !session.account?.id,
     fetchPolicy: "cache-and-network",
     variables: {
@@ -188,11 +167,11 @@ export default function CampaignsPage() {
     data: inspirationData,
     loading: inspirationLoading,
     error: inspirationError
-  } = useQuery<InspirationCampaignsData>(INSPIRATION_CAMPAIGNS_QUERY);
+  } = useQuery<InspirationCampaignsQuery>(INSPIRATION_CAMPAIGNS_QUERY);
 
-  const myCampaigns = data?.allCampaigns.nodes ?? [];
-  const hasNextPage = data?.allCampaigns.pageInfo.hasNextPage ?? false;
-  const endCursor = data?.allCampaigns.pageInfo.endCursor ?? null;
+  const myCampaigns = data?.allCampaigns?.nodes ?? [];
+  const hasNextPage = data?.allCampaigns?.pageInfo.hasNextPage ?? false;
+  const endCursor = data?.allCampaigns?.pageInfo.endCursor ?? null;
 
   useEffect(() => {
     if (!loadMoreRef.current || !session.authenticated) {
@@ -213,11 +192,12 @@ export default function CampaignsPage() {
           after: endCursor
         },
         updateQuery: (previousResult, { fetchMoreResult }) => {
-          if (!fetchMoreResult) {
+          if (!fetchMoreResult || !previousResult.allCampaigns || !fetchMoreResult.allCampaigns) {
             return previousResult;
           }
 
           return {
+            __typename: 'Query',
             allCampaigns: {
               ...fetchMoreResult.allCampaigns,
               nodes: [...previousResult.allCampaigns.nodes, ...fetchMoreResult.allCampaigns.nodes]
@@ -239,13 +219,13 @@ export default function CampaignsPage() {
 
   const inspirationCampaigns = useMemo(() => {
     const now = new Date();
-    const nodes = inspirationData?.allCampaigns.nodes ?? [];
+    const nodes = inspirationData?.allCampaigns?.nodes ?? [];
 
     const active = nodes.filter(node => isCampaignActive(now, node.startAt, node.endAt));
     const inactive = nodes.filter(node => !isCampaignActive(now, node.startAt, node.endAt));
 
     return [...active, ...inactive].slice(0, 10);
-  }, [inspirationData?.allCampaigns.nodes]);
+  }, [inspirationData?.allCampaigns?.nodes]);
 
   return (
     <Container maxWidth="md">

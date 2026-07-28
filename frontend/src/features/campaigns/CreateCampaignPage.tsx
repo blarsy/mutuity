@@ -13,29 +13,7 @@ import {
   createCampaignValidationSchema,
   type CreateCampaignValues
 } from "./createCampaign.validation";
-
-type CreateCampaignMutationData = {
-  createCampaign: {
-    campaign: {
-      id: string;
-      title: string;
-      moderationStatus: string;
-    };
-  };
-};
-
-type CreateCampaignMutationVariables = {
-  title: string;
-  theme: string;
-  description: string;
-  imageUrl?: string;
-  managerNoteFromCreator?: string;
-  rewardsMultiplier: number;
-  airdropAmount: number;
-  startAt: string;
-  airdropAt: string;
-  endAt: string;
-};
+import type { CreateCampaignMutation, CreateCampaignMutationVariables, CreateCampaignLegacyMutation, CreateCampaignLegacyMutationVariables } from "../../graphql/generated";
 
 function isUnsupportedCampaignImageFieldError(error: unknown) {
   const maybeError = error as {
@@ -54,14 +32,14 @@ export default function CreateCampaignPage() {
   const { t } = useTranslation("campaigns");
   const router = useRouter();
   const [createCampaign, { loading, error }] = useMutation<
-    CreateCampaignMutationData,
+    CreateCampaignMutation,
     CreateCampaignMutationVariables
   >(CREATE_CAMPAIGN_MUTATION);
   const [createCampaignLegacy, {
     loading: legacyLoading,
     error: legacyError
   }] = useMutation<
-    CreateCampaignMutationData,
+    CreateCampaignMutation,
     Omit<CreateCampaignMutationVariables, "imageUrl">
   >(CREATE_CAMPAIGN_MUTATION_LEGACY);
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();

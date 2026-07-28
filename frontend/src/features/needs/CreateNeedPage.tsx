@@ -34,104 +34,8 @@ import {
   NEED_EDIT_DETAIL_QUERY,
   UPDATE_NEED_MUTATION
 } from "./needs.queries";
-
-type CreateNeedMutationData = {
-  createNeed: {
-    need: {
-      id: string;
-      title: string;
-      intensity: string;
-      proposedTopesAmount: number | null;
-    };
-  };
-};
-
-type CreateNeedMutationVariables = {
-  title: string;
-  description?: string;
-  imageUrls?: string[];
-  location: string;
-  latitude: number;
-  longitude: number;
-  intensity: NeedIntensityValue;
-  proposedTopesAmount?: number;
-  objectRequired?: boolean;
-  competenceRequired?: boolean;
-  toolingRequired?: boolean;
-  multiplePeopleRequired?: boolean;
-  requiredCompetenceText?: string;
-  requiredToolingText?: string;
-  requiredPeopleCount?: number;
-  campaignId?: string;
-  expiresAt?: string;
-};
-
-type UpdateNeedMutationData = {
-  updateNeedById: {
-    need: {
-      id: string;
-      title: string;
-      intensity: string;
-      proposedTopesAmount: number | null;
-    } | null;
-  } | null;
-};
-
-type UpdateNeedMutationVariables = {
-  id: string;
-  title: string;
-  description?: string;
-  imageUrls?: string[];
-  location: string;
-  intensity: NeedIntensityValue;
-  proposedTopesAmount?: number;
-  objectRequired?: boolean;
-  competenceRequired?: boolean;
-  toolingRequired?: boolean;
-  multiplePeopleRequired?: boolean;
-  requiredCompetenceText?: string;
-  requiredToolingText?: string;
-  requiredPeopleCount?: number;
-  expiresAt?: string;
-};
-
-type LinkableCampaignOptionsData = {
-  allCampaigns: {
-    nodes: Array<{
-      id: string;
-      title: string;
-      startAt: string;
-      endAt: string;
-    }>;
-  };
-};
-
-type NeedEditDetailData = {
-  needById: {
-    id: string;
-    title: string;
-    description: string | null;
-    imageUrls: string[];
-    location: string;
-    latitude: number | null;
-    longitude: number | null;
-    intensity: NeedIntensityValue;
-    proposedTopesAmount: number | null;
-    objectRequired: boolean;
-    competenceRequired: boolean;
-    toolingRequired: boolean;
-    multiplePeopleRequired: boolean;
-    requiredCompetenceText: string | null;
-    requiredToolingText: string | null;
-    requiredPeopleCount: number | null;
-    expiresAt: string | null;
-    campaignNeedsByNeedId: {
-      nodes: Array<{
-        campaignId: string;
-      }>;
-    };
-  } | null;
-};
+import type { CreateNeedMutation, CreateNeedMutationVariables, UpdateNeedMutation, UpdateNeedMutationVariables, LinkableCampaignOptionsQuery, NeedEditDetailQuery, NeedEditDetailQueryVariables } from "../../graphql/generated";
+import { NeedIntensity } from "../../graphql/generated";
 
 function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   const startAt = new Date(startAtIso);
@@ -145,23 +49,23 @@ export default function EditNeedPage() {
   const { t } = useTranslation("needs");
   const needId = typeof router.query.needId === "string" ? router.query.needId : null;
   const isEditMode = Boolean(needId);
-  const [createNeed, { loading, error }] = useMutation<CreateNeedMutationData, CreateNeedMutationVariables>(
+  const [createNeed, { loading, error }] = useMutation<CreateNeedMutation, CreateNeedMutationVariables>(
     CREATE_NEED_MUTATION
   );
   const [updateNeedById, { loading: updateLoading, error: updateError }] = useMutation<
-    UpdateNeedMutationData,
+    UpdateNeedMutation,
     UpdateNeedMutationVariables
   >(UPDATE_NEED_MUTATION);
   const {
     data: campaignOptions,
     loading: campaignOptionsLoading,
     error: campaignOptionsError
-  } = useQuery<LinkableCampaignOptionsData>(LINKABLE_CAMPAIGN_OPTIONS_QUERY);
+  } = useQuery<LinkableCampaignOptionsQuery>(LINKABLE_CAMPAIGN_OPTIONS_QUERY);
   const {
     data: editNeedData,
     loading: editNeedLoading,
     error: editNeedError
-  } = useQuery<NeedEditDetailData>(NEED_EDIT_DETAIL_QUERY, {
+  } = useQuery<NeedEditDetailQuery>(NEED_EDIT_DETAIL_QUERY, {
     skip: !needId,
     variables: {
       needId: needId ?? ""
@@ -177,10 +81,10 @@ export default function EditNeedPage() {
 
   const activeCampaignOptions = useMemo(() => {
     const now = new Date();
-    const nodes = campaignOptions?.allCampaigns.nodes ?? [];
+    const nodes = campaignOptions?.allCampaigns?.nodes ?? [];
 
     return nodes.filter(node => isCampaignActive(now, node.startAt, node.endAt));
-  }, [campaignOptions?.allCampaigns.nodes]);
+  }, [campaignOptions?.allCampaigns?.nodes]);
 
   const initialValues = useMemo<CreateNeedValues>(() => {
     const editNeed = editNeedData?.needById;
@@ -192,7 +96,7 @@ export default function EditNeedPage() {
     return {
       title: editNeed.title,
       description: editNeed.description ?? "",
-      imageUrls: editNeed.imageUrls ?? [],
+      imageUrls: (editNeed.imageUrls ?? []).filter((u): u is string => u != null),
       location: editNeed.location,
       latitude: editNeed.latitude ?? 50.6072,
       longitude: editNeed.longitude ?? 3.3889,
@@ -218,7 +122,7 @@ export default function EditNeedPage() {
       location: values.location.trim(),
       latitude: Number(values.latitude),
       longitude: Number(values.longitude),
-      intensity: values.intensity,
+      intensity: values.intensity as unknown as NeedIntensity,
       proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
       objectRequired: values.objectRequired,
       competenceRequired: values.competenceRequired,
