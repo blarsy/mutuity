@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Snackbar, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { ImagePickerField, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { ImagePickerField, PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
@@ -15,7 +15,7 @@ export interface MyProfileRecord {
   displayName: string;
   email: string;
   avatarUrl: string | null;
-  city: string;
+  location: ProximityLocationValue | null;
   bio: string;
 }
 
@@ -27,7 +27,7 @@ export interface MyProfileScreenProps {
   saving?: boolean;
   onRetry?: () => void;
   onBack?: () => void;
-  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio"> & { avatarUrl?: string | null }) => void;
+  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio"> & { avatarUrl?: string | null }) => void;
   onOpenChangePassword?: () => void;
   onOpenPreferences?: () => void;
   onOpenContribution?: () => void;
@@ -58,7 +58,7 @@ export function MyProfileScreen({
 
   const [displayName, setDisplayName] = useState("");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [city, setCity] = useState("");
+  const [location, setLocation] = useState<ProximityLocationValue | null>(null);
   const [bio, setBio] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ export function MyProfileScreen({
       setRemoteProfile(nextProfile);
       setDisplayName(nextProfile?.displayName ?? "");
       setAvatarUri(nextProfile?.avatarUrl ?? null);
-      setCity(nextProfile?.city ?? "");
+      setLocation(nextProfile?.location ?? null);
       setBio(nextProfile?.bio ?? "");
     } catch {
       setRemoteErrorMessage(t("profileLoadError", { defaultValue: "We could not load your profile." }));
@@ -89,7 +89,7 @@ export function MyProfileScreen({
     if (resolvedProfile) {
       setDisplayName(resolvedProfile.displayName);
       setAvatarUri(resolvedProfile.avatarUrl ?? null);
-      setCity(resolvedProfile.city);
+      setLocation(resolvedProfile.location ?? null);
       setBio(resolvedProfile.bio);
     }
   }, [resolvedProfile]);
@@ -109,7 +109,7 @@ export function MyProfileScreen({
     if (onSaveProfile) {
       onSaveProfile({
         displayName: displayName.trim(),
-        city: city.trim(),
+        location,
         bio: bio.trim(),
         avatarUrl: avatarUri
       });
@@ -124,7 +124,7 @@ export function MyProfileScreen({
     setRemoteLoading(true);
     void updateMyProfile(accountId, {
       displayName: displayName.trim(),
-      city: city.trim(),
+      location,
       bio: bio.trim(),
       avatarUrl: avatarUri
     })
@@ -186,13 +186,7 @@ export function MyProfileScreen({
           addFromLibraryLabel={t("addFromLibraryLabel", { defaultValue: "Pick from library" })}
         />
 
-        <TextInput
-          mode="outlined"
-          label={t("cityLabel", { defaultValue: "City" })}
-          accessibilityLabel={t("cityLabel", { defaultValue: "City" })}
-          value={city}
-          onChangeText={setCity}
-        />
+        <ProximityLocationEditor value={location} onChange={setLocation} />
 
         <TextInput
           mode="outlined"

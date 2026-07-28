@@ -603,6 +603,8 @@ export const ACCOUNT_PROFILE_QUERY = gql`
       avatarUrl
       bio
       location
+      latitude
+      longitude
       preferredLanguage
     }
   }
@@ -617,6 +619,8 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
         avatarUrl
         bio
         location
+        latitude
+        longitude
       }
     }
   }

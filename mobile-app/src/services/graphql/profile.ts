@@ -8,6 +8,7 @@ import {
 } from "./generated";
 import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "./operations";
 import type { MyProfileRecord } from "../../screens/profile/MyProfileScreen";
+import type { ProximityLocationValue } from "../../components/primitives/ProximityLocationEditor";
 
 interface AccountProfileQueryResult {
   accountById: Pick<Query, "accountById">["accountById"];
@@ -18,12 +19,18 @@ interface UpdateAccountProfileMutationResult {
 }
 
 function toProfileRecord(account: NonNullable<AccountProfileQueryResult["accountById"]>): MyProfileRecord {
+  const locationLabel = account.location ?? "";
+  const latitude = typeof account.latitude === "number" ? account.latitude : undefined;
+  const longitude = typeof account.longitude === "number" ? account.longitude : undefined;
+
   return {
     accountId: String(account.id),
     displayName: account.displayName ?? "",
     email: "",
     avatarUrl: account.avatarUrl ?? null,
-    city: account.location ?? "",
+    location: locationLabel
+      ? { label: locationLabel, latitude, longitude }
+      : null,
     bio: account.bio ?? ""
   };
 }
@@ -47,14 +54,17 @@ export async function fetchMyProfile(accountId: string): Promise<MyProfileRecord
 
 export async function updateMyProfile(
   accountId: string,
-  profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio"> & { avatarUrl?: string | null }
+  profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio"> & { avatarUrl?: string | null }
 ): Promise<MyProfileRecord | null> {
+  const locationValue: ProximityLocationValue | null = profilePatch.location ?? null;
   const variables: { input: UpdateAccountByIdInput } = {
     input: {
       id: accountId,
       accountPatch: {
         displayName: profilePatch.displayName,
-        location: profilePatch.city,
+        location: locationValue?.label ?? null,
+        latitude: locationValue?.latitude ?? null,
+        longitude: locationValue?.longitude ?? null,
         bio: profilePatch.bio,
         ...(profilePatch.avatarUrl !== undefined && { avatarUrl: profilePatch.avatarUrl })
       } satisfies AccountPatch
