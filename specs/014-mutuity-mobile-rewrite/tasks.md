@@ -150,18 +150,18 @@
 
 ### Business Acceptance Tests for User Story 3
 
-- [ ] T052 [P] [US3] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "new campaign appears as pending" in mobile-app/tests/integration/us3-create-campaign-pending.acceptance.test.ts
-- [ ] T053 [P] [US3] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "campaign creator moderates resources and needs" in mobile-app/tests/integration/us3-campaign-moderation.acceptance.test.ts
-- [ ] T054 [P] [US3] Add contract test for campaign creation and moderation status transitions in mobile-app/tests/contract/us3-campaign.contract.test.ts
+- [x] T052 [P] [US3] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "new campaign appears as pending" in mobile-app/tests/integration/us3-create-campaign-pending.acceptance.test.ts
+- [x] T053 [P] [US3] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for "campaign creator moderates resources and needs" in mobile-app/tests/integration/us3-campaign-moderation.acceptance.test.ts
+- [x] T054 [P] [US3] Add contract test for campaign creation and moderation status transitions in mobile-app/tests/contract/us3-campaign.contract.test.ts
 
 ### Implementation for User Story 3
 
-- [ ] T055 [US3] Finalize and approve UI contract for My campaigns in specs/014-mutuity-mobile-rewrite/ui-contracts/my-campaigns.md
-- [ ] T056 [US3] Port My campaigns screen after gate pass in mobile-app/src/screens/campaigns/MyCampaignsScreen.tsx
-- [ ] T057 [US3] Implement campaign create and moderation adapters in mobile-app/src/services/graphql/campaigns.ts
-- [ ] T058 [US3] Add campaign pending/approved/rejected status UI in mobile-app/src/screens/campaigns/CampaignDetailScreen.tsx
-- [ ] T059 [US3] Wire US3 navigation routes in mobile-app/src/navigation/US3Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
-- [ ] T060 [US3] Ensure fr/en labels for US3 screens in mobile-app/src/i18n/locales/en/us3.json and mobile-app/src/i18n/locales/fr/us3.json
+- [x] T055 [US3] Finalize and approve UI contract for My campaigns in specs/014-mutuity-mobile-rewrite/ui-contracts/my-campaigns.md
+- [x] T056 [US3] Port My campaigns screen after gate pass in mobile-app/src/screens/campaigns/MyCampaignsScreen.tsx
+- [x] T057 [US3] Implement campaign create and moderation adapters in mobile-app/src/services/graphql/campaigns.ts
+- [x] T058 [US3] Add campaign pending/approved/rejected status UI in mobile-app/src/screens/campaigns/CampaignDetailScreen.tsx
+- [x] T059 [US3] Wire US3 navigation routes in mobile-app/src/navigation/US3Navigator.tsx and mobile-app/src/navigation/AppNavigator.tsx
+- [x] T060 [US3] Ensure fr/en labels for US3 screens in mobile-app/src/i18n/locales/en/us3.json and mobile-app/src/i18n/locales/fr/us3.json
 
 **Checkpoint**: US3 is independently functional.
 
@@ -283,3 +283,4 @@
 - [P] tasks are parallelizable only when they target different files and have no unmet dependencies.
 - All port tasks must satisfy FR-012 and FR-013 from spec.md.
 - Keep canonical screen naming aligned with FR-014 and navigation-contract.md.
+

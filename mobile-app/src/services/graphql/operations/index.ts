@@ -173,15 +173,28 @@ export const MY_CAMPAIGNS_QUERY = gql`
   query MyCampaigns($creatorAccountId: UUID!, $first: Int, $after: Cursor) {
     allCampaigns(
       condition: { creatorAccountId: $creatorAccountId }
+      orderBy: CREATED_AT_DESC
       first: $first
       after: $after
     ) {
       nodes {
         id
         title
+        theme
+        description
+        imageUrl
+        createdAt
+        creatorAccountId
         moderationStatus
         startAt
+        airdropAt
         endAt
+        campaignResourcesByCampaignId {
+          totalCount
+        }
+        campaignNeedsByCampaignId {
+          totalCount
+        }
       }
       pageInfo {
         hasNextPage
@@ -587,6 +600,7 @@ export const ACCOUNT_PROFILE_QUERY = gql`
     accountById(id: $id) {
       id
       displayName
+      avatarUrl
       bio
       location
       preferredLanguage
@@ -600,6 +614,7 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
       account {
         id
         displayName
+        avatarUrl
         bio
         location
       }
@@ -675,3 +690,22 @@ export const CREATE_ACCOUNT_DELIVERY_PREFERENCE_MUTATION = gql`
     }
   }
 `;
+
+export const INSPIRATION_CAMPAIGNS_QUERY = gql`
+  query InspirationCampaigns {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: CREATED_AT_DESC, first: 10) {
+      nodes {
+        id
+        title
+        theme
+        imageUrl
+        moderationStatus
+        startAt
+        airdropAt
+        endAt
+        createdAt
+      }
+    }
+  }
+`;
+

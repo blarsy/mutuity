@@ -22,6 +22,7 @@ function toProfileRecord(account: NonNullable<AccountProfileQueryResult["account
     accountId: String(account.id),
     displayName: account.displayName ?? "",
     email: "",
+    avatarUrl: account.avatarUrl ?? null,
     city: account.location ?? "",
     bio: account.bio ?? ""
   };
@@ -46,7 +47,7 @@ export async function fetchMyProfile(accountId: string): Promise<MyProfileRecord
 
 export async function updateMyProfile(
   accountId: string,
-  profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio">
+  profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio"> & { avatarUrl?: string | null }
 ): Promise<MyProfileRecord | null> {
   const variables: { input: UpdateAccountByIdInput } = {
     input: {
@@ -54,7 +55,8 @@ export async function updateMyProfile(
       accountPatch: {
         displayName: profilePatch.displayName,
         location: profilePatch.city,
-        bio: profilePatch.bio
+        bio: profilePatch.bio,
+        ...(profilePatch.avatarUrl !== undefined && { avatarUrl: profilePatch.avatarUrl })
       } satisfies AccountPatch
     }
   };

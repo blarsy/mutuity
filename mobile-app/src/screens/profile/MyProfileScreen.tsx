@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Snackbar, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { ImagePickerField, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
@@ -14,6 +14,7 @@ export interface MyProfileRecord {
   accountId: string;
   displayName: string;
   email: string;
+  avatarUrl: string | null;
   city: string;
   bio: string;
 }
@@ -26,7 +27,7 @@ export interface MyProfileScreenProps {
   saving?: boolean;
   onRetry?: () => void;
   onBack?: () => void;
-  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio">) => void;
+  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "city" | "bio"> & { avatarUrl?: string | null }) => void;
   onOpenChangePassword?: () => void;
   onOpenPreferences?: () => void;
   onOpenContribution?: () => void;
@@ -56,6 +57,7 @@ export function MyProfileScreen({
   const resolvedProfile = profile ?? remoteProfile;
 
   const [displayName, setDisplayName] = useState("");
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export function MyProfileScreen({
       const nextProfile = await fetchMyProfile(accountId);
       setRemoteProfile(nextProfile);
       setDisplayName(nextProfile?.displayName ?? "");
+      setAvatarUri(nextProfile?.avatarUrl ?? null);
       setCity(nextProfile?.city ?? "");
       setBio(nextProfile?.bio ?? "");
     } catch {
@@ -85,6 +88,7 @@ export function MyProfileScreen({
   useEffect(() => {
     if (resolvedProfile) {
       setDisplayName(resolvedProfile.displayName);
+      setAvatarUri(resolvedProfile.avatarUrl ?? null);
       setCity(resolvedProfile.city);
       setBio(resolvedProfile.bio);
     }
@@ -106,7 +110,8 @@ export function MyProfileScreen({
       onSaveProfile({
         displayName: displayName.trim(),
         city: city.trim(),
-        bio: bio.trim()
+        bio: bio.trim(),
+        avatarUrl: avatarUri
       });
       setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
       return;
@@ -120,7 +125,8 @@ export function MyProfileScreen({
     void updateMyProfile(accountId, {
       displayName: displayName.trim(),
       city: city.trim(),
-      bio: bio.trim()
+      bio: bio.trim(),
+      avatarUrl: avatarUri
     })
       .then((updatedProfile) => {
         setRemoteProfile(updatedProfile);
@@ -169,6 +175,15 @@ export function MyProfileScreen({
           accessibilityLabel={t("emailLabel", { defaultValue: "Email" })}
           value={resolvedProfile?.email ?? ""}
           editable={false}
+        />
+
+        <ImagePickerField
+          label={t("avatarLabel", { defaultValue: "Profile picture" })}
+          accessibilityLabel={t("avatarLabel", { defaultValue: "Profile picture" })}
+          imageUri={avatarUri}
+          onChange={setAvatarUri}
+          addFromCameraLabel={t("addFromCameraLabel", { defaultValue: "Take photo" })}
+          addFromLibraryLabel={t("addFromLibraryLabel", { defaultValue: "Pick from library" })}
         />
 
         <TextInput

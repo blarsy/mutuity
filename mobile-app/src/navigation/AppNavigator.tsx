@@ -31,6 +31,7 @@ import type { NeedItem } from "../services/graphql/needs";
 import { designTokens } from "../theme/tokens";
 import { appFontFamilies } from "../theme/fonts";
 import { US2ExploreScreen } from "./US2Navigator";
+import { US3Navigator } from "./US3Navigator";
 import {
   TopelaBellIcon,
   TopelaChatIcon,
@@ -412,7 +413,9 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
 
 function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-
+  const {
+    session: { accountId }
+  } = useAuth();
   if (!authenticated) {
     return (
       <RestrictedTabPlaceholderScreen
@@ -423,7 +426,11 @@ function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): 
     );
   }
 
-  return <PlaceholderScreen title={t("campaignsLabel", { ns: "us1" })} />;
+  if (!accountId) {
+    return <LoadingScreen />;
+  }
+
+  return <US3Navigator currentAccountId={accountId} />;
 }
 
 function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
@@ -656,8 +663,8 @@ function RootNavigator(): React.JSX.Element {
                     paddingBottom: isCompactTabLayout ? 6 : 10
                   },
                   tabBarLabelStyle: {
-                    textTransform: "uppercase",
-                    textAlign: "center",
+    textTransform: "uppercase",
+    textAlign: "center",
                     fontSize: isCompactTabLayout ? 11 : 12,
                     lineHeight: isCompactTabLayout ? 13 : 14,
                     fontFamily: appFontFamilies.altGeneral,
@@ -820,3 +827,4 @@ const styles = StyleSheet.create({
     flex: 1
   }
 });
+

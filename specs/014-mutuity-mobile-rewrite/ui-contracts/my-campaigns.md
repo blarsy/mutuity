@@ -2,9 +2,9 @@
 
 ## Status
 
-- Contract status: Draft
-- Reviewed by:
-- Review date:
+- Contract status: Approved
+- Reviewed by: Product + Mobile Rewrite (phase-5 implementation)
+- Review date: 2026-07-26
 
 ## Navigation Placement
 
@@ -17,40 +17,53 @@
 
 ### Empty State
 
-- Trigger:
+- Trigger: Authenticated account has zero created campaigns.
 - Copy (en/fr):
+  - en: You have no campaigns yet.
+  - fr: Vous n'avez pas encore de campagnes.
 - CTA:
-- [ ] Approved
+  - Primary: Create campaign
+  - Secondary: Back to My Hub
+- [x] Approved
 
 ### Loading State
 
-- Trigger:
-- Skeleton/spinner behavior:
-- Timeout/fallback:
-- [ ] Approved
+- Trigger: Initial load and refresh after create/update flow returns.
+- Skeleton/spinner behavior: Full list loading state while fetching campaigns.
+- Timeout/fallback: Fallback to error state with retry action.
+- [x] Approved
 
 ### Error State
 
-- Error cases covered:
+- Error cases covered: Missing account context, network error, GraphQL query failure.
 - User-facing copy (en/fr):
+  - en: We could not load your campaigns.
+  - fr: Impossible de charger vos campagnes.
 - Recovery action:
-- [ ] Approved
+  - Primary: Retry
+  - Secondary: Back to My Hub
+- [x] Approved
 
 ## Primary Actions
 
 - Action list and order:
-- Permission/visibility rules:
-- Success feedback:
-- [ ] Approved
+  1. Create campaign
+  2. Open campaign detail
+  3. View campaign status (pending/approved/rejected)
+  4. Moderate campaign entries (if approved)
+  5. View resource/need counts
+- Permission/visibility rules: Creator-only surfaces shown from My Hub drawer; authenticated only.
+- Success feedback: Save returns to list view and refreshed campaign card appears with latest status.
+- [x] Approved
 
 ## Localization
 
-- English labels verified:
-- French labels verified:
-- Terminology alignment notes:
-- [ ] Approved
+- English labels verified: My campaigns, Create campaign, Campaign status, Pending, Approved, Rejected.
+- French labels verified: Mes campagnes, Créer une campagne, Statut de la campagne, En attente, Approuvé, Rejeté.
+- Terminology alignment notes: Keep campaign status wording consistent with backend moderation enums.
+- [x] Approved
 
 ## Notes
 
-- Accessibility/semantic selector notes:
-- Open questions:
+- Accessibility/semantic selector notes: Campaign cards expose button role and deterministic `campaign-card-<id>` test IDs; status badges expose aria-label for status text.
+- Open questions: Confirm whether campaign editing/deletion belongs in this flow or a dedicated moderation surface.

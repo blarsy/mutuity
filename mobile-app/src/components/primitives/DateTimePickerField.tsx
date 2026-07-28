@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import { DatePickerModal } from "react-native-paper-dates";
+import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
@@ -12,16 +12,20 @@ export interface DateTimePickerFieldProps {
   value: Date | undefined;
   onChange: (nextValue: Date | undefined) => void;
   testID: string;
+  allowClear?: boolean;
 }
 
 export function DateTimePickerField({
   label,
   value,
   onChange,
-  testID
+  testID,
+  allowClear = true
 }: DateTimePickerFieldProps): React.JSX.Element {
   const { t, i18n } = useTranslation("common");
   const [dateOpen, setDateOpen] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
+  const [tempDate, setTempDate] = useState<Date | undefined>(undefined);
 
   const displayValue = useMemo(() => {
     if (!value) {
@@ -39,25 +43,48 @@ export function DateTimePickerField({
     return formatted;
   }, [i18n.language, t, value]);
 
+  const onDateConfirm = ({ date }: { date: Date | undefined }) => {
+    setDateOpen(false);
+    if (date) {
+      setTempDate(date);
+      setTimeOpen(true);
+    } else {
+      onChange(undefined);
+    }
+  };
+
+  const onTimeConfirm = ({ hours, minutes }: { hours: number, minutes: number }) => {
+    setTimeOpen(false);
+    if (tempDate) {
+      const newDateTime = new Date(tempDate);
+      newDateTime.setHours(hours);
+      newDateTime.setMinutes(minutes);
+      onChange(newDateTime);
+    }
+    setTempDate(undefined); // Clear tempDate after use
+  };
+
   return (
     <View style={styles.root}>
       <Text variant="titleSmall" style={styles.label}>{label}</Text>
 
       <View style={styles.row}>
-        <Pressable
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: !value }}
-          accessibilityLabel={t("noDate", { defaultValue: "No date" })}
-          onPress={() => onChange(undefined)}
-          style={styles.noDateToggle}
-        >
-          <Icon
-            source={!value ? "checkbox-marked" : "checkbox-blank-outline"}
-            size={24}
-            color={!value ? designTokens.colors.primary : "#000"}
-          />
-          <Text style={styles.noDateText}>{t("noDate", { defaultValue: "No date" })}</Text>
-        </Pressable>
+        {allowClear && (
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: !value }}
+            accessibilityLabel={t("noDate", { defaultValue: "No date" })}
+            onPress={() => onChange(undefined)}
+            style={styles.noDateToggle}
+          >
+            <Icon
+              source={!value ? "checkbox-marked" : "checkbox-blank-outline"}
+              size={24}
+              color={!value ? designTokens.colors.primary : "#000"}
+            />
+            <Text style={styles.noDateText}>{t("noDate", { defaultValue: "No date" })}</Text>
+          </Pressable>
+        )}
 
         <Pressable
           testID={`${testID}:Button`}
@@ -78,21 +105,17 @@ export function DateTimePickerField({
         visible={dateOpen}
         date={value}
         onDismiss={() => setDateOpen(false)}
-        onConfirm={({ date }) => {
-          if (!date) {
-            onChange(undefined);
-            setDateOpen(false);
-            return;
-          }
+        onConfirm={onDateConfirm}
+      />
 
-          if (value) {
-            date.setHours(value.getHours());
-            date.setMinutes(value.getMinutes());
-          }
-
-          onChange(date);
-          setDateOpen(false);
-        }}
+      <TimePickerModal
+        locale={i18n.language || "en"}
+        saveLabel={t("selectButtonCaption", { defaultValue: "Select" })}
+        visible={timeOpen}
+        onDismiss={() => setTimeOpen(false)}
+        onConfirm={onTimeConfirm}
+        hours={value?.getHours() ?? new Date().getHours()}
+        minutes={value?.getMinutes() ?? new Date().getMinutes()}
       />
     </View>
   );

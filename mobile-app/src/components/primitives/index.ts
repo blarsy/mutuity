@@ -4,6 +4,7 @@ export { AppSegmentedButtons } from "./AppSegmentedButtons";
 export { AppTextField } from "./AppTextField";
 export { DateTimePickerField } from "./DateTimePickerField";
 export { PickerDialog } from "./PickerDialog";
+export { ImagePickerField } from "./ImagePickerField";
 export { PicturesField } from "./PicturesField";
 export { PriceSetter } from "./PriceSetter";
 export { ProximityLocationEditor, type ProximityLocationValue } from "./ProximityLocationEditor";
