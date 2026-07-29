@@ -24,7 +24,7 @@ import { IntensityPicker } from "../../components/IntensityPicker";
 import { LocationPicker } from "../../components/LocationPicker";
 import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
-import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
+import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_EDIT_DETAIL_QUERY } from "./resources.queries";
 import {
   createResourceInitialValues,
   createResourceValidationSchema,
@@ -33,7 +33,7 @@ import {
   type CreateResourceValues
 } from "./createResource.validation";
 import { RESOURCE_INTENSITY_OPTIONS, type ResourceCategoryOption } from "./types";
-import type { PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceDetailQuery } from "../../graphql/generated";
+import type { PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 
 function normalizeOptionalInteger(value: number | "") {
@@ -97,7 +97,7 @@ export default function CreateResourcePage() {
     data: editData,
     loading: loadingEditResource,
     error: editResourceError
-  } = useQuery<ResourceDetailQuery>(RESOURCE_DETAIL_QUERY, {
+  } = useQuery<ResourceEditDetailQuery>(RESOURCE_EDIT_DETAIL_QUERY, {
     skip: !resourceId,
     variables: {
       resourceId: resourceId ?? ""

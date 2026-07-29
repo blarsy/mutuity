@@ -156,16 +156,43 @@ export const RESOURCE_DETAIL_QUERY = gql`
       isActive
       createdAt
       updatedAt
-      resourceCategoryAssignmentsByResourceId(orderBy: CATEGORY_CODE_ASC) {
-        nodes {
-          categoryCode
-        }
-      }
       accountByCreatorAccountId {
         id
         displayName
         externalSubject
         avatarUrl
+      }
+    }
+  }
+`;
+
+export const RESOURCE_EDIT_DETAIL_QUERY = gql`
+  query ResourceEditDetail($resourceId: UUID!) {
+    resourceById(id: $resourceId) {
+      id
+      title
+      description
+      location
+      latitude
+      longitude
+      intensity
+      defaultTokenAmount
+      imageUrls
+      categoryLabels
+      isProduct
+      isService
+      canBeGiven
+      canBeExchanged
+      canBeTakenAway
+      canBeDelivered
+      expiresAt
+      isActive
+      createdAt
+      updatedAt
+      resourceCategoryAssignmentsByResourceId(orderBy: CATEGORY_CODE_ASC) {
+        nodes {
+          categoryCode
+        }
       }
     }
   }
