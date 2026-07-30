@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 import { PrimaryButton, ScreenContainer } from "../../components/primitives";
 
@@ -9,15 +10,22 @@ export interface UpdateRequiredScreenProps {
 }
 
 export function UpdateRequiredScreen({ onDismiss }: UpdateRequiredScreenProps): React.JSX.Element {
+  const { t } = useTranslation();
+
   return (
     <ScreenContainer>
       <Text accessibilityRole="alert" style={styles.title} variant="headlineSmall">
-        Update required
+        {t("updateRequiredTitle", { defaultValue: "Update required" })}
       </Text>
       <Text style={styles.body} variant="bodyMedium">
-        Please update the app to continue.
+        {t("updateRequiredBody", { defaultValue: "Please update the app to continue." })}
       </Text>
-      {onDismiss ? <PrimaryButton label="Dismiss" onPress={onDismiss} /> : null}
+      {onDismiss ? (
+        <PrimaryButton
+          label={t("updateRequiredDismiss", { defaultValue: "Dismiss" })}
+          onPress={onDismiss}
+        />
+      ) : null}
     </ScreenContainer>
   );
 }

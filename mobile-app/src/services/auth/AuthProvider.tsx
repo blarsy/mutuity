@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { bootstrapSession, clearPersistedToken, setPersistedToken } from "./session";
+import { bootstrapSession, clearPersistedToken, setPersistedLanguage, setPersistedToken } from "./session";
 
 export interface AuthSession {
   token: string | null;
@@ -14,6 +15,7 @@ export interface AuthContextValue {
   signIn: (token: string) => Promise<void>;
   signOut: () => Promise<void>;
   invalidateSession: (reason?: string) => Promise<void>;
+  changeLanguage: (language: string) => Promise<void>;
 }
 
 const initialSession: AuthSession = {
@@ -78,14 +80,20 @@ export interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element {
   const [session, setSession] = useState<AuthSession>(initialSession);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     let isMounted = true;
 
     void bootstrapSession()
-      .then(({ token }) => {
+      .then(({ token, language }) => {
         if (!isMounted) {
           return;
+        }
+
+        // Restore persisted language preference
+        if (language && i18n.language !== language) {
+          void i18n.changeLanguage(language);
         }
 
         setSession({
@@ -106,7 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [i18n]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -138,9 +146,17 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
         } catch (error) {
           console.warn("[auth:clear-token-failed]", error);
         }
+      },
+      changeLanguage: async (language: string) => {
+        await i18n.changeLanguage(language);
+        try {
+          await setPersistedLanguage(language);
+        } catch (error) {
+          console.warn("[auth:persist-language-failed]", error);
+        }
       }
     }),
-    [session]
+    [session, i18n]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

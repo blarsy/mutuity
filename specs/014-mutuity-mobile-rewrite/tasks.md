@@ -175,22 +175,22 @@
 
 ### Business Acceptance Tests for User Story 4
 
-- [ ] T061 [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for language switch across key screens in mobile-app/tests/integration/us4-language-switch.acceptance.test.ts
-- [ ] T062 [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for notifications read/unread continuity in mobile-app/tests/integration/us4-notifications-continuity.acceptance.test.ts
-- [ ] T062A [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for session restore and invalid-token recovery in mobile-app/tests/integration/us4-session-continuity.acceptance.test.ts
-- [ ] T062B [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for unsupported-version update gate in mobile-app/tests/integration/us4-update-required.acceptance.test.ts
-- [ ] T062C [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for support diagnostics payload generation in mobile-app/tests/integration/us4-support-diagnostics.acceptance.test.ts
+- [x] T061 [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for language switch across key screens in mobile-app/tests/integration/us4-language-switch.acceptance.test.ts
+- [x] T062 [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for notifications read/unread continuity in mobile-app/tests/integration/us4-notifications-continuity.acceptance.test.ts
+- [x] T062A [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for session restore and invalid-token recovery in mobile-app/tests/integration/us4-session-continuity.acceptance.test.ts
+- [x] T062B [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for unsupported-version update gate in mobile-app/tests/integration/us4-update-required.acceptance.test.ts
+- [x] T062C [P] [US4] Add acceptance test (semantic selectors only: getByRole/getByLabel/getByPlaceholder/data-testid) for support diagnostics payload generation in mobile-app/tests/integration/us4-support-diagnostics.acceptance.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T063 [US4] Implement end-to-end language propagation in mobile-app/src/i18n/index.ts and mobile-app/src/services/auth/session.ts
-- [ ] T064 [US4] Validate and adjust profile and notification continuity UI in mobile-app/src/screens/profile/MyProfileScreen.tsx and mobile-app/src/screens/notifications/NotificationsScreen.tsx
-- [ ] T064A [US4] Implement session bootstrap, invalid-token logout, and authenticated relaunch flow in mobile-app/src/services/auth/session.ts and mobile-app/src/services/auth/AuthProvider.tsx
-- [ ] T064B [US4] Implement notification deep-link continuity and unread-state refresh in mobile-app/src/services/notifications/useNotificationRouting.ts and mobile-app/src/services/realtime/sessionSubscriptions.ts
-- [ ] T064C [US4] Implement support/report-issue diagnostics flow in mobile-app/src/services/support/diagnostics.ts and mobile-app/src/screens/profile/SupportScreen.tsx
-- [ ] T064D [US4] Implement minimum-version gate and update-required screen wiring in mobile-app/src/services/app/version.ts and mobile-app/src/navigation/AppNavigator.tsx
-- [ ] T064E [US4] Implement notification preference controls and persistence in mobile-app/src/screens/profile/MyPreferencesScreen.tsx and mobile-app/src/services/graphql/notificationPreferences.ts
-- [ ] T065 [US4] Add missing fr/en keys discovered during acceptance runs in mobile-app/src/i18n/locales/en/us4.json and mobile-app/src/i18n/locales/fr/us4.json
+- [x] T063 [US4] Implement end-to-end language propagation in mobile-app/src/i18n/index.ts and mobile-app/src/services/auth/session.ts
+- [x] T064 [US4] Validate and adjust profile and notification continuity UI in mobile-app/src/screens/profile/MyProfileScreen.tsx and mobile-app/src/screens/notifications/NotificationsScreen.tsx
+- [x] T064A [US4] Implement session bootstrap, invalid-token logout, and authenticated relaunch flow in mobile-app/src/services/auth/session.ts and mobile-app/src/services/auth/AuthProvider.tsx
+- [x] T064B [US4] Implement notification deep-link continuity and unread-state refresh in mobile-app/src/services/notifications/useNotificationRouting.ts and mobile-app/src/services/realtime/sessionSubscriptions.ts
+- [x] T064C [US4] Implement support/report-issue diagnostics flow in mobile-app/src/services/support/diagnostics.ts and mobile-app/src/screens/profile/SupportScreen.tsx
+- [x] T064D [US4] Implement minimum-version gate and update-required screen wiring in mobile-app/src/services/app/version.ts and mobile-app/src/navigation/AppNavigator.tsx
+- [x] T064E [US4] Implement notification preference controls and persistence in mobile-app/src/screens/profile/MyPreferencesScreen.tsx and mobile-app/src/services/graphql/notificationPreferences.ts
+- [x] T065 [US4] Add missing fr/en keys discovered during acceptance runs in mobile-app/src/i18n/locales/en/us4.json and mobile-app/src/i18n/locales/fr/us4.json
 
 **Checkpoint**: US4 cross-cutting continuity objectives pass.
 
@@ -211,18 +211,18 @@
 
 ### E2E and Polish Tasks
 
-- [ ] T066 [P] Implement E2E smoke test S1 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s1-main-navigation.smoke.e2e.ts
-- [ ] T067 [P] Implement E2E smoke test S2 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s2-search-resources.smoke.e2e.ts
-- [ ] T068 [P] Implement E2E smoke test S3 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s3-edit-resource.smoke.e2e.ts
-- [ ] T069 [P] Implement E2E smoke test S4 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s4-offline-resource-save.exception.e2e.ts
-- [ ] T070 [P] Implement E2E smoke test S5 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s5-needs-create-claim.smoke.e2e.ts
-- [ ] T071 [P] Implement E2E smoke test S6 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s6-campaign-pending.smoke.e2e.ts
-- [ ] T072 Add CI job for smoke matrix and gate checks in .github/workflows/mobile-smoke.yml
-- [ ] T073 [P] Update quickstart test commands and UX gate notes in specs/014-mutuity-mobile-rewrite/quickstart.md
-- [ ] T074 Run full quickstart validation and capture evidence in specs/014-mutuity-mobile-rewrite/checklists/requirements.md
+- [x] T066 [P] Implement E2E smoke test S1 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s1-main-navigation.smoke.spec.ts
+- [x] T067 [P] Implement E2E smoke test S2 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s2-search-resources.smoke.spec.ts
+- [x] T068 [P] Implement E2E smoke test S3 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s3-edit-resource.smoke.spec.ts
+- [x] T069 [P] Implement E2E smoke test S4 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s4-offline-resource-save.exception.spec.ts
+- [x] T070 [P] Implement E2E smoke test S5 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s5-needs-create-claim.smoke.spec.ts
+- [x] T071 [P] Implement E2E smoke test S6 with semantic selectors only (getByRole/getByLabel/getByPlaceholder/data-testid) in mobile-app/tests/e2e/s6-campaign-pending.smoke.spec.ts
+- [x] T072 Add CI job for smoke matrix and gate checks in .github/workflows/mobile-smoke.yml
+- [x] T073 [P] Update quickstart test commands and UX gate notes in specs/014-mutuity-mobile-rewrite/quickstart.md
+- [x] T074 Run full quickstart validation and capture evidence in specs/014-mutuity-mobile-rewrite/checklists/implementation-validation.md
 - [x] T075 [P] Set up Storybook for mobile reusable components in mobile-app/.storybook/main.ts and mobile-app/.storybook/preview.ts
 - [x] T076 [P] Add Storybook stories for reusable state and form components in mobile-app/src/components/state/LoadingState.stories.tsx, mobile-app/src/components/state/EmptyState.stories.tsx, mobile-app/src/components/state/ErrorState.stories.tsx, and mobile-app/src/components/forms/PrimaryField.stories.tsx
-- [ ] T077 Add CI Storybook build verification in .github/workflows/mobile-storybook.yml
+- [x] T077 Add CI Storybook build verification in .github/workflows/mobile-storybook.yml
 
 ---
 

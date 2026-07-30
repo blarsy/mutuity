@@ -13,6 +13,7 @@ function CampaignModerationHarness(): React.JSX.Element {
     id: "campaign-approved",
     title: "Neighborhood cleanup drive",
     description: "Clean up the local park",
+    imageUrl: null,
     startAt: "2026-08-01T00:00:00.000Z",
     airdropAt: "2026-08-15T00:00:00.000Z",
     endAt: "2026-09-01T00:00:00.000Z",

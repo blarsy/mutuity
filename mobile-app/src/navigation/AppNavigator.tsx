@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -23,11 +23,14 @@ import { NotificationsScreen as MobileNotificationsScreen } from "../screens/not
 import { MyProfileScreen } from "../screens/profile/MyProfileScreen";
 import { MyPreferencesScreen } from "../screens/profile/MyPreferencesScreen";
 import { MyEconomicsScreen } from "../screens/economics/MyEconomicsScreen";
+import { SupportScreen } from "../screens/profile/SupportScreen";
+import { UpdateRequiredScreen } from "../screens/system/UpdateRequiredScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import type { MyResourceItem } from "../services/graphql/resources";
 import type { NeedItem } from "../services/graphql/needs";
+import { getAppVersionStatus } from "../services/app/version";
 import { designTokens } from "../theme/tokens";
 import { appFontFamilies } from "../theme/fonts";
 import { US2ExploreScreen } from "./US2Navigator";
@@ -513,6 +516,9 @@ function RootNavigator(): React.JSX.Element {
   const [mainNavigatorVersion, setMainNavigatorVersion] = useState(0);
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
   const [myHubDrawerVisible, setMyHubDrawerVisible] = useState(true);
+  const [showSupport, setShowSupport] = useState(false);
+
+  const versionStatus = useMemo(() => getAppVersionStatus("0.1.0"), []);
 
   const requestAuth = (screen: AuthEntryScreen, routeName: MainRouteName): void => {
     setAuthEntry({ screen, returnTo: routeName });
@@ -582,7 +588,7 @@ function RootNavigator(): React.JSX.Element {
               size={24}
               color="#000"
               style={styles.headerAction}
-              onPress={() => undefined}
+              onPress={() => setShowSupport(true)}
             />
           </View>
           <Text accessibilityRole="header" style={styles.title}>
@@ -625,7 +631,14 @@ function RootNavigator(): React.JSX.Element {
           )}
         </Appbar.Header>
 
-        {loading ? (
+        {versionStatus.updateRequired ? (
+          <UpdateRequiredScreen />
+        ) : showSupport ? (
+          <SupportScreen
+            appVersion={versionStatus.currentVersion}
+            onBack={() => setShowSupport(false)}
+          />
+        ) : loading ? (
           <LoadingScreen />
         ) : authEntry ? (
           <AuthScreenShell

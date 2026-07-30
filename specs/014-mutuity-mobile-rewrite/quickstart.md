@@ -1,23 +1,36 @@
 # Quickstart: Mutuity Mobile Development
 
 **Feature**: Mutuity Mobile Rewrite  
-**Last Updated**: 2026-07-04
+**Last Updated**: 2026-07-29
 
 This guide walks you through setting up and running the Mutuity mobile app locally.
 
 ## Current Status
 
-This feature is still at an early implementation stage.
+Phases 1–6 are complete. The mobile app has:
 
-- Shared setup and quality-tooling scaffolding exist.
-- Under `mobile-app/src`, only the initial GraphQL client scaffold and GraphQL operations index are currently implemented.
-- Auth bootstrap, navigation shell, push handling, monitoring, support diagnostics, and screen ports are still planned work.
+- Full project scaffolding, TypeScript strict mode, ESLint/Prettier, Jest/RNTL
+- Apollo Client + GraphQL codegen with schema snapshot validation
+- Auth token persistence (SecureStore), session bootstrap, language persistence
+- i18n with en/fr namespaces (common, us1, us2, us3, us4)
+- Root navigation shell with bottom tabs (Explore, My Hub, Campaigns, Chat, Notifications)
+- Shared UI state patterns (LoadingState, EmptyState, ErrorState)
+- Network/offline status service, push notification bootstrap, monitoring
+- Minimum-version gate, support diagnostics, update-required screen
+- All US1 screens ported: Search resources, My resources, My bids, Chat, Notifications, My profile, My preferences, Contribution
+- All US2 screens ported: Search needs, My needs, Edit need, My claims
+- All US3 screens ported: My campaigns, Campaign detail, Campaign moderation
+- US4 cross-cutting continuity: language propagation, session recovery, notification deep-link, support flow, version gate
+- 25 US4 acceptance tests, 13 E2E smoke tests (6 suites), all passing
+- Storybook for reusable components
+
+Phase 7 (E2E smoke matrix, CI, polish) is in progress.
 
 ---
 
 ## Prerequisites
 
-- **Node.js** 18+ and npm/yarn
+- **Node.js** 18+ and npm
 - **Expo CLI** (`npm install -g expo-cli`)
 - **iOS Simulator** (macOS + Xcode) or **Android Emulator** (Android Studio)
 - **Git** and access to the mutuity repository
@@ -27,30 +40,53 @@ This feature is still at an early implementation stage.
 
 ## Project Structure
 
-Target structure for the feature:
-
 ```
 mobile-app/
 ├── src/
 │   ├── screens/                  # Feature-specific screens
+│   │   ├── auth/                 # Login, Register, ForgotPassword
+│   │   ├── bids/                 # ReceivedBids, SentBids
+│   │   ├── campaigns/            # MyCampaigns, CampaignDetail
+│   │   ├── chat/                 # ChatList, ChatDetail
+│   │   ├── claims/               # MyClaims
+│   │   ├── economics/            # MyEconomics (Contribution)
+│   │   ├── needs/                # SearchNeeds, MyNeeds, EditNeed
+│   │   ├── notifications/        # NotificationsScreen
+│   │   ├── profile/              # MyProfile, MyPreferences, SupportScreen
+│   │   ├── resources/            # SearchResources, MyResources, EditResource
+│   │   └── system/               # UpdateRequiredScreen
 │   ├── components/               # Reusable UI components
+│   │   ├── primitives/           # AppCard, PrimaryButton, ScreenContainer, etc.
+│   │   ├── state/                # LoadingState, EmptyState, ErrorState
+│   │   ├── forms/                # PrimaryField
+│   │   └── icons/                # TopelaBottomTabIcons
 │   ├── services/
-│   │   ├── graphql/              # Apollo setup, hooks, codegen output
-│   │   ├── auth/                 # Token storage, session management
-│   │   └── navigation/           # Navigation utilities
-│   ├── i18n/                     # Localization config and translations
-│   ├── navigation/               # React Navigation setup
+│   │   ├── graphql/              # Apollo client, operations, adapters, codegen
+│   │   ├── auth/                 # Token storage, session management, AuthProvider
+│   │   ├── network/              # useNetworkStatus
+│   │   ├── notifications/        # Push token sync, notification routing
+│   │   ├── realtime/             # Session subscriptions
+│   │   ├── support/              # Diagnostics, report issue
+│   │   ├── app/                  # Version check
+│   │   └── monitoring/           # Activity correlation, logger
+│   ├── i18n/                     # i18next config, en/fr locale files
+│   ├── navigation/               # AppNavigator, US1/US2/US3 navigators, mainScreenRegistry
+│   ├── theme/                    # Design tokens, fonts
 │   ├── App.tsx                   # Root component
 │   └── types/                    # TypeScript definitions
 ├── tests/
-│   ├── unit/                     # Component and utility tests
-│   ├── integration/              # Screen flow tests
-│   └── e2e/                      # End-to-end tests (Detox)
-├── app.json                      # Expo configuration
+│   ├── integration/              # Screen flow acceptance tests (US1-US4)
+│   ├── e2e/                      # E2E smoke tests (S1-S6)
+│   ├── contract/                 # GraphQL contract tests
+│   ├── setup.ts                  # Jest setup with mocks
+│   ├── TESTING_SELECTORS.md      # Semantic selector policy
+│   └── utils/                    # selectorPolicy helpers
+├── .storybook/                   # Storybook configuration
+├── app.config.ts                 # Expo configuration
 ├── package.json
 ├── tsconfig.json
 ├── jest.config.ts
-└── .env.example                  # Environment variables template
+└── codegen.cjs / codegen.schema.cjs
 ```
 
 ---
@@ -66,9 +102,7 @@ npm install
 
 ## 2. Environment Configuration
 
-The current GraphQL client reads `EXPO_PUBLIC_GRAPHQL_URL` from the environment and falls back to `http://localhost:5000/graphql`.
-
-At this stage, use an exported shell variable or your preferred Expo environment mechanism:
+The GraphQL client reads `EXPO_PUBLIC_GRAPHQL_URL` from the environment and falls back to `http://localhost:5000/graphql`.
 
 ```bash
 export EXPO_PUBLIC_GRAPHQL_URL=http://localhost:5000/graphql
@@ -88,116 +122,120 @@ Expo CLI will display a QR code and options:
 
 - Press `i` to open in iOS Simulator (requires Xcode)
 - Press `a` to open in Android Emulator (requires Android Studio)
-- Press `w` to open in web (React Native Web)
 - Scan QR code with Expo Go app on physical device
 
 ---
 
-## 4. Hot Reloading & Debugging
-
-- **Fast Refresh**: Save a file to see changes instantly (in most cases).
-- **Debugger**: Open Flipper (from Android Studio/Xcode) to inspect network, logs, and React components.
-- **Console Logs**: Visible in terminal when you run `npm start`.
-
----
-
-## 5. GraphQL Code Generation
-
-GraphQL codegen is part of the planned foundation but is not fully wired into the mobile workspace yet.
-
-Target commands once the remaining foundation tasks land:
+## 4. GraphQL Code Generation
 
 ```bash
 npm run graphql:schema   # Fetch latest schema from backend
-npm run graphql:codegen  # Generate types
-npm run typecheck        # Verify TypeScript types
+npm run graphql:codegen  # Generate types and typed document nodes
+npm run typecheck        # Full chain: schema → codegen → tsc --noEmit
 ```
 
-Do not expect these commands to work until the corresponding codegen tasks are completed.
+The CI enforces zero codegen drift via `git diff --exit-code`.
 
 ---
 
-## 6. Running Tests
+## 5. Running Tests
 
-### Unit Tests
+### All Tests
 
 ```bash
 npm test
 ```
 
-Runs Jest on component and utility tests.
-
-### Integration Tests
+### Integration Acceptance Tests
 
 ```bash
 npm run test:integration
 ```
 
-Tests screen flows and data fetching.
+Runs US1-US4 acceptance tests with semantic selectors only.
 
-### E2E Tests
+### E2E Smoke Tests
 
 ```bash
-npm run e2e              # Run Detox tests
+npx jest --no-coverage tests/e2e/
 ```
 
-The `e2e` script exists in `package.json`, but the full E2E setup is still part of the planned feature work.
+Runs the 6-smoke E2E matrix (S1-S6) covering main navigation, search, edit, offline exception, needs create/claim, and campaign pending.
+
+### Typecheck
+
+```bash
+npm run typecheck
+```
+
+Runs GraphQL schema refresh, codegen, and TypeScript compilation.
+
+### UI Contract Gate
+
+```bash
+npm run guard:ui-contract-gate
+```
+
+Blocks port tasks without approved UI contracts.
 
 ---
 
-## 7. Building for iOS/Android
+## 6. Localization (i18n)
 
-Native build and release automation are still part of the planned foundation and polish work.
+All user-facing strings use i18next keys across namespaces: `common`, `us1`, `us2`, `us3`, `us4`.
 
-### Build with Expo (recommended for development)
+To add a string:
 
-```bash
-eas build --platform ios
-eas build --platform android
-```
-
-Treat these as target workflows, not a guaranteed current-day path.
-
-### Local Build (advanced)
-
-Local platform-specific build scripts are not yet wired in `mobile-app/package.json`.
-Add them only after the native build path is intentionally configured.
-
----
-
-## 8. Localization (i18n)
-
-All user-facing strings use i18next keys. To add a string:
-
-1. Add the key to `src/i18n/locales/en/features.json`:
+1. Add the key to the appropriate namespace in `src/i18n/locales/en/`:
    ```json
-   {
-     "needs": {
-       "createButton": "Create Need"
-     }
-   }
+   { "myNewKey": "My new label" }
    ```
 
-2. Add French translation to `src/i18n/locales/fr/features.json`:
+2. Add French translation to `src/i18n/locales/fr/`:
    ```json
-   {
-     "needs": {
-       "createButton": "Créer un besoin"
-     }
-   }
+   { "myNewKey": "Mon nouveau libellé" }
    ```
 
 3. Use in component:
    ```typescript
    import { useTranslation } from 'react-i18next';
-
-   export function NeedsScreen() {
-     const { t } = useTranslation();
-     return <Button title={t('needs.createButton')} />;
-   }
+   const { t } = useTranslation();
+   // t('myNewKey', { defaultValue: 'My new label' })
    ```
 
+Language preference is persisted via SecureStore and restored on app relaunch.
+
 ---
+
+## 7. Storybook
+
+```bash
+npm run storybook          # Start Storybook dev server
+npm run storybook:ios      # Run Storybook on iOS simulator
+npm run storybook:android  # Run Storybook on Android emulator
+```
+
+Reusable component stories exist for LoadingState, EmptyState, ErrorState, and PrimaryField.
+
+---
+
+## 8. CI Pipelines
+
+| Workflow | File | Purpose |
+|---|---|---|
+| Mobile Typecheck | `.github/workflows/mobile-typecheck.yml` | GraphQL codegen drift + TypeScript |
+| Mobile Smoke | `.github/workflows/mobile-smoke.yml` | Integration + E2E smoke + typecheck + UI gate |
+| Mobile Storybook | `.github/workflows/mobile-storybook.yml` | Storybook build verification |
+
+---
+
+## 9. Testing Selector Policy
+
+All tests must use semantic selectors only:
+- `getByRole`, `getByLabelText`, `getByPlaceholderText`
+- `getByTestId` only as fallback
+
+See `tests/TESTING_SELECTORS.md` for the full policy.
 
 ## 9. Common Tasks
 

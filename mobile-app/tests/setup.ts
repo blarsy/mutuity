@@ -91,7 +91,8 @@ jest.mock("expo-linear-gradient", () => {
 });
 
 jest.mock("react-native-paper-dates", () => ({
-	DatePickerModal: () => null
+  DatePickerModal: () => null,
+  TimePickerModal: () => null
 }));
 
 jest.mock("react-native-safe-area-context", () => {

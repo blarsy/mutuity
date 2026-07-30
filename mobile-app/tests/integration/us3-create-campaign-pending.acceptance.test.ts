@@ -20,6 +20,7 @@ function CreateCampaignHarness(): React.JSX.Element {
           id: "campaign-pending",
           title: "Summer community garden project",
           description: "Help establish a community garden in the park",
+          imageUrl: null,
           startAt: "2026-08-01T00:00:00.000Z",
           airdropAt: "2026-08-15T00:00:00.000Z",
           endAt: "2026-09-01T00:00:00.000Z",
