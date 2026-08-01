@@ -2,6 +2,7 @@ export { AppCard } from "./AppCard";
 export { AuthDialog } from "./AuthDialog";
 export { AppSegmentedButtons } from "./AppSegmentedButtons";
 export { AppTextField } from "./AppTextField";
+export { FormTextInput } from "./FormTextInput";
 export { DateTimePickerField } from "./DateTimePickerField";
 export { PickerDialog } from "./PickerDialog";
 export { ImagePickerField } from "./ImagePickerField";

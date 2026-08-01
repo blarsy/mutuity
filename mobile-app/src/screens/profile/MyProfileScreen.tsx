@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Snackbar, Text, TextInput } from "react-native-paper";
+import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { ImagePickerField, PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
+import { FormTextInput, ImagePickerField, PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
@@ -161,16 +161,14 @@ export function MyProfileScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("fullNameLabel", { defaultValue: "Full name" })}
           accessibilityLabel={t("fullNameLabel", { defaultValue: "Full name" })}
           value={displayName}
           onChangeText={setDisplayName}
         />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("emailLabel", { defaultValue: "Email" })}
           accessibilityLabel={t("emailLabel", { defaultValue: "Email" })}
           value={resolvedProfile?.email ?? ""}
@@ -188,8 +186,7 @@ export function MyProfileScreen({
 
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("bioLabel", { defaultValue: "Bio" })}
           accessibilityLabel={t("bioLabel", { defaultValue: "Bio" })}
           value={bio}

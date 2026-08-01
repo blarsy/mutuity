@@ -1,5 +1,6 @@
 import React from "react";
-import { TextInput } from "react-native-paper";
+
+import { FormTextInput } from "./FormTextInput";
 
 export interface AppTextFieldProps {
   label: string;
@@ -28,8 +29,7 @@ export function AppTextField({
   };
 
   return (
-    <TextInput
-      mode="outlined"
+    <FormTextInput
       label={label}
       accessibilityLabel={accessibilityLabel ?? label}
       value={value}

@@ -1,9 +1,9 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 
 import { useTranslation } from "react-i18next";
-import { PrimaryButton, ScreenContainer } from "../primitives";
+import { ScreenContainer } from "../primitives";
 
 export interface EmptyStateProps {
   message?: string;
@@ -22,13 +22,21 @@ export function EmptyState({ message, actionLabel, onActionPress }: EmptyStatePr
         {resolvedMessage}
       </Text>
       {onActionPress ? (
-        <PrimaryButton label={resolvedActionLabel} onPress={onActionPress} />
+        <IconButton
+          accessibilityLabel={resolvedActionLabel}
+          icon="refresh"
+          onPress={onActionPress}
+          style={styles.actionButton}
+        />
       ) : null}
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  actionButton: {
+    alignSelf: "center"
+  },
   message: {
     textAlign: "center"
   }

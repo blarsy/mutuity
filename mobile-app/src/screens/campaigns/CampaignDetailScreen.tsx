@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Snackbar, Text, TextInput } from "react-native-paper";
+import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
+  FormTextInput,
   ImagePickerField,
   PrimaryButton,
   ScreenContainer
@@ -246,16 +247,14 @@ export function CampaignDetailScreen({
       <ScrollView contentContainerStyle={styles.content}>
         {(isCreator || isNew) && (isPending || isNew) ? (
           <>
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" })}
               accessibilityLabel={t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" })}
               value={title}
               onChangeText={setTitle}
             />
 
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("campaignThemeLabel", { ns: "us3", defaultValue: "Theme" })}
               accessibilityLabel={t("campaignThemeLabel", { ns: "us3", defaultValue: "Theme" })}
               value={theme}
@@ -264,8 +263,7 @@ export function CampaignDetailScreen({
               numberOfLines={3}
             />
 
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("campaignDescriptionLabel", { ns: "us3", defaultValue: "Description" })}
               accessibilityLabel={t("campaignDescriptionLabel", { ns: "us3", defaultValue: "Description" })}
               value={description}
@@ -313,8 +311,7 @@ export function CampaignDetailScreen({
               allowClear={false}
             />
 
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("campaignRewardsMultiplierLabel", { ns: "us3", defaultValue: "Rewards multiplier" })}
               accessibilityLabel={t("campaignRewardsMultiplierLabel", { ns: "us3", defaultValue: "Rewards multiplier" })}
               value={rewardsMultiplier}
@@ -322,8 +319,7 @@ export function CampaignDetailScreen({
               keyboardType="numeric"
             />
 
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("campaignAirdropAmountLabel", { ns: "us3", defaultValue: "Airdrop amount" })}
               accessibilityLabel={t("campaignAirdropAmountLabel", { ns: "us3", defaultValue: "Airdrop amount" })}
               value={airdropAmount}
@@ -331,8 +327,7 @@ export function CampaignDetailScreen({
               keyboardType="numeric"
             />
 
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("campaignNoteForManagerLabel", { ns: "us3", defaultValue: "Note for manager" })}
               accessibilityLabel={t("campaignNoteForManagerLabel", { ns: "us3", defaultValue: "Note for manager" })}
               value={managerNoteFromCreator}

@@ -1,10 +1,11 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Icon, Text, TextInput } from "react-native-paper";
+import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { FormTextInput } from "./FormTextInput";
 import { PriceGradientBar } from "./PriceGradientBar";
 
 export interface PriceSetterProps {
@@ -82,8 +83,7 @@ export function PriceSetter({
   return (
     <View style={styles.root}>
       <View style={styles.inputRow}>
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={label}
           accessibilityLabel={accessibilityLabel ?? label}
           value={safeValue.toString()}

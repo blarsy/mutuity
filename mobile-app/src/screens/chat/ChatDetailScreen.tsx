@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Text, TextInput } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { FormTextInput, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import {
@@ -200,8 +200,7 @@ export function ChatDetailScreen({
       </ScrollView>
 
       <View style={styles.composerRow}>
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           accessibilityLabel={t("chatMessageComposer", { defaultValue: "Message" })}
           placeholder={t("chatMessagePlaceholder", { defaultValue: "Write a message" })}
           value={composerValue}

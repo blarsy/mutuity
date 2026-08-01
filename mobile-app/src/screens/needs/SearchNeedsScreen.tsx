@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Checkbox, Chip, Snackbar, Text, TextInput } from "react-native-paper";
+import { Checkbox, Chip, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { AppSegmentedButtons, FormTextInput, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
@@ -216,8 +216,7 @@ export function SearchNeedsScreen({
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.searchRow}>
-          <TextInput
-            mode="outlined"
+          <FormTextInput
             label={t("searchNeedsLabel", { ns: "us2", defaultValue: "Search needs" })}
             placeholder={t("searchNeedsPlaceholder", { ns: "us2", defaultValue: "Search needs" })}
             value={searchTerm}
@@ -230,8 +229,7 @@ export function SearchNeedsScreen({
           />
         </View>
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("maxNeedTokenAmountLabel", { ns: "us2", defaultValue: "Max token amount" })}
           accessibilityLabel={t("maxNeedTokenAmountLabel", { ns: "us2", defaultValue: "Max token amount" })}
           value={maxTokenAmount}

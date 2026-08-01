@@ -6,6 +6,7 @@ import { Button, IconButton, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { designTokens } from "../../theme/tokens";
+import { FormTextInput } from "./FormTextInput";
 import { ThemedDialog } from "./ThemedDialog";
 
 export interface ProximityLocationValue {
@@ -444,8 +445,7 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
                 {t("useCurrentLocationLabel", { defaultValue: "Use my current location" })}
               </Button>
 
-              <TextInput
-                mode="outlined"
+              <FormTextInput
                 label={t("locationLabel", { defaultValue: "Location" })}
                 placeholder={t("locationPlaceholderLabel", { defaultValue: "Enter a location" })}
                 value={draftLocationLabel}
@@ -455,8 +455,6 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
                   setEditorError(null);
                 }}
                 autoFocus
-                outlineColor="#000"
-                activeOutlineColor={designTokens.colors.primary}
                 right={
                   suggestionsLoading ? (
                     <TextInput.Icon

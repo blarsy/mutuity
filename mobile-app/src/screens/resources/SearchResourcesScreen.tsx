@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   AppSegmentedButtons,
+  FormTextInput,
   PickerDialog,
   ProximityLocationEditor,
   type ProximityLocationValue,
@@ -346,15 +347,12 @@ export function SearchResourcesScreen({
 
       <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentScrollContent}>
           <View style={styles.searchRow}>
-            <TextInput
-              mode="outlined"
+            <FormTextInput
               label={t("resourceSearchLabel", { defaultValue: "Search resources" })}
               placeholder={t("resourceSearchPlaceholder", { defaultValue: "Search resources" })}
               value={searchTerm}
               onChangeText={setSearchTerm}
               style={styles.searchField}
-              outlineColor="#000"
-              activeOutlineColor={designTokens.colors.primary}
               right={<TextInput.Icon icon="magnify" />}
             />
             <IconButton

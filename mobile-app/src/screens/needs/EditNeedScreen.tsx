@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Icon, Snackbar, Text, TextInput } from "react-native-paper";
+import { Icon, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
+  FormTextInput,
   PicturesField,
   PriceSetter,
   PrimaryButton,
@@ -253,16 +254,14 @@ export function EditNeedScreen({
           addFromLibraryLabel={t("needAddPictureFromLibraryLabel", { ns: "us2", defaultValue: "Add from photos" })}
         />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("needTitleLabel", { ns: "us2", defaultValue: "Title" })}
           accessibilityLabel={t("needTitleLabel", { ns: "us2", defaultValue: "Title" })}
           value={title}
           onChangeText={setTitle}
         />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("needDescriptionLabel", { ns: "us2", defaultValue: "Description" })}
           accessibilityLabel={t("needDescriptionLabel", { ns: "us2", defaultValue: "Description" })}
           value={description}
@@ -345,8 +344,7 @@ export function EditNeedScreen({
         </View>
 
         {toolingRequired ? (
-          <TextInput
-            mode="outlined"
+          <FormTextInput
             label={t("requiredToolingTextLabel", { ns: "us2", defaultValue: "Required tooling" })}
             accessibilityLabel={t("requiredToolingTextLabel", { ns: "us2", defaultValue: "Required tooling" })}
             value={requiredToolingText}
@@ -355,8 +353,7 @@ export function EditNeedScreen({
         ) : null}
 
         {competenceRequired ? (
-          <TextInput
-            mode="outlined"
+          <FormTextInput
             label={t("requiredCompetenceTextLabel", { ns: "us2", defaultValue: "Required competence" })}
             accessibilityLabel={t("requiredCompetenceTextLabel", { ns: "us2", defaultValue: "Required competence" })}
             value={requiredCompetenceText}
@@ -365,8 +362,7 @@ export function EditNeedScreen({
         ) : null}
 
         {multiplePeopleRequired ? (
-          <TextInput
-            mode="outlined"
+          <FormTextInput
             label={t("requiredPeopleCountLabel", { ns: "us2", defaultValue: "Required people count" })}
             accessibilityLabel={t("requiredPeopleCountLabel", { ns: "us2", defaultValue: "Required people count" })}
             value={requiredPeopleCountText}
@@ -375,8 +371,7 @@ export function EditNeedScreen({
           />
         ) : null}
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("needCampaignIdLabel", { ns: "us2", defaultValue: "Campaign ID (optional)" })}
           accessibilityLabel={t("needCampaignIdLabel", { ns: "us2", defaultValue: "Campaign ID (optional)" })}
           value={campaignId}

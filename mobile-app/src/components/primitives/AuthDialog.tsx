@@ -1,7 +1,7 @@
 import React from "react";
 import type { PropsWithChildren } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Icon, Text } from "react-native-paper";
 
 import { designTokens } from "../../theme/tokens";
 import { appFontFamilies } from "../../theme/fonts";
@@ -12,9 +12,10 @@ export interface AuthDialogProps extends PropsWithChildren {
   subtitle?: string;
   accessibilityLabel?: string;
   testID?: string;
+  onDismiss?: () => void;
 }
 
-export function AuthDialog({ title, subtitle, accessibilityLabel, testID, children }: AuthDialogProps): React.JSX.Element {
+export function AuthDialog({ title, subtitle, accessibilityLabel, testID, onDismiss, children }: AuthDialogProps): React.JSX.Element {
   return (
     <ScreenContainer testID={testID} style={styles.root}>
       <ScrollView
@@ -24,6 +25,17 @@ export function AuthDialog({ title, subtitle, accessibilityLabel, testID, childr
         showsVerticalScrollIndicator={false}
       >
         <View accessibilityLabel={accessibilityLabel ?? title} style={styles.dialog}>
+          {onDismiss ? (
+            <Pressable
+              accessibilityLabel="Close"
+              accessibilityRole="button"
+              onPress={onDismiss}
+              style={styles.dismissButton}
+              hitSlop={8}
+            >
+              <Icon source="close" size={36} color="#000000" />
+            </Pressable>
+          ) : null}
           <Text accessibilityRole="header" variant="titleLarge" style={styles.title}>
             {title}
           </Text>
@@ -58,6 +70,12 @@ const styles = StyleSheet.create({
     paddingVertical: designTokens.spacing.xl,
     gap: designTokens.spacing.sm,
     marginHorizontal: designTokens.spacing.xs
+  },
+  dismissButton: {
+    position: "absolute",
+    top: designTokens.spacing.md,
+    right: designTokens.spacing.md,
+    zIndex: 1
   },
   title: {
     color: "#000000",

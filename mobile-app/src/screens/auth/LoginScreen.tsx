@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, Text, TextInput } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AuthDialog } from "../../components/primitives";
+import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
 export interface LoginScreenProps {
   onSubmit: (value: { email: string; password: string }) => Promise<void> | void;
   onSwitchToRegister: () => void;
   onSwitchToForgotPassword: () => void;
-  onCancel: () => void;
+  onDismiss: () => void;
 }
 
-export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPassword, onCancel }: LoginScreenProps): React.JSX.Element {
+export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPassword, onDismiss }: LoginScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,9 +26,9 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPass
       title={t("loginTitle", { ns: "us1" })}
       subtitle={t("restrictedSurfaceBody", { ns: "us1" })}
       accessibilityLabel={t("loginTitle", { ns: "us1" })}
+      onDismiss={onDismiss}
     >
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("emailLabel", { ns: "us1" })}
           accessibilityLabel={t("emailLabel", { ns: "us1" })}
           value={email}
@@ -39,16 +39,10 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPass
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-login-email"
         />
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("passwordLabel", { ns: "us1" })}
           accessibilityLabel={t("passwordLabel", { ns: "us1" })}
           value={password}
@@ -58,11 +52,6 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPass
           }}
           secureTextEntry
           textContentType="password"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-login-password"
         />
@@ -99,16 +88,12 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPass
         <Button mode="text" icon="lock-reset" textColor="#ffffff" onPress={onSwitchToForgotPassword}>
           {t("forgotPassword", { ns: "us1" })}
         </Button>
-        <Button mode="text" icon="close" textColor="#ffffff" onPress={onCancel}>
-          {t("cancel", { ns: "us1" })}
-        </Button>
     </AuthDialog>
   );
 }
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: designTokens.colors.primary,
     marginTop: designTokens.spacing.xs
   },
   errorText: {

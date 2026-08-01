@@ -1,9 +1,9 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 
 import { useTranslation } from "react-i18next";
-import { PrimaryButton, ScreenContainer } from "../primitives";
+import { ScreenContainer } from "../primitives";
 
 export interface ErrorStateProps {
   message?: string;
@@ -21,13 +21,21 @@ export function ErrorState({ message, onRetry }: ErrorStateProps): React.JSX.Ele
         {resolvedMessage}
       </Text>
       {onRetry ? (
-        <PrimaryButton label={retryLabel} onPress={onRetry} />
+        <IconButton
+          accessibilityLabel={retryLabel}
+          icon="refresh"
+          onPress={onRetry}
+          style={styles.actionButton}
+        />
       ) : null}
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  actionButton: {
+    alignSelf: "center"
+  },
   message: {
     textAlign: "center"
   }

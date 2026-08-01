@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AuthDialog } from "../../components/primitives";
+import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
 export interface ForgotPasswordScreenProps {
   onSubmit: (value: { email: string }) => Promise<void> | void;
-  onSwitchToSignIn: () => void;
-  onCancel: () => void;
+  onDismiss: () => void;
 }
 
-export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onCancel }: ForgotPasswordScreenProps): React.JSX.Element {
+export function ForgotPasswordScreen({ onSubmit, onDismiss }: ForgotPasswordScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -23,9 +22,9 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onCancel }: F
       title={t("forgotPasswordTitle", { ns: "us1" })}
       subtitle={t("restrictedSurfaceBody", { ns: "us1" })}
       accessibilityLabel={t("forgotPasswordTitle", { ns: "us1" })}
+      onDismiss={onDismiss}
     >
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("emailLabel", { ns: "us1" })}
           accessibilityLabel={t("emailLabel", { ns: "us1" })}
           value={email}
@@ -33,11 +32,6 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onCancel }: F
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-forgot-password-email"
         />
@@ -58,19 +52,12 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onCancel }: F
         >
           {t("sendResetLink", { ns: "us1" })}
         </Button>
-        <Button mode="text" icon="login" textColor="#ffffff" onPress={onSwitchToSignIn}>
-          {t("backToSignIn", { ns: "us1" })}
-        </Button>
-        <Button mode="text" icon="close" textColor="#ffffff" onPress={onCancel}>
-          {t("cancel", { ns: "us1" })}
-        </Button>
     </AuthDialog>
   );
 }
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: designTokens.colors.primary,
     marginTop: designTokens.spacing.xs
   },
   mainButton: {

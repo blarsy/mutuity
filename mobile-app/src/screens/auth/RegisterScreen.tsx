@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AuthDialog } from "../../components/primitives";
+import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
 export interface RegisterScreenProps {
   onSubmit: (value: { fullName: string; email: string; password: string; confirmPassword: string }) => Promise<void> | void;
-  onSwitchToSignIn: () => void;
-  onCancel: () => void;
+  onDismiss: () => void;
 }
 
-export function RegisterScreen({ onSubmit, onSwitchToSignIn, onCancel }: RegisterScreenProps): React.JSX.Element {
+export function RegisterScreen({ onSubmit, onDismiss }: RegisterScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,24 +25,18 @@ export function RegisterScreen({ onSubmit, onSwitchToSignIn, onCancel }: Registe
       title={t("registerTitle", { ns: "us1" })}
       subtitle={t("restrictedSurfaceBody", { ns: "us1" })}
       accessibilityLabel={t("registerTitle", { ns: "us1" })}
+      onDismiss={onDismiss}
     >
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("fullNameLabel", { ns: "us1" })}
           accessibilityLabel={t("fullNameLabel", { ns: "us1" })}
           value={fullName}
           onChangeText={setFullName}
           textContentType="name"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-register-full-name"
         />
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("emailLabel", { ns: "us1" })}
           accessibilityLabel={t("emailLabel", { ns: "us1" })}
           value={email}
@@ -51,43 +44,26 @@ export function RegisterScreen({ onSubmit, onSwitchToSignIn, onCancel }: Registe
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-register-email"
         />
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("passwordLabel", { ns: "us1" })}
           accessibilityLabel={t("passwordLabel", { ns: "us1" })}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           textContentType="newPassword"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-register-password"
         />
-        <TextInput
-          mode="flat"
+        <FormTextInput
           label={t("confirmPasswordLabel", { ns: "us1" })}
           accessibilityLabel={t("confirmPasswordLabel", { ns: "us1" })}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
           textContentType="newPassword"
-          underlineColor="#ffffff"
-          activeUnderlineColor="#ffffff"
-          textColor="#ffffff"
-          theme={{ colors: { onSurfaceVariant: "#f6d2c6" } }}
-          placeholderTextColor="#f6d2c6"
           style={styles.input}
           testID="auth-register-confirm-password"
         />
@@ -108,19 +84,12 @@ export function RegisterScreen({ onSubmit, onSwitchToSignIn, onCancel }: Registe
         >
           {t("createAccount", { ns: "us1" })}
         </Button>
-        <Button mode="text" icon="login" textColor="#ffffff" onPress={onSwitchToSignIn}>
-          {t("signIn", { ns: "us1" })}
-        </Button>
-        <Button mode="text" icon="close" textColor="#ffffff" onPress={onCancel}>
-          {t("cancel", { ns: "us1" })}
-        </Button>
     </AuthDialog>
   );
 }
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: designTokens.colors.primary,
     marginTop: designTokens.spacing.xs
   },
   mainButton: {

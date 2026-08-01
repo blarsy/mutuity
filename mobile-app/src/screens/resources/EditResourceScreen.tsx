@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Divider, Icon, Snackbar, Text, TextInput } from "react-native-paper";
+import { Divider, Icon, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
+  FormTextInput,
   PicturesField,
   PriceSetter,
   PrimaryButton,
@@ -190,16 +191,14 @@ export function EditResourceScreen({
           addFromLibraryLabel={t("resourceAddPictureFromLibraryLabel", { defaultValue: "Add from photos" })}
         />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("resourceTitleEditLabel", { defaultValue: "Title" })}
           accessibilityLabel={t("resourceTitleEditLabel", { defaultValue: "Title" })}
           value={title}
           onChangeText={setTitle}
         />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("resourceDescriptionEditLabel", { defaultValue: "Description" })}
           accessibilityLabel={t("resourceDescriptionEditLabel", { defaultValue: "Description" })}
           value={description}

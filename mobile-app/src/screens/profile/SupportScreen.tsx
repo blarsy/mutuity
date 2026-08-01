@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Snackbar, Text, TextInput } from "react-native-paper";
+import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { FormTextInput, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { createDiagnosticsSnapshot, formatDiagnosticsForDisplay } from "../../services/support/diagnostics";
 import { buildIssueReport, submitIssueReport } from "../../services/support/reportIssue";
 import { appFontFamilies } from "../../theme/fonts";
@@ -70,16 +70,14 @@ export function SupportScreen({ appVersion, buildNumber, onBack }: SupportScreen
           {t("supportReportIssue", { defaultValue: "Report an issue" })}
         </Text>
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("supportReportSummaryLabel", { defaultValue: "Summary" })}
           accessibilityLabel={t("supportReportSummaryLabel", { defaultValue: "Summary" })}
           value={summary}
           onChangeText={setSummary}
         />
 
-        <TextInput
-          mode="outlined"
+        <FormTextInput
           label={t("supportReportDescriptionLabel", { defaultValue: "Description" })}
           accessibilityLabel={t("supportReportDescriptionLabel", { defaultValue: "Description" })}
           value={description}

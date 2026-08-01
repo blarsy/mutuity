@@ -82,7 +82,7 @@ interface AuthScreenShellProps {
   onSwitchToSignIn: () => void;
   onSwitchToRegister: () => void;
   onSwitchToForgotPassword: () => void;
-  onCancel: () => void;
+  onDismiss: () => void;
 }
 
 const Tab = createBottomTabNavigator();
@@ -143,7 +143,7 @@ function AuthScreenShell({
   onSwitchToSignIn,
   onSwitchToRegister,
   onSwitchToForgotPassword,
-  onCancel
+  onDismiss
 }: AuthScreenShellProps): React.JSX.Element {
   if (activeScreen === "register") {
     return (
@@ -152,7 +152,7 @@ function AuthScreenShell({
           await onCompleteRegister(value);
         }}
         onSwitchToSignIn={onSwitchToSignIn}
-        onCancel={onCancel}
+        onDismiss={onDismiss}
       />
     );
   }
@@ -164,7 +164,7 @@ function AuthScreenShell({
           onSwitchToSignIn();
         }}
         onSwitchToSignIn={onSwitchToSignIn}
-        onCancel={onCancel}
+        onDismiss={onDismiss}
       />
     );
   }
@@ -176,7 +176,7 @@ function AuthScreenShell({
       }}
       onSwitchToRegister={onSwitchToRegister}
       onSwitchToForgotPassword={onSwitchToForgotPassword}
-      onCancel={onCancel}
+      onDismiss={onDismiss}
     />
   );
 }
@@ -648,7 +648,7 @@ function RootNavigator(): React.JSX.Element {
             onSwitchToSignIn={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "login" } : previous))}
             onSwitchToRegister={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "register" } : previous))}
             onSwitchToForgotPassword={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "forgotPassword" } : previous))}
-            onCancel={() => setAuthEntry(null)}
+            onDismiss={() => setAuthEntry(null)}
           />
         ) : (
           <View accessible accessibilityLabel={t("mainNavigation", { ns: "us1", defaultValue: "Main navigation" })} style={styles.fill}>
