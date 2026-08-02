@@ -28,6 +28,7 @@ import { UpdateRequiredScreen } from "../screens/system/UpdateRequiredScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
+import type { SocialProvider } from "../screens/auth/SocialAuthButtons";
 import type { MyResourceItem } from "../services/graphql/resources";
 import type { NeedItem } from "../services/graphql/needs";
 import { getAppVersionStatus } from "../services/app/version";
@@ -78,6 +79,7 @@ interface MyHubScreenProps extends MainTabScreenProps {
 interface AuthScreenShellProps {
   activeScreen: AuthEntryScreen;
   onCompleteLogin: (credentials: { email: string; password: string }) => Promise<void> | void;
+  onSocialSignIn?: (provider: SocialProvider) => Promise<void> | void;
   onCompleteRegister: (account: { fullName: string; email: string; password: string; confirmPassword: string }) => Promise<void> | void;
   onSwitchToSignIn: () => void;
   onSwitchToRegister: () => void;
@@ -139,6 +141,7 @@ function RestrictedTabPlaceholderScreen({ tabLabel, onSignIn, onCreateAccount }:
 function AuthScreenShell({
   activeScreen,
   onCompleteLogin,
+  onSocialSignIn,
   onCompleteRegister,
   onSwitchToSignIn,
   onSwitchToRegister,
@@ -174,6 +177,7 @@ function AuthScreenShell({
       onSubmit={async (value) => {
         await onCompleteLogin(value);
       }}
+      onSocialSignIn={onSocialSignIn}
       onSwitchToRegister={onSwitchToRegister}
       onSwitchToForgotPassword={onSwitchToForgotPassword}
       onDismiss={onDismiss}
@@ -644,6 +648,7 @@ function RootNavigator(): React.JSX.Element {
           <AuthScreenShell
             activeScreen={authEntry.screen}
             onCompleteLogin={completeLoginAuth}
+            onSocialSignIn={undefined}
             onCompleteRegister={completeRegisterAuth}
             onSwitchToSignIn={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "login" } : previous))}
             onSwitchToRegister={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "register" } : previous))}

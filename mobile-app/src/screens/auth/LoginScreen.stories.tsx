@@ -9,6 +9,7 @@ const meta = {
   component: LoginScreen,
   args: {
     onSubmit: async () => undefined,
+    onSocialSignIn: async () => undefined,
     onSwitchToRegister: () => undefined,
     onSwitchToForgotPassword: () => undefined,
     onDismiss: () => undefined

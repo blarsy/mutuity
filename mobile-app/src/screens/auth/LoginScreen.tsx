@@ -5,19 +5,22 @@ import { useTranslation } from "react-i18next";
 
 import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
+import { SocialAuthButtons, type SocialProvider } from "./SocialAuthButtons";
 
 export interface LoginScreenProps {
   onSubmit: (value: { email: string; password: string }) => Promise<void> | void;
+  onSocialSignIn?: (provider: SocialProvider) => Promise<void> | void;
   onSwitchToRegister: () => void;
   onSwitchToForgotPassword: () => void;
   onDismiss: () => void;
 }
 
-export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPassword, onDismiss }: LoginScreenProps): React.JSX.Element {
+export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSwitchToForgotPassword, onDismiss }: LoginScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [socialProviderLoading, setSocialProviderLoading] = useState<SocialProvider | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   return (
@@ -28,6 +31,19 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPass
       accessibilityLabel={t("loginTitle", { ns: "us1" })}
       onDismiss={onDismiss}
     >
+        <SocialAuthButtons
+          loadingProvider={socialProviderLoading}
+          onPress={onSocialSignIn ? async (provider) => {
+            setSubmitError(null);
+            setSocialProviderLoading(provider);
+
+            try {
+              await onSocialSignIn(provider);
+            } finally {
+              setSocialProviderLoading(null);
+            }
+          } : undefined}
+        />
         <FormTextInput
           label={t("emailLabel", { ns: "us1" })}
           accessibilityLabel={t("emailLabel", { ns: "us1" })}
@@ -64,6 +80,7 @@ export function LoginScreen({ onSubmit, onSwitchToRegister, onSwitchToForgotPass
           style={styles.mainButton}
           accessibilityLabel={t("signIn", { ns: "us1" })}
           loading={submitting}
+          disabled={submitting || socialProviderLoading !== null}
           onPress={() => {
             setSubmitError(null);
             setSubmitting(true);
