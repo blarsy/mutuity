@@ -8,10 +8,11 @@ import { designTokens } from "../../theme/tokens";
 
 export interface ForgotPasswordScreenProps {
   onSubmit: (value: { email: string }) => Promise<void> | void;
+  onSwitchToSignIn?: () => void;
   onDismiss: () => void;
 }
 
-export function ForgotPasswordScreen({ onSubmit, onDismiss }: ForgotPasswordScreenProps): React.JSX.Element {
+export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onDismiss }: ForgotPasswordScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -52,6 +53,11 @@ export function ForgotPasswordScreen({ onSubmit, onDismiss }: ForgotPasswordScre
         >
           {t("sendResetLink", { ns: "us1" })}
         </Button>
+        {onSwitchToSignIn ? (
+          <Button mode="text" icon="login" textColor="#ffffff" onPress={onSwitchToSignIn}>
+            {t("backToSignIn", { ns: "us1" })}
+          </Button>
+        ) : null}
     </AuthDialog>
   );
 }

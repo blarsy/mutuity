@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -7,17 +7,25 @@ import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
 export interface RegisterScreenProps {
-  onSubmit: (value: { fullName: string; email: string; password: string; confirmPassword: string }) => Promise<void> | void;
+  onSubmit: (value: { fullName: string; email: string; password: string; confirmPassword: string }, context?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined }) => Promise<void> | void;
+  initialValues?: { fullName?: string | undefined; email?: string | undefined };
+  socialContext?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined } | undefined;
+  onSwitchToSignIn?: () => void;
   onDismiss: () => void;
 }
 
-export function RegisterScreen({ onSubmit, onDismiss }: RegisterScreenProps): React.JSX.Element {
+export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitchToSignIn, onDismiss }: RegisterScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setFullName(initialValues?.fullName ?? "");
+    setEmail(initialValues?.email ?? "");
+  }, [initialValues?.fullName, initialValues?.email]);
 
   return (
     <AuthDialog
@@ -78,12 +86,17 @@ export function RegisterScreen({ onSubmit, onDismiss }: RegisterScreenProps): Re
           loading={submitting}
           onPress={() => {
             setSubmitting(true);
-            void Promise.resolve(onSubmit({ fullName, email, password, confirmPassword })).finally(() => setSubmitting(false));
+            void Promise.resolve(onSubmit({ fullName, email, password, confirmPassword }, socialContext)).finally(() => setSubmitting(false));
           }}
           testID="auth-register-submit"
         >
           {t("createAccount", { ns: "us1" })}
         </Button>
+        {onSwitchToSignIn ? (
+          <Button mode="text" icon="login" textColor="#ffffff" onPress={onSwitchToSignIn}>
+            {t("backToSignIn", { ns: "us1" })}
+          </Button>
+        ) : null}
     </AuthDialog>
   );
 }

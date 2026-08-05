@@ -59,10 +59,10 @@ describe("social auth helpers", () => {
     process.env.NEXT_PUBLIC_BACKEND_URL = "http://localhost:5050/";
 
     expect(getSocialAuthStartUrl("google", "/needs/create")).toBe(
-      "http://localhost:5050/auth/google/start?next=%2Fneeds%2Fcreate"
+      "http://localhost:5050/auth/google/start?next=%2Fneeds%2Fcreate&context=web"
     );
     expect(getSocialAuthStartUrl("apple", "/needs/create")).toBe(
-      "http://localhost:5050/auth/apple/start?next=%2Fneeds%2Fcreate"
+      "http://localhost:5050/auth/apple/start?next=%2Fneeds%2Fcreate&context=web"
     );
   });
 
@@ -72,7 +72,7 @@ describe("social auth helpers", () => {
     const url = getSocialAuthStartUrl("google", "/campaigns/create?draft=1");
 
     expect(url).toBe(
-      "https://accounts.example.test/oauth/google/start?next=%2Fcampaigns%2Fcreate%3Fdraft%3D1"
+      "https://accounts.example.test/oauth/google/start?next=%2Fcampaigns%2Fcreate%3Fdraft%3D1&context=web"
     );
   });
 

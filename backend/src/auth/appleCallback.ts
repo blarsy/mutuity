@@ -4,6 +4,7 @@ import * as appleSigninAuth from "apple-signin-auth";
 import { logWebApiError } from "../logging/operationalLogger.js";
 import { translate } from "../i18n/index.js";
 import { verifySocialAuthState } from "./socialState.js";
+import type { SocialAuthClientContext } from "./socialState.js";
 
 const RESOLVE_EXTERNAL_IDENTITY_SQL =
   "select * from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
@@ -37,6 +38,7 @@ type AppleTokenPayload = {
 export type AppleCallbackResult =
   | {
       kind: "success";
+      clientContext: SocialAuthClientContext;
       accountId: string;
       nextDestination: string;
       email: string;
@@ -45,6 +47,7 @@ export type AppleCallbackResult =
     }
   | {
       kind: "register_required";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       email: string;
       name: string;
@@ -53,6 +56,7 @@ export type AppleCallbackResult =
     }
   | {
       kind: "link_confirmation_required";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       email: string;
       name: string;
@@ -61,6 +65,7 @@ export type AppleCallbackResult =
     }
   | {
       kind: "password_reset_required";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       email: string;
       name: string;
@@ -68,6 +73,7 @@ export type AppleCallbackResult =
     }
   | {
       kind: "error";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       errorMessage: string;
     };
@@ -158,10 +164,12 @@ async function verifyAppleIdToken(input: {
 
 export async function handleAppleCallback(input: AppleCallbackInput): Promise<AppleCallbackResult> {
   const parsedState = verifySocialAuthState(input.state, input.stateSecret);
+  const clientContext = parsedState?.context === "mobile" ? "mobile" : "web";
 
   if (!parsedState) {
     return {
       kind: "error",
+      clientContext,
       nextDestination: "/",
       errorMessage: translate("auth.invalid_social_auth_state", input.language)
     };
@@ -197,6 +205,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
     if (resolution.resolution === "subject_match" && resolution.account_id) {
       return {
         kind: "success",
+        clientContext,
         accountId: resolution.account_id,
         nextDestination: parsedState.next,
         email: profile.email,
@@ -208,6 +217,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
     if (resolution.resolution === "explicit_link_required") {
       return {
         kind: "link_confirmation_required",
+        clientContext,
         nextDestination: parsedState.next,
         email: profile.email,
         name: profileName,
@@ -219,6 +229,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
     if (resolution.resolution === "password_reset_required") {
       return {
         kind: "password_reset_required",
+        clientContext,
         nextDestination: parsedState.next,
         email: profile.email,
         name: profileName,
@@ -228,6 +239,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
 
     return {
       kind: "register_required",
+      clientContext,
       nextDestination: parsedState.next,
       email: profile.email,
       name: profileName,
@@ -241,6 +253,7 @@ export async function handleAppleCallback(input: AppleCallbackInput): Promise<Ap
 
     return {
       kind: "error",
+      clientContext,
       nextDestination: parsedState.next,
       errorMessage: translate("auth.apple_auth_failed", input.language)
     };

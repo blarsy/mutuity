@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { bootstrapSession, clearPersistedToken, setPersistedLanguage, setPersistedToken } from "./session";
+import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersistedLanguage, setPersistedToken } from "./session";
 
 export interface AuthSession {
   token: string | null;
@@ -12,7 +12,7 @@ export interface AuthSession {
 
 export interface AuthContextValue {
   session: AuthSession;
-  signIn: (token: string) => Promise<void>;
+  signIn: (token: string, accountId?: string | null) => Promise<void>;
   signOut: () => Promise<void>;
   invalidateSession: (reason?: string) => Promise<void>;
   changeLanguage: (language: string) => Promise<void>;
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     let isMounted = true;
 
     void bootstrapSession()
-      .then(({ token, language }) => {
+      .then(({ token, accountId, language }) => {
         if (!isMounted) {
           return;
         }
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
 
         setSession({
           token,
-          accountId: resolveAccountIdFromToken(token),
+          accountId: accountId ?? resolveAccountIdFromToken(token),
           authenticated: Boolean(token),
           loading: false
         });
@@ -119,10 +119,12 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
-      signIn: async (token: string) => {
-        setSession({ token, accountId: resolveAccountIdFromToken(token), authenticated: true, loading: false });
+      signIn: async (token: string, accountId?: string | null) => {
+        const resolvedAccountId = accountId ?? resolveAccountIdFromToken(token);
+        setSession({ token, accountId: resolvedAccountId, authenticated: true, loading: false });
         try {
           await setPersistedToken(token);
+          await setPersistedAccountId(resolvedAccountId);
         } catch (error) {
           console.warn("[auth:persist-token-failed]", error);
         }

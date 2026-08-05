@@ -54,6 +54,7 @@ export function getSocialAuthStartUrl(provider: SocialProvider, nextDestination:
   if (nextDestination.startsWith("/")) {
     url.searchParams.set("next", nextDestination);
   }
+  url.searchParams.set("context", "web");
 
   return url.toString();
 }

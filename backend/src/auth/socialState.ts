@@ -2,9 +2,12 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const SOCIAL_STATE_TTL_SECONDS = 10 * 60;
 
+export type SocialAuthClientContext = "web" | "mobile";
+
 type SignSocialAuthStateInput = {
   next: string;
   link?: boolean;
+  context?: SocialAuthClientContext;
   nonce?: string;
   issuedAt?: number;
 };
@@ -12,6 +15,7 @@ type SignSocialAuthStateInput = {
 export type SocialAuthStatePayload = {
   next: string;
   link?: boolean;
+  context?: SocialAuthClientContext;
   nonce?: string;
   issuedAt: number;
   expiresAt: number;
@@ -66,6 +70,10 @@ export function signSocialAuthState(input: SignSocialAuthStateInput, secret: str
     payload.link = true;
   }
 
+  if (input.context) {
+    payload.context = input.context;
+  }
+
   if (input.nonce) {
     payload.nonce = input.nonce;
   }
@@ -103,6 +111,10 @@ export function verifySocialAuthState(state: string, secret: string) {
   }
 
   if (typeof payload.next !== "string" || !payload.next.startsWith("/")) {
+    return null;
+  }
+
+  if (payload.context !== undefined && payload.context !== "web" && payload.context !== "mobile") {
     return null;
   }
 

@@ -1,10 +1,12 @@
 import * as SecureStore from "expo-secure-store";
 
 const TOKEN_STORAGE_KEY = "mutuity.auth.token";
+const ACCOUNT_ID_STORAGE_KEY = "mutuity.auth.accountId";
 const LANGUAGE_STORAGE_KEY = "mutuity.auth.language";
 const SECURE_STORE_TIMEOUT_MS = 1500;
 
 let fallbackToken: string | null = null;
+let fallbackAccountId: string | null = null;
 let fallbackLanguage: string | null = null;
 
 function withTimeout<T>(promise: Promise<T>, fallbackValue: T): Promise<T> {
@@ -61,11 +63,35 @@ export async function setPersistedToken(token: string): Promise<void> {
   }
 }
 
+export async function getPersistedAccountId(): Promise<string | null> {
+  if (await canUseSecureStore()) {
+    const storedAccountId = await withTimeout(SecureStore.getItemAsync(ACCOUNT_ID_STORAGE_KEY), fallbackAccountId);
+    return storedAccountId ?? null;
+  }
+
+  return fallbackAccountId;
+}
+
+export async function setPersistedAccountId(accountId: string | null): Promise<void> {
+  fallbackAccountId = accountId;
+
+  if (await canUseSecureStore()) {
+    if (accountId) {
+      await withTimeout(SecureStore.setItemAsync(ACCOUNT_ID_STORAGE_KEY, accountId), undefined);
+      return;
+    }
+
+    await withTimeout(SecureStore.deleteItemAsync(ACCOUNT_ID_STORAGE_KEY), undefined);
+  }
+}
+
 export async function clearPersistedToken(): Promise<void> {
   fallbackToken = null;
+  fallbackAccountId = null;
 
   if (await canUseSecureStore()) {
     await withTimeout(SecureStore.deleteItemAsync(TOKEN_STORAGE_KEY), undefined);
+    await withTimeout(SecureStore.deleteItemAsync(ACCOUNT_ID_STORAGE_KEY), undefined);
     return;
   }
 }
@@ -88,7 +114,7 @@ export async function setPersistedLanguage(language: string): Promise<void> {
   }
 }
 
-export async function bootstrapSession(): Promise<{ token: string | null; language: string | null }> {
-  const [token, language] = await Promise.all([getPersistedToken(), getPersistedLanguage()]);
-  return { token, language };
+export async function bootstrapSession(): Promise<{ token: string | null; accountId: string | null; language: string | null }> {
+  const [token, accountId, language] = await Promise.all([getPersistedToken(), getPersistedAccountId(), getPersistedLanguage()]);
+  return { token, accountId, language };
 }

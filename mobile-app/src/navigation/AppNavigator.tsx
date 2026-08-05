@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Dimensions, Pressable, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Dimensions, Linking, Pressable, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -9,7 +9,8 @@ import { useTranslation } from "react-i18next";
 
 import { AuthProvider, useAuth } from "../services/auth/AuthProvider";
 import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitives";
-import { authenticateWithPassword } from "../services/graphql/auth";
+import { authenticateWithPassword, registerWithSocialIdentity } from "../services/graphql/auth";
+import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
 import { EditNeedScreen } from "../screens/needs/EditNeedScreen";
@@ -56,9 +57,19 @@ type MyHubDrawerItem =
   | "preferences"
   | "contribution";
 
+interface SocialRegistrationContext {
+  provider?: SocialProvider | undefined;
+  providerSubject?: string | undefined;
+  providerEmail?: string | undefined;
+  providerEmailVerified?: boolean | undefined;
+  initialName?: string | undefined;
+  initialEmail?: string | undefined;
+}
+
 interface AuthEntryState {
   screen: AuthEntryScreen;
   returnTo: MainRouteName;
+  socialRegistrationContext?: SocialRegistrationContext;
 }
 
 interface RestrictedTabPlaceholderScreenProps {
@@ -78,9 +89,10 @@ interface MyHubScreenProps extends MainTabScreenProps {
 
 interface AuthScreenShellProps {
   activeScreen: AuthEntryScreen;
+  socialRegistrationContext?: SocialRegistrationContext | undefined;
   onCompleteLogin: (credentials: { email: string; password: string }) => Promise<void> | void;
-  onSocialSignIn?: (provider: SocialProvider) => Promise<void> | void;
-  onCompleteRegister: (account: { fullName: string; email: string; password: string; confirmPassword: string }) => Promise<void> | void;
+  onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
+  onCompleteRegister: (account: { fullName: string; email: string; password: string; confirmPassword: string }, socialContext?: SocialRegistrationContext | undefined) => Promise<void> | void;
   onSwitchToSignIn: () => void;
   onSwitchToRegister: () => void;
   onSwitchToForgotPassword: () => void;
@@ -89,6 +101,13 @@ interface AuthScreenShellProps {
 
 const Tab = createBottomTabNavigator();
 const mockAuthenticatedToken = "mock:123e4567-e89b-12d3-a456-426614174000";
+const safeSocialDestinationMap = {
+  Explore: "/explore",
+  MyHub: "/my-hub",
+  Campaigns: "/campaigns",
+  Chat: "/chat",
+  Notifications: "/notifications"
+} as const;
 const isCompactTabLayout = Dimensions.get("window").width < 400;
 const tabBarIconSize = 26;
 const standardAppBarTitleFontSize = 36;
@@ -140,6 +159,7 @@ function RestrictedTabPlaceholderScreen({ tabLabel, onSignIn, onCreateAccount }:
 
 function AuthScreenShell({
   activeScreen,
+  socialRegistrationContext,
   onCompleteLogin,
   onSocialSignIn,
   onCompleteRegister,
@@ -151,8 +171,10 @@ function AuthScreenShell({
   if (activeScreen === "register") {
     return (
       <RegisterScreen
-        onSubmit={async (value) => {
-          await onCompleteRegister(value);
+        initialValues={{ fullName: socialRegistrationContext?.initialName ?? "", email: socialRegistrationContext?.initialEmail ?? "" }}
+        {...(socialRegistrationContext ? { socialContext: socialRegistrationContext } : {})}
+        onSubmit={async (value, context) => {
+          await onCompleteRegister(value, context);
         }}
         onSwitchToSignIn={onSwitchToSignIn}
         onDismiss={onDismiss}
@@ -540,16 +562,141 @@ function RootNavigator(): React.JSX.Element {
     setAuthEntry(null);
   };
 
-  const completeRegisterAuth = async (): Promise<void> => {
+  const completeRegisterAuth = async (account: { fullName: string; email: string; password: string; confirmPassword: string }, socialContext?: SocialRegistrationContext | undefined): Promise<void> => {
     if (!authEntry) {
       return;
     }
 
-    await signIn(mockAuthenticatedToken);
+    if (socialContext?.provider && socialContext.providerSubject) {
+      await registerWithSocialIdentity({
+        identifier: account.email.trim(),
+        displayName: account.fullName.trim(),
+        password: account.password,
+        provider: socialContext.provider,
+        providerSubject: socialContext.providerSubject,
+        providerEmail: socialContext.providerEmail ?? account.email.trim(),
+        providerEmailVerified: socialContext.providerEmailVerified ?? Boolean(socialContext.providerEmail),
+        preferredLanguage: "en"
+      });
+
+      const { accountId } = await authenticateWithPassword({ email: account.email.trim(), password: account.password });
+      await signIn(accountId);
+    } else {
+      await signIn(mockAuthenticatedToken);
+    }
+
     setActiveRouteName(authEntry.returnTo);
     setMainNavigatorVersion((previous) => previous + 1);
     setAuthEntry(null);
   };
+
+  const handleSocialSignIn = async (provider: SocialProvider): Promise<void> => {
+    if (!authEntry) {
+      return;
+    }
+
+    const destination = safeSocialDestinationMap[authEntry.returnTo] ?? "/";
+    await openSocialAuthStart(provider, destination);
+  };
+
+  const handleSocialCallback = useCallback(async (url: string): Promise<void> => {
+    const payload = parseSocialCallbackPayloadFromUrl(url);
+
+    if (!payload) {
+      return;
+    }
+
+    if (payload.status === "success" && payload.sessionToken) {
+      await signIn(payload.sessionToken, payload.accountId ?? null);
+      const nextRoute = payload.nextDestination === "MyHub"
+        ? "MyHub"
+        : payload.nextDestination === "Campaigns"
+          ? "Campaigns"
+          : payload.nextDestination === "Chat"
+            ? "Chat"
+            : payload.nextDestination === "Notifications"
+              ? "Notifications"
+              : "Explore";
+      setActiveRouteName(nextRoute);
+      setMainNavigatorVersion((previous) => previous + 1);
+      setAuthEntry(null);
+      return;
+    }
+
+    if (payload.status === "register_required") {
+      const nextRoute = payload.nextDestination === "MyHub"
+        ? "MyHub"
+        : payload.nextDestination === "Campaigns"
+          ? "Campaigns"
+          : payload.nextDestination === "Chat"
+            ? "Chat"
+            : payload.nextDestination === "Notifications"
+              ? "Notifications"
+              : "Explore";
+      setAuthEntry({
+        screen: "register",
+        returnTo: nextRoute,
+        socialRegistrationContext: {
+          provider: payload.provider,
+          providerSubject: payload.providerSubject,
+          providerEmail: payload.email,
+          providerEmailVerified: Boolean(payload.email),
+          initialName: payload.name,
+          initialEmail: payload.email
+        }
+      });
+      return;
+    }
+
+    if (payload.status === "link_confirmation_required") {
+      const nextRoute = payload.nextDestination === "MyHub"
+        ? "MyHub"
+        : payload.nextDestination === "Campaigns"
+          ? "Campaigns"
+          : payload.nextDestination === "Chat"
+            ? "Chat"
+            : payload.nextDestination === "Notifications"
+              ? "Notifications"
+              : "Explore";
+      setAuthEntry({ screen: "login", returnTo: nextRoute });
+      return;
+    }
+
+    if (payload.status === "password_reset_required") {
+      const nextRoute = payload.nextDestination === "MyHub"
+        ? "MyHub"
+        : payload.nextDestination === "Campaigns"
+          ? "Campaigns"
+          : payload.nextDestination === "Chat"
+            ? "Chat"
+            : payload.nextDestination === "Notifications"
+              ? "Notifications"
+              : "Explore";
+      setAuthEntry({ screen: "forgotPassword", returnTo: nextRoute });
+      return;
+    }
+  }, [signIn]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void Linking.getInitialURL().then((url) => {
+      if (isMounted && url) {
+        void handleSocialCallback(url);
+      }
+    });
+
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      if (isMounted) {
+        void handleSocialCallback(url);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.remove();
+    };
+  }, [handleSocialCallback]);
 
   const tabBarIconByRoute: Record<MainRouteName, string> = {
     Explore: "circle-outline",
@@ -647,8 +794,9 @@ function RootNavigator(): React.JSX.Element {
         ) : authEntry ? (
           <AuthScreenShell
             activeScreen={authEntry.screen}
+            {...(authEntry.socialRegistrationContext ? { socialRegistrationContext: authEntry.socialRegistrationContext } : {})}
             onCompleteLogin={completeLoginAuth}
-            onSocialSignIn={undefined}
+            onSocialSignIn={handleSocialSignIn}
             onCompleteRegister={completeRegisterAuth}
             onSwitchToSignIn={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "login" } : previous))}
             onSwitchToRegister={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "register" } : previous))}

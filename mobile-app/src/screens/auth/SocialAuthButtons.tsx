@@ -1,33 +1,25 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { useTranslation } from "react-i18next";
 
 import { designTokens } from "../../theme/tokens";
 
 export type SocialProvider = "google" | "apple";
 
 export interface SocialAuthButtonsProps {
-  onPress?: (provider: SocialProvider) => void | Promise<void>;
+  onPress?: ((provider: SocialProvider) => void | Promise<void>) | undefined;
   loadingProvider?: SocialProvider | null;
-}
-
-function providerLabel(provider: SocialProvider, t: (key: string, options?: Record<string, unknown>) => string): string {
-  return provider === "google"
-    ? t("continueWithGoogle", { ns: "us1", defaultValue: "Continue with Google" })
-    : t("continueWithApple", { ns: "us1", defaultValue: "Continue with Apple" });
 }
 
 const socialProviders: ReadonlyArray<SocialProvider> = ["apple", "google"];
 
 export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAuthButtonsProps): React.JSX.Element {
-  const { t } = useTranslation(["common", "us1"]);
   const hasAtLeastOneProvider = typeof onPress === "function";
 
   return (
     <View style={styles.root}>
       <Text variant="bodyMedium" style={styles.label}>
-        {t("socialActions", { ns: "us1", defaultValue: "Or continue with" })}
+        Or continue with
       </Text>
 
       {socialProviders.map((provider) => {
@@ -44,7 +36,7 @@ export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAut
             loading={isLoading}
             contentStyle={styles.buttonContent}
             style={styles.button}
-            accessibilityLabel={providerLabel(provider, t)}
+            accessibilityLabel={provider === "google" ? "Continue with Google" : "Continue with Apple"}
             onPress={() => {
               if (onPress) {
                 void onPress(provider);
@@ -52,17 +44,14 @@ export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAut
             }}
             testID={`auth-social-${provider}`}
           >
-            {providerLabel(provider, t)}
+            {provider === "google" ? "Continue with Google" : "Continue with Apple"}
           </Button>
         );
       })}
 
       {!hasAtLeastOneProvider ? (
         <Text variant="bodySmall" style={styles.helpText}>
-          {t("socialUnavailable", {
-            ns: "us1",
-            defaultValue: "Social sign-in is not available on mobile yet."
-          })}
+          Social sign-in is not available on mobile yet.
         </Text>
       ) : null}
     </View>

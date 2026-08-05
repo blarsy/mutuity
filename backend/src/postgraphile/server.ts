@@ -12,6 +12,15 @@ import { IncomingMessage } from "http";
 
 import { handleAppleCallback } from "../auth/appleCallback.js";
 import { handleGoogleCallback } from "../auth/googleCallback.js";
+import {
+  buildMobileSocialCallbackUrl,
+  normalizeMobileSocialCallbackNextDestination,
+  normalizeSocialAuthCallbackContext,
+  resolveDefaultFrontendBaseUrl,
+  resolveDefaultMobileAppBaseUrl,
+  resolveLocalUrl,
+  type SocialAuthCallbackContext
+} from "../auth/socialCallback.js";
 import { translate } from "../i18n/index.js";
 import { getLanguage } from "../i18n/getLanguage.js";
 import {
@@ -215,17 +224,26 @@ const corsAllowlist = (process.env.BACKEND_CORS_ORIGINS ?? "http://localhost:300
   .split(",")
   .map(origin => origin.trim())
   .filter(Boolean);
-const frontendBaseUrl = process.env.FRONTEND_URL?.trim() || "http://localhost:3000";
+const frontendBaseUrl = resolveDefaultFrontendBaseUrl(process.env);
+const mobileAppBaseUrl = resolveDefaultMobileAppBaseUrl(process.env);
 const GOOGLE_OAUTH_CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim() || "";
 const GOOGLE_OAUTH_CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim() || "";
-const GOOGLE_OAUTH_CALLBACK_URL = process.env.GOOGLE_OAUTH_CALLBACK_URL?.trim() || "";
+const GOOGLE_OAUTH_CALLBACK_URL = resolveLocalUrl(
+  process.env.GOOGLE_OAUTH_CALLBACK_URL?.trim(),
+  "http://localhost:5050/auth/google/callback",
+  process.env
+);
 const GOOGLE_OAUTH_SCOPES = process.env.GOOGLE_OAUTH_SCOPES?.trim() || "openid email profile";
 const SOCIAL_AUTH_STATE_SECRET = process.env.SOCIAL_AUTH_STATE_SECRET?.trim() || "";
 const APPLE_OAUTH_CLIENT_ID = process.env.APPLE_OAUTH_CLIENT_ID?.trim() || "";
 const APPLE_OAUTH_TEAM_ID = process.env.APPLE_OAUTH_TEAM_ID?.trim() || "";
 const APPLE_OAUTH_KEY_ID = process.env.APPLE_OAUTH_KEY_ID?.trim() || "";
 const APPLE_OAUTH_PRIVATE_KEY = process.env.APPLE_OAUTH_PRIVATE_KEY?.trim() || "";
-const APPLE_OAUTH_CALLBACK_URL = process.env.APPLE_OAUTH_CALLBACK_URL?.trim() || "";
+const APPLE_OAUTH_CALLBACK_URL = resolveLocalUrl(
+  process.env.APPLE_OAUTH_CALLBACK_URL?.trim(),
+  "http://localhost:5050/auth/apple/callback",
+  process.env
+);
 const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const APPLE_OAUTH_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize";
 const UPSERT_IDENTITY_SQL =
@@ -338,8 +356,7 @@ function isLocalBackendOrigin(origin: string) {
 }
 
 function normalizeNextDestination(candidate: unknown) {
-  const value = typeof candidate === "string" ? candidate : "/";
-  return value.startsWith("/") ? value : "/";
+  return normalizeMobileSocialCallbackNextDestination(typeof candidate === "string" ? candidate : "/");
 }
 
 function toAbsoluteUrl(candidate: string, requestBaseUrl: string) {
@@ -379,11 +396,12 @@ function hasAppleOauthCallbackConfig() {
   );
 }
 
-function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
+function createGoogleOAuthAuthorizeUrl(nextDestination: string, context: SocialAuthCallbackContext) {
   const redirectUrl = new URL(GOOGLE_OAUTH_AUTHORIZE_URL);
   const state = signSocialAuthState(
     {
-      next: nextDestination
+      next: nextDestination,
+      context
     },
     SOCIAL_AUTH_STATE_SECRET
   );
@@ -399,12 +417,13 @@ function createGoogleOAuthAuthorizeUrl(nextDestination: string) {
   return redirectUrl;
 }
 
-function createAppleOAuthAuthorizeUrl(nextDestination: string) {
+function createAppleOAuthAuthorizeUrl(nextDestination: string, context: SocialAuthCallbackContext) {
   const redirectUrl = new URL(APPLE_OAUTH_AUTHORIZE_URL);
   const nonce = generateSocialAuthNonce();
   const state = signSocialAuthState(
     {
       next: nextDestination,
+      context,
       nonce
     },
     SOCIAL_AUTH_STATE_SECRET
@@ -423,6 +442,7 @@ function createAppleOAuthAuthorizeUrl(nextDestination: string) {
 
 function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
   status: "success" | "register_required" | "link_confirmation_required" | "password_reset_required" | "error";
+  context?: SocialAuthCallbackContext;
   nextDestination: string;
   email?: string;
   name?: string;
@@ -430,36 +450,11 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
   error?: string;
   pendingLinkToken?: string;
   pendingRegistrationToken?: string;
+  sessionToken?: string;
+  accountId?: string;
 }) {
-  const callbackUrl = new URL(`/auth/${provider}/callback`, frontendBaseUrl);
-  callbackUrl.searchParams.set("status", input.status);
-  callbackUrl.searchParams.set("next", normalizeNextDestination(input.nextDestination));
-
-  if (input.email) {
-    callbackUrl.searchParams.set("email", input.email);
-  }
-
-  if (input.name) {
-    callbackUrl.searchParams.set("name", input.name);
-  }
-
-  if (input.providerSubject) {
-    callbackUrl.searchParams.set("providerSubject", input.providerSubject);
-  }
-
-  if (input.error) {
-    callbackUrl.searchParams.set("error", input.error);
-  }
-
-  if (input.pendingLinkToken) {
-    callbackUrl.searchParams.set("pendingLinkToken", input.pendingLinkToken);
-  }
-
-  if (input.pendingRegistrationToken) {
-    callbackUrl.searchParams.set("pendingRegistrationToken", input.pendingRegistrationToken);
-  }
-
-  return callbackUrl;
+  const callbackBaseUrl = input.context === "mobile" ? mobileAppBaseUrl : frontendBaseUrl;
+  return buildMobileSocialCallbackUrl(provider, input, callbackBaseUrl);
 }
 
 app.use(cookieParser(sessionSecret));
@@ -503,6 +498,7 @@ app.get("/auth/:provider/start", (req, res) => {
   }
 
   const nextDestination = normalizeNextDestination(req.query.next);
+  const context = normalizeSocialAuthCallbackContext(typeof req.query.context === "string" ? req.query.context : undefined);
   if (provider === "google") {
     if (!hasGoogleOauthStartConfig()) {
       res.status(501).json({
@@ -511,7 +507,7 @@ app.get("/auth/:provider/start", (req, res) => {
       return;
     }
 
-    const redirectUrl = createGoogleOAuthAuthorizeUrl(nextDestination);
+    const redirectUrl = createGoogleOAuthAuthorizeUrl(nextDestination, context);
     res.redirect(302, redirectUrl.toString());
     return;
   }
@@ -523,7 +519,7 @@ app.get("/auth/:provider/start", (req, res) => {
     return;
   }
 
-  const redirectUrl = createAppleOAuthAuthorizeUrl(nextDestination);
+  const redirectUrl = createAppleOAuthAuthorizeUrl(nextDestination, context);
 
   res.redirect(302, redirectUrl.toString());
 });
@@ -544,6 +540,7 @@ app.get("/auth/google/callback", async (req, res) => {
   if (!code || !state) {
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "error",
+      context: "web",
       nextDestination: "/",
       error: translate("auth.missing_oauth_params", language)
     });
@@ -572,7 +569,10 @@ app.get("/auth/google/callback", async (req, res) => {
       res.cookie(SESSION_COOKIE_NAME, nextSession.sessionToken, getSessionCookieOptions());
       const callbackUrl = buildFrontendSocialCallbackUrl("google", {
         status: "success",
-        nextDestination: result.nextDestination
+        context: result.clientContext,
+        nextDestination: result.nextDestination,
+        sessionToken: nextSession.sessionToken,
+        accountId: result.accountId
       });
       res.redirect(302, callbackUrl.toString());
       return;
@@ -586,6 +586,7 @@ app.get("/auth/google/callback", async (req, res) => {
 
       const callbackUrl = buildFrontendSocialCallbackUrl("google", {
         status: "error",
+        context: result.clientContext,
         nextDestination: result.nextDestination,
         error: translate("auth.could_not_create_session", language)
       });
@@ -610,6 +611,7 @@ app.get("/auth/google/callback", async (req, res) => {
 
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "register_required",
+      context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
@@ -632,6 +634,7 @@ app.get("/auth/google/callback", async (req, res) => {
       : undefined;
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "link_confirmation_required",
+      context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
@@ -644,6 +647,7 @@ app.get("/auth/google/callback", async (req, res) => {
   if (result.kind === "password_reset_required") {
     const callbackUrl = buildFrontendSocialCallbackUrl("google", {
       status: "password_reset_required",
+      context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
@@ -655,6 +659,7 @@ app.get("/auth/google/callback", async (req, res) => {
 
   const callbackUrl = buildFrontendSocialCallbackUrl("google", {
     status: "error",
+    context: result.clientContext,
     nextDestination: result.nextDestination,
     error: result.errorMessage
   });
@@ -684,6 +689,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
   if (!code || !state) {
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "error",
+      context: "web",
       nextDestination: "/",
       error: translate("auth.missing_oauth_params", language)
     });
@@ -715,7 +721,10 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
       res.cookie(SESSION_COOKIE_NAME, nextSession.sessionToken, getSessionCookieOptions());
       const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
         status: "success",
-        nextDestination: result.nextDestination
+        context: result.clientContext,
+        nextDestination: result.nextDestination,
+        sessionToken: nextSession.sessionToken,
+        accountId: result.accountId
       });
       res.redirect(302, callbackUrl.toString());
       return;
@@ -729,6 +738,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
 
       const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
         status: "error",
+        context: result.clientContext,
         nextDestination: result.nextDestination,
         error: translate("auth.could_not_create_session", language)
       });
@@ -753,6 +763,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
 
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "register_required",
+      context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
@@ -775,6 +786,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
       : undefined;
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "link_confirmation_required",
+      context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
@@ -788,6 +800,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
   if (result.kind === "password_reset_required") {
     const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
       status: "password_reset_required",
+      context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
       name: result.name,
@@ -799,6 +812,7 @@ app.post(APPLE_OAUTH_CALLBACK_ROUTE, express.urlencoded({ extended: false }), as
 
   const callbackUrl = buildFrontendSocialCallbackUrl("apple", {
     status: "error",
+    context: result.clientContext,
     nextDestination: result.nextDestination,
     error: result.errorMessage
   });

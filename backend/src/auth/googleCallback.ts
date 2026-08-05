@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { logWebApiError } from "../logging/operationalLogger.js";
 import { translate } from "../i18n/index.js";
 import { verifySocialAuthState } from "./socialState.js";
+import type { SocialAuthClientContext } from "./socialState.js";
 
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const GOOGLE_TOKEN_INFO_ENDPOINT = "https://oauth2.googleapis.com/tokeninfo";
@@ -40,6 +41,7 @@ type GoogleCallbackInput = {
 export type GoogleCallbackResult =
   | {
       kind: "success";
+      clientContext: SocialAuthClientContext;
       accountId: string;
       nextDestination: string;
       email: string;
@@ -48,6 +50,7 @@ export type GoogleCallbackResult =
     }
   | {
       kind: "register_required";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       email: string;
       name: string;
@@ -56,6 +59,7 @@ export type GoogleCallbackResult =
     }
   | {
       kind: "link_confirmation_required";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       email: string;
       name: string;
@@ -64,6 +68,7 @@ export type GoogleCallbackResult =
     }
   | {
       kind: "password_reset_required";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       email: string;
       name: string;
@@ -71,6 +76,7 @@ export type GoogleCallbackResult =
     }
   | {
       kind: "error";
+      clientContext: SocialAuthClientContext;
       nextDestination: string;
       errorMessage: string;
     };
@@ -146,10 +152,12 @@ async function verifyGoogleIdToken(idToken: string, expectedAudience: string) {
 
 export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<GoogleCallbackResult> {
   const parsedState = verifySocialAuthState(input.state, input.stateSecret);
+  const clientContext = parsedState?.context === "mobile" ? "mobile" : "web";
 
   if (!parsedState) {
     return {
       kind: "error",
+      clientContext,
       nextDestination: "/",
       errorMessage: translate("auth.invalid_social_auth_state", input.language)
     };
@@ -175,6 +183,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
     if (resolution.resolution === "subject_match" && resolution.account_id) {
       return {
         kind: "success",
+        clientContext,
         accountId: resolution.account_id,
         nextDestination: parsedState.next,
         email: profile.email,
@@ -186,6 +195,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
     if (resolution.resolution === "explicit_link_required") {
       return {
         kind: "link_confirmation_required",
+        clientContext,
         nextDestination: parsedState.next,
         email: profile.email,
         name: profile.name,
@@ -197,6 +207,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
     if (resolution.resolution === "password_reset_required") {
       return {
         kind: "password_reset_required",
+        clientContext,
         nextDestination: parsedState.next,
         email: profile.email,
         name: profile.name,
@@ -206,6 +217,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
 
     return {
       kind: "register_required",
+      clientContext,
       nextDestination: parsedState.next,
       email: profile.email,
       name: profile.name,
@@ -219,6 +231,7 @@ export async function handleGoogleCallback(input: GoogleCallbackInput): Promise<
 
     return {
       kind: "error",
+      clientContext,
       nextDestination: parsedState.next,
       errorMessage: translate("auth.google_auth_failed", input.language)
     };

@@ -9,7 +9,7 @@ import { SocialAuthButtons, type SocialProvider } from "./SocialAuthButtons";
 
 export interface LoginScreenProps {
   onSubmit: (value: { email: string; password: string }) => Promise<void> | void;
-  onSocialSignIn?: (provider: SocialProvider) => Promise<void> | void;
+  onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
   onSwitchToRegister: () => void;
   onSwitchToForgotPassword: () => void;
   onDismiss: () => void;

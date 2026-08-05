@@ -8,6 +8,7 @@ describe("social auth state helpers", () => {
       {
         next: "/settings/security",
         link: true,
+        context: "mobile",
         nonce: "abc123nonce"
       },
       secret
@@ -18,6 +19,7 @@ describe("social auth state helpers", () => {
     expect(payload).toMatchObject({
       next: "/settings/security",
       link: true,
+      context: "mobile",
       nonce: "abc123nonce"
     });
   });
