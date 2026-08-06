@@ -1,7 +1,8 @@
 import { gql } from "@apollo/client";
 
 import { apolloClient } from "./client";
-import { type AuthLoginInput, type Mutation } from "./generated";
+import { type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs } from "./generated";
+import { ACCOUNT_BY_ID_QUERY } from "./operations";
 
 export type RegisterSocialIdentityInput = {
   identifier: string;
@@ -38,6 +39,17 @@ interface AuthLoginMutationResult {
   authLogin: Pick<Mutation, "authLogin">["authLogin"];
 }
 
+interface AccountByIdQueryResult {
+  accountById: Pick<Query, "accountById">["accountById"];
+}
+
+export interface AuthAccountSnapshot {
+  id: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  preferredLanguage: string | null;
+}
+
 export async function authenticateWithPassword(input: { email: string; password: string }): Promise<{ accountId: string }> {
   const variables: { input: AuthLoginInput } = {
     input: {
@@ -58,6 +70,27 @@ export async function authenticateWithPassword(input: { email: string; password:
   }
 
   return { accountId };
+}
+
+export async function fetchAccountSnapshotById(accountId: string): Promise<AuthAccountSnapshot | null> {
+  const variables: QueryAccountByIdArgs = { id: accountId };
+  const { data } = await apolloClient.query<AccountByIdQueryResult, QueryAccountByIdArgs>({
+    query: ACCOUNT_BY_ID_QUERY,
+    variables,
+    fetchPolicy: "network-only"
+  });
+
+  const account = data?.accountById;
+  if (!account) {
+    return null;
+  }
+
+  return {
+    id: String(account.id),
+    displayName: account.displayName ?? null,
+    avatarUrl: account.avatarUrl ?? null,
+    preferredLanguage: account.preferredLanguage ?? null
+  };
 }
 
 export async function registerWithSocialIdentity(input: RegisterSocialIdentityInput): Promise<void> {

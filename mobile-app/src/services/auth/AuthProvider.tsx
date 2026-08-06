@@ -2,10 +2,12 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import { useTranslation } from "react-i18next";
 
 import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersistedLanguage, setPersistedToken } from "./session";
+import { fetchAccountSnapshotById, type AuthAccountSnapshot } from "../graphql/auth";
 
 export interface AuthSession {
   token: string | null;
   accountId: string | null;
+  account: AuthAccountSnapshot | null;
   authenticated: boolean;
   loading: boolean;
 }
@@ -16,11 +18,13 @@ export interface AuthContextValue {
   signOut: () => Promise<void>;
   invalidateSession: (reason?: string) => Promise<void>;
   changeLanguage: (language: string) => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const initialSession: AuthSession = {
   token: null,
   accountId: null,
+  account: null,
   authenticated: false,
   loading: true
 };
@@ -82,11 +86,23 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   const [session, setSession] = useState<AuthSession>(initialSession);
   const { i18n } = useTranslation();
 
+  const hydrateAccountSnapshot = async (accountId: string | null): Promise<AuthAccountSnapshot | null> => {
+    if (!accountId) {
+      return null;
+    }
+
+    try {
+      return await fetchAccountSnapshotById(accountId);
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
     void bootstrapSession()
-      .then(({ token, accountId, language }) => {
+      .then(async ({ token, accountId, language }) => {
         if (!isMounted) {
           return;
         }
@@ -96,9 +112,13 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
           void i18n.changeLanguage(language);
         }
 
+        const resolvedAccountId = accountId ?? resolveAccountIdFromToken(token);
+        const account = token ? await hydrateAccountSnapshot(resolvedAccountId) : null;
+
         setSession({
           token,
-          accountId: accountId ?? resolveAccountIdFromToken(token),
+          accountId: account?.id ?? resolvedAccountId,
+          account,
           authenticated: Boolean(token),
           loading: false
         });
@@ -108,7 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
           return;
         }
 
-        setSession({ token: null, accountId: null, authenticated: false, loading: false });
+        setSession({ token: null, accountId: null, account: null, authenticated: false, loading: false });
       });
 
     return () => {
@@ -121,16 +141,23 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
       session,
       signIn: async (token: string, accountId?: string | null) => {
         const resolvedAccountId = accountId ?? resolveAccountIdFromToken(token);
-        setSession({ token, accountId: resolvedAccountId, authenticated: true, loading: false });
+        setSession({ token, accountId: resolvedAccountId, account: null, authenticated: true, loading: false });
         try {
           await setPersistedToken(token);
           await setPersistedAccountId(resolvedAccountId);
         } catch (error) {
           console.warn("[auth:persist-token-failed]", error);
         }
+
+        const account = await hydrateAccountSnapshot(resolvedAccountId);
+        setSession((previous) => ({
+          ...previous,
+          accountId: account?.id ?? previous.accountId,
+          account
+        }));
       },
       signOut: async () => {
-        setSession({ token: null, accountId: null, authenticated: false, loading: false });
+        setSession({ token: null, accountId: null, account: null, authenticated: false, loading: false });
         try {
           await clearPersistedToken();
         } catch (error) {
@@ -142,7 +169,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
           console.warn("[auth:invalid-session]", reason);
         }
 
-        setSession({ token: null, accountId: null, authenticated: false, loading: false });
+        setSession({ token: null, accountId: null, account: null, authenticated: false, loading: false });
         try {
           await clearPersistedToken();
         } catch (error) {
@@ -156,6 +183,19 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
         } catch (error) {
           console.warn("[auth:persist-language-failed]", error);
         }
+      },
+      refreshSession: async () => {
+        if (!session.authenticated || !session.accountId) {
+          setSession((previous) => ({ ...previous, account: null }));
+          return;
+        }
+
+        const account = await hydrateAccountSnapshot(session.accountId);
+        setSession((previous) => ({
+          ...previous,
+          accountId: account?.id ?? previous.accountId,
+          account
+        }));
       }
     }),
     [session, i18n]

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { FormTextInput, ImagePickerField, PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { useAuth } from "../../services/auth/AuthProvider";
 import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -51,6 +52,7 @@ export function MyProfileScreen({
   onDeleteAccount
 }: MyProfileScreenProps): React.JSX.Element {
   const { t } = useTranslation();
+  const { refreshSession } = useAuth();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
@@ -128,8 +130,9 @@ export function MyProfileScreen({
       bio: bio.trim(),
       avatarUrl: avatarUri
     })
-      .then((updatedProfile) => {
+      .then(async (updatedProfile) => {
         setRemoteProfile(updatedProfile);
+        await refreshSession();
         setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
       })
       .catch(() => {

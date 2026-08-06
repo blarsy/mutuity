@@ -5,7 +5,7 @@ import { print } from "graphql";
 import { tap } from "rxjs";
 
 import { appSettings } from "../../config/appSettings";
-import { getPersistedToken } from "../auth/session";
+import { getPersistedAccountId, getPersistedToken } from "../auth/session";
 import { logAppEvent } from "../monitoring/logger";
 
 export type TokenProvider = () => Promise<string | null>;
@@ -78,7 +78,8 @@ function createErrorLink(): ApolloLink {
 function createAuthLink(getToken?: TokenProvider): ApolloLink {
   return setContext(async (_, prevContext) => {
     const token = getToken ? await getToken() : null;
-    const accountId = resolveAccountIdFromToken(token);
+    const tokenAccountId = resolveAccountIdFromToken(token);
+    const accountId = tokenAccountId ?? await getPersistedAccountId();
     const shouldSendDevAuthHeaders = appSettings.targetEnv === "local" && Boolean(accountId);
 
     return {

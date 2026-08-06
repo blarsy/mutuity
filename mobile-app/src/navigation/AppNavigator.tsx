@@ -8,7 +8,9 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { AuthProvider, useAuth } from "../services/auth/AuthProvider";
+import { useCurrentAccount } from "../services/auth/useCurrentAccount";
 import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitives";
+import { AccountAvatar } from "../components/AccountAvatar";
 import { authenticateWithPassword, registerWithSocialIdentity } from "../services/graphql/auth";
 import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
@@ -222,10 +224,8 @@ function MyHubDrawerPlaceholderSurface({ title, body }: { title: string; body: s
 
 function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-  const {
-    session: { accountId },
-    signOut
-  } = useAuth();
+  const { accountId } = useCurrentAccount();
+  const { signOut } = useAuth();
   const [editingResource, setEditingResource] = useState<MyResourceItem | null>(null);
   const [editingNeed, setEditingNeed] = useState<NeedItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -442,9 +442,7 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
 
 function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-  const {
-    session: { accountId }
-  } = useAuth();
+  const { accountId } = useCurrentAccount();
   if (!authenticated) {
     return (
       <RestrictedTabPlaceholderScreen
@@ -464,9 +462,7 @@ function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): 
 
 function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-  const {
-    session: { accountId }
-  } = useAuth();
+  const { accountId } = useCurrentAccount();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   if (!authenticated) {
@@ -504,9 +500,7 @@ function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React
 
 function NotificationsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-  const {
-    session: { accountId }
-  } = useAuth();
+  const { accountId } = useCurrentAccount();
 
   if (!authenticated) {
     return (
@@ -531,8 +525,8 @@ function NotificationsScreen({ authenticated, onRequestAuth }: MainTabScreenProp
 }
 
 function RootNavigator(): React.JSX.Element {
+  const { authenticated, loading, accountId, displayName, avatarUrl } = useCurrentAccount();
   const {
-    session: { authenticated, loading, accountId },
     signIn,
     signOut
   } = useAuth();
@@ -715,7 +709,6 @@ function RootNavigator(): React.JSX.Element {
   };
 
   const currentHeaderTitle = headerTitleByRoute[activeRouteName];
-
   return (
     <SafeAreaProvider>
       <SafeAreaView edges={["top", "right", "left"]} style={styles.fill}>
@@ -749,19 +742,28 @@ function RootNavigator(): React.JSX.Element {
             <Menu
               visible={accountMenuVisible}
               onDismiss={() => setAccountMenuVisible(false)}
+              anchorPosition="bottom"
+              contentStyle={styles.accountMenuContent}
               anchor={(
-                <Appbar.Action
-                  accessibilityLabel="Account"
-                  icon="account-outline"
-                  size={24}
-                  color="#000"
-                  style={styles.headerAction}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t("account", { ns: "common", defaultValue: "Account" })}
                   onPress={() => setAccountMenuVisible(true)}
-                />
+                  style={styles.headerAvatarButton}
+                >
+                  <AccountAvatar
+                    authenticated={authenticated}
+                    displayName={displayName}
+                    avatarUrl={avatarUrl}
+                    size={40}
+                  />
+                </Pressable>
               )}
             >
               <Menu.Item
                 title={t("logout", { ns: "us1", defaultValue: "Log out" })}
+                style={styles.accountMenuItem}
+                titleStyle={styles.accountMenuItemTitle}
                 onPress={async () => {
                   setAccountMenuVisible(false);
                   await signOut();
@@ -929,14 +931,23 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.title,
     fontWeight: "400",
     textAlign: "center",
+    textAlignVertical: "center",
     textTransform: "uppercase",
     letterSpacing: 0.8,
     fontSize: appBarTitleFontSize,
-    lineHeight: appBarTitleFontSize + 4,
+    lineHeight: appBarTitleFontSize + 18,
+    height: appBarTitleFontSize + 8,
+    includeFontPadding: false,
     flex: 1
   },
   headerAction: {
     backgroundColor: "#fef0e3"
+  },
+  headerAvatarButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerActionSpacer: {
     width: 40,
@@ -946,6 +957,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4
+  },
+  accountMenuContent: {
+    backgroundColor: designTokens.colors.secondary,
+    marginTop: 4
+  },
+  accountMenuItem: {
+    minWidth: 132
+  },
+  accountMenuItemTitle: {
+    color: "#000000",
+    fontFamily: appFontFamilies.general
   },
   myHubLayout: {
     flex: 1,
