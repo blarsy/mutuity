@@ -75,6 +75,7 @@ export function EditNeedScreen({
     initialNeed?.expiresAt ? new Date(initialNeed.expiresAt) : undefined
   );
   const [saving, setSaving] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
@@ -164,6 +165,8 @@ export function EditNeedScreen({
   ]);
 
   const saveNeed = async (): Promise<void> => {
+    setHasAttemptedSubmit(true);
+
     if (validationError) {
       setSnackbarMessage(validationError);
       return;
@@ -386,13 +389,13 @@ export function EditNeedScreen({
           testID="need-expiration"
         />
 
-        {validationError ? <Text style={styles.warningText}>{validationError}</Text> : null}
+        {hasAttemptedSubmit && validationError ? <Text style={styles.warningText}>{validationError}</Text> : null}
 
         <PrimaryButton
           label={t("saveNeedLabel", { ns: "us2", defaultValue: "Save need" })}
           onPress={() => void saveNeed()}
           loading={saving}
-          disabled={validationError !== null}
+          disabled={saving}
         />
       </ScrollView>
 

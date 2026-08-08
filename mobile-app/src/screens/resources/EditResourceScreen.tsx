@@ -60,6 +60,7 @@ export function EditResourceScreen({
   });
   const [location, setLocation] = useState<ProximityLocationValue | null>(initialResource?.location ?? null);
   const [saving, setSaving] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
   const isOffline = !isConnected || !isInternetReachable;
@@ -93,6 +94,8 @@ export function EditResourceScreen({
   }, [exchangeOptions.canBeExchanged, exchangeOptions.canBeGifted, location?.label, natureOptions.isProduct, natureOptions.isService, t, transportOptions.canBeDelivered, transportOptions.canBeTakenAway]);
 
   const handleSave = async (): Promise<void> => {
+    setHasAttemptedSubmit(true);
+
     if (validationErrors.length > 0) {
       const firstError = validationErrors[0];
       if (firstError) {
@@ -270,7 +273,7 @@ export function EditResourceScreen({
         <Text variant="titleSmall" style={styles.sectionTitle}>{t("addressLabel", { defaultValue: "Address" })}</Text>
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
-        {validationErrors.length > 0 ? (
+        {hasAttemptedSubmit && validationErrors.length > 0 ? (
           <View style={styles.validationZone}>
             {validationErrors.map((error) => (
               <Text key={error} style={styles.warningText}>
@@ -296,7 +299,7 @@ export function EditResourceScreen({
           accessibilityLabel={t("saveResource", { defaultValue: "Save resource" })}
           onPress={() => void handleSave()}
           loading={saving}
-          disabled={validationErrors.length > 0}
+          disabled={saving}
         />
 
         {initialResource ? (

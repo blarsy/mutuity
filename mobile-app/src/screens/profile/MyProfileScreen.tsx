@@ -62,6 +62,7 @@ export function MyProfileScreen({
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [location, setLocation] = useState<ProximityLocationValue | null>(null);
   const [bio, setBio] = useState("");
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const hasInjectedProfile = profile !== undefined;
@@ -103,6 +104,8 @@ export function MyProfileScreen({
   const canSave = useMemo(() => displayName.trim().length > 0, [displayName]);
 
   const handleSave = (): void => {
+    setHasAttemptedSubmit(true);
+
     if (!canSave) {
       setFeedback(t("fieldRequired", { defaultValue: "Title is required." }));
       return;
@@ -198,11 +201,15 @@ export function MyProfileScreen({
           numberOfLines={4}
         />
 
+        {hasAttemptedSubmit && !canSave ? (
+          <Text style={styles.warningText}>{t("fieldRequired", { defaultValue: "Title is required." })}</Text>
+        ) : null}
+
         <PrimaryButton
           label={t("saveLabel", { defaultValue: "Save" })}
           onPress={handleSave}
           loading={saving}
-          disabled={!canSave || saving}
+          disabled={saving}
         />
 
         <View style={styles.actionsZone}>
@@ -279,6 +286,11 @@ const styles = StyleSheet.create({
   content: {
     gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
+  },
+  warningText: {
+    color: designTokens.colors.primary,
+    fontFamily: appFontFamilies.general,
+    fontSize: 12
   },
   actionsZone: {
     gap: designTokens.spacing.sm,

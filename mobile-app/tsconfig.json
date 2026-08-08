@@ -21,7 +21,8 @@
   "include": [
     "src",
     "tests",
-    "jest.config.ts"
+    "jest.config.ts",
+    "src/types/svg.d.ts"
   ],
   "exclude": [
     "node_modules"

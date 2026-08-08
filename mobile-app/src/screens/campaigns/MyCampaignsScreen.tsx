@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
-import { Chip, Dialog, Portal, Text } from "react-native-paper";
+import { Chip, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
@@ -285,12 +285,11 @@ export function MyCampaignsScreen({
       )}
 
       <Portal>
-        <Dialog visible={inspirationOpen} onDismiss={() => setInspirationOpen(false)} style={styles.inspirationDialog}>
-          <Dialog.Title>
-            {t("inspirationTitle", { ns: "us3", defaultValue: "Inspiration campaigns" })}
-          </Dialog.Title>
-          <Dialog.Content>
-            {inspirationLoading ? (
+        <ThemedDialog visible={inspirationOpen} 
+          onDismiss={() => setInspirationOpen(false)} style={styles.inspirationDialog}
+          title={t("inspirationTitle", { ns: "us3", defaultValue: "Inspiration campaigns" })}
+          content={
+            inspirationLoading ? (
               <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />
             ) : inspirationCampaigns.length === 0 ? (
               <Text variant="bodySmall">
@@ -331,9 +330,8 @@ export function MyCampaignsScreen({
                 keyExtractor={(item) => item.id}
                 style={styles.inspirationList}
               />
-            )}
-          </Dialog.Content>
-        </Dialog>
+            )
+        } />
       </Portal>
     </ScreenContainer>
   );

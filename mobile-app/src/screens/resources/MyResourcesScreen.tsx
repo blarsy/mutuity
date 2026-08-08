@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Icon, IconButton, Text } from "react-native-paper";
+import { Button, Icon, IconButton, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { TokenAmount } from "../../components/TokenAmount";
+import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
-import { fetchMyResources, type MyResourceItem } from "../../services/graphql/resources";
+import { deleteResourceById, fetchMyResources, type MyResourceItem } from "../../services/graphql/resources";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -34,6 +35,9 @@ export function MyResourcesScreen({
   const [resources, setResources] = useState<MyResourceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pendingDeleteResource, setPendingDeleteResource] = useState<MyResourceItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
 
   const loadResources = useCallback(async (): Promise<void> => {
     if (!creatorAccountId) {
@@ -71,8 +75,31 @@ export function MyResourcesScreen({
     [injectedResources, resources]
   );
 
-  const effectiveLoading = injectedLoading ?? loading;
+  const effectiveLoading = injectedLoading ?? (hasInjectedState ? false : loading);
   const effectiveErrorMessage = injectedErrorMessage ?? errorMessage;
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!pendingDeleteResource) {
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteErrorMessage(null);
+
+    try {
+      const result = await deleteResourceById(pendingDeleteResource.id);
+      if (!result.ok) {
+        throw new Error("Delete failed");
+      }
+
+      setResources((previous) => previous.filter((resource) => resource.id !== pendingDeleteResource.id));
+      setPendingDeleteResource(null);
+    } catch {
+      setDeleteErrorMessage(t("deleteResourceError", { defaultValue: "We could not delete this resource." }));
+    } finally {
+      setDeleting(false);
+    }
+  }, [pendingDeleteResource, t]);
 
   const resolveResourceStatus = useCallback(
     (resource: MyResourceItem): string => {
@@ -113,6 +140,12 @@ export function MyResourcesScreen({
         />
       </View>
 
+      {deleteErrorMessage ? (
+        <View style={styles.inlineError}>
+          <Text style={styles.inlineErrorText}>{deleteErrorMessage}</Text>
+        </View>
+      ) : null}
+
       {sortedResources.length === 0 ? (
         <EmptyState
           message={t("myResourcesEmpty", { defaultValue: "You have no resources yet." })}
@@ -122,18 +155,17 @@ export function MyResourcesScreen({
       ) : (
         <ScrollView contentContainerStyle={styles.listContent}>
           {sortedResources.map((resource) => (
-            <Pressable
-              key={resource.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${resource.title}. ${resource.defaultTokenAmount} token.`}
-              onPress={() => onEditResource(resource)}
-              style={styles.resourceCard}
-              testID={`my-resource-card-${resource.id}`}
-            >
-              <View style={styles.cardTopBar}>
-                <Text variant="labelSmall" style={styles.cardStatusText} numberOfLines={1}>
-                  {resolveResourceStatus(resource)}
-                </Text>
+            <View key={resource.id} style={styles.resourceCard} testID={`my-resource-card-${resource.id}`}>
+              <View style={styles.cardTopRow}>
+                <View style={styles.cardSpacer} />
+                <IconButton
+                  icon="delete-outline"
+                  size={28}
+                  style={styles.cardDeleteButton}
+                  onPress={() => setPendingDeleteResource(resource)}
+                  accessibilityLabel={t("deleteResourceLabel", { defaultValue: "Delete Resource" })}
+                  disabled={deleting}
+                />
               </View>
 
               {resource.imageUrls[0] ? (
@@ -144,30 +176,35 @@ export function MyResourcesScreen({
                 </View>
               )}
 
+              <TokenAmount amount={resource.defaultTokenAmount} />
+
               <Text variant="titleMedium" numberOfLines={2} style={styles.cardTitle}>
                 {resource.title}
               </Text>
-              <Text variant="labelSmall" style={styles.cardMetaText}>
-                {t("resourceTokenAmount", {
-                  defaultValue: "{{amount}} token",
-                  amount: resource.defaultTokenAmount
-                })}
-              </Text>
-              <Text variant="bodySmall" numberOfLines={2} style={styles.cardDescription}>
-                {resource.description || t("resourceDescriptionEmpty", { defaultValue: "No description yet." })}
-              </Text>
-
-              <IconButton
-                icon="pencil-outline"
-                size={18}
-                style={styles.cardEditButton}
-                onPress={() => onEditResource(resource)}
-                accessibilityLabel={t("editResourceLabel", { defaultValue: "Edit Resource" })}
-              />
-            </Pressable>
+            </View>
           ))}
         </ScrollView>
       )}
+
+      <Portal>
+        <ThemedDialog visible={Boolean(pendingDeleteResource)} onDismiss={() => setPendingDeleteResource(null)}
+          title={t("deleteResourceConfirmTitle", { defaultValue: "Delete resource?" })}
+          content={<Text variant="bodyMedium">
+            {t("deleteResourceConfirmBody", {
+              defaultValue: "This will remove \"{{title}}\" from your active listings.",
+              title: pendingDeleteResource?.title ?? ""
+            })}
+          </Text>}
+          actions={[
+            <Button key="cancel" onPress={() => setPendingDeleteResource(null)} disabled={deleting}>
+              {t("cancelLabel", { defaultValue: "Cancel" })}
+            </Button>,
+            <Button key="delete" textColor="#d32f2f" onPress={() => void handleDeleteConfirm()} loading={deleting} disabled={deleting}>
+              {t("deleteResourceLabel", { defaultValue: "Delete Resource" })}
+            </Button>
+          ]}
+        />
+      </Portal>
     </ScreenContainer>
   );
 }
@@ -205,55 +242,48 @@ const styles = StyleSheet.create({
     minHeight: 252,
     position: "relative"
   },
-  cardTopBar: {
-    minHeight: 16,
-    justifyContent: "center"
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    minHeight: 24
   },
-  cardStatusText: {
-    textAlign: "center",
-    fontStyle: "italic",
-    fontFamily: appFontFamilies.general,
-    opacity: 0.8
+  cardSpacer: {
+    flex: 1
+  },
+  cardDeleteButton: {
+    marginRight: -8,
+    marginTop: -8
   },
   cardImage: {
     width: "100%",
-    height: 116,
+    aspectRatio: 1,
     borderRadius: designTokens.radius.sm,
     backgroundColor: "#fff"
   },
   cardImageFallback: {
     width: "100%",
-    height: 116,
+    aspectRatio: 1,
     borderRadius: designTokens.radius.sm,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center"
   },
   cardTitle: {
-    textAlign: "center",
+    textAlign: "left",
     minHeight: 48,
     fontFamily: appFontFamilies.altGeneral,
     fontSize: 18,
     lineHeight: 23
   },
-  cardMetaText: {
-    textAlign: "center",
-    color: designTokens.colors.primary,
-    fontFamily: appFontFamilies.altGeneral,
-    textTransform: "uppercase",
-    fontSize: 11,
-    lineHeight: 14,
-    letterSpacing: 0.35
+  inlineError: {
+    paddingHorizontal: designTokens.spacing.sm,
+    paddingVertical: designTokens.spacing.xs,
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: "#fde8e8"
   },
-  cardDescription: {
-    opacity: 0.75,
-    fontFamily: appFontFamilies.general,
-    fontSize: 12,
-    lineHeight: 16
-  },
-  cardEditButton: {
-    position: "absolute",
-    right: 0,
-    top: 0
+  inlineErrorText: {
+    color: "#b42318",
+    fontSize: 14
   }
 });

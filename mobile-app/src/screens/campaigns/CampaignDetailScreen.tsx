@@ -74,6 +74,7 @@ export function CampaignDetailScreen({
   );
   const [imageUri, setImageUri] = useState<string | null>(campaign.imageUrl ?? null);
   const [saving, setSaving] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [approvingEntries, setApprovingEntries] = useState<string[]>([]);
   const [rejectingEntries, setRejectingEntries] = useState<string[]>([]);
@@ -145,6 +146,8 @@ export function CampaignDetailScreen({
   }, [airdropAmount, airdropAt, description, endAt, rewardsMultiplier, startAt, t, theme, title]);
 
   const saveCampaign = async (): Promise<void> => {
+    setHasAttemptedSubmit(true);
+
     if (validationError) {
       setSnackbarMessage(validationError);
       return;
@@ -336,13 +339,13 @@ export function CampaignDetailScreen({
               numberOfLines={3}
             />
 
-            {validationError && <Text style={styles.warningText}>{validationError}</Text>}
+            {hasAttemptedSubmit && validationError ? <Text style={styles.warningText}>{validationError}</Text> : null}
 
             <PrimaryButton
               label={isNew ? t("createCampaignLabel", { ns: "us3", defaultValue: "Create campaign" }) : t("saveCampaignLabel", { ns: "us3", defaultValue: "Save campaign" })}
               onPress={() => void saveCampaign()}
               loading={saving}
-              disabled={validationError !== null}
+              disabled={saving}
             />
           </>
         ) : (

@@ -18,6 +18,11 @@ import {
   UPDATE_RESOURCE_BY_ID_MUTATION
 } from "./operations";
 
+export interface DeleteResourceResult {
+  ok: boolean;
+  deletedResourceId?: string | null;
+}
+
 const DEFAULT_PAGE_SIZE = 50;
 const FALLBACK_DISTANCE_KM = 999;
 
@@ -363,9 +368,9 @@ export async function updateResourceById(resourceId: string, input: UpsertResour
   return toMyResourceItem(data?.updateResourceById?.resource as Resource) ?? null;
 }
 
-export async function deleteResourceById(resourceId: string): Promise<boolean> {
+export async function deleteResourceById(resourceId: string): Promise<DeleteResourceResult> {
   if (!UUID_PATTERN.test(resourceId)) {
-    return false;
+    return { ok: false };
   }
 
   const { data } = await apolloClient.mutate<DeleteResourceByIdMutationResult, DeleteResourceByIdMutationVariables>({
@@ -373,5 +378,10 @@ export async function deleteResourceById(resourceId: string): Promise<boolean> {
     variables: { id: resourceId }
   });
 
-  return data?.deleteResourceById?.deletedResourceId !== null;
+  const deletedResourceId = data?.deleteResourceById?.deletedResourceId;
+
+  return {
+    ok: deletedResourceId !== null,
+    deletedResourceId: deletedResourceId ?? null
+  };
 }
