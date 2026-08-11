@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -46,10 +47,19 @@ import {
   type TriStateFilter
 } from "./types";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
+import { isCampaignActive } from "../campaigns/PublicCampaignsPage";
 import { ResourceCard } from "../ui/ResourceCard";
 import { listingCardGridSx } from "../ui/listingCardGrid";
-import { PUBLIC_RESOURCES_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY } from "./resources.queries";
-import type { PublicResourcesQuery, ResourceCategoryOptionsQuery } from "../../graphql/generated";
+import {
+  PUBLIC_RESOURCE_CAMPAIGN_FILTER_QUERY,
+  PUBLIC_RESOURCES_QUERY,
+  RESOURCE_CATEGORY_OPTIONS_QUERY
+} from "./resources.queries";
+import type {
+  PublicResourceCampaignFilterQuery,
+  PublicResourcesQuery,
+  ResourceCategoryOptionsQuery
+} from "../../graphql/generated";
 
 type ToggleFilterKey = Exclude<
   keyof ResourceSearchFilters,
@@ -105,6 +115,7 @@ export default function PublicResourcesPage() {
   const { session, status } = useAuth();
   const { t, i18n } = useTranslation("resources");
   const [filters, setFilters] = useState(DEFAULT_RESOURCE_SEARCH_FILTERS);
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
   const [browserLocation, setBrowserLocation] = useState<ResourceSearchLocation | undefined>(undefined);
   const [explicitLocation, setExplicitLocation] = useState<ResourceSearchLocation | undefined>(undefined);
   const [explicitLocationAddress, setExplicitLocationAddress] = useState("");
@@ -188,11 +199,33 @@ export default function PublicResourcesPage() {
   const { data: categoryData, error: categoryError } = useQuery<ResourceCategoryOptionsQuery>(
     RESOURCE_CATEGORY_OPTIONS_QUERY
   );
+  const { data: campaignFilterData, error: campaignFilterError } = useQuery<PublicResourceCampaignFilterQuery>(
+    PUBLIC_RESOURCE_CAMPAIGN_FILTER_QUERY
+  );
 
-  const resources = data?.searchResources?.nodes ?? [];
+  const searchResources = data?.searchResources?.nodes ?? [];
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
+  const campaignFilterErrorMessage = getUserFacingGraphQLErrorMessage(campaignFilterError);
   const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
+  const campaignOptions = useMemo(() => {
+    const now = new Date();
+    return (campaignFilterData?.allCampaigns?.nodes ?? []).filter(campaign =>
+      isCampaignActive(now, campaign.startAt, campaign.endAt)
+    );
+  }, [campaignFilterData?.allCampaigns?.nodes]);
+  const resources = useMemo(() => {
+    if (selectedCampaignIds.length === 0) {
+      return searchResources;
+    }
+
+    const matchingResourceIds = new Set(
+      (campaignFilterData?.publicCampaignResourceLinks?.nodes ?? [])
+        .filter(link => selectedCampaignIds.includes(link.campaignId))
+        .map(link => link.resourceId)
+    );
+    return searchResources.filter(resource => matchingResourceIds.has(resource.id));
+  }, [campaignFilterData?.publicCampaignResourceLinks?.nodes, searchResources, selectedCampaignIds]);
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
   const localizedCategoryByLabel = useMemo(() => {
     const map = new Map<string, string>();
@@ -265,6 +298,12 @@ export default function PublicResourcesPage() {
           </Alert>
         ) : null}
 
+        {campaignFilterErrorMessage ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {campaignFilterErrorMessage}
+          </Alert>
+        ) : null}
+
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
             <Stack spacing={2}>
@@ -297,6 +336,22 @@ export default function PublicResourcesPage() {
                   }}
                 />
               </Box>
+
+              <Autocomplete
+                multiple
+                options={campaignOptions}
+                value={campaignOptions.filter(campaign => selectedCampaignIds.includes(campaign.id))}
+                getOptionLabel={campaign => campaign.title}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                onChange={(_event, campaigns) => setSelectedCampaignIds(campaigns.map(campaign => campaign.id))}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label={t("browse.campaignsLabel", { defaultValue: "Campaigns" })}
+                    placeholder={t("browse.allCampaignsLabel", { defaultValue: "All campaigns" })}
+                  />
+                )}
+              />
 
               <Box>
                 <Typography gutterBottom variant="subtitle2">

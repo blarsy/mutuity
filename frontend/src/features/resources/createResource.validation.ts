@@ -12,6 +12,7 @@ export type CreateResourceValues = {
   intensity: ResourceIntensity;
   defaultTokenAmount: number | "";
   categoryCodes: number[];
+  campaignId: string;
   isProduct: boolean;
   isService: boolean;
   canBeGiven: boolean;
@@ -31,6 +32,7 @@ export const createResourceInitialValues: CreateResourceValues = {
   intensity: "sharing",
   defaultTokenAmount: "",
   categoryCodes: [],
+  campaignId: "",
   isProduct: true,
   isService: false,
   canBeGiven: true,
@@ -121,6 +123,7 @@ export const createResourceValidationSchema = Yup.object({
     .required("Intensity is required"),
   defaultTokenAmount: optionalIntegerField,
   categoryCodes: Yup.array().of(Yup.number().integer().required()).default([]),
+  campaignId: Yup.string().uuid().optional(),
   isProduct: Yup.boolean().required(),
   isService: Yup.boolean().required(),
   canBeGiven: Yup.boolean().required(),

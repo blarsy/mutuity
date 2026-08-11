@@ -1,12 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Checkbox, Chip, Snackbar, Text } from "react-native-paper";
+import { Checkbox, Chip, Divider, IconButton, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AppSegmentedButtons, FormTextInput, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import {
+  AppSegmentedButtons,
+  FormTextInput,
+  PickerDialog,
+  PrimaryButton,
+  ScreenContainer
+} from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import {
   claimNeedById,
   fetchSearchNeeds,
@@ -62,8 +69,11 @@ export function SearchNeedsScreen({
   const [searchTerm, setSearchTerm] = useState("");
   const [maxTokenAmount, setMaxTokenAmount] = useState("");
   const [selectedIntensities, setSelectedIntensities] = useState<NeedIntensity[]>([]);
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
+  const [showCampaignsDialog, setShowCampaignsDialog] = useState(false);
   const [hideClaimedNeeds, setHideClaimedNeeds] = useState(false);
   const [remoteNeeds, setRemoteNeeds] = useState<NeedItem[]>([]);
+  const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [claimedNeedIds, setClaimedNeedIds] = useState<string[]>([]);
@@ -107,7 +117,17 @@ export function SearchNeedsScreen({
     void loadNeeds();
   }, [loadNeeds]);
 
+  useEffect(() => {
+    void fetchLinkableCampaigns()
+      .then(setCampaignOptions)
+      .catch(() => setCampaignOptions([]));
+  }, []);
+
   const sourceNeeds = hasInjectedNeeds ? needs : remoteNeeds;
+  const campaignTitleById = useMemo(
+    () => new Map(campaignOptions.map((campaign) => [campaign.id, campaign.title])),
+    [campaignOptions]
+  );
 
   const filteredNeeds = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -117,12 +137,25 @@ export function SearchNeedsScreen({
         normalizedSearch.length === 0 || `${need.title} ${need.description}`.toLowerCase().includes(normalizedSearch);
       const matchesIntensity = selectedIntensities.length === 0 || selectedIntensities.includes(need.intensity);
       const matchesTokenAmount = parsedMaxTokenAmount === null || need.proposedTokenAmount <= parsedMaxTokenAmount;
+      const matchesCampaign =
+        selectedCampaignIds.length === 0 ||
+        (need.campaignId !== null &&
+          need.campaignId !== undefined &&
+          selectedCampaignIds.includes(need.campaignId));
       const isClaimed = need.isClaimedByCurrentAccount || claimedNeedIds.includes(need.id);
       const matchesClaimedVisibility = !hideClaimedNeeds || !isClaimed;
 
-      return matchesSearch && matchesIntensity && matchesTokenAmount && matchesClaimedVisibility;
+      return matchesSearch && matchesIntensity && matchesTokenAmount && matchesCampaign && matchesClaimedVisibility;
     });
-  }, [claimedNeedIds, hideClaimedNeeds, parsedMaxTokenAmount, searchTerm, selectedIntensities, sourceNeeds]);
+  }, [
+    claimedNeedIds,
+    hideClaimedNeeds,
+    parsedMaxTokenAmount,
+    searchTerm,
+    selectedCampaignIds,
+    selectedIntensities,
+    sourceNeeds
+  ]);
 
   const resolvedLoading = loading || (!hasInjectedNeeds && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedNeeds ? remoteErrorMessage : null);
@@ -184,6 +217,7 @@ export function SearchNeedsScreen({
     setSearchTerm("");
     setMaxTokenAmount("");
     setSelectedIntensities([]);
+    setSelectedCampaignIds([]);
     setHideClaimedNeeds(false);
   };
 
@@ -236,6 +270,44 @@ export function SearchNeedsScreen({
           onChangeText={setMaxTokenAmount}
           keyboardType="number-pad"
         />
+
+        <Divider />
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setShowCampaignsDialog(true)}
+          testID="needs-campaign-filter-button"
+        >
+          <View style={styles.accordionHeader}>
+            <View>
+              <Text variant="titleSmall">{t("campaignsLabel", { defaultValue: "Campaigns" })}</Text>
+              <Text variant="bodySmall" style={styles.accordionSubtitle}>
+                {selectedCampaignIds.length === 0
+                  ? t("allCampaignsLabel", { defaultValue: "All campaigns" })
+                  : `${selectedCampaignIds.length} ${t("selectedLabel", { defaultValue: "selected" })}`}
+              </Text>
+            </View>
+            <IconButton icon="chevron-right" size={18} onPress={() => setShowCampaignsDialog(true)} />
+          </View>
+        </Pressable>
+
+        {selectedCampaignIds.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.campaignChipsRow}>
+            {selectedCampaignIds.map((campaignId) => (
+              <Chip
+                key={campaignId}
+                mode="flat"
+                onClose={() =>
+                  setSelectedCampaignIds((previous) => previous.filter((value) => value !== campaignId))
+                }
+              >
+                {campaignTitleById.get(campaignId) ?? campaignId}
+              </Chip>
+            ))}
+          </ScrollView>
+        ) : null}
+
+        <Divider />
 
         <View>
           <Text variant="titleSmall" style={styles.sectionTitle}>
@@ -335,6 +407,19 @@ export function SearchNeedsScreen({
         )}
       </ScrollView>
 
+      <PickerDialog
+        visible={showCampaignsDialog}
+        title={t("campaignsLabel", { defaultValue: "Campaigns" })}
+        items={campaignOptions.map((campaign) => ({ value: campaign.id, label: campaign.title }))}
+        selectedValues={selectedCampaignIds}
+        onDismiss={() => setShowCampaignsDialog(false)}
+        onConfirm={(nextSelectedCampaignIds) => {
+          setSelectedCampaignIds(nextSelectedCampaignIds);
+          setShowCampaignsDialog(false);
+        }}
+        testID="needs-campaign-filter-dialog"
+      />
+
       <Snackbar visible={snackbarMessage !== null} onDismiss={() => setSnackbarMessage(null)}>
         {snackbarMessage ?? ""}
       </Snackbar>
@@ -364,6 +449,18 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.altGeneral,
     textTransform: "uppercase",
     letterSpacing: 0.4
+  },
+  accordionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  accordionSubtitle: {
+    opacity: 0.75
+  },
+  campaignChipsRow: {
+    gap: designTokens.spacing.xs,
+    paddingVertical: designTokens.spacing.xs
   },
   chipsRow: {
     flexDirection: "row",

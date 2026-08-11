@@ -7,9 +7,31 @@ import {
   type CampaignPatch,
   type Query
 } from "./generated";
-import { CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "./operations";
+import { CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "./operations";
 
 const DEFAULT_PAGE_SIZE = 50;
+
+export interface LinkableCampaignItem {
+  id: string;
+  title: string;
+}
+
+export async function fetchLinkableCampaigns(): Promise<LinkableCampaignItem[]> {
+  const { data } = await apolloClient.query<{
+    linkableCampaigns?: {
+      nodes?: Array<{ id: unknown; title?: string | null; startAt?: unknown; endAt?: unknown } | null> | null;
+    } | null;
+  }>({
+    query: LINKABLE_CAMPAIGNS_QUERY,
+    fetchPolicy: "network-only"
+  });
+
+  return (data?.linkableCampaigns?.nodes ?? [])
+    .filter((campaign): campaign is { id: unknown; title?: string | null; startAt?: unknown; endAt?: unknown } =>
+      campaign != null && campaign.id != null && typeof campaign.title === "string" && campaign.title.trim().length > 0
+    )
+    .map((campaign) => ({ id: String(campaign.id), title: campaign.title }));
+}
 
 export interface CampaignItem {
   id: string;

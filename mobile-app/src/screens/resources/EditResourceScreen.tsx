@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Divider, Icon, Snackbar, Text } from "react-native-paper";
+import { Chip, Divider, Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
   FormTextInput,
+  PickerDialog,
   PicturesField,
   PriceSetter,
   PrimaryButton,
@@ -16,10 +17,13 @@ import {
 import {
   createResourceForAccount,
   deleteResourceById,
+  fetchResourceCategories,
   type MyResourceItem,
+  type ResourceCategoryItem,
   updateResourceById
 } from "../../services/graphql/resources";
 import { useNetworkStatus } from "../../services/network/useNetworkStatus";
+import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -36,13 +40,21 @@ export function EditResourceScreen({
   onBack,
   onSaved
 }: EditResourceScreenProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isConnected, isInternetReachable } = useNetworkStatus();
 
   const [title, setTitle] = useState(initialResource?.title ?? "");
   const [tokenAmount, setTokenAmount] = useState(initialResource?.defaultTokenAmount ?? 0);
   const [imageUrls, setImageUrls] = useState<string[]>(initialResource?.imageUrls ?? []);
   const [description, setDescription] = useState(initialResource?.description ?? "");
+  const [categories, setCategories] = useState<ResourceCategoryItem[]>([]);
+  const [selectedCategoryCodes, setSelectedCategoryCodes] = useState<string[]>(
+    initialResource?.categoryCodes.map(String) ?? []
+  );
+  const [showCategoriesDialog, setShowCategoriesDialog] = useState(false);
+  const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>([]);
+  const [campaignId, setCampaignId] = useState(initialResource?.campaignId ?? "");
+  const [showCampaignDialog, setShowCampaignDialog] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
     initialResource?.expiresAt ? new Date(initialResource.expiresAt) : undefined
   );
@@ -66,12 +78,52 @@ export function EditResourceScreen({
   const isOffline = !isConnected || !isInternetReachable;
 
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
+  const categoryItems = useMemo(
+    () =>
+      categories.map((category) => ({
+        value: String(category.code),
+        label: i18n.language.toLowerCase().startsWith("fr") ? category.labelFr : category.label
+      })),
+    [categories, i18n.language]
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void fetchResourceCategories()
+      .then((nextCategories) => {
+        if (isMounted) {
+          setCategories(nextCategories);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setSnackbarMessage(t("resourceCategoriesLoadError", { defaultValue: "We could not load categories." }));
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [t]);
+
+  useEffect(() => {
+    void fetchLinkableCampaigns()
+      .then(setCampaigns)
+      .catch(() => {
+        setSnackbarMessage(t("campaignsLoadError", { defaultValue: "We could not load campaigns." }));
+      });
+  }, [t]);
 
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
 
     if (title.trim().length === 0) {
       errors.push(t("fieldRequired", { defaultValue: "Title is required." }));
+    }
+
+    if (selectedCategoryCodes.length === 0) {
+      errors.push(t("resourceCategoryRequired", { defaultValue: "Select at least one category." }));
     }
 
     if (!natureOptions.isProduct && !natureOptions.isService) {
@@ -91,16 +143,12 @@ export function EditResourceScreen({
     }
 
     return errors;
-  }, [exchangeOptions.canBeExchanged, exchangeOptions.canBeGifted, location?.label, natureOptions.isProduct, natureOptions.isService, t, transportOptions.canBeDelivered, transportOptions.canBeTakenAway]);
+  }, [exchangeOptions.canBeExchanged, exchangeOptions.canBeGifted, location?.label, natureOptions.isProduct, natureOptions.isService, selectedCategoryCodes.length, t, transportOptions.canBeDelivered, transportOptions.canBeTakenAway]);
 
   const handleSave = async (): Promise<void> => {
     setHasAttemptedSubmit(true);
 
     if (validationErrors.length > 0) {
-      const firstError = validationErrors[0];
-      if (firstError) {
-        setSnackbarMessage(firstError);
-      }
       return;
     }
 
@@ -130,7 +178,9 @@ export function EditResourceScreen({
           canBeDelivered: transportOptions.canBeDelivered,
           canBeExchanged: exchangeOptions.canBeExchanged,
           canBeGifted: exchangeOptions.canBeGifted,
-          location: location?.label?.trim() ? location : null
+          location: location?.label?.trim() ? location : null,
+          categoryCodes: selectedCategoryCodes.map(Number),
+          campaignId: campaignId || null
         });
       } else {
         await createResourceForAccount(creatorAccountId, {
@@ -145,7 +195,9 @@ export function EditResourceScreen({
           canBeDelivered: transportOptions.canBeDelivered,
           canBeExchanged: exchangeOptions.canBeExchanged,
           canBeGifted: exchangeOptions.canBeGifted,
-          location: location?.label?.trim() ? location : null
+          location: location?.label?.trim() ? location : null,
+          categoryCodes: selectedCategoryCodes.map(Number),
+          campaignId: campaignId || null
         });
       }
 
@@ -209,6 +261,59 @@ export function EditResourceScreen({
           multiline
           numberOfLines={4}
         />
+
+        <Divider style={styles.divider} />
+
+        <Pressable accessibilityRole="button" onPress={() => setShowCategoriesDialog(true)}>
+          <View style={styles.categoryHeader}>
+            <View>
+              <Text variant="titleSmall" style={styles.sectionTitle}>
+                {t("categoriesTitle", { defaultValue: "Categories" })}
+              </Text>
+              {selectedCategoryCodes.length === 0 &&
+                <Text variant="bodySmall" style={styles.categorySubtitle}>
+                    {t("noCategoriesSelectedLabel", { defaultValue: "No categories selected" })}
+                </Text>
+              }
+            </View>
+            <IconButton icon="chevron-right" size={18} onPress={() => setShowCategoriesDialog(true)} />
+          </View>
+        </Pressable>
+
+        {selectedCategoryCodes.length > 0 ? (
+          <View style={styles.chipsRow}>
+            {selectedCategoryCodes.map((categoryCode) => (
+              <Chip
+                key={categoryCode}
+                testID={`selected-resource-category-${categoryCode}`}
+                mode="outlined"
+                closeIcon="close"
+                onClose={() =>
+                  setSelectedCategoryCodes((previous) => previous.filter((value) => value !== categoryCode))
+                }
+              >
+                {categoryItems.find((item) => item.value === categoryCode)?.label ?? categoryCode}
+              </Chip>
+            ))}
+          </View>
+        ) : null}
+
+        <Divider style={styles.divider} />
+
+        <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
+          <View style={styles.categoryHeader}>
+            <View>
+              <Text variant="titleSmall" style={styles.sectionTitle}>
+                {t("campaignLabel", { defaultValue: "Campaign (optional)" })}
+              </Text>
+              <Text variant="bodySmall" style={styles.categorySubtitle}>
+                {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
+                  t("noCampaignLabel", { defaultValue: "No campaign" })}
+              </Text>
+            </View>
+            <IconButton icon="chevron-right" size={18} onPress={() => setShowCampaignDialog(true)} />
+          </View>
+        </Pressable>
 
         <Divider style={styles.divider} />
 
@@ -312,6 +417,36 @@ export function EditResourceScreen({
         ) : null}
       </ScrollView>
 
+      <PickerDialog
+        visible={showCategoriesDialog}
+        title={t("categoriesTitle", { defaultValue: "Categories" })}
+        items={categoryItems}
+        selectedValues={selectedCategoryCodes}
+        onDismiss={() => setShowCategoriesDialog(false)}
+        onConfirm={(nextSelectedCategoryCodes) => {
+          setSelectedCategoryCodes(nextSelectedCategoryCodes);
+          setShowCategoriesDialog(false);
+        }}
+        testID="resource-categories-dialog"
+      />
+
+      <PickerDialog
+        visible={showCampaignDialog}
+        title={t("campaignLabel", { defaultValue: "Campaign (optional)" })}
+        items={[
+          { value: "", label: t("noCampaignLabel", { defaultValue: "No campaign" }) },
+          ...campaigns.map((campaign) => ({ value: campaign.id, label: campaign.title }))
+        ]}
+        selectedValues={[campaignId]}
+        multiple={false}
+        onDismiss={() => setShowCampaignDialog(false)}
+        onConfirm={(values) => {
+          setCampaignId(values[0] ?? "");
+          setShowCampaignDialog(false);
+        }}
+        testID="resource-campaign-dialog"
+      />
+
       <Snackbar visible={snackbarMessage !== null} onDismiss={() => setSnackbarMessage(null)}>
         {snackbarMessage ?? ""}
       </Snackbar>
@@ -364,6 +499,20 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: designTokens.spacing.xs
+  },
+  categoryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  categorySubtitle: {
+    opacity: 0.75
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.spacing.xs,
+    paddingVertical: 4
   },
   toggleRow: {
     flexDirection: "row",

@@ -24,7 +24,14 @@ import { IntensityPicker } from "../../components/IntensityPicker";
 import { LocationPicker } from "../../components/LocationPicker";
 import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
-import { PUBLISH_RESOURCE_MUTATION, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_EDIT_DETAIL_QUERY } from "./resources.queries";
+import {
+  CREATE_CAMPAIGN_RESOURCE_MUTATION,
+  DELETE_CAMPAIGN_RESOURCE_MUTATION,
+  LINKABLE_RESOURCE_CAMPAIGN_OPTIONS_QUERY,
+  PUBLISH_RESOURCE_MUTATION,
+  RESOURCE_CATEGORY_OPTIONS_QUERY,
+  RESOURCE_EDIT_DETAIL_QUERY
+} from "./resources.queries";
 import {
   createResourceInitialValues,
   createResourceValidationSchema,
@@ -33,7 +40,7 @@ import {
   type CreateResourceValues
 } from "./createResource.validation";
 import { RESOURCE_INTENSITY_OPTIONS, type ResourceCategoryOption } from "./types";
-import type { PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
+import type { LinkableResourceCampaignOptionsQuery, PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 
 function normalizeOptionalInteger(value: number | "") {
@@ -82,6 +89,10 @@ function toDateTimeLocalValue(value: string | null) {
   return new Date(timestamp).toISOString().slice(0, 16);
 }
 
+function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
+  return now >= new Date(startAtIso) && now <= new Date(endAtIso);
+}
+
 export default function CreateResourcePage() {
   const router = useRouter();
   const { t, i18n } = useTranslation("resources");
@@ -91,8 +102,19 @@ export default function CreateResourcePage() {
     PublishResourceMutation,
     PublishResourceMutationVariables
   >(PUBLISH_RESOURCE_MUTATION);
+  const [createCampaignResource, { error: createCampaignResourceError }] = useMutation(
+    CREATE_CAMPAIGN_RESOURCE_MUTATION
+  );
+  const [deleteCampaignResource, { error: deleteCampaignResourceError }] = useMutation(
+    DELETE_CAMPAIGN_RESOURCE_MUTATION
+  );
   const { data: categoryData, loading: loadingCategories, error: categoryError } =
     useQuery<ResourceCategoryOptionsQuery>(RESOURCE_CATEGORY_OPTIONS_QUERY);
+  const {
+    data: campaignData,
+    loading: loadingCampaigns,
+    error: campaignError
+  } = useQuery<LinkableResourceCampaignOptionsQuery>(LINKABLE_RESOURCE_CAMPAIGN_OPTIONS_QUERY);
   const {
     data: editData,
     loading: loadingEditResource,
@@ -104,12 +126,21 @@ export default function CreateResourcePage() {
     }
   });
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error)
+    ?? getUserFacingGraphQLErrorMessage(createCampaignResourceError)
+    ?? getUserFacingGraphQLErrorMessage(deleteCampaignResourceError);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const editResourceErrorMessage = getUserFacingGraphQLErrorMessage(editResourceError);
 
   const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
   const editResource = editData?.resourceById ?? null;
+  const currentCampaignId = editResource?.campaignResourcesByResourceId.nodes[0]?.campaignId ?? "";
+  const campaignOptions = useMemo(() => {
+    const now = new Date();
+    return (campaignData?.allCampaigns?.nodes ?? []).filter(
+      campaign => campaign.id === currentCampaignId || isCampaignActive(now, campaign.startAt, campaign.endAt)
+    );
+  }, [campaignData?.allCampaigns?.nodes, currentCampaignId]);
 
   const initialValues = useMemo<CreateResourceValues>(() => {
     if (!editResource) {
@@ -126,6 +157,7 @@ export default function CreateResourcePage() {
       intensity: fromGraphQLResourceIntensity(editResource.intensity),
       defaultTokenAmount: editResource.defaultTokenAmount ?? "",
       categoryCodes: (editResource.resourceCategoryAssignmentsByResourceId?.nodes ?? []).map(node => node.categoryCode),
+      campaignId: currentCampaignId,
       isProduct: editResource.isProduct,
       isService: editResource.isService,
       canBeGiven: editResource.canBeGiven,
@@ -134,10 +166,10 @@ export default function CreateResourcePage() {
       canBeDelivered: editResource.canBeDelivered,
       expiresAt: toDateTimeLocalValue(editResource.expiresAt)
     };
-  }, [editResource]);
+  }, [currentCampaignId, editResource]);
 
   const submit = async (values: CreateResourceValues) => {
-    await publishResource({
+    const result = await publishResource({
       variables: {
         resourceId: resourceId ?? undefined,
         title: values.title.trim(),
@@ -158,6 +190,24 @@ export default function CreateResourcePage() {
         expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : undefined
       }
     });
+
+    const savedResourceId = result.data?.publishResource?.resource?.id;
+    if (!savedResourceId) {
+      throw new Error("Resource save did not return an ID");
+    }
+
+    if (currentCampaignId !== values.campaignId) {
+      if (currentCampaignId) {
+        await deleteCampaignResource({
+          variables: { campaignId: currentCampaignId, resourceId: savedResourceId }
+        });
+      }
+      if (values.campaignId) {
+        await createCampaignResource({
+          variables: { campaignId: values.campaignId, resourceId: savedResourceId }
+        });
+      }
+    }
 
     await router.push("/resources/manage");
   };
@@ -226,6 +276,12 @@ export default function CreateResourcePage() {
         {categoryErrorMessage ? (
           <Alert severity="error" sx={{ mb: 2 }}>
             {categoryErrorMessage}
+          </Alert>
+        ) : null}
+
+        {getUserFacingGraphQLErrorMessage(campaignError) ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {getUserFacingGraphQLErrorMessage(campaignError)}
           </Alert>
         ) : null}
 
@@ -370,6 +426,26 @@ export default function CreateResourcePage() {
                     />
                   )}
                 </Box>
+
+                <TextField
+                  select
+                  name="campaignId"
+                  label={t("form.campaignLabel", { defaultValue: "Campaign (optional)" })}
+                  value={values.campaignId}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  disabled={loadingCampaigns}
+                  helperText={loadingCampaigns
+                    ? t("form.loadingCampaigns", { defaultValue: "Loading campaigns..." })
+                    : t("form.campaignHelper", { defaultValue: "Optionally join this resource to one campaign." })}
+                >
+                  <MenuItem value="">{t("form.noCampaign", { defaultValue: "No campaign" })}</MenuItem>
+                  {campaignOptions.map(campaign => (
+                    <MenuItem key={campaign.id} value={campaign.id}>
+                      {campaign.title}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
                 <TextField
                   name="expiresAt"

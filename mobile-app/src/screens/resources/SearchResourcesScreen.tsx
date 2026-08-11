@@ -21,7 +21,12 @@ import {
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
-import { fetchSearchResources } from "../../services/graphql/resources";
+import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
+import {
+  fetchResourceCategories,
+  fetchSearchResources,
+  type ResourceCategoryItem
+} from "../../services/graphql/resources";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -91,14 +96,6 @@ function formatPublishedDate(value: string | null, locale: string): string | nul
   return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
 }
 
-function resolveCampaignIds(resources: SearchResourceItem[]): string[] {
-  return Array.from(new Set(resources.flatMap((resource) => resource.campaignIds))).sort();
-}
-
-function resolveCategories(resources: SearchResourceItem[]): string[] {
-  return Array.from(new Set(resources.map((resource) => resource.category))).sort();
-}
-
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -139,6 +136,8 @@ export function SearchResourcesScreen({
   const [showOptions, setShowOptions] = useState(false);
   const [showProximity, setShowProximity] = useState(false);
   const [remoteResources, setRemoteResources] = useState<SearchResourceItem[]>([]);
+  const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<ResourceCategoryItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
@@ -150,8 +149,22 @@ export function SearchResourcesScreen({
   const hasInjectedResources = resources !== undefined;
   const sourceResources = hasInjectedResources ? resources : remoteResources;
 
-  const allCampaignIds = useMemo(() => resolveCampaignIds(sourceResources), [sourceResources]);
-  const allCategories = useMemo(() => resolveCategories(sourceResources), [sourceResources]);
+  useEffect(() => {
+    void Promise.all([fetchLinkableCampaigns(), fetchResourceCategories()])
+      .then(([nextCampaignOptions, nextCategoryOptions]) => {
+        setCampaignOptions(nextCampaignOptions);
+        setCategoryOptions(nextCategoryOptions);
+      })
+      .catch(() => {
+        setCampaignOptions([]);
+        setCategoryOptions([]);
+      });
+  }, []);
+
+  const campaignTitleById = useMemo(
+    () => new Map(campaignOptions.map((campaign) => [campaign.id, campaign.title])),
+    [campaignOptions]
+  );
   const distanceKmValue = useMemo(() => {
     const parsed = Number.parseFloat(distanceFilter);
     if (!Number.isFinite(parsed)) {
@@ -369,11 +382,11 @@ export function SearchResourcesScreen({
             <View style={styles.accordionHeader}>
               <View>
                 <Text variant="titleSmall">{t("categoriesTitle", { defaultValue: "Categories" })}</Text>
-                <Text variant="bodySmall" style={styles.accordionSubtitle}>
-                  {selectedCategories.length === 0
-                    ? t("allCategoriesLabel", { defaultValue: "All categories" })
-                    : `${selectedCategories.length} ${t("selectedLabel", { defaultValue: "selected" })}`}
-                </Text>
+                {selectedCategories.length === 0 &&
+                  <Text variant="bodySmall" style={styles.accordionSubtitle}>
+                      {t("allCategoriesLabel", { defaultValue: "All categories" })}
+                  </Text>
+                }
               </View>
               <IconButton icon="chevron-right" size={18} onPress={() => setShowCategoriesDialog(true)} />
             </View>
@@ -384,8 +397,7 @@ export function SearchResourcesScreen({
               {selectedCategories.map((category) => (
                 <Chip
                   key={category}
-                  selected
-                  mode="flat"
+                  mode="outlined"
                   onClose={() =>
                     setSelectedCategories((previous) => previous.filter((value) => value !== category))
                   }
@@ -417,13 +429,12 @@ export function SearchResourcesScreen({
               {selectedCampaignIds.map((campaignId) => (
                 <Chip
                   key={campaignId}
-                  selected
                   mode="flat"
                   onClose={() =>
                     setSelectedCampaignIds((previous) => previous.filter((value) => value !== campaignId))
                   }
                 >
-                  {campaignId}
+                  {campaignTitleById.get(campaignId) ?? campaignId}
                 </Chip>
               ))}
             </ScrollView>
@@ -637,7 +648,7 @@ export function SearchResourcesScreen({
       <PickerDialog
         visible={showCategoriesDialog}
         title={t("categoriesTitle", { defaultValue: "Categories" })}
-        items={allCategories.map((category) => ({ value: category, label: category }))}
+        items={categoryOptions.map((category) => ({ value: category.label, label: category.label }))}
         selectedValues={selectedCategories}
         onDismiss={() => setShowCategoriesDialog(false)}
         onConfirm={(nextSelectedCategories) => {
@@ -649,7 +660,7 @@ export function SearchResourcesScreen({
       <PickerDialog
         visible={showCampaignsDialog}
         title={t("campaignsLabel", { defaultValue: "Campaigns" })}
-        items={allCampaignIds.map((campaignId) => ({ value: campaignId, label: campaignId }))}
+        items={campaignOptions.map((campaign) => ({ value: campaign.id, label: campaign.title }))}
         selectedValues={selectedCampaignIds}
         onDismiss={() => setShowCampaignsDialog(false)}
         onConfirm={(nextSelectedCampaignIds) => {

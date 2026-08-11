@@ -8951,6 +8951,62 @@ type PageInfo {
   startCursor: Cursor
 }
 
+"""A `PublicCampaignNeedLinksRecord` edge in the connection."""
+type PublicCampaignNeedLinkEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `PublicCampaignNeedLinksRecord` at the end of the edge."""
+  node: PublicCampaignNeedLinksRecord!
+}
+
+"""A connection to a list of `PublicCampaignNeedLinksRecord` values."""
+type PublicCampaignNeedLinksConnection {
+  """
+  A list of edges which contains the `PublicCampaignNeedLinksRecord` and cursor to aid in pagination.
+  """
+  edges: [PublicCampaignNeedLinkEdge!]!
+  """A list of `PublicCampaignNeedLinksRecord` objects."""
+  nodes: [PublicCampaignNeedLinksRecord!]!
+  """
+  The count of *all* `PublicCampaignNeedLinksRecord` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""The return type of our `publicCampaignNeedLinks` query."""
+type PublicCampaignNeedLinksRecord {
+  campaignId: UUID
+  needId: UUID
+}
+
+"""A `PublicCampaignResourceLinksRecord` edge in the connection."""
+type PublicCampaignResourceLinkEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `PublicCampaignResourceLinksRecord` at the end of the edge."""
+  node: PublicCampaignResourceLinksRecord!
+}
+
+"""A connection to a list of `PublicCampaignResourceLinksRecord` values."""
+type PublicCampaignResourceLinksConnection {
+  """
+  A list of edges which contains the `PublicCampaignResourceLinksRecord` and cursor to aid in pagination.
+  """
+  edges: [PublicCampaignResourceLinkEdge!]!
+  """A list of `PublicCampaignResourceLinksRecord` objects."""
+  nodes: [PublicCampaignResourceLinksRecord!]!
+  """
+  The count of *all* `PublicCampaignResourceLinksRecord` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""The return type of our `publicCampaignResourceLinks` query."""
+type PublicCampaignResourceLinksRecord {
+  campaignId: UUID
+  resourceId: UUID
+}
+
 """All input for the `publishResource` mutation."""
 input PublishResourceInput {
   canBeDelivered: Boolean
@@ -10130,6 +10186,40 @@ type Query implements Node {
     nodeId: ID!
   ): OperationalLog
   operationalLogById(id: UUID!): OperationalLog
+  """Accepted need links for approved campaigns active at the current time."""
+  publicCampaignNeedLinks(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): PublicCampaignNeedLinksConnection
+  """
+  Accepted resource links for approved campaigns active at the current time.
+  """
+  publicCampaignResourceLinks(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): PublicCampaignResourceLinksConnection
   """
   Exposes the root query type nested one level down. This is helpful for Relay 1
   which can only query top level fields if they are in a particular form.

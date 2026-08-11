@@ -168,6 +168,44 @@ export const LINKABLE_CAMPAIGN_OPTIONS_QUERY = gql`
   }
 `;
 
+export const PUBLIC_NEED_CAMPAIGN_FILTER_QUERY = gql`
+  query PublicNeedCampaignFilter {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: START_AT_ASC) {
+      nodes {
+        id
+        title
+        startAt
+        endAt
+      }
+    }
+    publicCampaignNeedLinks {
+      nodes {
+        campaignId
+        needId
+      }
+    }
+  }
+`;
+
+export const CREATE_CAMPAIGN_NEED_MUTATION = gql`
+  mutation CreateCampaignNeedLink($campaignId: UUID!, $needId: UUID!) {
+    createCampaignNeed(input: { campaignNeed: { campaignId: $campaignId, needId: $needId } }) {
+      campaignNeed {
+        campaignId
+        needId
+      }
+    }
+  }
+`;
+
+export const DELETE_CAMPAIGN_NEED_MUTATION = gql`
+  mutation DeleteCampaignNeedLink($campaignId: UUID!, $needId: UUID!) {
+    deleteCampaignNeedByCampaignIdAndNeedId(input: { campaignId: $campaignId, needId: $needId }) {
+      deletedCampaignNeedId
+    }
+  }
+`;
+
 export const PUBLIC_NEEDS_QUERY = gql`
   query PublicNeeds(
     $latitude: BigFloat

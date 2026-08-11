@@ -11,9 +11,14 @@ import {
   type SearchResourcesRecord
 } from "./generated";
 import {
+  CREATE_CAMPAIGN_RESOURCE_MUTATION,
+  CREATE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
   CREATE_RESOURCE_MUTATION,
+  DELETE_CAMPAIGN_RESOURCE_MUTATION,
+  DELETE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
   DELETE_RESOURCE_BY_ID_MUTATION,
   MY_RESOURCES_QUERY,
+  RESOURCE_CATEGORIES_QUERY,
   SEARCH_RESOURCES_QUERY,
   UPDATE_RESOURCE_BY_ID_MUTATION
 } from "./operations";
@@ -95,6 +100,14 @@ export interface MyResourceItem {
   } | null;
   expiresAt: string | null;
   updatedAt: string | null;
+  categoryCodes: number[];
+  campaignId?: string | null;
+}
+
+export interface ResourceCategoryItem {
+  code: number;
+  label: string;
+  labelFr: string;
 }
 
 export interface FetchMyResourcesFilters {
@@ -118,6 +131,8 @@ export interface UpsertResourceInput {
     latitude?: number;
     longitude?: number;
   } | null;
+  categoryCodes: number[];
+  campaignId: string | null;
 }
 
 export interface SearchResourceResultItem {
@@ -183,13 +198,92 @@ function toMyResourceItem(resource: Resource): MyResourceItem | null {
       return nextLocation;
     })(),
     expiresAt: typeof resource.expiresAt === "string" ? resource.expiresAt : null,
-    updatedAt: typeof resource.updatedAt === "string" ? resource.updatedAt : null
+    updatedAt: typeof resource.updatedAt === "string" ? resource.updatedAt : null,
+    categoryCodes: resource.resourceCategoryAssignmentsByResourceId.nodes.map(
+      (assignment) => assignment.categoryCode
+    ),
+    campaignId:
+      typeof resource.campaignResourcesByResourceId?.nodes?.[0]?.campaignId === "string"
+        ? resource.campaignResourcesByResourceId.nodes[0].campaignId
+        : null
   };
+}
+
+export async function fetchResourceCategories(): Promise<ResourceCategoryItem[]> {
+  const { data } = await apolloClient.query<Pick<Query, "allResourceCategories">>({
+    query: RESOURCE_CATEGORIES_QUERY,
+    fetchPolicy: "network-only"
+  });
+
+  return (data?.allResourceCategories?.nodes ?? []).map((category) => ({
+    code: category.code,
+    label: category.label,
+    labelFr: category.labelFr
+  }));
+}
+
+async function syncResourceCategories(
+  resourceId: string,
+  previousCategoryCodes: number[],
+  nextCategoryCodes: number[]
+): Promise<void> {
+  const previousCodes = new Set(previousCategoryCodes);
+  const nextCodes = new Set(nextCategoryCodes);
+  const mutationVariables = (categoryCode: number): { resourceId: string; categoryCode: number } => ({
+    resourceId,
+    categoryCode
+  });
+
+  await Promise.all([
+    ...nextCategoryCodes
+      .filter((categoryCode) => !previousCodes.has(categoryCode))
+      .map((categoryCode) =>
+        apolloClient.mutate({
+          mutation: CREATE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
+          variables: mutationVariables(categoryCode)
+        })
+      ),
+    ...previousCategoryCodes
+      .filter((categoryCode) => !nextCodes.has(categoryCode))
+      .map((categoryCode) =>
+        apolloClient.mutate({
+          mutation: DELETE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
+          variables: mutationVariables(categoryCode)
+        })
+      )
+  ]);
+}
+
+async function syncResourceCampaign(
+  resourceId: string,
+  previousCampaignId: string | null,
+  nextCampaignId: string | null
+): Promise<void> {
+  if (previousCampaignId === nextCampaignId) {
+    return;
+  }
+
+  if (previousCampaignId) {
+    await apolloClient.mutate({
+      mutation: DELETE_CAMPAIGN_RESOURCE_MUTATION,
+      variables: { campaignId: previousCampaignId, resourceId }
+    });
+  }
+
+  if (nextCampaignId) {
+    await apolloClient.mutate({
+      mutation: CREATE_CAMPAIGN_RESOURCE_MUTATION,
+      variables: { campaignId: nextCampaignId, resourceId }
+    });
+  }
 }
 
 interface SearchResourcesQueryResult {
   searchResources: {
     nodes: SearchResourcesRecord[];
+  } | null;
+  publicCampaignResourceLinks: {
+    nodes: Array<{ campaignId: string; resourceId: string }>;
   } | null;
 }
 
@@ -235,7 +329,10 @@ export function buildSearchResourcesVariables(filters: SearchResourcesFilters): 
   return variables;
 }
 
-export function normalizeSearchResource(node: SearchResourcesRecord): SearchResourceResultItem | null {
+export function normalizeSearchResource(
+  node: SearchResourcesRecord,
+  campaignIds: string[] = []
+): SearchResourceResultItem | null {
   if (!node.id || !node.title) {
     return null;
   }
@@ -259,7 +356,7 @@ export function normalizeSearchResource(node: SearchResourcesRecord): SearchReso
     canBeExchanged: node.canBeExchanged ?? false,
     canBeGifted: node.canBeGiven ?? false,
     located,
-    campaignIds: [],
+    campaignIds,
     imageUrls: (node.imageUrls ?? []).filter((value): value is string => typeof value === "string" && value.length > 0)
   };
 }
@@ -274,9 +371,18 @@ export async function fetchSearchResources(filters: SearchResourcesFilters): Pro
   });
 
   const nodes = data?.searchResources?.nodes ?? [];
+  const campaignIdsByResourceId = new Map<string, string[]>();
+
+  for (const link of data?.publicCampaignResourceLinks?.nodes ?? []) {
+    const resourceId = String(link.resourceId);
+    campaignIdsByResourceId.set(resourceId, [
+      ...(campaignIdsByResourceId.get(resourceId) ?? []),
+      String(link.campaignId)
+    ]);
+  }
 
   return nodes
-    .map((node) => normalizeSearchResource(node))
+    .map((node) => normalizeSearchResource(node, campaignIdsByResourceId.get(String(node.id)) ?? []))
     .filter((node): node is SearchResourceResultItem => node !== null);
 }
 
@@ -335,6 +441,9 @@ export async function createResourceForAccount(
     return null;
   }
 
+  await syncResourceCategories(String(createdId), [], input.categoryCodes);
+  await syncResourceCampaign(String(createdId), null, input.campaignId);
+
   const items = await fetchMyResources({ creatorAccountId });
   return items.find((item) => item.id === String(createdId)) ?? null;
 }
@@ -365,7 +474,19 @@ export async function updateResourceById(resourceId: string, input: UpsertResour
     variables
   });
 
-  return toMyResourceItem(data?.updateResourceById?.resource as Resource) ?? null;
+  const previousCategoryCodes =
+    data?.updateResourceById?.resource?.resourceCategoryAssignmentsByResourceId.nodes.map(
+      (assignment) => assignment.categoryCode
+    ) ?? [];
+  const previousCampaignId =
+    data?.updateResourceById?.resource?.campaignResourcesByResourceId?.nodes?.[0]?.campaignId ?? null;
+  await syncResourceCategories(resourceId, previousCategoryCodes, input.categoryCodes);
+  await syncResourceCampaign(resourceId, previousCampaignId, input.campaignId);
+
+  const updatedResource = toMyResourceItem(data?.updateResourceById?.resource as Resource);
+  return updatedResource
+    ? { ...updatedResource, categoryCodes: input.categoryCodes, campaignId: input.campaignId }
+    : null;
 }
 
 export async function deleteResourceById(resourceId: string): Promise<DeleteResourceResult> {

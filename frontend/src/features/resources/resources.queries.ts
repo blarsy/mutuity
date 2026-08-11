@@ -68,6 +68,25 @@ export const RESOURCE_CATEGORY_OPTIONS_QUERY = gql`
   }
 `;
 
+export const PUBLIC_RESOURCE_CAMPAIGN_FILTER_QUERY = gql`
+  query PublicResourceCampaignFilter {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: START_AT_ASC) {
+      nodes {
+        id
+        title
+        startAt
+        endAt
+      }
+    }
+    publicCampaignResourceLinks {
+      nodes {
+        campaignId
+        resourceId
+      }
+    }
+  }
+`;
+
 export const PUBLIC_RESOURCES_QUERY = gql`
   query PublicResources(
     $latitude: BigFloat
@@ -194,6 +213,43 @@ export const RESOURCE_EDIT_DETAIL_QUERY = gql`
           categoryCode
         }
       }
+      campaignResourcesByResourceId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+        nodes {
+          campaignId
+        }
+      }
+    }
+  }
+`;
+
+export const LINKABLE_RESOURCE_CAMPAIGN_OPTIONS_QUERY = gql`
+  query LinkableResourceCampaignOptions {
+    allCampaigns(condition: { moderationStatus: APPROVED }, orderBy: START_AT_ASC) {
+      nodes {
+        id
+        title
+        startAt
+        endAt
+      }
+    }
+  }
+`;
+
+export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
+  mutation CreateCampaignResourceLink($campaignId: UUID!, $resourceId: UUID!) {
+    createCampaignResource(input: { campaignResource: { campaignId: $campaignId, resourceId: $resourceId } }) {
+      campaignResource {
+        campaignId
+        resourceId
+      }
+    }
+  }
+`;
+
+export const DELETE_CAMPAIGN_RESOURCE_MUTATION = gql`
+  mutation DeleteCampaignResourceLink($campaignId: UUID!, $resourceId: UUID!) {
+    deleteCampaignResourceByCampaignIdAndResourceId(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+      deletedCampaignResourceId
     }
   }
 `;

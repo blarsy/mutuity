@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 
 import { MyResourcesScreen } from "../../src/screens/resources/MyResourcesScreen";
 import type { MyResourceItem } from "../../src/services/graphql/resources";
@@ -28,7 +28,8 @@ const sampleResources: MyResourceItem[] = [
       label: "12 Rue des Fleurs, Lyon"
     },
     expiresAt: null,
-    updatedAt: "2026-07-10T12:30:00.000Z"
+    updatedAt: "2026-07-10T12:30:00.000Z",
+    categoryCodes: [1, 2]
   }
 ];
 
@@ -59,5 +60,21 @@ describe("MyResourcesScreen", () => {
     );
 
     expect(getByText("Loading...")).toBeTruthy();
+  });
+
+  it("opens the selected resource for editing when its card is pressed", () => {
+    const onEditResource = jest.fn();
+    const screen = render(
+      <MyResourcesScreen
+        creatorAccountId="00000000-0000-0000-0000-000000000111"
+        onAddResource={() => undefined}
+        onEditResource={onEditResource}
+        injectedResources={sampleResources}
+      />
+    );
+
+    fireEvent.press(screen.getByTestId("my-resource-card-res-001"));
+
+    expect(onEditResource).toHaveBeenCalledWith(sampleResources[0]);
   });
 });

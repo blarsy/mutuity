@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -28,15 +29,17 @@ import { useAuth } from "../auth/AuthProvider";
 import { LocationPicker, type LocationValue } from "../../components/LocationPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
+import { isCampaignActive } from "../campaigns/PublicCampaignsPage";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
 import { NeedClaimDialog } from "./NeedClaimDialog";
 import { TOURNAI_CITY_CENTRE, TOURNAI_CENTRE_ADDRESS, getBrowserLocation } from "./locationFallback";
 import {
   ViewerClaimOverviewDocument,
+  type PublicNeedCampaignFilterQuery,
   type ViewerClaimOverviewQuery,
   type ViewerClaimOverviewQueryVariables
 } from "../../graphql/generated";
-import { PUBLIC_NEEDS_QUERY } from "./needs.queries";
+import { PUBLIC_NEED_CAMPAIGN_FILTER_QUERY, PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { NeedCard } from "../ui/NeedCard";
 import { listingCardGridSx } from "../ui/listingCardGrid";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
@@ -134,6 +137,7 @@ export default function PublicNeedsPage() {
   const { session, status } = useAuth();
   const { t } = useTranslation("needs");
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
   const [explicitLocation, setExplicitLocation] = useState<NeedSearchLocation | undefined>(undefined);
   const [explicitLocationAddress, setExplicitLocationAddress] = useState("");
@@ -227,8 +231,29 @@ export default function PublicNeedsPage() {
     pollInterval: session.authenticated ? 15000 : 0,
     variables: { viewerId: session.account?.id ?? "" }
   });
+  const { data: campaignFilterData, error: campaignFilterError } = useQuery<PublicNeedCampaignFilterQuery>(
+    PUBLIC_NEED_CAMPAIGN_FILTER_QUERY
+  );
 
-  const needs = data?.searchNeeds?.nodes ?? [];
+  const searchNeeds = data?.searchNeeds?.nodes ?? [];
+  const campaignOptions = useMemo(() => {
+    const now = new Date();
+    return (campaignFilterData?.allCampaigns?.nodes ?? []).filter(campaign =>
+      isCampaignActive(now, campaign.startAt, campaign.endAt)
+    );
+  }, [campaignFilterData?.allCampaigns?.nodes]);
+  const needs = useMemo(() => {
+    if (selectedCampaignIds.length === 0) {
+      return searchNeeds;
+    }
+
+    const matchingNeedIds = new Set(
+      (campaignFilterData?.publicCampaignNeedLinks?.nodes ?? [])
+        .filter(link => selectedCampaignIds.includes(link.campaignId))
+        .map(link => link.needId)
+    );
+    return searchNeeds.filter(need => matchingNeedIds.has(need.id));
+  }, [campaignFilterData?.publicCampaignNeedLinks?.nodes, searchNeeds, selectedCampaignIds]);
   const sentClaims = claimOverviewData?.sentNeedClaims?.nodes ?? [];
   const receivedClaims = claimOverviewData?.receivedNeedClaims?.nodes ?? [];
   const myClaimsByNeedId = new Map(
@@ -249,6 +274,7 @@ export default function PublicNeedsPage() {
     });
 
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const campaignFilterErrorMessage = getUserFacingGraphQLErrorMessage(campaignFilterError);
 
   const toggleFilter = (key: ToggleFilterKey) => {
     setFilters(current => ({
@@ -315,6 +341,22 @@ export default function PublicNeedsPage() {
                     searchText: event.target.value
                   }));
                 }}
+              />
+
+              <Autocomplete
+                multiple
+                options={campaignOptions}
+                value={campaignOptions.filter(campaign => selectedCampaignIds.includes(campaign.id))}
+                getOptionLabel={campaign => campaign.title}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                onChange={(_event, campaigns) => setSelectedCampaignIds(campaigns.map(campaign => campaign.id))}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label={t("browse.campaignsLabel", { defaultValue: "Campaigns" })}
+                    placeholder={t("browse.allCampaignsLabel", { defaultValue: "All campaigns" })}
+                  />
+                )}
               />
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
@@ -414,6 +456,7 @@ export default function PublicNeedsPage() {
 
         {loading ? <Alert severity="info">{t("browse.loading")}</Alert> : null}
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
+        {campaignFilterErrorMessage ? <Alert severity="error">{campaignFilterErrorMessage}</Alert> : null}
 
         {!loading && !errorMessage && needs.length === 0 ? (
           <Alert severity="warning">{t("browse.empty")}</Alert>

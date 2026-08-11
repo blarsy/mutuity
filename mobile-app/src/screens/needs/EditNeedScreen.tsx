@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Icon, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   DateTimePickerField,
   FormTextInput,
+  PickerDialog,
   PicturesField,
   PriceSetter,
   PrimaryButton,
@@ -21,6 +22,7 @@ import {
 } from "../../services/graphql/needs";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 
 export interface EditNeedScreenProps {
   creatorAccountId: string | null;
@@ -71,6 +73,8 @@ export function EditNeedScreen({
     initialNeed?.requiredPeopleCount ? String(initialNeed.requiredPeopleCount) : ""
   );
   const [campaignId, setCampaignId] = useState(initialNeed?.campaignId ?? "");
+  const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>([]);
+  const [showCampaignDialog, setShowCampaignDialog] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
     initialNeed?.expiresAt ? new Date(initialNeed.expiresAt) : undefined
   );
@@ -79,6 +83,14 @@ export function EditNeedScreen({
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
+
+  useEffect(() => {
+    void fetchLinkableCampaigns()
+      .then(setCampaigns)
+      .catch(() => {
+        setSnackbarMessage(t("campaignsLoadError", { defaultValue: "We could not load campaigns." }));
+      });
+  }, [t]);
 
   const parsedRequiredPeopleCount = useMemo(() => {
     const parsed = Number.parseInt(requiredPeopleCountText, 10);
@@ -374,13 +386,20 @@ export function EditNeedScreen({
           />
         ) : null}
 
-        <FormTextInput
-          label={t("needCampaignIdLabel", { ns: "us2", defaultValue: "Campaign ID (optional)" })}
-          accessibilityLabel={t("needCampaignIdLabel", { ns: "us2", defaultValue: "Campaign ID (optional)" })}
-          value={campaignId}
-          onChangeText={setCampaignId}
-          editable={!initialNeed}
-        />
+        <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
+          <View style={styles.campaignRow}>
+            <View>
+              <Text variant="titleSmall" style={styles.sectionTitle}>
+                {t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
+              </Text>
+              <Text variant="bodySmall">
+                {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
+                  t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" })}
+              </Text>
+            </View>
+            <Icon source="chevron-right" size={20} />
+          </View>
+        </Pressable>
 
         <DateTimePickerField
           label={t("needExpiresAtLabel", { ns: "us2", defaultValue: "Expires at (ISO datetime)" })}
@@ -398,6 +417,23 @@ export function EditNeedScreen({
           disabled={saving}
         />
       </ScrollView>
+
+      <PickerDialog
+        visible={showCampaignDialog}
+        title={t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
+        items={[
+          { value: "", label: t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" }) },
+          ...campaigns.map((campaign) => ({ value: campaign.id, label: campaign.title }))
+        ]}
+        selectedValues={[campaignId]}
+        multiple={false}
+        onDismiss={() => setShowCampaignDialog(false)}
+        onConfirm={(values) => {
+          setCampaignId(values[0] ?? "");
+          setShowCampaignDialog(false);
+        }}
+        testID="need-campaign-dialog"
+      />
 
       <Snackbar visible={snackbarMessage !== null} onDismiss={() => setSnackbarMessage(null)}>
         {snackbarMessage ?? ""}
@@ -451,6 +487,11 @@ const styles = StyleSheet.create({
   },
   radioLabel: {
     fontFamily: appFontFamilies.general
+  },
+  campaignRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
   },
   warningText: {
     color: designTokens.colors.primary,

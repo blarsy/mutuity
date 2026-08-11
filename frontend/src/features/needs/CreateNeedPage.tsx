@@ -29,7 +29,9 @@ import {
   type NeedIntensityValue
 } from "./createNeed.validation";
 import {
+  CREATE_CAMPAIGN_NEED_MUTATION,
   CREATE_NEED_MUTATION,
+  DELETE_CAMPAIGN_NEED_MUTATION,
   LINKABLE_CAMPAIGN_OPTIONS_QUERY,
   NEED_EDIT_DETAIL_QUERY,
   UPDATE_NEED_MUTATION
@@ -56,6 +58,8 @@ export default function EditNeedPage() {
     UpdateNeedMutation,
     UpdateNeedMutationVariables
   >(UPDATE_NEED_MUTATION);
+  const [createCampaignNeed, { error: createCampaignNeedError }] = useMutation(CREATE_CAMPAIGN_NEED_MUTATION);
+  const [deleteCampaignNeed, { error: deleteCampaignNeedError }] = useMutation(DELETE_CAMPAIGN_NEED_MUTATION);
   const {
     data: campaignOptions,
     loading: campaignOptionsLoading,
@@ -76,15 +80,20 @@ export default function EditNeedPage() {
 
   const errorMessage = getUserFacingGraphQLErrorMessage(error)
     ?? getUserFacingGraphQLErrorMessage(updateError)
-    ?? getUserFacingGraphQLErrorMessage(editNeedError);
+    ?? getUserFacingGraphQLErrorMessage(editNeedError)
+    ?? getUserFacingGraphQLErrorMessage(createCampaignNeedError)
+    ?? getUserFacingGraphQLErrorMessage(deleteCampaignNeedError);
   const campaignOptionsErrorMessage = getUserFacingGraphQLErrorMessage(campaignOptionsError);
 
   const activeCampaignOptions = useMemo(() => {
     const now = new Date();
     const nodes = campaignOptions?.allCampaigns?.nodes ?? [];
 
-    return nodes.filter(node => isCampaignActive(now, node.startAt, node.endAt));
-  }, [campaignOptions?.allCampaigns?.nodes]);
+    const currentCampaignId = editNeedData?.needById?.campaignNeedsByNeedId.nodes[0]?.campaignId;
+    return nodes.filter(
+      node => node.id === currentCampaignId || isCampaignActive(now, node.startAt, node.endAt)
+    );
+  }, [campaignOptions?.allCampaigns?.nodes, editNeedData?.needById?.campaignNeedsByNeedId.nodes]);
 
   const initialValues = useMemo<CreateNeedValues>(() => {
     const editNeed = editNeedData?.needById;
@@ -141,6 +150,16 @@ export default function EditNeedPage() {
           ...normalizedVariables
         }
       });
+
+      const previousCampaignId = editNeedData?.needById?.campaignNeedsByNeedId.nodes[0]?.campaignId ?? "";
+      if (previousCampaignId !== values.campaignId) {
+        if (previousCampaignId) {
+          await deleteCampaignNeed({ variables: { campaignId: previousCampaignId, needId } });
+        }
+        if (values.campaignId) {
+          await createCampaignNeed({ variables: { campaignId: values.campaignId, needId } });
+        }
+      }
 
       await router.push("/needs/manage");
       return;
@@ -412,7 +431,6 @@ export default function EditNeedPage() {
                   value={values.campaignId}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  disabled={isEditMode}
                   helperText={campaignOptionsLoading ? t("form.loadingCampaigns") : t("form.campaignHelper")}
                 >
                   <MenuItem value="">{t("form.noCampaign")}</MenuItem>

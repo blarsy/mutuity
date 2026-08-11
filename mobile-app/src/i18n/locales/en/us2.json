@@ -29,6 +29,8 @@
   "requiredPeopleCountLabel": "Required people count",
   "requiredPeopleCountRequired": "At least 2 people are required.",
   "needCampaignIdLabel": "Campaign ID (optional)",
+  "needCampaignLabel": "Campaign (optional)",
+  "noCampaignLabel": "No campaign",
   "needExpiresAtLabel": "Expiration",
   "needTokenAmountRangeHint": "LEG_UP: 10-99, SHARING: 100-999, COMMITMENT: 1000-4999, RARE_CONTRIBUTION: 5000+",
   "needTokenAmountRangeError": "Token amount is outside the allowed range for this intensity.",

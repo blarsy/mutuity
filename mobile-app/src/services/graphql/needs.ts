@@ -10,7 +10,9 @@ import {
 } from "./generated";
 import {
   CLAIM_NEED_MUTATION,
+  CREATE_CAMPAIGN_NEED_MUTATION,
   CREATE_NEED_MUTATION,
+  DELETE_CAMPAIGN_NEED_MUTATION,
   MY_NEEDS_QUERY,
   RECEIVED_NEED_CLAIMS_QUERY,
   SEARCH_NEEDS_QUERY,
@@ -90,6 +92,9 @@ export interface NeedClaimItem {
 interface SearchNeedsQueryResult {
   allNeeds: {
     nodes: Need[];
+  } | null;
+  publicCampaignNeedLinks: {
+    nodes: Array<{ campaignId: string; needId: string }>;
   } | null;
 }
 
@@ -290,9 +295,16 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
   });
 
   const normalizedSearch = filters.searchTerm.trim().toLowerCase();
+  const campaignIdByNeedId = new Map(
+    (data?.publicCampaignNeedLinks?.nodes ?? []).map((link) => [String(link.needId), String(link.campaignId)])
+  );
   const sourceNeeds = (data?.allNeeds?.nodes ?? [])
     .map((need) => normalizeNeed(need, filters.currentAccountId ?? null))
     .filter((need): need is NeedItem => need !== null);
+
+  for (const need of sourceNeeds) {
+    need.campaignId = campaignIdByNeedId.get(need.id) ?? need.campaignId;
+  }
 
   return sourceNeeds.filter((need) => {
     const matchesSearch =
@@ -404,7 +416,29 @@ export async function updateNeedById(needId: string, input: UpsertNeedInput): Pr
     return null;
   }
 
-  return normalizeNeed(updatedNeed as Need, null);
+  const previousCampaignId =
+    typeof updatedNeed.campaignNeedsByNeedId?.nodes?.[0]?.campaignId === "string"
+      ? updatedNeed.campaignNeedsByNeedId.nodes[0].campaignId
+      : null;
+
+  if (previousCampaignId !== input.campaignId) {
+    if (previousCampaignId) {
+      await apolloClient.mutate({
+        mutation: DELETE_CAMPAIGN_NEED_MUTATION,
+        variables: { campaignId: previousCampaignId, needId }
+      });
+    }
+
+    if (input.campaignId) {
+      await apolloClient.mutate({
+        mutation: CREATE_CAMPAIGN_NEED_MUTATION,
+        variables: { campaignId: input.campaignId, needId }
+      });
+    }
+  }
+
+  const normalizedNeed = normalizeNeed(updatedNeed as Need, null);
+  return normalizedNeed ? { ...normalizedNeed, campaignId: input.campaignId } : null;
 }
 
 export async function claimNeedById(needId: string, message: string | null = null): Promise<ClaimedNeedRecord | null> {

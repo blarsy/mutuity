@@ -29,6 +29,8 @@
   "requiredPeopleCountLabel": "Nombre de personnes requises",
   "requiredPeopleCountRequired": "Au moins 2 personnes sont requises.",
   "needCampaignIdLabel": "ID de campagne (optionnel)",
+  "needCampaignLabel": "Campagne (facultatif)",
+  "noCampaignLabel": "Aucune campagne",
   "needExpiresAtLabel": "Expiration",
   "needTokenAmountRangeHint": "LEG_UP: 10-99, SHARING: 100-999, COMMITMENT: 1000-4999, RARE_CONTRIBUTION: 5000+",
   "needTokenAmountRangeError": "Le montant en jetons est hors plage pour cette intensite.",

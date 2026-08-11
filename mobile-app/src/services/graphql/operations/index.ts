@@ -60,6 +60,12 @@ export const SEARCH_RESOURCES_QUERY = gql`
         imageUrls
       }
     }
+    publicCampaignResourceLinks {
+      nodes {
+        campaignId
+        resourceId
+      }
+    }
   }
 `;
 
@@ -89,6 +95,16 @@ export const MY_RESOURCES_QUERY = gql`
         longitude
         expiresAt
         updatedAt
+        resourceCategoryAssignmentsByResourceId {
+          nodes {
+            categoryCode
+          }
+        }
+        campaignResourcesByResourceId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            campaignId
+          }
+        }
       }
       pageInfo {
         hasNextPage
@@ -120,6 +136,12 @@ export const SEARCH_NEEDS_QUERY = gql`
       pageInfo {
         hasNextPage
         endCursor
+      }
+    }
+    publicCampaignNeedLinks {
+      nodes {
+        campaignId
+        needId
       }
     }
   }
@@ -199,6 +221,19 @@ export const MY_CAMPAIGNS_QUERY = gql`
       pageInfo {
         hasNextPage
         endCursor
+      }
+    }
+  }
+`;
+
+export const LINKABLE_CAMPAIGNS_QUERY = gql`
+  query LinkableCampaigns {
+    linkableCampaigns {
+      nodes {
+        id
+        title
+        startAt
+        endAt
       }
     }
   }
@@ -310,7 +345,89 @@ export const UPDATE_RESOURCE_BY_ID_MUTATION = gql`
         longitude
         expiresAt
         updatedAt
+        resourceCategoryAssignmentsByResourceId {
+          nodes {
+            categoryCode
+          }
+        }
+        campaignResourcesByResourceId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            campaignId
+          }
+        }
       }
+    }
+  }
+`;
+
+export const RESOURCE_CATEGORIES_QUERY = gql`
+  query ResourceCategories {
+    allResourceCategories(condition: { isActive: true }, orderBy: CODE_ASC) {
+      nodes {
+        code
+        label
+        labelFr
+      }
+    }
+  }
+`;
+
+export const CREATE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION = gql`
+  mutation CreateResourceCategoryAssignment($resourceId: UUID!, $categoryCode: Int!) {
+    createResourceCategoryAssignment(
+      input: { resourceCategoryAssignment: { resourceId: $resourceId, categoryCode: $categoryCode } }
+    ) {
+      resourceCategoryAssignment {
+        categoryCode
+      }
+    }
+  }
+`;
+
+export const DELETE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION = gql`
+  mutation DeleteResourceCategoryAssignment($resourceId: UUID!, $categoryCode: Int!) {
+    deleteResourceCategoryAssignmentByResourceIdAndCategoryCode(
+      input: { resourceId: $resourceId, categoryCode: $categoryCode }
+    ) {
+      deletedResourceCategoryAssignmentId
+    }
+  }
+`;
+
+export const CREATE_CAMPAIGN_NEED_MUTATION = gql`
+  mutation CreateCampaignNeed($campaignId: UUID!, $needId: UUID!) {
+    createCampaignNeed(input: { campaignNeed: { campaignId: $campaignId, needId: $needId } }) {
+      campaignNeed {
+        campaignId
+        needId
+      }
+    }
+  }
+`;
+
+export const DELETE_CAMPAIGN_NEED_MUTATION = gql`
+  mutation DeleteCampaignNeed($campaignId: UUID!, $needId: UUID!) {
+    deleteCampaignNeedByCampaignIdAndNeedId(input: { campaignId: $campaignId, needId: $needId }) {
+      deletedCampaignNeedId
+    }
+  }
+`;
+
+export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
+  mutation CreateCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
+    createCampaignResource(input: { campaignResource: { campaignId: $campaignId, resourceId: $resourceId } }) {
+      campaignResource {
+        campaignId
+        resourceId
+      }
+    }
+  }
+`;
+
+export const DELETE_CAMPAIGN_RESOURCE_MUTATION = gql`
+  mutation DeleteCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
+    deleteCampaignResourceByCampaignIdAndResourceId(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+      deletedCampaignResourceId
     }
   }
 `;
@@ -331,6 +448,11 @@ export const UPDATE_NEED_BY_ID_MUTATION = gql`
         title
         description
         proposedTopesAmount
+        campaignNeedsByNeedId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+          nodes {
+            campaignId
+          }
+        }
       }
     }
   }

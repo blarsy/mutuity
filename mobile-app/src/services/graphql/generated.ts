@@ -8396,6 +8396,60 @@ export type PageInfo = {
   startCursor: Maybe<Scalars['Cursor']['output']>;
 };
 
+/** A `PublicCampaignNeedLinksRecord` edge in the connection. */
+export type PublicCampaignNeedLinkEdge = {
+  __typename: 'PublicCampaignNeedLinkEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `PublicCampaignNeedLinksRecord` at the end of the edge. */
+  node: PublicCampaignNeedLinksRecord;
+};
+
+/** A connection to a list of `PublicCampaignNeedLinksRecord` values. */
+export type PublicCampaignNeedLinksConnection = {
+  __typename: 'PublicCampaignNeedLinksConnection';
+  /** A list of edges which contains the `PublicCampaignNeedLinksRecord` and cursor to aid in pagination. */
+  edges: Array<PublicCampaignNeedLinkEdge>;
+  /** A list of `PublicCampaignNeedLinksRecord` objects. */
+  nodes: Array<PublicCampaignNeedLinksRecord>;
+  /** The count of *all* `PublicCampaignNeedLinksRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** The return type of our `publicCampaignNeedLinks` query. */
+export type PublicCampaignNeedLinksRecord = {
+  __typename: 'PublicCampaignNeedLinksRecord';
+  campaignId: Maybe<Scalars['UUID']['output']>;
+  needId: Maybe<Scalars['UUID']['output']>;
+};
+
+/** A `PublicCampaignResourceLinksRecord` edge in the connection. */
+export type PublicCampaignResourceLinkEdge = {
+  __typename: 'PublicCampaignResourceLinkEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `PublicCampaignResourceLinksRecord` at the end of the edge. */
+  node: PublicCampaignResourceLinksRecord;
+};
+
+/** A connection to a list of `PublicCampaignResourceLinksRecord` values. */
+export type PublicCampaignResourceLinksConnection = {
+  __typename: 'PublicCampaignResourceLinksConnection';
+  /** A list of edges which contains the `PublicCampaignResourceLinksRecord` and cursor to aid in pagination. */
+  edges: Array<PublicCampaignResourceLinkEdge>;
+  /** A list of `PublicCampaignResourceLinksRecord` objects. */
+  nodes: Array<PublicCampaignResourceLinksRecord>;
+  /** The count of *all* `PublicCampaignResourceLinksRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** The return type of our `publicCampaignResourceLinks` query. */
+export type PublicCampaignResourceLinksRecord = {
+  __typename: 'PublicCampaignResourceLinksRecord';
+  campaignId: Maybe<Scalars['UUID']['output']>;
+  resourceId: Maybe<Scalars['UUID']['output']>;
+};
+
 /** All input for the `publishResource` mutation. */
 export type PublishResourceInput = {
   canBeDelivered?: InputMaybe<Scalars['Boolean']['input']>;
@@ -8604,6 +8658,10 @@ export type Query = Node & {
   /** Reads a single `OperationalLog` using its globally unique `ID`. */
   operationalLog: Maybe<OperationalLog>;
   operationalLogById: Maybe<OperationalLog>;
+  /** Accepted need links for approved campaigns active at the current time. */
+  publicCampaignNeedLinks: Maybe<PublicCampaignNeedLinksConnection>;
+  /** Accepted resource links for approved campaigns active at the current time. */
+  publicCampaignResourceLinks: Maybe<PublicCampaignResourceLinksConnection>;
   /**
    * Exposes the root query type nested one level down. This is helpful for Relay 1
    * which can only query top level fields if they are in a particular form.
@@ -9500,6 +9558,26 @@ export type QueryOperationalLogArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryOperationalLogByIdArgs = {
   id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryPublicCampaignNeedLinksArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryPublicCampaignResourceLinksArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 

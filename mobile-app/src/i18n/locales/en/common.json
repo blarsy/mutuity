@@ -37,6 +37,10 @@
   "priceCommitment": "Commitment range",
   "pricePrecious": "Rare contribution range",
   "saveResource": "Save resource",
+  "resourceCategoryRequired": "Select at least one category.",
+  "campaignLabel": "Campaign (optional)",
+  "noCampaignLabel": "No campaign",
+  "campaignsLoadError": "We could not load campaigns.",
   "offlineResourceSaveWarningLabel": "Offline resource save warning",
   "offlineResourceSaveWarning": "Saving is unavailable while offline"
 }

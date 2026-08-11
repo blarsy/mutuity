@@ -155,14 +155,27 @@ export function MyResourcesScreen({
       ) : (
         <ScrollView contentContainerStyle={styles.listContent}>
           {sortedResources.map((resource) => (
-            <View key={resource.id} style={styles.resourceCard} testID={`my-resource-card-${resource.id}`}>
+            <Pressable
+              key={resource.id}
+              accessibilityRole="button"
+              accessibilityLabel={t("editResourceAccessibilityLabel", {
+                defaultValue: "Edit {{title}}",
+                title: resource.title
+              })}
+              onPress={() => onEditResource(resource)}
+              style={({ pressed }) => [styles.resourceCard, pressed && styles.resourceCardPressed]}
+              testID={`my-resource-card-${resource.id}`}
+            >
               <View style={styles.cardTopRow}>
                 <View style={styles.cardSpacer} />
                 <IconButton
                   icon="delete-outline"
                   size={28}
                   style={styles.cardDeleteButton}
-                  onPress={() => setPendingDeleteResource(resource)}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    setPendingDeleteResource(resource);
+                  }}
                   accessibilityLabel={t("deleteResourceLabel", { defaultValue: "Delete Resource" })}
                   disabled={deleting}
                 />
@@ -181,7 +194,7 @@ export function MyResourcesScreen({
               <Text variant="titleMedium" numberOfLines={2} style={styles.cardTitle}>
                 {resource.title}
               </Text>
-            </View>
+            </Pressable>
           ))}
         </ScrollView>
       )}
@@ -241,6 +254,9 @@ const styles = StyleSheet.create({
     gap: designTokens.spacing.sm,
     minHeight: 252,
     position: "relative"
+  },
+  resourceCardPressed: {
+    opacity: 0.8
   },
   cardTopRow: {
     flexDirection: "row",

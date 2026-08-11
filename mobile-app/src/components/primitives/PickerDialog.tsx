@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Checkbox, Divider, Text } from "react-native-paper";
+import { Button, Checkbox, Divider, RadioButton, Text } from "react-native-paper";
 
 import { designTokens } from "../../theme/tokens";
 import { ThemedDialog } from "./ThemedDialog";
@@ -18,6 +18,7 @@ export interface PickerDialogProps<TValue extends string = string> {
   selectedValues: TValue[];
   onConfirm: (selectedValues: TValue[]) => void;
   onDismiss: () => void;
+  multiple?: boolean;
   testID?: string | undefined;
 }
 
@@ -28,6 +29,7 @@ export function PickerDialog<TValue extends string = string>({
   selectedValues,
   onConfirm,
   onDismiss,
+  multiple = true,
   testID
 }: PickerDialogProps<TValue>): React.JSX.Element {
   const [draftSelectedValues, setDraftSelectedValues] = useState<TValue[]>(selectedValues);
@@ -41,6 +43,11 @@ export function PickerDialog<TValue extends string = string>({
   const selectedSet = useMemo(() => new Set(draftSelectedValues), [draftSelectedValues]);
 
   const toggleValue = (value: TValue): void => {
+    if (!multiple) {
+      setDraftSelectedValues([value]);
+      return;
+    }
+
     setDraftSelectedValues((previous) =>
       previous.includes(value) ? previous.filter((current) => current !== value) : [...previous, value]
     );
@@ -61,19 +68,30 @@ export function PickerDialog<TValue extends string = string>({
               <View key={item.value}>
                 {index > 0 ? <Divider /> : null}
                 <Pressable
-                  accessibilityRole="checkbox"
+                  accessibilityRole={multiple ? "checkbox" : "radio"}
                   accessibilityState={{ checked: selected, disabled: item.disabled }}
                   disabled={item.disabled}
                   onPress={() => toggleValue(item.value)}
                   style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
                 >
-                  <Checkbox
-                    status={selected ? "checked" : "unchecked"}
-                    onPress={() => toggleValue(item.value)}
-                    color={designTokens.colors.primary}
-                    uncheckedColor={designTokens.colors.primary}
-                    disabled={item.disabled ?? false}
-                  />
+                  {multiple ? (
+                    <Checkbox
+                      status={selected ? "checked" : "unchecked"}
+                      onPress={() => toggleValue(item.value)}
+                      color={designTokens.colors.primary}
+                      uncheckedColor={designTokens.colors.primary}
+                      disabled={item.disabled ?? false}
+                    />
+                  ) : (
+                    <RadioButton
+                      value={item.value}
+                      status={selected ? "checked" : "unchecked"}
+                      onPress={() => toggleValue(item.value)}
+                      color={designTokens.colors.primary}
+                      uncheckedColor={designTokens.colors.primary}
+                      disabled={item.disabled ?? false}
+                    />
+                  )}
                   <Text
                     variant="bodyMedium"
                     numberOfLines={1}

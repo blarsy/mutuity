@@ -162,6 +162,64 @@ describe("resource publishing integration", () => {
     });
   });
 
+  it("allows a resource owner to delete their resource", async () => {
+    const stamp = Date.now();
+    const creator = await seedDemoAccount({
+      identifier: `resource-delete-${stamp}@example.com`,
+      displayName: "Resource Deleter"
+    });
+    const sessionCookie = await loginAs(creator);
+    const resourceId = await withDbClient(async client => {
+      const result = await client.query<{ id: string }>(
+        `
+          insert into app_public.resource (
+            creator_account_id,
+            title,
+            description,
+            location,
+            latitude,
+            longitude,
+            intensity,
+            default_token_amount,
+            is_product
+          )
+          values ($1, $2, 'Integration test resource', 'Tournai', 50.6072, 3.3889, 'leg_up', 22, true)
+          returning id
+        `,
+        [creator.accountId, `Resource to delete ${stamp}`]
+      );
+
+      return result.rows[0].id;
+    });
+
+    const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: sessionCookie
+      },
+      body: JSON.stringify({
+        query: `
+          mutation DeleteResourceById($id: UUID!) {
+            deleteResourceById(input: { id: $id }) {
+              deletedResourceId
+            }
+          }
+        `,
+        variables: { id: resourceId }
+      })
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        deleteResourceById: {
+          deletedResourceId: resourceId
+        }
+      }
+    });
+  });
+
   it("rejects invalid publish payloads with a safe validation error", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
