@@ -383,7 +383,7 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
     <View style={styles.root}>
       {value ? (
         <View style={styles.valueRow}>
-          <Text variant="headlineSmall" numberOfLines={2} style={styles.valueText}>
+          <Text numberOfLines={2} style={styles.valueText}>
             {value.label}
           </Text>
           <View style={styles.actionsRow}>

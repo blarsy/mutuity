@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
+  FormFieldLabel,
   FormTextInput,
   ImagePickerField,
   PrimaryButton,
@@ -361,9 +362,9 @@ export function CampaignDetailScreen({
 
         {isApproved && pendingEntries.length > 0 && (
           <View style={styles.moderationBlock}>
-            <Text variant="titleSmall" style={styles.sectionTitle}>
+            <FormFieldLabel style={styles.sectionTitle}>
               {t("campaignPendingEntriesLabel", { ns: "us3", defaultValue: "Pending entries" })}
-            </Text>
+            </FormFieldLabel>
 
             {pendingEntries.map((entry) => {
               const isApproving = approvingEntries.includes(entry.id);
@@ -404,9 +405,9 @@ export function CampaignDetailScreen({
 
         {!isNew && (isApproved || isPending) && (
           <View style={styles.statsBlock}>
-            <Text variant="titleSmall" style={styles.sectionTitle}>
+            <FormFieldLabel style={styles.sectionTitle}>
               {t("campaignStatsLabel", { ns: "us3", defaultValue: "Campaign stats" })}
-            </Text>
+            </FormFieldLabel>
             <Text variant="bodySmall">
               {t("campaignResourcesCount", {
                 ns: "us3",

@@ -3,9 +3,9 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { FormFieldLabel } from "./FormFieldLabel";
 
 export interface DateTimePickerFieldProps {
   label: string;
@@ -66,7 +66,7 @@ export function DateTimePickerField({
 
   return (
     <View style={styles.root}>
-      <Text variant="titleSmall" style={styles.label}>{label}</Text>
+      <FormFieldLabel>{label}</FormFieldLabel>
 
       <View style={styles.row}>
         {allowClear && (
@@ -124,11 +124,6 @@ export function DateTimePickerField({
 const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.xs
-  },
-  label: {
-    fontFamily: appFontFamilies.altGeneral,
-    textTransform: "uppercase",
-    letterSpacing: 0.4
   },
   row: {
     flexDirection: "row",

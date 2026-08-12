@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { FormTextInput, ImagePickerField, PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
+import { FormFieldLabel, FormTextInput, ImagePickerField, PrimaryButton, ProximityLocationEditor, type ProximityLocationValue, ScreenContainer } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { useAuth } from "../../services/auth/AuthProvider";
@@ -190,6 +190,7 @@ export function MyProfileScreen({
           addFromLibraryLabel={t("addFromLibraryLabel", { defaultValue: "Pick from library" })}
         />
 
+        <FormFieldLabel style={styles.sectionLabel}>{t("locationLabel", { defaultValue: "Location" })}</FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
         <FormTextInput
@@ -291,6 +292,9 @@ const styles = StyleSheet.create({
     color: designTokens.colors.primary,
     fontFamily: appFontFamilies.general,
     fontSize: 12
+  },
+  sectionLabel: {
+    marginBottom: 2
   },
   actionsZone: {
     gap: designTokens.spacing.sm,

@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { AppSegmentedButtons, FormFieldLabel, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import {
   fetchNotificationPreferencesFromBackend,
   getNotificationPreferences,
@@ -139,7 +139,7 @@ export function MyPreferencesScreen({ accountId = null, onBack }: MyPreferencesS
 
           return (
             <View key={category} style={styles.preferenceCard}>
-              <Text variant="titleMedium" style={styles.preferenceTitle}>
+              <FormFieldLabel>
                 {t(`preferences.${category}.title`, {
                   defaultValue:
                     category === "chat"
@@ -148,7 +148,7 @@ export function MyPreferencesScreen({ accountId = null, onBack }: MyPreferencesS
                         ? "New resources"
                         : "Unread notifications"
                 })}
-              </Text>
+              </FormFieldLabel>
 
               <AppSegmentedButtons
                 value={currentState.deliveryMode}
@@ -177,9 +177,9 @@ export function MyPreferencesScreen({ accountId = null, onBack }: MyPreferencesS
 
               {currentState.deliveryMode === "summary" ? (
                 <View style={styles.summaryZone}>
-                  <Text variant="bodySmall" style={styles.summaryTitle}>
+                  <FormFieldLabel>
                     {t("preferencesSummaryCadence", { defaultValue: "Summary cadence" })}
-                  </Text>
+                  </FormFieldLabel>
                   <AppSegmentedButtons
                     value={String(currentState.summaryCadenceDays)}
                     onValueChange={(value) => {

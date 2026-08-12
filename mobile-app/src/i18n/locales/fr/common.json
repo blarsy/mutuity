@@ -38,7 +38,7 @@
   "pricePrecious": "Plage contribution rare",
   "saveResource": "Enregistrer la ressource",
   "resourceCategoryRequired": "Sélectionnez au moins une catégorie.",
-  "campaignLabel": "Campagne (facultatif)",
+  "campaignLabel": "Campagne",
   "noCampaignLabel": "Aucune campagne",
   "campaignsLoadError": "Impossible de charger les campagnes.",
   "offlineResourceSaveWarningLabel": "Avertissement de sauvegarde hors ligne",

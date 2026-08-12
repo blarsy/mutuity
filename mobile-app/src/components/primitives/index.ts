@@ -3,6 +3,7 @@ export { AuthDialog } from "./AuthDialog";
 export { AppSegmentedButtons } from "./AppSegmentedButtons";
 export { AppTextField } from "./AppTextField";
 export { FormTextInput } from "./FormTextInput";
+export { FormFieldLabel } from "./FormFieldLabel";
 export { DateTimePickerField } from "./DateTimePickerField";
 export { PickerDialog } from "./PickerDialog";
 export { ImagePickerField } from "./ImagePickerField";

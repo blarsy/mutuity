@@ -23,16 +23,16 @@ export interface FormTextInputProps
 
 function resolveTheme(theme: TextInputProps["theme"]): FormTextInputTheme {
   if (!theme) {
-    return { colors: { onSurfaceVariant: "#222" } };
+    return { colors: { onSurfaceVariant: "#222" } } as FormTextInputTheme;
   }
 
   return {
     ...theme,
     colors: {
       onSurfaceVariant: "#222",
-      ...theme.colors
+      ...(theme.colors ?? {})
     }
-  };
+  } as FormTextInputTheme;
 }
 
 export function FormTextInput({
@@ -75,7 +75,7 @@ export function FormTextInput({
 const styles = StyleSheet.create({
   input: {
     backgroundColor: "transparent",
-    marginTop: 10
+    marginTop: 0
   },
   content: {
     color: "#000"

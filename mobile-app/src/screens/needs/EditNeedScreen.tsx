@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
+  FormFieldLabel,
   FormTextInput,
   PickerDialog,
   PicturesField,
@@ -285,9 +286,9 @@ export function EditNeedScreen({
           numberOfLines={4}
         />
 
-        <Text variant="titleSmall" style={styles.sectionTitle}>
+        <FormFieldLabel>
           {t("needLocationLabel", { ns: "us2", defaultValue: "Location" })}
-        </Text>
+        </FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
         <PriceSetter
@@ -298,9 +299,9 @@ export function EditNeedScreen({
         />
 
         <View style={styles.intensityBlock}>
-          <Text variant="titleSmall" style={styles.sectionTitle}>
+          <FormFieldLabel>
             {t("needIntensityLabel", { ns: "us2", defaultValue: "Intensity" })}
-          </Text>
+          </FormFieldLabel>
           <IntensityToggleRow
             label={t("needIntensitySharing", { ns: "us2", defaultValue: "Sharing" })}
             selected={intensity === NeedIntensity.Sharing}
@@ -333,9 +334,9 @@ export function EditNeedScreen({
         </View>
 
         <View style={styles.intensityBlock}>
-          <Text variant="titleSmall" style={styles.sectionTitle}>
+          <FormFieldLabel>
             {t("needNatureLabel", { ns: "us2", defaultValue: "Need nature" })}
-          </Text>
+          </FormFieldLabel>
           <IntensityToggleRow
             label={t("needObjectRequiredLabel", { ns: "us2", defaultValue: "Object required" })}
             selected={objectRequired}
@@ -389,9 +390,9 @@ export function EditNeedScreen({
         <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
           <View style={styles.campaignRow}>
             <View>
-              <Text variant="titleSmall" style={styles.sectionTitle}>
+              <FormFieldLabel>
                 {t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
-              </Text>
+              </FormFieldLabel>
               <Text variant="bodySmall">
                 {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
                   t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" })}
@@ -474,11 +475,6 @@ const styles = StyleSheet.create({
     color: designTokens.colors.primary,
     fontFamily: appFontFamilies.general,
     fontSize: 12
-  },
-  sectionTitle: {
-    fontFamily: appFontFamilies.altGeneral,
-    textTransform: "uppercase",
-    letterSpacing: 0.4
   },
   radioRow: {
     flexDirection: "row",

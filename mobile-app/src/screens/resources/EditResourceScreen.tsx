@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   DateTimePickerField,
+  FormFieldLabel,
   FormTextInput,
   PickerDialog,
   PicturesField,
@@ -267,9 +268,9 @@ export function EditResourceScreen({
         <Pressable accessibilityRole="button" onPress={() => setShowCategoriesDialog(true)}>
           <View style={styles.categoryHeader}>
             <View>
-              <Text variant="titleSmall" style={styles.sectionTitle}>
+              <FormFieldLabel>
                 {t("categoriesTitle", { defaultValue: "Categories" })}
-              </Text>
+              </FormFieldLabel>
               {selectedCategoryCodes.length === 0 &&
                 <Text variant="bodySmall" style={styles.categorySubtitle}>
                     {t("noCategoriesSelectedLabel", { defaultValue: "No categories selected" })}
@@ -303,9 +304,9 @@ export function EditResourceScreen({
         <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
           <View style={styles.categoryHeader}>
             <View>
-              <Text variant="titleSmall" style={styles.sectionTitle}>
+              <FormFieldLabel>
                 {t("campaignLabel", { defaultValue: "Campaign (optional)" })}
-              </Text>
+              </FormFieldLabel>
               <Text variant="bodySmall" style={styles.categorySubtitle}>
                 {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
                   t("noCampaignLabel", { defaultValue: "No campaign" })}
@@ -317,7 +318,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <Text variant="titleSmall" style={styles.sectionTitle}>{t("natureLabel", { defaultValue: "Nature" })}</Text>
+        <FormFieldLabel>{t("natureLabel", { defaultValue: "Nature" })}</FormFieldLabel>
         <ToggleRow
           label={t("isProductLabel", { defaultValue: "Product" })}
           value={natureOptions.isProduct}
@@ -347,7 +348,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <Text variant="titleSmall" style={styles.sectionTitle}>{t("exchangeTypeLabel", { defaultValue: "Exchange type" })}</Text>
+        <FormFieldLabel>{t("exchangeTypeLabel", { defaultValue: "Exchange type" })}</FormFieldLabel>
         <ToggleRow
           label={t("canBeGiftedLabel", { defaultValue: "Can be gifted" })}
           value={exchangeOptions.canBeGifted}
@@ -361,7 +362,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <Text variant="titleSmall" style={styles.sectionTitle}>{t("transportLabel", { defaultValue: "Transport" })}</Text>
+        <FormFieldLabel>{t("transportLabel", { defaultValue: "Transport" })}</FormFieldLabel>
         <ToggleRow
           label={t("canBeTakenAwayLabel", { defaultValue: "Can be taken away" })}
           value={transportOptions.canBeTakenAway}
@@ -375,7 +376,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <Text variant="titleSmall" style={styles.sectionTitle}>{t("addressLabel", { defaultValue: "Address" })}</Text>
+        <FormFieldLabel>{t("addressLabel", { defaultValue: "Address" })}</FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
         {hasAttemptedSubmit && validationErrors.length > 0 ? (
@@ -433,10 +434,7 @@ export function EditResourceScreen({
       <PickerDialog
         visible={showCampaignDialog}
         title={t("campaignLabel", { defaultValue: "Campaign (optional)" })}
-        items={[
-          { value: "", label: t("noCampaignLabel", { defaultValue: "No campaign" }) },
-          ...campaigns.map((campaign) => ({ value: campaign.id, label: campaign.title }))
-        ]}
+        items={campaigns.map((campaign) => ({ value: campaign.id, label: campaign.title }))}
         selectedValues={[campaignId]}
         multiple={false}
         onDismiss={() => setShowCampaignDialog(false)}
@@ -481,11 +479,6 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
     letterSpacing: 0.6
-  },
-  sectionTitle: {
-    fontFamily: appFontFamilies.altGeneral,
-    textTransform: "uppercase",
-    letterSpacing: 0.4
   },
   headerRow: {
     flexDirection: "row",

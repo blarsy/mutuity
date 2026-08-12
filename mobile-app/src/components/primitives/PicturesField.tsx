@@ -2,9 +2,9 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { Icon, IconButton, Text } from "react-native-paper";
-
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { FormFieldLabel } from "./FormFieldLabel";
 
 export interface PicturesFieldProps {
   label: string;
@@ -89,7 +89,7 @@ export function PicturesField({
 
   return (
     <View accessible accessibilityLabel={accessibilityLabel ?? label} style={styles.root}>
-      <Text variant="titleSmall" style={styles.label}>{label}</Text>
+      <FormFieldLabel>{label}</FormFieldLabel>
 
       <View style={styles.actionsRow}>
         <Pressable
@@ -140,11 +140,6 @@ export function PicturesField({
 const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.xs
-  },
-  label: {
-    fontFamily: appFontFamilies.altGeneral,
-    textTransform: "uppercase",
-    letterSpacing: 0.4
   },
   actionsRow: {
     flexDirection: "row",
