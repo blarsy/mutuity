@@ -7,6 +7,8 @@ import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 import { SocialAuthButtons, type SocialProvider } from "./SocialAuthButtons";
 
+const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
+
 export interface LoginScreenProps {
   onSubmit: (value: { email: string; password: string }) => Promise<void> | void;
   onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
@@ -55,6 +57,11 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-login-email"
         />
@@ -68,6 +75,11 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
           }}
           secureTextEntry
           textContentType="password"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-login-password"
         />

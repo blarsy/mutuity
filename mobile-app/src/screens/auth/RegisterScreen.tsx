@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
+const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
+
 export interface RegisterScreenProps {
   onSubmit: (value: { fullName: string; email: string; password: string; confirmPassword: string }, context?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined }) => Promise<void> | void;
   initialValues?: { fullName?: string | undefined; email?: string | undefined };
@@ -41,6 +43,11 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           value={fullName}
           onChangeText={setFullName}
           textContentType="name"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-register-full-name"
         />
@@ -52,6 +59,11 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-register-email"
         />
@@ -62,6 +74,11 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           onChangeText={setPassword}
           secureTextEntry
           textContentType="newPassword"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-register-password"
         />
@@ -72,6 +89,11 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           onChangeText={setConfirmPassword}
           secureTextEntry
           textContentType="newPassword"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-register-confirm-password"
         />

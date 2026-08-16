@@ -3,6 +3,8 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import { TokenAmount } from "../../components/TokenAmount";
+import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
 import { PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -21,6 +23,86 @@ export interface BidsListScreenProps {
   onBackToMyHub?: () => void;
 }
 
+function formatElapsedFromDate(value: string | null, fallbackLabel: string): string {
+  if (!value) {
+    return fallbackLabel;
+  }
+
+  const updatedAt = new Date(value);
+  if (Number.isNaN(updatedAt.getTime())) {
+    return fallbackLabel;
+  }
+
+  const deltaInSeconds = Math.round((updatedAt.getTime() - Date.now()) / 1000);
+  const absSeconds = Math.abs(deltaInSeconds);
+  const formatter =
+    typeof Intl !== "undefined" && typeof Intl.RelativeTimeFormat === "function"
+      ? new Intl.RelativeTimeFormat(undefined, { numeric: "auto" })
+      : null;
+
+  const formatRelative = (amount: number, unit: Intl.RelativeTimeFormatUnit): string => {
+    if (formatter) {
+      return formatter.format(amount, unit);
+    }
+
+    if (amount === 0) {
+      return "now";
+    }
+
+    const absoluteAmount = Math.abs(amount);
+    const unitLabel = absoluteAmount === 1 ? unit : `${unit}s`;
+    return amount > 0 ? `in ${absoluteAmount} ${unitLabel}` : `${absoluteAmount} ${unitLabel} ago`;
+  };
+
+  if (absSeconds < 60) {
+    return formatRelative(deltaInSeconds, "second");
+  }
+
+  const deltaInMinutes = Math.round(deltaInSeconds / 60);
+  if (Math.abs(deltaInMinutes) < 60) {
+    return formatRelative(deltaInMinutes, "minute");
+  }
+
+  const deltaInHours = Math.round(deltaInMinutes / 60);
+  if (Math.abs(deltaInHours) < 24) {
+    return formatRelative(deltaInHours, "hour");
+  }
+
+  const deltaInDays = Math.round(deltaInHours / 24);
+  if (Math.abs(deltaInDays) < 7) {
+    return formatRelative(deltaInDays, "day");
+  }
+
+  const deltaInWeeks = Math.round(deltaInDays / 7);
+  if (Math.abs(deltaInWeeks) < 5) {
+    return formatRelative(deltaInWeeks, "week");
+  }
+
+  const deltaInMonths = Math.round(deltaInDays / 30);
+  if (Math.abs(deltaInMonths) < 12) {
+    return formatRelative(deltaInMonths, "month");
+  }
+
+  const deltaInYears = Math.round(deltaInDays / 365);
+  return formatRelative(deltaInYears, "year");
+}
+
+function formatFullDateTime(value: string | null, fallbackLabel: string): string {
+  if (!value) {
+    return fallbackLabel;
+  }
+
+  const updatedAt = new Date(value);
+  if (Number.isNaN(updatedAt.getTime())) {
+    return fallbackLabel;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "full",
+    timeStyle: "short"
+  }).format(updatedAt);
+}
+
 export function BidsListScreen({
   title,
   testID,
@@ -35,6 +117,7 @@ export function BidsListScreen({
   const [remoteBids, setRemoteBids] = useState<BidWorkspaceItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [openUpdatedTooltipBidId, setOpenUpdatedTooltipBidId] = useState<string | null>(null);
 
   const loadBids = useCallback(async (): Promise<void> => {
     setRemoteLoading(true);
@@ -110,9 +193,10 @@ export function BidsListScreen({
       ) : (
         <ScrollView contentContainerStyle={styles.listContent}>
           {filteredBids.map((bid) => {
-            const updatedAtLabel = bid.updatedAt
-              ? new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(bid.updatedAt))
-              : t("dateUnknown", { defaultValue: "Unknown date" });
+            const unknownDateLabel = t("dateUnknown", { defaultValue: "Unknown date" });
+            const updatedAtElapsedLabel = formatElapsedFromDate(bid.updatedAt, unknownDateLabel);
+            const updatedAtFullLabel = formatFullDateTime(bid.updatedAt, unknownDateLabel);
+            const isUpdatedTooltipOpen = openUpdatedTooltipBidId === bid.id;
 
             return (
               <Pressable
@@ -121,27 +205,44 @@ export function BidsListScreen({
                 accessibilityRole="button"
                 accessibilityLabel={`${bid.title}. ${bid.tokenAmount} token.`}
                 onPress={() => {
+                  setOpenUpdatedTooltipBidId(null);
                   if (onOpenBid) {
                     onOpenBid(bid);
                   }
                 }}
                 style={styles.bidCard}
               >
-                <Text variant="titleMedium" style={styles.bidTitle} numberOfLines={2}>
-                  {bid.title}
-                </Text>
-                <Text variant="bodySmall" style={styles.metaText}>
-                  {t("myBidsCounterparty", {
-                    defaultValue: "With {{name}}",
-                    name: bid.counterpartyDisplayName
-                  })}
-                </Text>
-                <Text variant="bodySmall" style={styles.metaText}>
-                  {t("myBidsTokenAmount", { defaultValue: "{{amount}} token", amount: bid.tokenAmount })}
-                </Text>
-                <Text variant="bodySmall" style={styles.metaText}>
-                  {t("myBidsLastUpdate", { defaultValue: "Updated {{date}}", date: updatedAtLabel })}
-                </Text>
+                <ListingContextHeader
+                  kind="resource"
+                  title={bid.title}
+                  authorDisplayName={bid.listingAuthorDisplayName ?? bid.counterpartyDisplayName}
+                  authorAvatarUrl={bid.listingAuthorAvatarUrl ?? null}
+                  listingImageUrl={bid.listingImageUrl ?? null}
+                />
+                <TokenAmount amount={bid.tokenAmount} containerStyle={styles.tokenAmount} />
+
+                <View style={styles.updatedAtWrap}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t("myBidsLastUpdate", { defaultValue: "Updated {{date}}", date: updatedAtElapsedLabel })}
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      setOpenUpdatedTooltipBidId((previous) => (previous === bid.id ? null : bid.id));
+                    }}
+                  >
+                    <Text variant="bodySmall" style={styles.metaText}>
+                      {t("myBidsLastUpdate", { defaultValue: "Updated {{date}}", date: updatedAtElapsedLabel })}
+                    </Text>
+                  </Pressable>
+
+                  {isUpdatedTooltipOpen ? (
+                    <View style={styles.tooltipBubble}>
+                      <Text variant="bodySmall" style={styles.tooltipText}>
+                        {updatedAtFullLabel}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
                 {!bid.isActive ? (
                   <Text variant="labelSmall" style={styles.inactiveLabel}>
                     {t("myBidsInactive", { defaultValue: "Inactive" })}
@@ -187,14 +288,28 @@ const styles = StyleSheet.create({
     padding: designTokens.spacing.md,
     gap: designTokens.spacing.xs
   },
-  bidTitle: {
-    fontFamily: appFontFamilies.altGeneral,
-    fontSize: 18,
-    lineHeight: 22
+  tokenAmount: {
+    alignSelf: "center"
+  },
+  updatedAtWrap: {
+    alignSelf: "flex-start",
+    position: "relative"
   },
   metaText: {
     fontFamily: appFontFamilies.general,
     opacity: 0.8
+  },
+  tooltipBubble: {
+    marginTop: designTokens.spacing.xs,
+    maxWidth: 260,
+    backgroundColor: "#1f1f1f",
+    borderRadius: designTokens.radius.sm,
+    paddingHorizontal: designTokens.spacing.sm,
+    paddingVertical: designTokens.spacing.xs
+  },
+  tooltipText: {
+    color: "#ffffff",
+    fontFamily: appFontFamilies.general
   },
   inactiveLabel: {
     marginTop: designTokens.spacing.xs,

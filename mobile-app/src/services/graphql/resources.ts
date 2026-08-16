@@ -18,6 +18,7 @@ import {
   DELETE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
   DELETE_RESOURCE_BY_ID_MUTATION,
   MY_RESOURCES_QUERY,
+  RESOURCE_BY_ID_QUERY,
   RESOURCE_CATEGORIES_QUERY,
   SEARCH_RESOURCES_QUERY,
   UPDATE_RESOURCE_BY_ID_MUTATION
@@ -151,6 +152,30 @@ export interface SearchResourceResultItem {
   canBeGifted: boolean;
   located: boolean;
   campaignIds: string[];
+  imageUrls: string[];
+}
+
+export interface ResourceDetailItem {
+  id: string;
+  title: string;
+  description: string;
+  creatorAccountId: string;
+  creatorDisplayName: string;
+  creatorAvatarUrl: string | null;
+  createdAt: string | null;
+  expiresAt: string | null;
+  isActive: boolean;
+  isProduct: boolean;
+  isService: boolean;
+  canBeTakenAway: boolean;
+  canBeDelivered: boolean;
+  canBeExchanged: boolean;
+  canBeGifted: boolean;
+  locationLabel: string;
+  latitude: number | null;
+  longitude: number | null;
+  defaultTokenAmount: number | null;
+  categoryLabels: string[];
   imageUrls: string[];
 }
 
@@ -361,6 +386,60 @@ export function normalizeSearchResource(
   };
 }
 
+function normalizeResourceDetail(resource: Resource): ResourceDetailItem | null {
+  if (!resource.id || !resource.title || !resource.creatorAccountId) {
+    return null;
+  }
+
+  return {
+    id: String(resource.id),
+    title: resource.title,
+    description: resource.description ?? "",
+    creatorAccountId: String(resource.creatorAccountId),
+    creatorDisplayName:
+      resource.accountByCreatorAccountId?.displayName
+      ?? resource.accountByCreatorAccountId?.externalSubject
+      ?? String(resource.creatorAccountId),
+    creatorAvatarUrl:
+      typeof resource.accountByCreatorAccountId?.avatarUrl === "string"
+        ? resource.accountByCreatorAccountId.avatarUrl
+        : null,
+    createdAt: typeof resource.createdAt === "string" ? resource.createdAt : null,
+    expiresAt: typeof resource.expiresAt === "string" ? resource.expiresAt : null,
+    isActive: resource.isActive ?? true,
+    isProduct: resource.isProduct ?? false,
+    isService: resource.isService ?? false,
+    canBeTakenAway: resource.canBeTakenAway ?? false,
+    canBeDelivered: resource.canBeDelivered ?? false,
+    canBeExchanged: resource.canBeExchanged ?? false,
+    canBeGifted: resource.canBeGiven ?? false,
+    locationLabel: resource.location ?? "",
+    latitude: parseBigFloat(resource.latitude),
+    longitude: parseBigFloat(resource.longitude),
+    defaultTokenAmount:
+      typeof resource.defaultTokenAmount === "number" ? resource.defaultTokenAmount : null,
+    categoryLabels: (resource.categoryLabels ?? []).filter(
+      (categoryLabel): categoryLabel is string => typeof categoryLabel === "string" && categoryLabel.length > 0
+    ),
+    imageUrls: toSafeImageUrls(resource.imageUrls)
+  };
+}
+
+export async function fetchResourceById(resourceId: string): Promise<ResourceDetailItem | null> {
+  const { data } = await apolloClient.query<Pick<Query, "resourceById">, { id: string }>({
+    query: RESOURCE_BY_ID_QUERY,
+    variables: { id: resourceId },
+    fetchPolicy: "network-only"
+  });
+
+  const resource = data?.resourceById;
+  if (!resource) {
+    return null;
+  }
+
+  return normalizeResourceDetail(resource as Resource);
+}
+
 export async function fetchSearchResources(filters: SearchResourcesFilters): Promise<SearchResourceResultItem[]> {
   const variables = buildSearchResourcesVariables(filters);
 
@@ -478,8 +557,8 @@ export async function updateResourceById(resourceId: string, input: UpsertResour
     data?.updateResourceById?.resource?.resourceCategoryAssignmentsByResourceId.nodes.map(
       (assignment) => assignment.categoryCode
     ) ?? [];
-  const previousCampaignId =
-    data?.updateResourceById?.resource?.campaignResourcesByResourceId?.nodes?.[0]?.campaignId ?? null;
+  const previousCampaignIdRaw = data?.updateResourceById?.resource?.campaignResourcesByResourceId?.nodes?.[0]?.campaignId;
+  const previousCampaignId = typeof previousCampaignIdRaw === "string" ? previousCampaignIdRaw : null;
   await syncResourceCategories(resourceId, previousCategoryCodes, input.categoryCodes);
   await syncResourceCampaign(resourceId, previousCampaignId, input.campaignId);
 

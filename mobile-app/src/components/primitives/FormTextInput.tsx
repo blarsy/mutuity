@@ -9,10 +9,6 @@ export interface FormTextInputProps
     TextInputProps,
     | "mode"
     | "dense"
-    | "underlineColor"
-    | "activeUnderlineColor"
-    | "textColor"
-    | "placeholderTextColor"
     | "selectionColor"
     | "theme"
   > {
@@ -41,6 +37,10 @@ export function FormTextInput({
   style,
   contentStyle,
   theme,
+  textColor = "#000",
+  placeholderTextColor = "#222",
+  underlineColor = "#222",
+  activeUnderlineColor = "#222",
   keyboardType,
   ...rest
 }: FormTextInputProps): React.JSX.Element {
@@ -60,10 +60,10 @@ export function FormTextInput({
       {...optionalProps}
       dense={inlineMode}
       mode="flat"
-      placeholderTextColor="#222"
-      textColor="#000"
-      underlineColor={inlineMode ? "transparent" : "#222"}
-      activeUnderlineColor={inlineMode ? "transparent" : "#222"}
+      placeholderTextColor={placeholderTextColor}
+      textColor={textColor}
+      underlineColor={inlineMode ? "transparent" : underlineColor}
+      activeUnderlineColor={inlineMode ? "transparent" : activeUnderlineColor}
       selectionColor="transparent"
       theme={resolveTheme(theme)}
       contentStyle={[styles.content, inlineMode ? styles.inlineContent : null, contentStyle]}

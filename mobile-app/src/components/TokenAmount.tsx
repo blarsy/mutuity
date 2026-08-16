@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 import TokenSymbolSvg from '../assets/img/TOKENS.svg';
 
@@ -7,13 +7,14 @@ export interface TokenAmountProps {
   amount: number;
   size?: number;
   textColor?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-export function TokenAmount({ amount, size = 36, textColor = "#2F241D" }: TokenAmountProps): React.JSX.Element {
+export function TokenAmount({ amount, size = 36, textColor = "#2F241D", containerStyle }: TokenAmountProps): React.JSX.Element {
   const safeAmount = Number.isFinite(amount) ? Math.max(0, Math.round(amount)) : 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       <Text variant="labelMedium" style={[styles.text, { color: textColor }]}>
         {safeAmount}
       </Text>

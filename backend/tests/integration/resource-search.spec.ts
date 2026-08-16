@@ -1,9 +1,98 @@
-import { TEST_BACKEND_URL, seedDemoAccount } from "./auth-test-helpers";
+import { Client } from "pg";
+
+import { TEST_BACKEND_URL, TEST_DATABASE_URL, seedDemoAccount } from "./auth-test-helpers";
 import { seedResource } from "./resource-test-helpers";
 
 jest.setTimeout(30000);
 
 describe("resource search integration", () => {
+  it("returns public resource details for legacy verified accounts without activation_verified_at", async () => {
+    const creator = await seedDemoAccount({
+      identifier: `resource-detail-legacy-${Date.now()}@example.com`,
+      displayName: "Legacy Verified Resource Creator"
+    });
+
+    const resource = await seedResource({
+      creatorAccount: creator,
+      title: `US1 Resource Detail Legacy ${Date.now()}`,
+      expiresAt: null
+    });
+
+    const client = new Client({
+      connectionString: TEST_DATABASE_URL
+    });
+
+    await client.connect();
+
+    try {
+      await client.query(
+        `
+          update app_public.account
+          set activation_verified_at = null
+          where id = $1
+        `,
+        [creator.accountId]
+      );
+    } finally {
+      await client.end();
+    }
+
+    const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: `
+          query ResourceDetail($resourceId: UUID!) {
+            resourceById(id: $resourceId) {
+              id
+              title
+              isActive
+              expiresAt
+              accountByCreatorAccountId {
+                id
+                displayName
+                externalSubject
+                avatarUrl
+              }
+            }
+          }
+        `,
+        variables: {
+          resourceId: resource.id
+        }
+      })
+    });
+
+    expect(response.status).toBe(200);
+
+    const payload = (await response.json()) as {
+      data?: {
+        resourceById: {
+          id: string;
+          title: string;
+          isActive: boolean;
+          expiresAt: string | null;
+          accountByCreatorAccountId: {
+            id: string;
+            displayName: string | null;
+            externalSubject: string;
+            avatarUrl: string | null;
+          } | null;
+        } | null;
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(payload.errors).toBeUndefined();
+    expect(payload.data?.resourceById?.id).toBe(resource.id);
+    expect(payload.data?.resourceById?.title).toBe(resource.title);
+    expect(payload.data?.resourceById?.expiresAt).toBeNull();
+    expect(payload.data?.resourceById?.accountByCreatorAccountId?.id).toBe(creator.accountId);
+    expect(payload.data?.resourceById?.accountByCreatorAccountId?.displayName).toBe(creator.displayName);
+  });
+
   it("returns only active, non-expired resources ordered by closeness and creation recency", async () => {
     const prefix = `US1 Resource Search ${Date.now()}`;
     const creator = await seedDemoAccount({

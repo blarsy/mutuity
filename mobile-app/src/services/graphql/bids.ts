@@ -26,6 +26,12 @@ function toBidWorkspaceItem(node: ResourceBid, direction: BidDirection): BidWork
     return null;
   }
 
+  const listingAuthor = node.resourceByResourceId?.accountByCreatorAccountId;
+  const listingImageUrl =
+    node.resourceByResourceId?.imageUrls?.find(
+      (value): value is string => typeof value === "string" && value.trim().length > 0
+    ) ?? null;
+
   const counterpartyDisplayName =
     direction === "sent"
       ? node.accountByRespondedByAccountId?.displayName ?? "Unknown"
@@ -36,6 +42,9 @@ function toBidWorkspaceItem(node: ResourceBid, direction: BidDirection): BidWork
     direction,
     title: node.resourceByResourceId?.title ?? node.message ?? "Untitled bid",
     counterpartyDisplayName,
+    listingAuthorDisplayName: listingAuthor?.displayName ?? null,
+    listingAuthorAvatarUrl: listingAuthor?.avatarUrl ?? null,
+    listingImageUrl,
     tokenAmount: node.proposedTokenAmount ?? 0,
     isActive: node.isActive ?? false,
     updatedAt: typeof node.updatedAt === "string" ? node.updatedAt : null

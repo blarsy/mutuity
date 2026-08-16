@@ -245,9 +245,28 @@ export const RESOURCE_BY_ID_QUERY = gql`
       id
       title
       description
+      creatorAccountId
+      createdAt
+      expiresAt
+      isActive
+      isProduct
+      isService
+      canBeTakenAway
+      canBeDelivered
+      canBeExchanged
+      canBeGiven
+      location
+      latitude
+      longitude
       defaultTokenAmount
       categoryLabels
       imageUrls
+      accountByCreatorAccountId {
+        id
+        displayName
+        externalSubject
+        avatarUrl
+      }
     }
   }
 `;
@@ -484,6 +503,12 @@ export const SENT_RESOURCE_BIDS_QUERY = gql`
         resourceByResourceId {
           id
           title
+          imageUrls
+          accountByCreatorAccountId {
+            id
+            displayName
+            avatarUrl
+          }
         }
         accountByBidderAccountId {
           id
@@ -515,6 +540,12 @@ export const RECEIVED_RESOURCE_BIDS_QUERY = gql`
         resourceByResourceId {
           id
           title
+          imageUrls
+          accountByCreatorAccountId {
+            id
+            displayName
+            avatarUrl
+          }
         }
         accountByBidderAccountId {
           id
@@ -632,6 +663,18 @@ export const RESOURCE_CONVERSATION_BY_ID_QUERY = gql`
   }
 `;
 
+export const RESOURCE_CONVERSATION_LOOKUP_QUERY = gql`
+  query ResourceConversationLookup($resourceId: UUID!, $ownerAccountId: UUID!, $bidderAccountId: UUID!) {
+    resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId(
+      resourceId: $resourceId
+      ownerAccountId: $ownerAccountId
+      bidderAccountId: $bidderAccountId
+    ) {
+      id
+    }
+  }
+`;
+
 export const RESOURCE_MESSAGES_QUERY = gql`
   query ResourceMessages($conversationId: UUID!, $first: Int, $after: Cursor) {
     allResourceMessages(
@@ -662,6 +705,30 @@ export const CREATE_RESOURCE_MESSAGE_MUTATION = gql`
         body
         createdAt
         senderAccountId
+      }
+    }
+  }
+`;
+
+export const SEND_RESOURCE_MESSAGE_DIRECT_MUTATION = gql`
+  mutation SendResourceMessageDirect($input: SendResourceMessageDirectInput!) {
+    sendResourceMessageDirect(input: $input) {
+      resourceMessage {
+        id
+        conversationId
+      }
+      resourceConversationByConversationId {
+        id
+      }
+    }
+  }
+`;
+
+export const SUBMIT_RESOURCE_BID_MUTATION = gql`
+  mutation SubmitResourceBid($input: SubmitResourceBidInput!) {
+    submitResourceBid(input: $input) {
+      resourceBid {
+        id
       }
     }
   }

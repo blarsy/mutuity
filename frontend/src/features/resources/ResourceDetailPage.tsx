@@ -130,6 +130,10 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     return <Alert severity="info">{t("detail.loading")}</Alert>;
   }
 
+  if (errorMessage) {
+    return <Alert severity="error">{errorMessage}</Alert>;
+  }
+
   if (!resource) {
     return <Alert severity="warning">{t("detail.notAvailable")}</Alert>;
   }
@@ -268,12 +272,6 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
         {isExpired ? (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {t("detail.expiredWarning")}
-          </Alert>
-        ) : null}
-
-        {errorMessage ? (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {errorMessage}
           </Alert>
         ) : null}
 

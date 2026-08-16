@@ -10,8 +10,10 @@ import {
   CHAT_CONVERSATIONS_QUERY,
   CREATE_RESOURCE_MESSAGE_MUTATION,
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
+  RESOURCE_CONVERSATION_LOOKUP_QUERY,
   RESOURCE_CONVERSATION_BY_ID_QUERY,
-  RESOURCE_MESSAGES_QUERY
+  RESOURCE_MESSAGES_QUERY,
+  SEND_RESOURCE_MESSAGE_DIRECT_MUTATION
 } from "./operations";
 import type { ChatConversationItem } from "../../screens/chat/ChatListScreen";
 import type { ChatDetailConversation, ChatMessageItem } from "../../screens/chat/ChatDetailScreen";
@@ -56,6 +58,24 @@ interface CreateResourceMessageMutationResult {
 
 interface MarkResourceMessagesReadMutationResult {
   markResourceMessagesRead: Pick<Mutation, "markResourceMessagesRead">["markResourceMessagesRead"];
+}
+
+interface ResourceConversationLookupQueryResult {
+  resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: {
+    id: string;
+  } | null;
+}
+
+interface SendResourceMessageDirectMutationResult {
+  sendResourceMessageDirect: {
+    resourceMessage: {
+      id: string;
+      conversationId: string;
+    } | null;
+    resourceConversationByConversationId: {
+      id: string;
+    } | null;
+  } | null;
 }
 
 export async function fetchChatConversations(): Promise<ChatConversationItem[]> {
@@ -163,4 +183,54 @@ export async function markConversationMessagesRead(conversationId: string): Prom
       }
     }
   });
+}
+
+export async function openOrCreateResourceConversation(params: {
+  resourceId: string;
+  ownerAccountId: string;
+  bidderAccountId: string;
+  initialMessage?: string;
+}): Promise<string> {
+  const lookupResult = await apolloClient.query<
+    ResourceConversationLookupQueryResult,
+    { resourceId: string; ownerAccountId: string; bidderAccountId: string }
+  >({
+    query: RESOURCE_CONVERSATION_LOOKUP_QUERY,
+    variables: {
+      resourceId: params.resourceId,
+      ownerAccountId: params.ownerAccountId,
+      bidderAccountId: params.bidderAccountId
+    },
+    fetchPolicy: "network-only"
+  });
+
+  const existingConversationId =
+    lookupResult.data?.resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId?.id;
+  if (existingConversationId) {
+    return existingConversationId;
+  }
+
+  const createResult = await apolloClient.mutate<
+    SendResourceMessageDirectMutationResult,
+    { input: { pResourceId: string; pOtherAccountId: string; pBody: string } }
+  >({
+    mutation: SEND_RESOURCE_MESSAGE_DIRECT_MUTATION,
+    variables: {
+      input: {
+        pResourceId: params.resourceId,
+        pOtherAccountId: params.ownerAccountId,
+        pBody: params.initialMessage?.trim() || "Hello"
+      }
+    }
+  });
+
+  const createdConversationId =
+    createResult.data?.sendResourceMessageDirect?.resourceConversationByConversationId?.id
+    ?? createResult.data?.sendResourceMessageDirect?.resourceMessage?.conversationId;
+
+  if (!createdConversationId) {
+    throw new Error("Unable to open or create conversation");
+  }
+
+  return createdConversationId;
 }

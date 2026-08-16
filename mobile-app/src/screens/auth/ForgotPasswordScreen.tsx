@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
+const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
+
 export interface ForgotPasswordScreenProps {
   onSubmit: (value: { email: string }) => Promise<void> | void;
   onSwitchToSignIn?: () => void;
@@ -33,6 +35,11 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onDismiss }: 
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
+          textColor="#ffffff"
+          placeholderTextColor="rgba(255, 255, 255, 0.78)"
+          underlineColor="rgba(255, 255, 255, 0.7)"
+          activeUnderlineColor="#ffffff"
+          theme={authInputTheme}
           style={styles.input}
           testID="auth-forgot-password-email"
         />

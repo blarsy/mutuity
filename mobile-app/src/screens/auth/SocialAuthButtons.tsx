@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     marginBottom: designTokens.spacing.xs
   },
   label: {
-    color: "#111111",
+    color: "#ffffff",
     textAlign: "center"
   },
   button: {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     minHeight: 46
   },
   helpText: {
-    color: "#111111",
+    color: "#ffffff",
     opacity: 0.75,
     textAlign: "center"
   }

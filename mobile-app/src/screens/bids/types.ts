@@ -5,6 +5,9 @@ export interface BidWorkspaceItem {
   direction: BidDirection;
   title: string;
   counterpartyDisplayName: string;
+  listingAuthorDisplayName?: string | null;
+  listingAuthorAvatarUrl?: string | null;
+  listingImageUrl?: string | null;
   tokenAmount: number;
   isActive: boolean;
   updatedAt: string | null;

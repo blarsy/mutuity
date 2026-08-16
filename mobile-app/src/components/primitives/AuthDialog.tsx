@@ -33,7 +33,7 @@ export function AuthDialog({ title, subtitle, accessibilityLabel, testID, onDism
               style={styles.dismissButton}
               hitSlop={8}
             >
-              <Icon source="close" size={36} color="#000000" />
+              <Icon source="close" size={36} color="#ffffff" />
             </Pressable>
           ) : null}
           <Text accessibilityRole="header" variant="titleLarge" style={styles.title}>
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     zIndex: 1
   },
   title: {
-    color: "#000000",
+    color: "#ffffff",
     fontSize: 38,
     lineHeight: 38,
     textTransform: "uppercase",
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: designTokens.spacing.sm
   },
   subtitle: {
-    color: "#111111",
+    color: "#ffffff",
     textAlign: "center",
     marginBottom: designTokens.spacing.md
   }

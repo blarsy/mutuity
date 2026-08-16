@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   x="0px"
+   y="0px"
+   viewBox="0 0 100 100"
+   version="1.1"
+   xml:space="preserve"
+   id="svg1"
+   sodipodi:docname="CAMERA.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs1" /><sodipodi:namedview
+   id="namedview1"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   inkscape:zoom="2.36"
+   inkscape:cx="50"
+   inkscape:cy="49.788136"
+   inkscape:window-width="1440"
+   inkscape:window-height="760"
+   inkscape:window-x="1366"
+   inkscape:window-y="25"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg1" />
+  <g
+   transform="matrix(3.1318856,0,0,3.2699758,-808.02648,-1523.0787)"
+   id="g1">
+    <path
+   d="m 286,471 h -3 l -1,-2 c -0.589,-1.163 -0.896,-2 -2,-2 h -12 c -1.104,0 -1.47,0.954 -2,2 l -1,2 h -3 c -2.209,0 -4,1.791 -4,4 v 16 c 0,2.209 1.791,4 4,4 h 24 c 2.209,0 4,-1.791 4,-4 v -16 c 0,-2.209 -1.791,-4 -4,-4 z m -12,20 c -4.418,0 -8,-3.582 -8,-8 0,-4.418 3.582,-8 8,-8 4.418,0 8,3.582 8,8 0,4.418 -3.582,8 -8,8 z m 0,-14 c -3.313,0 -6,2.687 -6,6 0,3.313 2.687,6 6,6 3.313,0 6,-2.687 6,-6 0,-3.313 -2.687,-6 -6,-6 z"
+   id="camera" />
+  </g>
+</svg>
