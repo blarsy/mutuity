@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Dimensions, Linking, Pressable, StyleSheet, View } from "react-native";
+import { Dimensions, Linking, Pressable, StatusBar, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -711,7 +711,8 @@ function RootNavigator(): React.JSX.Element {
   const currentHeaderTitle = headerTitleByRoute[activeRouteName];
   return (
     <SafeAreaProvider>
-      <SafeAreaView edges={["top", "right", "left"]} style={styles.fill}>
+      <StatusBar backgroundColor={designTokens.colors.primary} barStyle="light-content" />
+      <SafeAreaView edges={["top", "right", "left"]} style={styles.rootSafeArea}>
         <Appbar.Header mode="center-aligned" statusBarHeight={0} style={styles.header}>
           <View style={styles.headerLeadingActions}>
             {activeRouteName === "MyHub" ? (
@@ -915,6 +916,10 @@ export function AppNavigatorRoot(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  rootSafeArea: {
+    flex: 1,
+    backgroundColor: designTokens.colors.primary
+  },
   fill: {
     flex: 1
   },
