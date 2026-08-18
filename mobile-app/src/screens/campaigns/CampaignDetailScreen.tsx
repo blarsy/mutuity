@@ -80,6 +80,8 @@ export function CampaignDetailScreen({
   const [approvingEntries, setApprovingEntries] = useState<string[]>([]);
   const [rejectingEntries, setRejectingEntries] = useState<string[]>([]);
 
+  const withRequiredMark = (label: string): string => `${label} *`;
+
   const isCreator = creatorAccountId === campaign.creatorAccountId;
   const isApproved = campaign.moderationStatus === CampaignModerationStatus.Approved;
   const isPending = campaign.moderationStatus === CampaignModerationStatus.Pending;
@@ -252,14 +254,14 @@ export function CampaignDetailScreen({
         {(isCreator || isNew) && (isPending || isNew) ? (
           <>
             <FormTextInput
-              label={t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" })}
+              label={withRequiredMark(t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" }))}
               accessibilityLabel={t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" })}
               value={title}
               onChangeText={setTitle}
             />
 
             <FormTextInput
-              label={t("campaignThemeLabel", { ns: "us3", defaultValue: "Theme" })}
+              label={withRequiredMark(t("campaignThemeLabel", { ns: "us3", defaultValue: "Theme" }))}
               accessibilityLabel={t("campaignThemeLabel", { ns: "us3", defaultValue: "Theme" })}
               value={theme}
               onChangeText={setTheme}
@@ -268,7 +270,7 @@ export function CampaignDetailScreen({
             />
 
             <FormTextInput
-              label={t("campaignDescriptionLabel", { ns: "us3", defaultValue: "Description" })}
+              label={withRequiredMark(t("campaignDescriptionLabel", { ns: "us3", defaultValue: "Description" }))}
               accessibilityLabel={t("campaignDescriptionLabel", { ns: "us3", defaultValue: "Description" })}
               value={description}
               onChangeText={setDescription}
@@ -286,7 +288,7 @@ export function CampaignDetailScreen({
             />
 
             <DateTimePickerField
-              label={t("campaignStartDateLabel", { ns: "us3", defaultValue: "Start date" })}
+              label={withRequiredMark(t("campaignStartDateLabel", { ns: "us3", defaultValue: "Start date" }))}
               value={startAt}
               onChange={(nextValue: Date | undefined) => {
                 if (nextValue) setStartAt(nextValue);
@@ -296,7 +298,7 @@ export function CampaignDetailScreen({
             />
 
             <DateTimePickerField
-              label={t("campaignAirdropDateLabel", { ns: "us3", defaultValue: "Airdrop date" })}
+              label={withRequiredMark(t("campaignAirdropDateLabel", { ns: "us3", defaultValue: "Airdrop date" }))}
               value={airdropAt}
               onChange={(nextValue: Date | undefined) => {
                 if (nextValue) setAirdropAt(nextValue);
@@ -306,7 +308,7 @@ export function CampaignDetailScreen({
             />
 
             <DateTimePickerField
-              label={t("campaignEndDateLabel", { ns: "us3", defaultValue: "End date" })}
+              label={withRequiredMark(t("campaignEndDateLabel", { ns: "us3", defaultValue: "End date" }))}
               value={endAt}
               onChange={(nextValue: Date | undefined) => {
                 if (nextValue) setEndAt(nextValue);
@@ -316,7 +318,7 @@ export function CampaignDetailScreen({
             />
 
             <FormTextInput
-              label={t("campaignRewardsMultiplierLabel", { ns: "us3", defaultValue: "Rewards multiplier" })}
+              label={withRequiredMark(t("campaignRewardsMultiplierLabel", { ns: "us3", defaultValue: "Rewards multiplier" }))}
               accessibilityLabel={t("campaignRewardsMultiplierLabel", { ns: "us3", defaultValue: "Rewards multiplier" })}
               value={rewardsMultiplier}
               onChangeText={setRewardsMultiplier}
@@ -324,7 +326,7 @@ export function CampaignDetailScreen({
             />
 
             <FormTextInput
-              label={t("campaignAirdropAmountLabel", { ns: "us3", defaultValue: "Airdrop amount" })}
+              label={withRequiredMark(t("campaignAirdropAmountLabel", { ns: "us3", defaultValue: "Airdrop amount" }))}
               accessibilityLabel={t("campaignAirdropAmountLabel", { ns: "us3", defaultValue: "Airdrop amount" })}
               value={airdropAmount}
               onChangeText={setAirdropAmount}

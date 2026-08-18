@@ -76,6 +76,8 @@ export function EditResourceScreen({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
+  const withRequiredMark = (label: string): string => `${label} *`;
+
   const isOffline = !isConnected || !isInternetReachable;
 
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
@@ -248,7 +250,7 @@ export function EditResourceScreen({
         />
 
         <FormTextInput
-          label={t("resourceTitleEditLabel", { defaultValue: "Title" })}
+          label={withRequiredMark(t("resourceTitleEditLabel", { defaultValue: "Title" }))}
           accessibilityLabel={t("resourceTitleEditLabel", { defaultValue: "Title" })}
           value={title}
           onChangeText={setTitle}
@@ -269,7 +271,7 @@ export function EditResourceScreen({
           <View style={styles.categoryHeader}>
             <View>
               <FormFieldLabel>
-                {t("categoriesTitle", { defaultValue: "Categories" })}
+                {withRequiredMark(t("categoriesTitle", { defaultValue: "Categories" }))}
               </FormFieldLabel>
               {selectedCategoryCodes.length === 0 &&
                 <Text variant="bodySmall" style={styles.categorySubtitle}>
@@ -318,7 +320,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <FormFieldLabel>{t("natureLabel", { defaultValue: "Nature" })}</FormFieldLabel>
+        <FormFieldLabel>{withRequiredMark(t("natureLabel", { defaultValue: "Nature" }))}</FormFieldLabel>
         <ToggleRow
           label={t("isProductLabel", { defaultValue: "Product" })}
           value={natureOptions.isProduct}
@@ -348,7 +350,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <FormFieldLabel>{t("exchangeTypeLabel", { defaultValue: "Exchange type" })}</FormFieldLabel>
+        <FormFieldLabel>{withRequiredMark(t("exchangeTypeLabel", { defaultValue: "Exchange type" }))}</FormFieldLabel>
         <ToggleRow
           label={t("canBeGiftedLabel", { defaultValue: "Can be gifted" })}
           value={exchangeOptions.canBeGifted}
@@ -362,7 +364,11 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <FormFieldLabel>{t("transportLabel", { defaultValue: "Transport" })}</FormFieldLabel>
+        <FormFieldLabel>
+          {natureOptions.isProduct
+            ? withRequiredMark(t("transportLabel", { defaultValue: "Transport" }))
+            : t("transportLabel", { defaultValue: "Transport" })}
+        </FormFieldLabel>
         <ToggleRow
           label={t("canBeTakenAwayLabel", { defaultValue: "Can be taken away" })}
           value={transportOptions.canBeTakenAway}
@@ -376,7 +382,11 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <FormFieldLabel>{t("addressLabel", { defaultValue: "Address" })}</FormFieldLabel>
+        <FormFieldLabel>
+          {transportOptions.canBeTakenAway
+            ? withRequiredMark(t("addressLabel", { defaultValue: "Address" }))
+            : t("addressLabel", { defaultValue: "Address" })}
+        </FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
         {hasAttemptedSubmit && validationErrors.length > 0 ? (

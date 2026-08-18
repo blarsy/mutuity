@@ -481,15 +481,18 @@ export function ResourceDetailScreen({
             {resolvedResource.locationLabel || t("noAddressDefinedLabel", { defaultValue: "No address defined" })}
           </Text>
           {hasCoordinates && mapRegion ? (
-            <MapView
-              showsUserLocation={false}
-              style={styles.locationMap}
-              region={mapRegion}
-              zoomEnabled={false}
-              {...mapProviderProps}
-            >
-              <Marker coordinate={{ latitude: resolvedResource.latitude!, longitude: resolvedResource.longitude! }} />
-            </MapView>
+            <View style={styles.locationMapContainer}>
+              <MapView
+                showsUserLocation={false}
+                style={styles.locationMap}
+                mapType="standard"
+                region={mapRegion}
+                zoomEnabled={false}
+                {...mapProviderProps}
+              >
+                <Marker coordinate={{ latitude: resolvedResource.latitude!, longitude: resolvedResource.longitude! }} />
+              </MapView>
+            </View>
           ) : null}
         </View>
       </DetailField>
@@ -672,8 +675,14 @@ const styles = StyleSheet.create({
   },
   locationMap: {
     width: "100%",
+    height: 220
+  },
+  locationMapContainer: {
+    width: "100%",
     height: 220,
-    borderRadius: IMAGE_BORDER_RADIUS
+    borderRadius: IMAGE_BORDER_RADIUS,
+    overflow: "hidden",
+    backgroundColor: "#ffffff"
   },
   focusedImageOverlay: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { Pressable, View, type GestureResponderEvent } from "react-native";
 import { Icon } from "react-native-paper";
 
@@ -19,19 +19,30 @@ export function PriceGradientBar({
   onPercentChanged
 }: PriceGradientBarProps): React.JSX.Element {
   const widthRef = useRef(1);
+  const lastPercentRef = useRef<number | null>(null);
   const displayPercent = Math.max(0, Math.min(percent, 100));
   const markerWidth = 30;
   const markerTop = Math.max(0, barHeight - 8);
   const markerDeltaToCenter = ((markerWidth / 4) / widthRef.current) * 100;
-  const markerLeft = Math.max(
-    Math.min(displayPercent - markerDeltaToCenter, 100 - markerDeltaToCenter * 2),
-    markerDeltaToCenter
+  const markerLeft = useMemo(
+    () =>
+      Math.max(
+        Math.min(displayPercent - markerDeltaToCenter, 100 - markerDeltaToCenter * 2),
+        markerDeltaToCenter
+      ),
+    [displayPercent, markerDeltaToCenter]
   );
 
   const handleLayout = (event: {
     nativeEvent: { layout: { width: number } };
   }): void => {
-    widthRef.current = Math.max(1, event.nativeEvent.layout.width);
+    const nextWidth = Math.max(1, event.nativeEvent.layout.width);
+    if (widthRef.current === nextWidth && lastPercentRef.current === displayPercent) {
+      return;
+    }
+
+    widthRef.current = nextWidth;
+    lastPercentRef.current = displayPercent;
     onPercentChanged(displayPercent);
   };
 
@@ -48,7 +59,13 @@ export function PriceGradientBar({
       nextPercent = 100;
     }
 
-    onPercentChanged(nextPercent);
+    const normalizedPercent = Number(nextPercent.toFixed(2));
+    if (lastPercentRef.current === normalizedPercent) {
+      return;
+    }
+
+    lastPercentRef.current = normalizedPercent;
+    onPercentChanged(normalizedPercent);
   };
 
   return (

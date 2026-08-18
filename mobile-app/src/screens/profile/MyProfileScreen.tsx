@@ -65,6 +65,8 @@ export function MyProfileScreen({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
+  const withRequiredMark = (label: string): string => `${label} *`;
+
   const hasInjectedProfile = profile !== undefined;
 
   const loadProfile = useCallback(async (): Promise<void> => {
@@ -168,7 +170,7 @@ export function MyProfileScreen({
 
       <ScrollView contentContainerStyle={styles.content}>
         <FormTextInput
-          label={t("fullNameLabel", { defaultValue: "Full name" })}
+          label={withRequiredMark(t("fullNameLabel", { defaultValue: "Full name" }))}
           accessibilityLabel={t("fullNameLabel", { defaultValue: "Full name" })}
           value={displayName}
           onChangeText={setDisplayName}

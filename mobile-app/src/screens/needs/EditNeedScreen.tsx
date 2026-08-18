@@ -83,6 +83,8 @@ export function EditNeedScreen({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
+  const withRequiredMark = (label: string): string => `${label} *`;
+
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
 
   useEffect(() => {
@@ -271,7 +273,7 @@ export function EditNeedScreen({
         />
 
         <FormTextInput
-          label={t("needTitleLabel", { ns: "us2", defaultValue: "Title" })}
+          label={withRequiredMark(t("needTitleLabel", { ns: "us2", defaultValue: "Title" }))}
           accessibilityLabel={t("needTitleLabel", { ns: "us2", defaultValue: "Title" })}
           value={title}
           onChangeText={setTitle}
@@ -287,7 +289,7 @@ export function EditNeedScreen({
         />
 
         <FormFieldLabel>
-          {t("needLocationLabel", { ns: "us2", defaultValue: "Location" })}
+          {withRequiredMark(t("needLocationLabel", { ns: "us2", defaultValue: "Location" }))}
         </FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
@@ -335,7 +337,7 @@ export function EditNeedScreen({
 
         <View style={styles.intensityBlock}>
           <FormFieldLabel>
-            {t("needNatureLabel", { ns: "us2", defaultValue: "Need nature" })}
+            {withRequiredMark(t("needNatureLabel", { ns: "us2", defaultValue: "Need nature" }))}
           </FormFieldLabel>
           <IntensityToggleRow
             label={t("needObjectRequiredLabel", { ns: "us2", defaultValue: "Object required" })}
@@ -361,7 +363,7 @@ export function EditNeedScreen({
 
         {toolingRequired ? (
           <FormTextInput
-            label={t("requiredToolingTextLabel", { ns: "us2", defaultValue: "Required tooling" })}
+            label={withRequiredMark(t("requiredToolingTextLabel", { ns: "us2", defaultValue: "Required tooling" }))}
             accessibilityLabel={t("requiredToolingTextLabel", { ns: "us2", defaultValue: "Required tooling" })}
             value={requiredToolingText}
             onChangeText={setRequiredToolingText}
@@ -370,7 +372,7 @@ export function EditNeedScreen({
 
         {competenceRequired ? (
           <FormTextInput
-            label={t("requiredCompetenceTextLabel", { ns: "us2", defaultValue: "Required competence" })}
+            label={withRequiredMark(t("requiredCompetenceTextLabel", { ns: "us2", defaultValue: "Required competence" }))}
             accessibilityLabel={t("requiredCompetenceTextLabel", { ns: "us2", defaultValue: "Required competence" })}
             value={requiredCompetenceText}
             onChangeText={setRequiredCompetenceText}
@@ -379,7 +381,7 @@ export function EditNeedScreen({
 
         {multiplePeopleRequired ? (
           <FormTextInput
-            label={t("requiredPeopleCountLabel", { ns: "us2", defaultValue: "Required people count" })}
+            label={withRequiredMark(t("requiredPeopleCountLabel", { ns: "us2", defaultValue: "Required people count" }))}
             accessibilityLabel={t("requiredPeopleCountLabel", { ns: "us2", defaultValue: "Required people count" })}
             value={requiredPeopleCountText}
             onChangeText={setRequiredPeopleCountText}
