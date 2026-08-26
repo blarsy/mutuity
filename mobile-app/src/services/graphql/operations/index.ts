@@ -795,6 +795,15 @@ export const ACCOUNT_PROFILE_QUERY = gql`
       latitude
       longitude
       preferredLanguage
+      profileLinks
+    }
+    allResources(condition: { creatorAccountId: $id, isActive: true }, first: 10, orderBy: ID_DESC) {
+      nodes {
+        id
+        title
+        description
+        imageUrls
+      }
     }
   }
 `;
@@ -810,6 +819,7 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
         location
         latitude
         longitude
+        profileLinks
       }
     }
   }

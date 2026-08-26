@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   title: {
     color: "#ffffff",
     fontSize: 38,
-    lineHeight: 38,
+    lineHeight: 46,
     textTransform: "uppercase",
     textAlign: "center",
     fontFamily: appFontFamilies.title,

@@ -63,6 +63,28 @@ interface DeleteResourceByIdMutationVariables {
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function isUuidLike(value: string | null | undefined): boolean {
+  return typeof value === "string" && UUID_PATTERN.test(value.trim());
+}
+
+function resolveCreatorDisplayName(
+  account: { displayName?: string | null; externalSubject?: string | null } | null | undefined,
+  creatorAccountId: string
+): string {
+  console.log("account:", account);
+  const displayName = account?.displayName?.trim();
+  if (displayName && !isUuidLike(displayName)) {
+    return displayName;
+  }
+
+  const externalSubject = account?.externalSubject?.trim();
+  if (externalSubject && !isUuidLike(externalSubject)) {
+    return externalSubject;
+  }
+
+  return creatorAccountId && !isUuidLike(creatorAccountId) ? creatorAccountId : "Unknown account";
+}
+
 export interface SearchResourcesFilters {
   searchTerm: string;
   hasReferenceLocation: boolean;
@@ -390,16 +412,16 @@ function normalizeResourceDetail(resource: Resource): ResourceDetailItem | null 
   if (!resource.id || !resource.title || !resource.creatorAccountId) {
     return null;
   }
-
+  console.log("resource:", resource);
   return {
     id: String(resource.id),
     title: resource.title,
     description: resource.description ?? "",
     creatorAccountId: String(resource.creatorAccountId),
-    creatorDisplayName:
-      resource.accountByCreatorAccountId?.displayName
-      ?? resource.accountByCreatorAccountId?.externalSubject
-      ?? String(resource.creatorAccountId),
+    creatorDisplayName: resolveCreatorDisplayName(
+      resource.accountByCreatorAccountId,
+      String(resource.creatorAccountId)
+    ),
     creatorAvatarUrl:
       typeof resource.accountByCreatorAccountId?.avatarUrl === "string"
         ? resource.accountByCreatorAccountId.avatarUrl

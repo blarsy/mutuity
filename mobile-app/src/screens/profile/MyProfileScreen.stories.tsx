@@ -14,7 +14,19 @@ const SAMPLE_PROFILE: MyProfileRecord = {
     latitude: 45.7640,
     longitude: 4.8357
   },
-  bio: "Community organizer and bike enthusiast. Happy to help with repairs and mobility projects."
+  bio: "Community organizer and bike enthusiast. Happy to help with repairs and mobility projects.",
+  profileLinks: [
+    {
+      type: "website",
+      label: "Website",
+      url: "https://example.com"
+    },
+    {
+      type: "instagram",
+      label: "Instagram",
+      url: "https://instagram.com/example"
+    }
+  ]
 };
 
 const meta = {

@@ -7,18 +7,95 @@ import {
   type UpdateAccountByIdInput
 } from "./generated";
 import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "./operations";
-import type { MyProfileRecord } from "../../screens/profile/MyProfileScreen";
+import type {
+  MyProfileRecord,
+  PublicProfileLink,
+  PublicProfileResource
+} from "../../screens/profile/MyProfileScreen";
 import type { ProximityLocationValue } from "../../components/primitives/ProximityLocationEditor";
 
 interface AccountProfileQueryResult {
   accountById: Pick<Query, "accountById">["accountById"];
+  allResources?: {
+    nodes?: Array<{
+      id?: string | null;
+      title?: string | null;
+      description?: string | null;
+      imageUrls?: Array<string | null> | null;
+    }> | null;
+  } | null;
 }
 
 interface UpdateAccountProfileMutationResult {
   updateAccountById: Pick<Mutation, "updateAccountById">["updateAccountById"];
 }
 
-function toProfileRecord(account: NonNullable<AccountProfileQueryResult["accountById"]>): MyProfileRecord {
+function normalizeProfileLinks(value: unknown): PublicProfileLink[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((link) => {
+      if (!link || typeof link !== "object") {
+        return null;
+      }
+
+      const candidate = link as { type?: unknown; label?: unknown; url?: unknown };
+      const type = typeof candidate.type === "string" ? candidate.type : "website";
+      const url = typeof candidate.url === "string" ? candidate.url : "";
+      const label = typeof candidate.label === "string" ? candidate.label : url;
+
+      if (!url) {
+        return null;
+      }
+
+      return {
+        type: ["website", "facebook", "instagram", "x"].includes(type) ? (type as PublicProfileLink["type"]) : "website",
+        label,
+        url
+      };
+    })
+    .filter((link): link is PublicProfileLink => link !== null);
+}
+
+function normalizePublicResources(value: unknown): PublicProfileResource[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((resource) => {
+      if (!resource || typeof resource !== "object") {
+        return null;
+      }
+
+      const candidate = resource as { id?: unknown; title?: unknown; description?: unknown; imageUrls?: unknown };
+      const id = typeof candidate.id === "string" ? candidate.id : "";
+      const title = typeof candidate.title === "string" ? candidate.title : "";
+      const description = typeof candidate.description === "string" ? candidate.description : "";
+      const imageUrls = Array.isArray(candidate.imageUrls)
+        ? candidate.imageUrls.filter((item): item is string => typeof item === "string")
+        : [];
+
+      if (!id || !title) {
+        return null;
+      }
+
+      return {
+        id,
+        title,
+        description,
+        imageUrls
+      };
+    })
+    .filter((resource): resource is PublicProfileResource => resource !== null);
+}
+
+function toProfileRecord(
+  account: NonNullable<AccountProfileQueryResult["accountById"]>,
+  allResources: unknown = []
+): MyProfileRecord {
   const locationLabel = account.location ?? "";
   const latitude = typeof account.latitude === "number" ? account.latitude : undefined;
   const longitude = typeof account.longitude === "number" ? account.longitude : undefined;
@@ -31,7 +108,9 @@ function toProfileRecord(account: NonNullable<AccountProfileQueryResult["account
     location: locationLabel
       ? { label: locationLabel, latitude, longitude }
       : null,
-    bio: account.bio ?? ""
+    bio: account.bio ?? "",
+    profileLinks: normalizeProfileLinks((account as { profileLinks?: unknown }).profileLinks),
+    resources: normalizePublicResources(allResources)
   };
 }
 
@@ -49,12 +128,12 @@ export async function fetchMyProfile(accountId: string): Promise<MyProfileRecord
     return null;
   }
 
-  return toProfileRecord(account);
+  return toProfileRecord(account, data?.allResources?.nodes ?? []);
 }
 
 export async function updateMyProfile(
   accountId: string,
-  profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio"> & { avatarUrl?: string | null }
+  profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { avatarUrl?: string | null }
 ): Promise<MyProfileRecord | null> {
   const locationValue: ProximityLocationValue | null = profilePatch.location ?? null;
   const variables: { input: UpdateAccountByIdInput } = {
@@ -66,6 +145,7 @@ export async function updateMyProfile(
         latitude: locationValue?.latitude ?? null,
         longitude: locationValue?.longitude ?? null,
         bio: profilePatch.bio,
+        profileLinks: profilePatch.profileLinks ?? [],
         ...(profilePatch.avatarUrl !== undefined && { avatarUrl: profilePatch.avatarUrl })
       } satisfies AccountPatch
     }

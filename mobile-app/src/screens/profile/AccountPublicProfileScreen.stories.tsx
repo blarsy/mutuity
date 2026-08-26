@@ -17,7 +17,14 @@ const SAMPLE_PROFILE: MyProfileRecord = {
     latitude: 45.764,
     longitude: 4.8357
   },
-  bio: "Community gardener and repair volunteer. I share tools and host beginner workshops."
+  bio: "Community gardener and repair volunteer. I share tools and host beginner workshops.",
+  profileLinks: [
+    {
+      type: "website",
+      label: "Website",
+      url: "https://example.com"
+    }
+  ]
 };
 
 const meta = {

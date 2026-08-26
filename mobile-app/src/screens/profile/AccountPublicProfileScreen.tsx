@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { IconButton, Snackbar, Text } from "react-native-paper";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 
 import { AccountAvatar } from "../../components/AccountAvatar";
@@ -31,6 +32,8 @@ export function AccountPublicProfileScreen({
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(true);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const hasInjectedProfile = profile !== undefined;
 
@@ -59,9 +62,37 @@ export function AccountPublicProfileScreen({
   const resolvedProfile = profile ?? remoteProfile;
   const resolvedLoading = loading || (!hasInjectedProfile && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedProfile ? remoteErrorMessage : null);
+  const profileLinks = resolvedProfile?.profileLinks ?? [];
+  const resources = resolvedProfile?.resources ?? [];
+  const location = resolvedProfile?.location;
+  const hasLocationMap = Boolean(location?.latitude != null && location?.longitude != null);
+
+  const resolveLinkTarget = (url: string): string => {
+    const trimmed = url.trim();
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+
+    return `https://${trimmed}`;
+  };
+
+  const openProfileLink = (url: string): void => {
+    const target = resolveLinkTarget(url);
+    void Linking.openURL(target).catch(() => {
+      setFeedback(t("profileLinkOpenError", { defaultValue: "We could not open this link." }));
+    });
+  };
+
+  const profileLinkTypeIcons: Record<"website" | "facebook" | "instagram" | "x", string> = {
+    website: "web",
+    facebook: "facebook",
+    instagram: "instagram",
+    x: "twitter"
+  };
 
   return (
-    <ScreenContainer testID="account-public-profile-screen" style={styles.root}>
+    <>
+      <ScreenContainer testID="account-public-profile-screen" style={styles.root}>
       <View style={styles.headerRow}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
           {t("profileLabel", { defaultValue: "Profile" })}
@@ -124,15 +155,86 @@ export function AccountPublicProfileScreen({
           </View>
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text variant="labelLarge" style={styles.sectionTitle}>{t("bioLabel", { defaultValue: "Bio" })}</Text>
-          <Text variant="bodyMedium" style={styles.bioText}>
-            {resolvedProfile.bio.trim() || t("emptyBioLabel", { defaultValue: "No bio provided." })}
+        <Pressable accessibilityRole="button" onPress={() => setShowMoreInfo((current) => !current)} style={styles.moreInfoButton}>
+          <Text variant="labelLarge" style={styles.moreInfoText}>
+            {showMoreInfo ? t("lessInfoLabel", { defaultValue: "Less info" }) : t("moreInfoLabel", { defaultValue: "More info" })}
           </Text>
-        </View>
+        </Pressable>
+
+        {showMoreInfo ? (
+          <View style={styles.sectionCard}>
+            <Text variant="labelLarge" style={styles.sectionTitle}>{t("bioLabel", { defaultValue: "Bio" })}</Text>
+            <Text variant="bodyMedium" style={styles.bioText}>
+              {resolvedProfile.bio.trim() || t("emptyBioLabel", { defaultValue: "No bio provided." })}
+            </Text>
+
+            {profileLinks.length > 0 ? (
+              <View style={styles.inlineStack}>
+                <Text variant="labelLarge" style={styles.sectionTitle}>{t("linksLabel", { defaultValue: "Links" })}</Text>
+                {profileLinks.map((link) => (
+                  <Pressable
+                    key={`${link.type}-${link.url}`}
+                    accessibilityRole="link"
+                    style={styles.linkRow}
+                    onPress={() => openProfileLink(link.url)}
+                  >
+                    <IconButton icon={profileLinkTypeIcons[link.type]} size={18} />
+                    <View style={styles.linkTextZone}>
+                      <Text variant="bodyMedium" style={styles.linkText}>
+                        {link.label.trim() || link.url}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.linkUrlText}>
+                        {link.url}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+
+            {location?.label && hasLocationMap && location.latitude != null && location.longitude != null ? (
+              <View style={styles.inlineStack}>
+                <Text variant="labelLarge" style={styles.sectionTitle}>{t("locationLabel", { defaultValue: "Location" })}</Text>
+                <Text variant="bodyMedium" style={styles.locationText}>{location.label}</Text>
+                <MapView
+                  provider={PROVIDER_GOOGLE}
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    latitudeDelta: 0.05,
+                    longitudeDelta: 0.05
+                  }}
+                >
+                  <Marker coordinate={{ latitude: location.latitude, longitude: location.longitude }} />
+                </MapView>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {resources.length > 0 ? (
+          <View style={styles.sectionCard}>
+            <Text variant="labelLarge" style={styles.sectionTitle}>{t("availableResourcesLabel", { defaultValue: "Available resources" })}</Text>
+            <View style={styles.resourceList}>
+              {resources.map((resource) => (
+                <View key={resource.id} style={styles.resourceCard}>
+                  <Text variant="titleMedium" style={styles.resourceTitle}>{resource.title}</Text>
+                  {resource.description ? (
+                    <Text variant="bodyMedium" style={styles.resourceDescription}>{resource.description}</Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
       </ScrollView>
       )}
-    </ScreenContainer>
+      </ScreenContainer>
+      <Snackbar visible={feedback !== null} onDismiss={() => setFeedback(null)}>
+        {feedback ?? ""}
+      </Snackbar>
+    </>
   );
 }
 
@@ -194,7 +296,64 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.altGeneral,
     textTransform: "uppercase"
   },
+  moreInfoButton: {
+    backgroundColor: designTokens.colors.secondary,
+    borderRadius: designTokens.radius.md,
+    paddingVertical: designTokens.spacing.sm,
+    paddingHorizontal: designTokens.spacing.md,
+    alignItems: "center"
+  },
+  moreInfoText: {
+    fontFamily: appFontFamilies.altGeneral,
+    textTransform: "uppercase"
+  },
   bioText: {
+    fontFamily: appFontFamilies.general
+  },
+  inlineStack: {
+    gap: designTokens.spacing.xs
+  },
+  linkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: designTokens.colors.primaryContainer,
+    paddingVertical: 2,
+    paddingHorizontal: designTokens.spacing.xs
+  },
+  linkTextZone: {
+    flex: 1,
+    gap: 2
+  },
+  linkText: {
+    fontFamily: appFontFamilies.general,
+    color: designTokens.colors.primary
+  },
+  linkUrlText: {
+    fontFamily: appFontFamilies.general,
+    opacity: 0.75
+  },
+  locationText: {
+    fontFamily: appFontFamilies.general
+  },
+  map: {
+    width: "100%",
+    height: 180,
+    borderRadius: designTokens.radius.sm
+  },
+  resourceList: {
+    gap: designTokens.spacing.sm
+  },
+  resourceCard: {
+    backgroundColor: designTokens.colors.primaryContainer,
+    borderRadius: designTokens.radius.sm,
+    padding: designTokens.spacing.sm,
+    gap: designTokens.spacing.xs
+  },
+  resourceTitle: {
+    fontFamily: appFontFamilies.altGeneral
+  },
+  resourceDescription: {
     fontFamily: appFontFamilies.general
   }
 });

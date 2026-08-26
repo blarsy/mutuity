@@ -1,6 +1,11 @@
 import { Client } from "pg";
 
-import { TEST_BACKEND_URL, TEST_DATABASE_URL, seedDemoAccount } from "./auth-test-helpers";
+import {
+  TEST_BACKEND_URL,
+  TEST_DATABASE_URL,
+  loginWithGraphqlSessionCookie,
+  seedDemoAccount
+} from "./auth-test-helpers";
 import { seedResource } from "./resource-test-helpers";
 
 jest.setTimeout(30000);
@@ -89,6 +94,72 @@ describe("resource search integration", () => {
     expect(payload.data?.resourceById?.id).toBe(resource.id);
     expect(payload.data?.resourceById?.title).toBe(resource.title);
     expect(payload.data?.resourceById?.expiresAt).toBeNull();
+    expect(payload.data?.resourceById?.accountByCreatorAccountId?.id).toBe(creator.accountId);
+    expect(payload.data?.resourceById?.accountByCreatorAccountId?.displayName).toBe(creator.displayName);
+  });
+
+  it("allows identified accounts to read public creator accounts on resource detail", async () => {
+    const creator = await seedDemoAccount({
+      identifier: `resource-detail-public-${Date.now()}@example.com`,
+      displayName: "Public Resource Creator"
+    });
+
+    const resource = await seedResource({
+      creatorAccount: creator,
+      title: `Public creator detail resource ${Date.now()}`,
+      expiresAt: null
+    });
+
+    const viewer = await seedDemoAccount({
+      identifier: `resource-detail-viewer-${Date.now()}@example.com`,
+      displayName: "Viewer User"
+    });
+
+    const sessionCookie = await loginWithGraphqlSessionCookie(viewer.identifier, viewer.password);
+
+    const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: sessionCookie
+      },
+      body: JSON.stringify({
+        query: `
+          query ResourceDetail($resourceId: UUID!) {
+            resourceById(id: $resourceId) {
+              id
+              accountByCreatorAccountId {
+                id
+                displayName
+                externalSubject
+              }
+            }
+          }
+        `,
+        variables: {
+          resourceId: resource.id
+        }
+      })
+    });
+
+    expect(response.status).toBe(200);
+
+    const payload = (await response.json()) as {
+      data?: {
+        resourceById: {
+          id: string;
+          accountByCreatorAccountId: {
+            id: string;
+            displayName: string | null;
+            externalSubject: string;
+          } | null;
+        } | null;
+      };
+      errors?: Array<{ message: string }>;
+    };
+
+    expect(payload.errors).toBeUndefined();
+    expect(payload.data?.resourceById?.id).toBe(resource.id);
     expect(payload.data?.resourceById?.accountByCreatorAccountId?.id).toBe(creator.accountId);
     expect(payload.data?.resourceById?.accountByCreatorAccountId?.displayName).toBe(creator.displayName);
   });
