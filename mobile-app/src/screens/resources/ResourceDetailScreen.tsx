@@ -13,11 +13,14 @@ import {
   type NativeSyntheticEvent
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { Banner, Chip, Icon, IconButton, Text } from "react-native-paper";
+import { Banner, Button, Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import ChatIcon from "../../assets/img/CHAT.svg";
 
+import { FormTextInput, ThemedDialog } from "../../components/primitives";
 import { TokenAmount } from "../../components/TokenAmount";
+import { submitResourceBid } from "../../services/graphql/bids";
+import { fetchCurrentTokenBalance } from "../../services/graphql/economics";
 import { fetchResourceById, type ResourceDetailItem } from "../../services/graphql/resources";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -35,7 +38,6 @@ interface ResourceDetailScreenProps {
   onBack?: () => void;
   onOpenCreatorAccount?: (accountId: string) => void;
   onOpenResourceChat?: (resource: ResourceDetailItem) => void;
-  onOpenResourceBid?: (resource: ResourceDetailItem) => void;
   onRetry?: () => void;
 }
 
@@ -153,7 +155,6 @@ export function ResourceDetailScreen({
   onBack,
   onOpenCreatorAccount,
   onOpenResourceChat,
-  onOpenResourceBid,
   onRetry
 }: ResourceDetailScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
@@ -163,6 +164,15 @@ export function ResourceDetailScreen({
   const [focusedImageUrl, setFocusedImageUrl] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [swipedToEnd, setSwipedToEnd] = useState(false);
+  const [bidDialogVisible, setBidDialogVisible] = useState(false);
+  const [bidAmountValue, setBidAmountValue] = useState("");
+  const [bidValidHoursValue, setBidValidHoursValue] = useState("12");
+  const [bidMessageValue, setBidMessageValue] = useState("");
+  const [bidErrorMessage, setBidErrorMessage] = useState<string | null>(null);
+  const [bidSubmitting, setBidSubmitting] = useState(false);
+  const [bidSuccessVisible, setBidSuccessVisible] = useState(false);
+  const [currentTokenBalance, setCurrentTokenBalance] = useState<number | null>(null);
+  const [loadingTokenBalance, setLoadingTokenBalance] = useState(false);
 
   const hasInjectedResource = resource !== undefined;
 
@@ -218,6 +228,93 @@ export function ResourceDetailScreen({
 
     return buildMapRegion(resolvedResource.latitude!, resolvedResource.longitude!);
   }, [hasCoordinates, resolvedResource]);
+
+  const openBidDialog = (): void => {
+    if (!resolvedResource) {
+      return;
+    }
+
+    setBidAmountValue(
+      typeof resolvedResource.defaultTokenAmount === "number" && resolvedResource.defaultTokenAmount > 0
+        ? String(resolvedResource.defaultTokenAmount)
+        : ""
+    );
+    setBidValidHoursValue("12");
+    setBidMessageValue("");
+    setBidErrorMessage(null);
+    setBidDialogVisible(true);
+    setLoadingTokenBalance(true);
+
+    void fetchCurrentTokenBalance()
+      .then((balance) => {
+        setCurrentTokenBalance(balance);
+      })
+      .catch(() => {
+        setCurrentTokenBalance(null);
+      })
+      .finally(() => {
+        setLoadingTokenBalance(false);
+      });
+  };
+
+  const closeBidDialog = (): void => {
+    setBidDialogVisible(false);
+    setBidErrorMessage(null);
+    setBidSubmitting(false);
+  };
+
+  const handleSubmitBid = (): void => {
+    if (!resolvedResource) {
+      return;
+    }
+
+    if (!currentAccountId) {
+      setBidErrorMessage(t("bidSignInRequired", { defaultValue: "Sign in to send a bid." }));
+      return;
+    }
+
+    const parsedAmount = Number.parseInt(bidAmountValue.trim(), 10);
+    if (!Number.isInteger(parsedAmount) || parsedAmount <= 0) {
+      setBidErrorMessage(t("bidInvalidAmountLabel", { defaultValue: "Enter a valid token amount." }));
+      return;
+    }
+
+    const parsedValidHours = Number.parseInt(bidValidHoursValue.trim(), 10);
+    if (!Number.isInteger(parsedValidHours) || parsedValidHours < 1 || parsedValidHours > 48) {
+      setBidErrorMessage(t("bidInvalidHoursLabel", { defaultValue: "Validity must be between 1 and 48 hours." }));
+      return;
+    }
+
+    if (typeof currentTokenBalance === "number" && parsedAmount > currentTokenBalance) {
+      setBidErrorMessage(
+        t("bidInsufficientTokensLabel", {
+          defaultValue: "You cannot send more than your balance ({{max}}).",
+          max: currentTokenBalance
+        })
+      );
+      return;
+    }
+
+    setBidSubmitting(true);
+    setBidErrorMessage(null);
+
+    void submitResourceBid({
+      resourceId: resolvedResource.id,
+      proposedTokenAmount: parsedAmount,
+      validHours: parsedValidHours,
+      message: bidMessageValue.trim() ? bidMessageValue.trim() : null
+    })
+      .then(() => {
+        closeBidDialog();
+        setBidSuccessVisible(true);
+      })
+      .catch(() => {
+        setBidErrorMessage(t("bidSubmitErrorLabel", { defaultValue: "We could not send your bid." }));
+      })
+      .finally(() => {
+        setBidSubmitting(false);
+      });
+  };
 
   const handleImageScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
     if (!hasMultipleImages) {
@@ -378,11 +475,11 @@ export function ResourceDetailScreen({
               accessibilityLabel={t("chatLabel", { defaultValue: "Chat" })}
             />
           ) : null}
-          {!isViewerOwner && resolvedResource.canBeExchanged && onOpenResourceBid ? (
+          {!isViewerOwner && currentAccountId && resolvedResource.canBeExchanged ? (
             <IconButton
               icon="hand-coin"
               size={26}
-              onPress={() => onOpenResourceBid(resolvedResource)}
+              onPress={openBidDialog}
               accessibilityLabel={t("sendBidLabel", { defaultValue: "Send bid" })}
             />
           ) : null}
@@ -528,6 +625,89 @@ export function ResourceDetailScreen({
           ))}
         </View>
       ) : null}
+
+      <ThemedDialog
+        visible={bidDialogVisible}
+        title={t("createBidDialogTitle", { defaultValue: "Create bid" })}
+        onDismiss={closeBidDialog}
+        content={(
+          <View style={styles.bidDialogContent}>
+            <Text variant="bodyMedium" style={styles.bidDialogInfoText}>
+              {t("bidDialogResourceLabel", {
+                defaultValue: "You are bidding on {{title}} by {{owner}}.",
+                title: resolvedResource.title,
+                owner: resolvedResource.creatorDisplayName
+              })}
+            </Text>
+
+            <FormTextInput
+              label={t("amountOfTokenLabel", { defaultValue: "Token amount" })}
+              accessibilityLabel={t("amountOfTokenLabel", { defaultValue: "Token amount" })}
+              value={bidAmountValue}
+              onChangeText={(value) => {
+                setBidAmountValue(value);
+                setBidErrorMessage(null);
+              }}
+              keyboardType="number-pad"
+            />
+
+            <FormTextInput
+              label={t("hoursValidLabel", { defaultValue: "Valid for (hours)" })}
+              accessibilityLabel={t("hoursValidLabel", { defaultValue: "Valid for (hours)" })}
+              value={bidValidHoursValue}
+              onChangeText={(value) => {
+                setBidValidHoursValue(value);
+                setBidErrorMessage(null);
+              }}
+              keyboardType="number-pad"
+            />
+
+            <FormTextInput
+              label={t("bidMessageLabel", { defaultValue: "Message (optional)" })}
+              accessibilityLabel={t("bidMessageLabel", { defaultValue: "Message (optional)" })}
+              value={bidMessageValue}
+              onChangeText={(value) => {
+                setBidMessageValue(value);
+                setBidErrorMessage(null);
+              }}
+              multiline
+            />
+
+            {loadingTokenBalance ? (
+              <Text variant="bodySmall" style={styles.bidDialogHintText}>
+                {t("tokenBalanceLoadingLabel", { defaultValue: "Loading token balance..." })}
+              </Text>
+            ) : null}
+
+            {typeof currentTokenBalance === "number" ? (
+              <Text variant="bodySmall" style={styles.bidDialogHintText}>
+                {t("tokenBalanceAvailableLabel", {
+                  defaultValue: "Available balance: {{balance}}",
+                  balance: currentTokenBalance
+                })}
+              </Text>
+            ) : null}
+
+            {bidErrorMessage ? (
+              <Text variant="bodySmall" style={styles.bidDialogErrorText}>
+                {bidErrorMessage}
+              </Text>
+            ) : null}
+          </View>
+        )}
+        actions={[
+          <Button key="cancel" mode="outlined" onPress={closeBidDialog} disabled={bidSubmitting}>
+            {t("cancelLabel", { defaultValue: "Cancel" })}
+          </Button>,
+          <Button key="submit" mode="contained" onPress={handleSubmitBid} loading={bidSubmitting} disabled={bidSubmitting}>
+            {t("sendBidLabel", { defaultValue: "Send bid" })}
+          </Button>
+        ]}
+      />
+
+      <Snackbar visible={bidSuccessVisible} onDismiss={() => setBidSuccessVisible(false)}>
+        {t("bidCreationSuccessMessage", { defaultValue: "Your bid has been sent." })}
+      </Snackbar>
     </ScrollView>
   );
 }
@@ -715,5 +895,20 @@ const styles = StyleSheet.create({
   },
   imageDotActive: {
     backgroundColor: designTokens.colors.primary
+  },
+  bidDialogContent: {
+    gap: 10
+  },
+  bidDialogInfoText: {
+    fontFamily: appFontFamilies.general,
+    color: "#000000"
+  },
+  bidDialogHintText: {
+    color: "#333333",
+    fontFamily: appFontFamilies.general
+  },
+  bidDialogErrorText: {
+    color: designTokens.colors.primary,
+    fontFamily: appFontFamilies.general
   }
 });

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
 import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen";
 import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScreen";
@@ -27,7 +26,6 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [openingConversation, setOpeningConversation] = useState(false);
   const [openDetailError, setOpenDetailError] = useState<string | null>(null);
-  const [showSentBids, setShowSentBids] = useState(false);
 
   const handleOpenResource = (resource: SearchResourceItem): void => {
     setSelectedResourceId(resource.id);
@@ -76,10 +74,6 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     }
   };
 
-  const handleOpenResourceBid = (): void => {
-    setShowSentBids(true);
-  };
-
   if (openingConversation) {
     return <LoadingState label={t("chatConversationLoading", { defaultValue: "Opening conversation..." })} />;
   }
@@ -104,10 +98,6 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     );
   }
 
-  if (showSentBids) {
-    return <SentBidsScreen onBackToMyHub={() => setShowSentBids(false)} />;
-  }
-
   if (selectedResourceId) {
     if (openDetailError) {
       return (
@@ -126,7 +116,6 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
         onOpenResourceChat={(resource) => {
           void handleOpenResourceChat(resource);
         }}
-        onOpenResourceBid={() => handleOpenResourceBid()}
         onBack={() => setSelectedResourceId(null)}
       />
     );

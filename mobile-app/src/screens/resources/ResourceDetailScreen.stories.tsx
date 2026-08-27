@@ -45,7 +45,6 @@ const meta = {
     onBack: () => undefined,
     onOpenCreatorAccount: () => undefined,
     onOpenResourceChat: () => undefined,
-    onOpenResourceBid: () => undefined,
     onRetry: () => undefined
   }
 } satisfies Meta<typeof ResourceDetailScreen>;

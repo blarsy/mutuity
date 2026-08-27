@@ -1,10 +1,11 @@
 import { apolloClient } from "./client";
 import {
+  type MutationSubmitResourceBidArgs,
   type QueryReceivedResourceBidsArgs,
   type QuerySentResourceBidsArgs,
   type ResourceBid
 } from "./generated";
-import { RECEIVED_RESOURCE_BIDS_QUERY, SENT_RESOURCE_BIDS_QUERY } from "./operations";
+import { RECEIVED_RESOURCE_BIDS_QUERY, SENT_RESOURCE_BIDS_QUERY, SUBMIT_RESOURCE_BID_MUTATION } from "./operations";
 import type { BidDirection, BidWorkspaceItem } from "../../screens/bids/types";
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -19,6 +20,14 @@ interface SentBidsQueryResult {
 
 interface ReceivedBidsQueryResult {
   receivedResourceBids: BidsConnection | null;
+}
+
+interface SubmitResourceBidMutationResult {
+  submitResourceBid: {
+    resourceBid: {
+      id: string | null;
+    } | null;
+  } | null;
 }
 
 function toBidWorkspaceItem(node: ResourceBid, direction: BidDirection): BidWorkspaceItem | null {
@@ -83,4 +92,33 @@ export async function fetchReceivedBids(includeInactive: boolean): Promise<BidWo
   return (receivedResult.data?.receivedResourceBids?.nodes ?? [])
     .map((node) => toBidWorkspaceItem(node, "received"))
     .filter((node): node is BidWorkspaceItem => node !== null);
+}
+
+export async function submitResourceBid(input: {
+  resourceId: string;
+  proposedTokenAmount: number;
+  validHours: number;
+  message?: string | null;
+}): Promise<string> {
+  const variables: MutationSubmitResourceBidArgs = {
+    input: {
+      resourceId: input.resourceId,
+      proposedTokenAmount: input.proposedTokenAmount,
+      validHours: input.validHours,
+      message: input.message ?? null
+    }
+  };
+
+  const result = await apolloClient.mutate<SubmitResourceBidMutationResult, MutationSubmitResourceBidArgs>({
+    mutation: SUBMIT_RESOURCE_BID_MUTATION,
+    variables
+  });
+
+  const bidId = result.data?.submitResourceBid?.resourceBid?.id;
+
+  if (!bidId) {
+    throw new Error("Bid submission failed");
+  }
+
+  return String(bidId);
 }
