@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Icon, Text } from "react-native-paper";
+import { Button, Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
@@ -21,6 +21,64 @@ export interface BidsListScreenProps {
   onRetry?: () => void;
   onOpenBid?: (bid: BidWorkspaceItem) => void;
   onBackToMyHub?: () => void;
+  onOpenResource?: (resourceId: string) => void;
+  onOpenCounterparty?: (accountId: string) => void;
+  onOpenConversation?: (conversationId: string) => void;
+  onCancelBid?: (bid: BidWorkspaceItem) => Promise<void>;
+  onAcceptBid?: (bid: BidWorkspaceItem) => Promise<void>;
+  onDeclineBid?: (bid: BidWorkspaceItem) => Promise<void>;
+}
+
+function formatDate(value: string | null, fallbackLabel: string): string {
+  if (!value) {
+    return fallbackLabel;
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return fallbackLabel;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(parsedDate);
+}
+
+function statusChipLabel(status: BidWorkspaceItem["status"], t: (k: string, o?: Record<string, unknown>) => string): string {
+  return t(`statuses.${status}`, { defaultValue: status.toLowerCase() });
+}
+
+function inactiveExplanationLabel(
+  bid: BidWorkspaceItem,
+  unknownDateLabel: string,
+  t: (k: string, o?: Record<string, unknown>) => string
+): string {
+  if (bid.status === "WITHDRAWN") {
+    return t("inactive.withdrawn", {
+      defaultValue: "Withdrawn on {{date}}",
+      date: formatDate(bid.updatedAt, unknownDateLabel)
+    });
+  }
+
+  if (bid.status === "ACCEPTED") {
+    return t("inactive.accepted", {
+      defaultValue: "Accepted on {{date}}",
+      date: formatDate(bid.respondedAt ?? bid.updatedAt, unknownDateLabel)
+    });
+  }
+
+  if (bid.status === "DECLINED") {
+    return t("inactive.declined", {
+      defaultValue: "Declined on {{date}}",
+      date: formatDate(bid.respondedAt ?? bid.updatedAt, unknownDateLabel)
+    });
+  }
+
+  return t("inactive.expired", {
+    defaultValue: "Expired on {{date}}",
+    date: formatDate(bid.validUntil ?? bid.updatedAt, unknownDateLabel)
+  });
 }
 
 function formatElapsedFromDate(value: string | null, fallbackLabel: string): string {
@@ -110,13 +168,21 @@ export function BidsListScreen({
   includeInactiveDefault = false,
   onRetry,
   onOpenBid,
-  onBackToMyHub
+  onBackToMyHub,
+  onOpenResource,
+  onOpenCounterparty,
+  onOpenConversation,
+  onCancelBid,
+  onAcceptBid,
+  onDeclineBid
 }: BidsListScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [includeInactive, setIncludeInactive] = useState(includeInactiveDefault);
   const [remoteBids, setRemoteBids] = useState<BidWorkspaceItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [actionErrorMessage, setActionErrorMessage] = useState<string | null>(null);
+  const [pendingActionBidId, setPendingActionBidId] = useState<string | null>(null);
   const [openUpdatedTooltipBidId, setOpenUpdatedTooltipBidId] = useState<string | null>(null);
 
   const loadBids = useCallback(async (): Promise<void> => {
@@ -131,6 +197,23 @@ export function BidsListScreen({
       setRemoteLoading(false);
     }
   }, [fetchBids, includeInactive, t]);
+
+  const runBidAction = useCallback(async (bid: BidWorkspaceItem, action: ((item: BidWorkspaceItem) => Promise<void>) | undefined): Promise<void> => {
+    if (!action) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+    setPendingActionBidId(bid.id);
+    try {
+      await action(bid);
+      await loadBids();
+    } catch {
+      setActionErrorMessage(t("myBidsActionError", { defaultValue: "We could not complete this action." }));
+    } finally {
+      setPendingActionBidId(null);
+    }
+  }, [loadBids, t]);
 
   useEffect(() => {
     void loadBids();
@@ -184,6 +267,12 @@ export function BidsListScreen({
         <Text variant="bodyMedium">{t("myBidsIncludeInactive", { defaultValue: "Include inactive bids" })}</Text>
       </Pressable>
 
+      {actionErrorMessage ? (
+        <View style={styles.actionErrorContainer}>
+          <Text accessibilityRole="alert" style={styles.actionErrorText}>{actionErrorMessage}</Text>
+        </View>
+      ) : null}
+
       {filteredBids.length === 0 ? (
         <EmptyState
           message={t("myBidsEmpty", { defaultValue: "No bids found." })}
@@ -197,6 +286,13 @@ export function BidsListScreen({
             const updatedAtElapsedLabel = formatElapsedFromDate(bid.updatedAt, unknownDateLabel);
             const updatedAtFullLabel = formatFullDateTime(bid.updatedAt, unknownDateLabel);
             const isUpdatedTooltipOpen = openUpdatedTooltipBidId === bid.id;
+            const sentAtLabel = formatDate(bid.createdAt ?? null, unknownDateLabel);
+            const reviewedAtLabel = formatDate(bid.respondedAt ?? null, unknownDateLabel);
+            const validityLabel = formatDate(bid.validUntil ?? null, unknownDateLabel);
+            const isActionPending = pendingActionBidId === bid.id;
+            const showChatButton = Boolean(bid.conversationId) && onOpenConversation;
+            const showSentActions = bid.direction === "sent" && bid.isActive;
+            const showReceivedActions = bid.direction === "received" && bid.isActive;
 
             return (
               <Pressable
@@ -215,11 +311,30 @@ export function BidsListScreen({
                 <ListingContextHeader
                   kind="resource"
                   title={bid.title}
-                  authorDisplayName={bid.listingAuthorDisplayName ?? bid.counterpartyDisplayName}
-                  authorAvatarUrl={bid.listingAuthorAvatarUrl ?? null}
+                  authorDisplayName={bid.counterpartyDisplayName}
+                  authorAvatarUrl={bid.counterpartyAvatarUrl ?? null}
                   listingImageUrl={bid.listingImageUrl ?? null}
+                  onPressListing={onOpenResource ? () => onOpenResource(bid.resourceId) : undefined}
+                  onPressAuthor={onOpenCounterparty ? () => onOpenCounterparty(bid.counterpartyAccountId) : undefined}
                 />
+
+                <View style={styles.statusRow}>
+                  <Text style={styles.statusChip}>{statusChipLabel(bid.status, t)}</Text>
+                </View>
+
                 <TokenAmount amount={bid.tokenAmount} containerStyle={styles.tokenAmount} />
+
+                <View style={styles.metaLineWrap}>
+                  <Text variant="bodySmall" style={styles.metaText}>
+                    {t("sentAt", { defaultValue: "Sent {{date}}", date: sentAtLabel })}
+                    {bid.respondedAt ? ` · ${t("reviewedAt", { defaultValue: "Reviewed {{date}}", date: reviewedAtLabel })}` : ""}
+                    {bid.isActive ? ` · ${t("validity", { defaultValue: "Valid until {{date}}", date: validityLabel })}` : ""}
+                  </Text>
+                </View>
+
+                {bid.message ? (
+                  <Text variant="bodySmall" style={styles.messageText}>{bid.message}</Text>
+                ) : null}
 
                 <View style={styles.updatedAtWrap}>
                   <Pressable
@@ -243,9 +358,73 @@ export function BidsListScreen({
                     </View>
                   ) : null}
                 </View>
+
+                <View style={styles.actionsRow}>
+                  {showChatButton ? (
+                    <Button
+                      compact
+                      mode="text"
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        onOpenConversation(bid.conversationId!);
+                      }}
+                      disabled={isActionPending}
+                    >
+                      {t("actions.chat", { defaultValue: "Chat" })}
+                    </Button>
+                  ) : null}
+
+                  {showSentActions ? (
+                    <Button
+                      compact
+                      mode="outlined"
+                      textColor="#B00020"
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        void runBidAction(bid, onCancelBid);
+                      }}
+                      loading={isActionPending}
+                      disabled={isActionPending}
+                    >
+                      {t("actions.cancel", { defaultValue: "Cancel" })}
+                    </Button>
+                  ) : null}
+
+                  {showReceivedActions ? (
+                    <>
+                      <Button
+                        compact
+                        mode="contained"
+                        buttonColor="#2e7d32"
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          void runBidAction(bid, onAcceptBid);
+                        }}
+                        loading={isActionPending}
+                        disabled={isActionPending}
+                      >
+                        {t("actions.accept", { defaultValue: "Accept" })}
+                      </Button>
+                      <Button
+                        compact
+                        mode="outlined"
+                        textColor="#B00020"
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          void runBidAction(bid, onDeclineBid);
+                        }}
+                        loading={isActionPending}
+                        disabled={isActionPending}
+                      >
+                        {t("actions.decline", { defaultValue: "Decline" })}
+                      </Button>
+                    </>
+                  ) : null}
+                </View>
+
                 {!bid.isActive ? (
                   <Text variant="labelSmall" style={styles.inactiveLabel}>
-                    {t("myBidsInactive", { defaultValue: "Inactive" })}
+                    {inactiveExplanationLabel(bid, unknownDateLabel, t)}
                   </Text>
                 ) : null}
               </Pressable>
@@ -278,6 +457,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: designTokens.spacing.sm
   },
+  actionErrorContainer: {
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: "#fdecea",
+    paddingHorizontal: designTokens.spacing.sm,
+    paddingVertical: designTokens.spacing.xs
+  },
+  actionErrorText: {
+    color: "#B00020",
+    fontFamily: appFontFamilies.general
+  },
   listContent: {
     gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
@@ -291,9 +480,35 @@ const styles = StyleSheet.create({
   tokenAmount: {
     alignSelf: "center"
   },
+  statusRow: {
+    alignSelf: "flex-start"
+  },
+  statusChip: {
+    paddingHorizontal: designTokens.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: "#ffffff",
+    fontFamily: appFontFamilies.altGeneral,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    fontSize: 12
+  },
+  metaLineWrap: {
+    alignSelf: "flex-start"
+  },
+  messageText: {
+    fontFamily: appFontFamilies.general,
+    opacity: 0.9
+  },
   updatedAtWrap: {
     alignSelf: "flex-start",
     position: "relative"
+  },
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: designTokens.spacing.xs
   },
   metaText: {
     fontFamily: appFontFamilies.general,
@@ -314,8 +529,6 @@ const styles = StyleSheet.create({
   inactiveLabel: {
     marginTop: designTokens.spacing.xs,
     color: designTokens.colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
     fontFamily: appFontFamilies.altGeneral
   }
 });

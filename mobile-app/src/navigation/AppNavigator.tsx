@@ -15,6 +15,7 @@ import { authenticateWithPassword, registerWithSocialIdentity } from "../service
 import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
+import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen";
 import { EditNeedScreen } from "../screens/needs/EditNeedScreen";
 import { MyNeedsScreen } from "../screens/needs/MyNeedsScreen";
 import { ReceivedBidsScreen } from "../screens/bids/ReceivedBidsScreen";
@@ -22,6 +23,7 @@ import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
 import { ChatListScreen } from "../screens/chat/ChatListScreen";
 import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
+import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
 import { NotificationsScreen as MobileNotificationsScreen } from "../screens/notifications/NotificationsScreen";
 import { MyProfileScreen } from "../screens/profile/MyProfileScreen";
 import { MyPreferencesScreen } from "../screens/profile/MyPreferencesScreen";
@@ -233,6 +235,9 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
   const [refreshToken, setRefreshToken] = useState(0);
   const [needsRefreshToken, setNeedsRefreshToken] = useState(0);
   const [activeDrawerItem, setActiveDrawerItem] = useState<MyHubDrawerItem>("myResources");
+  const [openedBidResourceId, setOpenedBidResourceId] = useState<string | null>(null);
+  const [openedBidAccountId, setOpenedBidAccountId] = useState<string | null>(null);
+  const [openedBidConversationId, setOpenedBidConversationId] = useState<string | null>(null);
 
   const canAccessMyHub = authenticated && Boolean(accountId);
 
@@ -286,11 +291,35 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
     }
 
     if (activeDrawerItem === "receivedBids") {
-      return <ReceivedBidsScreen />;
+      return (
+        <ReceivedBidsScreen
+          onOpenResource={(resourceId) => {
+            setOpenedBidResourceId(resourceId);
+          }}
+          onOpenCounterparty={(counterpartyAccountId) => {
+            setOpenedBidAccountId(counterpartyAccountId);
+          }}
+          onOpenConversation={(conversationId) => {
+            setOpenedBidConversationId(conversationId);
+          }}
+        />
+      );
     }
 
     if (activeDrawerItem === "sentBids") {
-      return <SentBidsScreen />;
+      return (
+        <SentBidsScreen
+          onOpenResource={(resourceId) => {
+            setOpenedBidResourceId(resourceId);
+          }}
+          onOpenCounterparty={(counterpartyAccountId) => {
+            setOpenedBidAccountId(counterpartyAccountId);
+          }}
+          onOpenConversation={(conversationId) => {
+            setOpenedBidConversationId(conversationId);
+          }}
+        />
+      );
     }
 
     if (activeDrawerItem === "myNeeds") {
@@ -360,6 +389,45 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
           setIsCreating(false);
           setEditingResource(null);
           setRefreshToken((previous) => previous + 1);
+        }}
+      />
+    );
+  }
+
+  if (openedBidConversationId && accountId) {
+    return (
+      <ChatDetailScreen
+        conversationId={openedBidConversationId}
+        currentAccountId={accountId}
+        conversation={null}
+        onBackToList={() => {
+          setOpenedBidConversationId(null);
+        }}
+      />
+    );
+  }
+
+  if (openedBidAccountId) {
+    return (
+      <AccountPublicProfileScreen
+        accountId={openedBidAccountId}
+        onBack={() => {
+          setOpenedBidAccountId(null);
+        }}
+      />
+    );
+  }
+
+  if (openedBidResourceId) {
+    return (
+      <ResourceDetailScreen
+        resourceId={openedBidResourceId}
+        currentAccountId={accountId}
+        onOpenCreatorAccount={(creatorAccountId) => {
+          setOpenedBidAccountId(creatorAccountId);
+        }}
+        onBack={() => {
+          setOpenedBidResourceId(null);
         }}
       />
     );

@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import { Image, Pressable, StyleSheet, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from "react-native";
 import { Icon, Text } from "react-native-paper";
 
 import { AccountAvatar } from "../AccountAvatar";
@@ -18,6 +18,8 @@ export interface ListingContextHeaderProps {
   testID?: string;
   accessibilityLabel?: string;
   onPress?: () => void;
+  onPressListing?: () => void;
+  onPressAuthor?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
@@ -51,18 +53,27 @@ export function ListingContextHeader({
   testID,
   accessibilityLabel,
   onPress,
+  onPressListing,
+  onPressAuthor,
   containerStyle
 }: ListingContextHeaderProps): React.JSX.Element {
   const hasImage = typeof listingImageUrl === "string" && listingImageUrl.trim().length > 0;
   const resolvedAuthorName = authorDisplayName?.trim() ? authorDisplayName : getFallbackAuthor(kind);
   const deletedAtLabel = formatDeletedAt(deletedAt);
+  const listingPressHandler = onPressListing ?? onPress;
+  const authorPressHandler = onPressAuthor ?? onPress;
+
+  const stopAndRun = (event: GestureResponderEvent, handler: (() => void) | undefined): void => {
+    event.stopPropagation();
+    handler?.();
+  };
 
   return (
     <View style={[styles.root, containerStyle]} testID={testID}>
       <Pressable
-        accessibilityRole={onPress ? "button" : undefined}
+        accessibilityRole={listingPressHandler ? "button" : undefined}
         accessibilityLabel={accessibilityLabel ?? `${resolvedAuthorName}. ${title}`}
-        onPress={onPress}
+        onPress={listingPressHandler ? (event) => { stopAndRun(event, listingPressHandler); } : undefined}
         style={styles.mediaFrame}
       >
         {hasImage ? (
@@ -73,26 +84,39 @@ export function ListingContextHeader({
           </View>
         )}
 
-        <View style={styles.avatarWrap}>
+        <Pressable
+          accessibilityRole={authorPressHandler ? "button" : undefined}
+          accessibilityLabel={resolvedAuthorName}
+          onPress={authorPressHandler ? (event) => { stopAndRun(event, authorPressHandler); } : undefined}
+          style={styles.avatarWrap}
+        >
           <AccountAvatar
             authenticated
             displayName={resolvedAuthorName}
             avatarUrl={authorAvatarUrl ?? null}
             size={AVATAR_SIZE}
           />
-        </View>
+        </Pressable>
       </Pressable>
 
-      <Pressable
-        accessibilityRole={onPress ? "button" : undefined}
-        accessibilityLabel={accessibilityLabel ?? `${resolvedAuthorName}. ${title}`}
-        onPress={onPress}
-        style={styles.content}
-      >
-        <Text numberOfLines={1} ellipsizeMode="tail" variant="titleMedium" style={styles.authorLine}>
-          <Icon size={18} color={designTokens.colors.primary} source="account-circle" /> {resolvedAuthorName}
-        </Text>
+      <View style={styles.content}>
+        <Pressable
+          accessibilityRole={authorPressHandler ? "button" : undefined}
+          accessibilityLabel={resolvedAuthorName}
+          onPress={authorPressHandler ? (event) => { stopAndRun(event, authorPressHandler); } : undefined}
+          style={styles.authorPressable}
+        >
+          <Text numberOfLines={1} ellipsizeMode="tail" variant="titleMedium" style={styles.authorLine}>
+            <Icon size={18} color={designTokens.colors.primary} source="account-circle" /> {resolvedAuthorName}
+          </Text>
+        </Pressable>
 
+        <Pressable
+          accessibilityRole={listingPressHandler ? "button" : undefined}
+          accessibilityLabel={title}
+          onPress={listingPressHandler ? (event) => { stopAndRun(event, listingPressHandler); } : undefined}
+          style={styles.titlePressable}
+        >
         <Text
           numberOfLines={1}
           ellipsizeMode="tail"
@@ -101,13 +125,14 @@ export function ListingContextHeader({
         >
           {title}
         </Text>
+        </Pressable>
 
         {deletedAtLabel ? (
           <Text variant="bodySmall" style={styles.deletedMeta}>
             {`Deleted on ${deletedAtLabel}`}
           </Text>
         ) : null}
-      </Pressable>
+      </View>
     </View>
   );
 }
@@ -154,6 +179,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 6,
     gap: 2
+  },
+  authorPressable: {
+    alignSelf: "flex-start"
+  },
+  titlePressable: {
+    alignSelf: "flex-start"
   },
   authorLine: {
     color: designTokens.colors.primary,

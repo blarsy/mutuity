@@ -495,15 +495,28 @@ export const SENT_RESOURCE_BIDS_QUERY = gql`
     sentResourceBids(first: $first, after: $after, activeOnly: $activeOnly) {
       nodes {
         id
+        resourceId
+        bidderAccountId
         message
         proposedTokenAmount
         isActive
         status
+        createdAt
+        respondedAt
+        validUntil
         updatedAt
+        resourceConversationsByResourceBidId(first: 1) {
+          nodes {
+            id
+          }
+        }
         resourceByResourceId {
           id
           title
           imageUrls
+          defaultTokenAmount
+          canBeExchanged
+          creatorAccountId
           accountByCreatorAccountId {
             id
             displayName
@@ -513,6 +526,7 @@ export const SENT_RESOURCE_BIDS_QUERY = gql`
         accountByBidderAccountId {
           id
           displayName
+          avatarUrl
         }
         accountByRespondedByAccountId {
           id
@@ -532,15 +546,28 @@ export const RECEIVED_RESOURCE_BIDS_QUERY = gql`
     receivedResourceBids(first: $first, after: $after, activeOnly: $activeOnly) {
       nodes {
         id
+        resourceId
+        bidderAccountId
         message
         proposedTokenAmount
         isActive
         status
+        createdAt
+        respondedAt
+        validUntil
         updatedAt
+        resourceConversationsByResourceBidId(first: 1) {
+          nodes {
+            id
+          }
+        }
         resourceByResourceId {
           id
           title
           imageUrls
+          defaultTokenAmount
+          canBeExchanged
+          creatorAccountId
           accountByCreatorAccountId {
             id
             displayName
@@ -550,6 +577,7 @@ export const RECEIVED_RESOURCE_BIDS_QUERY = gql`
         accountByBidderAccountId {
           id
           displayName
+          avatarUrl
         }
         accountByRespondedByAccountId {
           id
@@ -729,6 +757,27 @@ export const SUBMIT_RESOURCE_BID_MUTATION = gql`
     submitResourceBid(input: $input) {
       resourceBid {
         id
+      }
+    }
+  }
+`;
+
+export const CANCEL_RESOURCE_BID_MUTATION = gql`
+  mutation CancelResourceBid($input: CancelResourceBidInput!) {
+    cancelResourceBid(input: $input) {
+      resourceBid {
+        id
+      }
+    }
+  }
+`;
+
+export const RESPOND_TO_RESOURCE_BID_MUTATION = gql`
+  mutation RespondToResourceBid($input: RespondToResourceBidInput!) {
+    respondToResourceBid(input: $input) {
+      resourceBid {
+        id
+        status
       }
     }
   }
