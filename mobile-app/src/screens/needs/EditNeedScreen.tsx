@@ -4,6 +4,7 @@ import { Icon, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
+  NavigationBackHeader,
   DateTimePickerField,
   FormFieldLabel,
   FormTextInput,
@@ -253,16 +254,18 @@ export function EditNeedScreen({
 
   return (
     <ScreenContainer testID="edit-need-screen" style={styles.root}>
-      <View style={styles.headerRow}>
+      <NavigationBackHeader
+        onBack={onBack}
+        accessibilityLabel={t("backToMyHubLabel", { ns: "common", defaultValue: "Back to My Hub" })}
+      />
+
+      <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
           {initialNeed
             ? t("editNeedLabel", { ns: "us2", defaultValue: "Edit need" })
             : t("addNeedLabel", { ns: "us2", defaultValue: "Add need" })}
         </Text>
-        <PrimaryButton label={t("backToMyHubLabel", { ns: "common", defaultValue: "Back to My Hub" })} onPress={onBack} />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
         <PicturesField
           label={t("needImagesLabel", { ns: "us2", defaultValue: "Pictures" })}
           accessibilityLabel={t("needImagesLabel", { ns: "us2", defaultValue: "Pictures" })}
@@ -448,12 +451,6 @@ export function EditNeedScreen({
 const styles = StyleSheet.create({
   root: {
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
   },
   pageTitle: {
     fontFamily: appFontFamilies.title,

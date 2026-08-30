@@ -5,7 +5,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 
 import { AccountAvatar } from "../../components/AccountAvatar";
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { NavigationBackHeader, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { fetchMyProfile } from "../../services/graphql/profile";
 import type { MyProfileRecord } from "./MyProfileScreen";
 import { appFontFamilies } from "../../theme/fonts";
@@ -93,17 +93,10 @@ export function AccountPublicProfileScreen({
   return (
     <>
       <ScreenContainer testID="account-public-profile-screen" style={styles.root}>
-      <View style={styles.headerRow}>
-        <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-          {t("profileLabel", { defaultValue: "Profile" })}
-        </Text>
-        {onBack ? (
-          <PrimaryButton
-            label={t("backLabel", { defaultValue: "Back" })}
-            onPress={onBack}
-          />
-        ) : null}
-      </View>
+        <NavigationBackHeader
+          onBack={onBack}
+          accessibilityLabel={t("backLabel", { defaultValue: "Back" })}
+        />
 
       {resolvedLoading ? (
         <View style={styles.stateBody}>
@@ -137,6 +130,7 @@ export function AccountPublicProfileScreen({
         </View>
       ) : (
       <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.bodyContent}>
         <View style={styles.identityRow}>
           <AccountAvatar
             authenticated
@@ -228,6 +222,7 @@ export function AccountPublicProfileScreen({
             </View>
           </View>
         ) : null}
+        </View>
       </ScrollView>
       )}
       </ScreenContainer>
@@ -240,22 +235,15 @@ export function AccountPublicProfileScreen({
 
 const styles = StyleSheet.create({
   root: {
-    paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: designTokens.spacing.sm
-  },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6
+    paddingTop: designTokens.spacing.sm,
+    gap: designTokens.spacing.xs
   },
   content: {
-    gap: designTokens.spacing.md,
     paddingBottom: designTokens.spacing.md
+  },
+  bodyContent: {
+    marginTop: 4,
+    gap: designTokens.spacing.md
   },
   stateBody: {
     flex: 1,

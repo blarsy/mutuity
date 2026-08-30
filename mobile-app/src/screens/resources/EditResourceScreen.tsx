@@ -4,6 +4,7 @@ import { Chip, Divider, Icon, IconButton, Snackbar, Text } from "react-native-pa
 import { useTranslation } from "react-i18next";
 
 import {
+  NavigationBackHeader,
   DateTimePickerField,
   FormFieldLabel,
   FormTextInput,
@@ -230,16 +231,18 @@ export function EditResourceScreen({
 
   return (
     <ScreenContainer testID="edit-resource-screen" style={styles.root}>
-      <View style={styles.headerRow}>
+      <NavigationBackHeader
+        onBack={onBack}
+        accessibilityLabel={t("backToMyHubLabel", { defaultValue: "Back to My Hub" })}
+      />
+
+      <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
           {initialResource
             ? t("editResourceLabel", { defaultValue: "Edit Resource" })
             : t("addResourceLabel", { defaultValue: "Add Resource" })}
         </Text>
-        <PrimaryButton label={t("backToMyHubLabel", { defaultValue: "Back to My Hub" })} onPress={onBack} />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
         <PicturesField
           label={t("resourceImagesEditLabel", { defaultValue: "Pictures" })}
           accessibilityLabel={t("resourceImagesEditLabel", { defaultValue: "Edit resource images" })}
@@ -489,12 +492,6 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
     letterSpacing: 0.6
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.md
   },
   content: {
     gap: designTokens.spacing.sm,

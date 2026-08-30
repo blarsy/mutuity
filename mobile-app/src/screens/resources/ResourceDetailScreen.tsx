@@ -17,7 +17,7 @@ import { Banner, Button, Chip, Icon, IconButton, Snackbar, Text } from "react-na
 import { useTranslation } from "react-i18next";
 import ChatIcon from "../../assets/img/CHAT.svg";
 
-import { FormTextInput, ThemedDialog } from "../../components/primitives";
+import { NavigationBackHeader, FormTextInput, ThemedDialog } from "../../components/primitives";
 import { TokenAmount } from "../../components/TokenAmount";
 import { submitResourceBid } from "../../services/graphql/bids";
 import { fetchCurrentTokenBalance } from "../../services/graphql/economics";
@@ -208,7 +208,6 @@ export function ResourceDetailScreen({
   }, [resolvedResource?.id]);
 
   const images = resolvedResource?.imageUrls ?? [];
-  const hasSingleImage = images.length === 1;
   const hasMultipleImages = images.length > 1;
   const windowDimension = Dimensions.get("window");
   const viewportWidth = Math.max(0, windowDimension.width - 20);
@@ -329,19 +328,13 @@ export function ResourceDetailScreen({
     }
   };
 
-  const backButton = onBack ? (
-    <IconButton
-      icon="arrow-left"
-      size={32}
-      onPress={onBack}
-      accessibilityLabel={t("backLabel", { defaultValue: "Back" })}
-    />
-  ) : null;
-
   if (resolvedLoading) {
     return (
       <View style={styles.stateRoot}>
-        <View style={styles.topActionsRow}>{backButton}</View>
+        <NavigationBackHeader
+          onBack={onBack}
+          accessibilityLabel={t("backLabel", { defaultValue: "Back" })}
+        />
         <View style={styles.stateBody}>
           <ActivityIndicator size="large" />
           <Text variant="bodyMedium" style={styles.stateText}>
@@ -355,7 +348,10 @@ export function ResourceDetailScreen({
   if (resolvedErrorMessage) {
     return (
       <View style={styles.stateRoot}>
-        <View style={styles.topActionsRow}>{backButton}</View>
+        <NavigationBackHeader
+          onBack={onBack}
+          accessibilityLabel={t("backLabel", { defaultValue: "Back" })}
+        />
         <View style={styles.stateBody}>
           <Text accessibilityRole="alert" variant="bodyMedium" style={styles.stateText}>
             {resolvedErrorMessage}
@@ -380,7 +376,10 @@ export function ResourceDetailScreen({
   if (!resolvedResource) {
     return (
       <View style={styles.stateRoot}>
-        <View style={styles.topActionsRow}>{backButton}</View>
+        <NavigationBackHeader
+          onBack={onBack}
+          accessibilityLabel={t("backLabel", { defaultValue: "Back" })}
+        />
         <View style={styles.stateBody}>
           <Text accessibilityRole="alert" variant="bodyMedium" style={styles.stateText}>
             {t("resourceNotAvailableLabel", { defaultValue: "This resource is not available anymore." })}
@@ -392,9 +391,12 @@ export function ResourceDetailScreen({
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <View style={styles.topActionsRow}>
-        {backButton}
-      </View>
+      <NavigationBackHeader
+        onBack={onBack}
+        accessibilityLabel={t("backLabel", { defaultValue: "Back" })}
+      />
+
+      <View style={styles.bodyContent}>
 
       {!resolvedResource.isActive ? (
         <Banner
@@ -708,6 +710,7 @@ export function ResourceDetailScreen({
       <Snackbar visible={bidSuccessVisible} onDismiss={() => setBidSuccessVisible(false)}>
         {t("bidCreationSuccessMessage", { defaultValue: "Your bid has been sent." })}
       </Snackbar>
+      </View>
     </ScrollView>
   );
 }
@@ -737,11 +740,11 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 10,
     paddingTop: 6,
-    paddingBottom: 24,
-    gap: 10
+    paddingBottom: 24
   },
-  topActionsRow: {
-    alignItems: "flex-start"
+  bodyContent: {
+    marginTop: 4,
+    gap: 10
   },
   banner: {
     backgroundColor: designTokens.colors.primaryContainer,

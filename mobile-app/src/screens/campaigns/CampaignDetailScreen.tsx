@@ -4,6 +4,7 @@ import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
+  NavigationBackHeader,
   DateTimePickerField,
   FormFieldLabel,
   FormTextInput,
@@ -238,16 +239,15 @@ export function CampaignDetailScreen({
 
   return (
     <ScreenContainer testID="campaign-detail-screen" style={styles.root}>
-      <View style={styles.headerRow}>
+      <NavigationBackHeader
+        onBack={onBack}
+        accessibilityLabel={t("backToMyHubLabel", { ns: "common", defaultValue: "Back" })}
+      />
+
+      <View style={styles.headerTitleRow}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
           {isNew ? t("newCampaignTitle", { ns: "us3", defaultValue: "New Campaign" }) : campaign.title}
         </Text>
-        {onBack && (
-          <PrimaryButton
-            label={t("backToMyHubLabel", { ns: "common", defaultValue: "Back" })}
-            onPress={onBack}
-          />
-        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -449,11 +449,8 @@ const styles = StyleSheet.create({
     paddingTop: designTokens.spacing.lg,
     position: "relative"
   },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm,
+  headerTitleRow: {
+    marginTop: 4,
     marginBottom: designTokens.spacing.md
   },
   pageTitle: {
