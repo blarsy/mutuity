@@ -428,7 +428,7 @@ export function ResourceDetailScreen({
       ) : null}
 
       {images.length > 0 ? (
-        <View style={[styles.galleryFrame, { height: viewportHeight + 56 }]}> 
+        <View style={[styles.galleryFrame, { height: viewportHeight }]}> 
           <ScrollView
             horizontal
             pagingEnabled
@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   galleryFrame: {
-    marginBottom: 10,
+    //marginBottom: 10,
     position: "relative"
   },
   galleryContent: {

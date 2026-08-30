@@ -71,7 +71,6 @@ function resolveCreatorDisplayName(
   account: { displayName?: string | null; externalSubject?: string | null } | null | undefined,
   creatorAccountId: string
 ): string {
-  console.log("account:", account);
   const displayName = account?.displayName?.trim();
   if (displayName && !isUuidLike(displayName)) {
     return displayName;
@@ -412,7 +411,6 @@ function normalizeResourceDetail(resource: Resource): ResourceDetailItem | null 
   if (!resource.id || !resource.title || !resource.creatorAccountId) {
     return null;
   }
-  console.log("resource:", resource);
   return {
     id: String(resource.id),
     title: resource.title,

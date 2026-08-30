@@ -47,7 +47,6 @@ function AccountAvatarContent({ authenticated, displayName, avatarUrl, size = 24
 }
 
 export function AccountAvatar({ authenticated, displayName, avatarUrl, size = 24, onPress, style }: AccountAvatarProps): React.JSX.Element {
-  console.log("AccountAvatar props:", { authenticated, displayName, avatarUrl, size, onPress, style }); 
   const content = (
     <AccountAvatarContent
       authenticated={authenticated}
