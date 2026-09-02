@@ -3,7 +3,7 @@ begin;
 -- One-shot import from legacy Tope-la schema (sb.*) into Mutuity.
 -- Intended for an empty Mutuity database.
 
-select pg_advisory_xact_lock(hashtext('topela_accounts_resources_import_v1'));
+select pg_advisory_xact_lock(hashtext('topela_accounts_resources_import_v2'));
 
 create extension if not exists dblink;
 
@@ -227,6 +227,75 @@ from dblink(
     from sb.broadcast_prefs
   $$
 ) as t(account_id uuid, event_type integer, days_between_summaries integer);
+
+create temporary table src_conversations (
+  id uuid,
+  resource_id uuid,
+  last_message_id uuid,
+  created timestamptz
+) on commit drop;
+
+insert into src_conversations
+select *
+from dblink(
+  :'source_db_url',
+  $$
+    select id, resource_id, last_message_id, created
+    from sb.conversations
+  $$
+) as t(id uuid, resource_id uuid, last_message_id uuid, created timestamptz);
+
+create temporary table src_participants (
+  id uuid,
+  account_id uuid,
+  conversation_id uuid,
+  created timestamptz
+) on commit drop;
+
+insert into src_participants
+select *
+from dblink(
+  :'source_db_url',
+  $$
+    select id, account_id, conversation_id, created
+    from sb.participants
+  $$
+) as t(id uuid, account_id uuid, conversation_id uuid, created timestamptz);
+
+create temporary table src_messages (
+  id uuid,
+  participant_id uuid,
+  text text,
+  received timestamptz,
+  created timestamptz,
+  image_id uuid
+) on commit drop;
+
+insert into src_messages
+select *
+from dblink(
+  :'source_db_url',
+  $$
+    select id, participant_id, text, received, created, image_id
+    from sb.messages
+  $$
+) as t(id uuid, participant_id uuid, text text, received timestamptz, created timestamptz, image_id uuid);
+
+create temporary table src_unread_messages (
+  participant_id uuid,
+  message_id uuid,
+  created timestamptz
+) on commit drop;
+
+insert into src_unread_messages
+select *
+from dblink(
+  :'source_db_url',
+  $$
+    select participant_id, message_id, created
+    from sb.unread_messages
+  $$
+) as t(participant_id uuid, message_id uuid, created timestamptz);
 
 -- Build reusable account staging with normalized profile links.
 create temporary table stg_accounts on commit drop as
@@ -571,6 +640,303 @@ join app_public.resource_category c
  and c.is_active = true
 on conflict do nothing;
 
+-- Build resource-conversation staging. Legacy Tope-la conversations are resource-scoped;
+-- Mutuity models them as resource owner plus one bidder/contact account.
+create temporary table stg_legacy_conversation_shape on commit drop as
+select
+  c.id as conversation_id,
+  c.resource_id,
+  r.creator_account_id as owner_account_id,
+  count(distinct p.account_id) as participant_account_count,
+  count(distinct p.account_id) filter (where s.account_id is not null) as importable_participant_account_count,
+  bool_or(p.account_id = r.creator_account_id) as includes_resource_owner,
+  count(distinct p.account_id) filter (where p.account_id <> r.creator_account_id and s.account_id is not null) as importable_non_owner_count
+from src_conversations c
+join app_public.resource r
+  on r.id = c.resource_id
+left join src_participants p
+  on p.conversation_id = c.id
+left join stg_accounts s
+  on s.account_id = p.account_id
+group by c.id, c.resource_id, r.creator_account_id;
+
+-- Warn on conversations that reference resources not imported into Mutuity.
+-- Later staging joins app_public.resource, so these conversations are ignored.
+do $$
+declare
+  v_missing_resource_count integer;
+  missing_rec record;
+begin
+  select count(*)
+  into v_missing_resource_count
+  from src_conversations c
+  left join app_public.resource r
+    on r.id = c.resource_id
+  where r.id is null;
+
+  if v_missing_resource_count > 0 then
+    raise notice 'Conversation IDs with missing target resource:';
+    for missing_rec in
+      select c.id, c.resource_id
+      from src_conversations c
+      left join app_public.resource r
+        on r.id = c.resource_id
+      where r.id is null
+    loop
+      raise notice '  conversation_id: %, resource_id: %', missing_rec.id, missing_rec.resource_id;
+    end loop;
+    raise notice 'Found % conversations whose resource was not imported. Ignoring those conversations.', v_missing_resource_count;
+  end if;
+end;
+$$;
+
+-- Warn on legacy conversation shapes Mutuity cannot represent safely.
+-- Later staging filters to only import supported two-person resource conversations.
+do $$
+declare
+  v_invalid_shape_count integer;
+  invalid_rec record;
+begin
+  select count(*)
+  into v_invalid_shape_count
+  from stg_legacy_conversation_shape s
+  where s.participant_account_count <> 2
+     or s.importable_participant_account_count <> 2
+     or s.includes_resource_owner is not true
+     or s.importable_non_owner_count <> 1;
+
+  if v_invalid_shape_count > 0 then
+    raise notice 'Unsupported legacy conversation shapes:';
+    for invalid_rec in
+      select *
+      from stg_legacy_conversation_shape s
+      where s.participant_account_count <> 2
+         or s.importable_participant_account_count <> 2
+         or s.includes_resource_owner is not true
+         or s.importable_non_owner_count <> 1
+    loop
+      raise notice '  conversation_id: %, resource_id: %, participants: %, importable_participants: %, includes_owner: %, non_owner_count: %',
+        invalid_rec.conversation_id,
+        invalid_rec.resource_id,
+        invalid_rec.participant_account_count,
+        invalid_rec.importable_participant_account_count,
+        invalid_rec.includes_resource_owner,
+        invalid_rec.importable_non_owner_count;
+    end loop;
+    raise notice 'Found % legacy conversations that cannot map to Mutuity resource conversations. Ignoring those conversations.', v_invalid_shape_count;
+  end if;
+end;
+$$;
+
+create temporary table stg_resource_conversation_pairs on commit drop as
+select
+  c.id as legacy_conversation_id,
+  c.resource_id,
+  r.creator_account_id as owner_account_id,
+  other_p.account_id as bidder_account_id,
+  coalesce(c.created, now()) as created_at
+from src_conversations c
+join app_public.resource r
+  on r.id = c.resource_id
+join stg_legacy_conversation_shape shape
+  on shape.conversation_id = c.id
+ and shape.participant_account_count = 2
+ and shape.importable_participant_account_count = 2
+ and shape.includes_resource_owner is true
+ and shape.importable_non_owner_count = 1
+join src_participants other_p
+  on other_p.conversation_id = c.id
+ and other_p.account_id <> r.creator_account_id
+join stg_accounts other_account
+  on other_account.account_id = other_p.account_id;
+
+create temporary table stg_resource_conversation_targets on commit drop as
+with canonical as (
+  select distinct on (p.resource_id, p.owner_account_id, p.bidder_account_id)
+    p.resource_id,
+    p.owner_account_id,
+    p.bidder_account_id,
+    p.legacy_conversation_id as target_conversation_id
+  from stg_resource_conversation_pairs p
+  order by p.resource_id, p.owner_account_id, p.bidder_account_id, p.created_at, p.legacy_conversation_id
+), activity as (
+  select
+    p.resource_id,
+    p.owner_account_id,
+    p.bidder_account_id,
+    min(p.created_at) as created_at,
+    max(coalesce(m.created, p.created_at)) as updated_at
+  from stg_resource_conversation_pairs p
+  left join src_participants participant
+    on participant.conversation_id = p.legacy_conversation_id
+  left join src_messages m
+    on m.participant_id = participant.id
+  group by p.resource_id, p.owner_account_id, p.bidder_account_id
+)
+select
+  p.legacy_conversation_id,
+  c.target_conversation_id,
+  p.resource_id,
+  p.owner_account_id,
+  p.bidder_account_id,
+  a.created_at,
+  a.updated_at
+from stg_resource_conversation_pairs p
+join canonical c
+  on c.resource_id = p.resource_id
+ and c.owner_account_id = p.owner_account_id
+ and c.bidder_account_id = p.bidder_account_id
+join activity a
+  on a.resource_id = p.resource_id
+ and a.owner_account_id = p.owner_account_id
+ and a.bidder_account_id = p.bidder_account_id;
+
+-- Remove pre-existing Mutuity resource conversations for the same resource/account pair.
+-- This keeps the legacy import authoritative in non-live/test target databases.
+delete from app_public.resource_conversation existing
+using (
+  select distinct target_conversation_id, resource_id, owner_account_id, bidder_account_id
+  from stg_resource_conversation_targets
+) incoming
+where existing.id = incoming.target_conversation_id
+   or (
+     existing.resource_id = incoming.resource_id
+     and existing.owner_account_id = incoming.owner_account_id
+     and existing.bidder_account_id = incoming.bidder_account_id
+   );
+
+-- Also clear any same-ID test messages/images left outside those conversations.
+delete from app_public.resource_message_image existing
+using src_messages m
+where existing.message_id = m.id;
+
+delete from app_public.resource_message existing
+using src_messages m
+where existing.id = m.id;
+
+-- Import resource conversations.
+insert into app_public.resource_conversation (
+  id,
+  resource_bid_id,
+  resource_id,
+  owner_account_id,
+  bidder_account_id,
+  created_at,
+  updated_at
+)
+select distinct on (target_conversation_id)
+  target_conversation_id,
+  null,
+  resource_id,
+  owner_account_id,
+  bidder_account_id,
+  created_at,
+  coalesce(updated_at, created_at)
+from stg_resource_conversation_targets
+order by target_conversation_id;
+
+do $$
+begin
+  if exists (
+    select 1
+    from pg_trigger
+    where tgrelid = 'app_public.resource_message'::regclass
+      and tgname = 'trg_resource_message_account_events'
+      and not tgisinternal
+  ) then
+    alter table app_public.resource_message disable trigger trg_resource_message_account_events;
+  end if;
+
+  if exists (
+    select 1
+    from pg_trigger
+    where tgrelid = 'app_public.resource_message'::regclass
+      and tgname = 'trg_resource_message_inbox_notifications'
+      and not tgisinternal
+  ) then
+    alter table app_public.resource_message disable trigger trg_resource_message_inbox_notifications;
+  end if;
+end;
+$$;
+
+-- Import resource messages. Tope-la stores unread state separately; Mutuity stores
+-- a nullable read_at timestamp on the message, which maps cleanly for two-person threads.
+insert into app_public.resource_message (
+  id,
+  conversation_id,
+  sender_account_id,
+  body,
+  created_at,
+  read_at
+)
+select
+  m.id,
+  t.target_conversation_id,
+  sender.account_id,
+  coalesce(nullif(btrim(m.text), ''), '[image]'),
+  coalesce(m.created, now()),
+  case
+    when exists (
+      select 1
+      from src_unread_messages um
+      join src_participants recipient
+        on recipient.id = um.participant_id
+      where um.message_id = m.id
+        and recipient.conversation_id = sender.conversation_id
+        and recipient.account_id <> sender.account_id
+    ) then null
+    else coalesce(m.received, m.created, now())
+  end as read_at
+from src_messages m
+join src_participants sender
+  on sender.id = m.participant_id
+join stg_resource_conversation_targets t
+  on t.legacy_conversation_id = sender.conversation_id
+where sender.account_id in (t.owner_account_id, t.bidder_account_id);
+
+do $$
+begin
+  if exists (
+    select 1
+    from pg_trigger
+    where tgrelid = 'app_public.resource_message'::regclass
+      and tgname = 'trg_resource_message_inbox_notifications'
+      and not tgisinternal
+  ) then
+    alter table app_public.resource_message enable trigger trg_resource_message_inbox_notifications;
+  end if;
+
+  if exists (
+    select 1
+    from pg_trigger
+    where tgrelid = 'app_public.resource_message'::regclass
+      and tgname = 'trg_resource_message_account_events'
+      and not tgisinternal
+  ) then
+    alter table app_public.resource_message enable trigger trg_resource_message_account_events;
+  end if;
+end;
+$$;
+
+-- Import optional message images.
+insert into app_public.resource_message_image (
+  message_id,
+  image_url,
+  sort_order,
+  created_at
+)
+select
+  m.id,
+  :'cloudinary_base_url' || btrim(i.public_id),
+  0,
+  coalesce(m.created, now())
+from src_messages m
+join src_images i
+  on i.id = m.image_id
+join app_public.resource_message rm
+  on rm.id = m.id
+where nullif(btrim(i.public_id), '') is not null;
+
 -- Import broadcast preferences where a direct mapping exists.
 -- Legacy mapping used in Tope-la internals:
 -- 1 => message push
@@ -619,12 +985,24 @@ declare
   v_accounts integer;
   v_resources integer;
   v_categories integer;
+  v_conversations integer;
+  v_messages integer;
+  v_message_images integer;
 begin
   select count(*) into v_accounts from app_public.account;
   select count(*) into v_resources from app_public.resource;
   select count(*) into v_categories from app_public.resource_category_assignment;
+  select count(*) into v_conversations from app_public.resource_conversation;
+  select count(*) into v_messages from app_public.resource_message;
+  select count(*) into v_message_images from app_public.resource_message_image;
 
-  raise notice 'Topela migration summary: % accounts, % resources, % category links', v_accounts, v_resources, v_categories;
+  raise notice 'Topela migration summary: % accounts, % resources, % category links, % resource conversations, % resource messages, % message images',
+    v_accounts,
+    v_resources,
+    v_categories,
+    v_conversations,
+    v_messages,
+    v_message_images;
 end;
 $$;
 

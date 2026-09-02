@@ -78,17 +78,6 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     return <LoadingState label={t("chatConversationLoading", { defaultValue: "Opening conversation..." })} />;
   }
 
-  if (activeConversationId && currentAccountId) {
-    return (
-      <ChatDetailScreen
-        conversationId={activeConversationId}
-        currentAccountId={currentAccountId}
-        conversation={null}
-        onBackToList={() => setActiveConversationId(null)}
-      />
-    );
-  }
-
   if (selectedAccountId) {
     return (
       <AccountPublicProfileScreen
@@ -117,6 +106,19 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
           void handleOpenResourceChat(resource);
         }}
         onBack={() => setSelectedResourceId(null)}
+      />
+    );
+  }
+
+  if (activeConversationId && currentAccountId) {
+    return (
+      <ChatDetailScreen
+        conversationId={activeConversationId}
+        currentAccountId={currentAccountId}
+        conversation={null}
+        onBackToList={() => setActiveConversationId(null)}
+        onOpenLinkedResource={(resourceId) => setSelectedResourceId(resourceId)}
+        onOpenLinkedAccount={(accountId) => setSelectedAccountId(accountId)}
       />
     );
   }

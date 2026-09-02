@@ -649,20 +649,17 @@ export const RECEIVED_NEED_CLAIMS_QUERY = gql`
 `;
 
 export const CHAT_CONVERSATIONS_QUERY = gql`
-  query ChatConversations($first: Int, $after: Cursor) {
-    allChatConversationSummaries(first: $first, after: $after) {
+  query ChatConversations($pLimit: Int, $pOffset: Int) {
+    listChatConversations(pLimit: $pLimit, pOffset: $pOffset) {
       nodes {
         conversationId
         conversationKind
         contextTitle
+        otherAccountId
+        otherAccountDisplayName
         lastMessagePreview
         lastActivityAt
-        otherAccountId
         unreadCount
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
       }
     }
   }
@@ -716,6 +713,11 @@ export const RESOURCE_MESSAGES_QUERY = gql`
         body
         createdAt
         senderAccountId
+        resourceMessageImagesByMessageId {
+          nodes {
+            imageUrl
+          }
+        }
       }
       pageInfo {
         hasNextPage
@@ -733,6 +735,17 @@ export const CREATE_RESOURCE_MESSAGE_MUTATION = gql`
         body
         createdAt
         senderAccountId
+      }
+    }
+  }
+`;
+
+export const CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION = gql`
+  mutation CreateResourceMessageImage($input: CreateResourceMessageImageInput!) {
+    createResourceMessageImage(input: $input) {
+      resourceMessageImage {
+        id
+        imageUrl
       }
     }
   }

@@ -394,19 +394,6 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
     );
   }
 
-  if (openedBidConversationId && accountId) {
-    return (
-      <ChatDetailScreen
-        conversationId={openedBidConversationId}
-        currentAccountId={accountId}
-        conversation={null}
-        onBackToList={() => {
-          setOpenedBidConversationId(null);
-        }}
-      />
-    );
-  }
-
   if (openedBidAccountId) {
     return (
       <AccountPublicProfileScreen
@@ -428,6 +415,25 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
         }}
         onBack={() => {
           setOpenedBidResourceId(null);
+        }}
+      />
+    );
+  }
+
+  if (openedBidConversationId && accountId) {
+    return (
+      <ChatDetailScreen
+        conversationId={openedBidConversationId}
+        currentAccountId={accountId}
+        conversation={null}
+        onBackToList={() => {
+          setOpenedBidConversationId(null);
+        }}
+        onOpenLinkedResource={(resourceId) => {
+          setOpenedBidResourceId(resourceId);
+        }}
+        onOpenLinkedAccount={(otherAccountId) => {
+          setOpenedBidAccountId(otherAccountId);
         }}
       />
     );
@@ -532,6 +538,8 @@ function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [openedResourceId, setOpenedResourceId] = useState<string | null>(null);
+  const [openedAccountId, setOpenedAccountId] = useState<string | null>(null);
 
   if (!authenticated) {
     return (
@@ -547,6 +555,26 @@ function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React
     return <LoadingScreen />;
   }
 
+  if (openedAccountId) {
+    return (
+      <AccountPublicProfileScreen
+        accountId={openedAccountId}
+        onBack={() => setOpenedAccountId(null)}
+      />
+    );
+  }
+
+  if (openedResourceId) {
+    return (
+      <ResourceDetailScreen
+        resourceId={openedResourceId}
+        currentAccountId={accountId}
+        onOpenCreatorAccount={(creatorAccountId) => setOpenedAccountId(creatorAccountId)}
+        onBack={() => setOpenedResourceId(null)}
+      />
+    );
+  }
+
   if (activeConversationId) {
     return (
       <ChatDetailScreen
@@ -554,6 +582,8 @@ function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React
         currentAccountId={accountId}
         conversation={null}
         onBackToList={() => setActiveConversationId(null)}
+        onOpenLinkedResource={(resourceId) => setOpenedResourceId(resourceId)}
+        onOpenLinkedAccount={(otherAccountId) => setOpenedAccountId(otherAccountId)}
       />
     );
   }

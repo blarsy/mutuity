@@ -1,13 +1,14 @@
 import { apolloClient } from "./client";
 import {
+  type CreateResourceMessageImageInput,
   type CreateResourceMessageInput,
   type Mutation,
-  type QueryAllChatConversationSummariesArgs,
-  type QueryAllResourceMessagesArgs,
+  type QueryListChatConversationsArgs,
   type QueryResourceConversationByIdArgs
 } from "./generated";
 import {
   CHAT_CONVERSATIONS_QUERY,
+  CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION,
   CREATE_RESOURCE_MESSAGE_MUTATION,
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
   RESOURCE_CONVERSATION_LOOKUP_QUERY,
@@ -21,10 +22,11 @@ import type { ChatDetailConversation, ChatMessageItem } from "../../screens/chat
 const DEFAULT_PAGE_SIZE = 50;
 
 interface ChatConversationsQueryResult {
-  allChatConversationSummaries: {
+  listChatConversations: {
     nodes: Array<{
       conversationId: string | null;
       contextTitle: string | null;
+      otherAccountDisplayName: string | null;
       lastMessagePreview: string | null;
       lastActivityAt: string | null;
       unreadCount: number | null;
@@ -35,6 +37,8 @@ interface ChatConversationsQueryResult {
 interface ResourceConversationByIdQueryResult {
   resourceConversationById: {
     id: string;
+    ownerAccountId: string;
+    bidderAccountId: string;
     accountByOwnerAccountId: { id: string; displayName: string | null } | null;
     accountByBidderAccountId: { id: string; displayName: string | null } | null;
     resourceByResourceId: { id: string; title: string | null } | null;
@@ -48,12 +52,17 @@ interface ResourceMessagesQueryResult {
       body: string;
       createdAt: string | null;
       senderAccountId: string;
+      resourceMessageImagesByMessageId: { nodes: Array<{ imageUrl: string }> } | null;
     }>;
   } | null;
 }
 
 interface CreateResourceMessageMutationResult {
   createResourceMessage: Pick<Mutation, "createResourceMessage">["createResourceMessage"];
+}
+
+interface CreateResourceMessageImageMutationResult {
+  createResourceMessageImage: Pick<Mutation, "createResourceMessageImage">["createResourceMessageImage"];
 }
 
 interface MarkResourceMessagesReadMutationResult {
@@ -79,17 +88,17 @@ interface SendResourceMessageDirectMutationResult {
 }
 
 export async function fetchChatConversations(): Promise<ChatConversationItem[]> {
-  const variables: QueryAllChatConversationSummariesArgs = {
-    first: DEFAULT_PAGE_SIZE
+  const variables: QueryListChatConversationsArgs = {
+    pLimit: DEFAULT_PAGE_SIZE
   };
 
-  const { data } = await apolloClient.query<ChatConversationsQueryResult, QueryAllChatConversationSummariesArgs>({
+  const { data } = await apolloClient.query<ChatConversationsQueryResult, QueryListChatConversationsArgs>({
     query: CHAT_CONVERSATIONS_QUERY,
     variables,
     fetchPolicy: "network-only"
   });
 
-  return (data?.allChatConversationSummaries?.nodes ?? [])
+  return (data?.listChatConversations?.nodes ?? [])
     .map((node) => {
       if (!node.conversationId) {
         return null;
@@ -97,7 +106,7 @@ export async function fetchChatConversations(): Promise<ChatConversationItem[]> 
 
       return {
         id: node.conversationId,
-        otherAccountDisplayName: "Conversation",
+        otherAccountDisplayName: node.otherAccountDisplayName ?? "Conversation",
         linkedResourceTitle: node.contextTitle,
         lastMessagePreview: node.lastMessagePreview ?? "",
         lastMessageAt: node.lastActivityAt,
@@ -118,9 +127,9 @@ export async function fetchChatConversationDetail(
       variables: { id: conversationId },
       fetchPolicy: "network-only"
     }),
-    apolloClient.query<ResourceMessagesQueryResult, QueryAllResourceMessagesArgs>({
+    apolloClient.query<ResourceMessagesQueryResult, { conversationId: string; first: number }>({
       query: RESOURCE_MESSAGES_QUERY,
-      variables: { condition: { conversationId }, first: DEFAULT_PAGE_SIZE },
+      variables: { conversationId, first: DEFAULT_PAGE_SIZE },
       fetchPolicy: "network-only"
     })
   ]);
@@ -133,10 +142,15 @@ export async function fetchChatConversationDetail(
   const owner = conversationNode.accountByOwnerAccountId;
   const bidder = conversationNode.accountByBidderAccountId;
   const otherAccountDisplayName = owner?.id === currentAccountId ? bidder?.displayName : owner?.displayName;
+  const otherAccountId = conversationNode.ownerAccountId === currentAccountId
+    ? conversationNode.bidderAccountId
+    : conversationNode.ownerAccountId;
 
   const conversation: ChatDetailConversation = {
     id: conversationNode.id,
+    otherAccountId: otherAccountId ?? null,
     otherAccountDisplayName: otherAccountDisplayName ?? "Conversation",
+    linkedResourceId: conversationNode.resourceByResourceId?.id ?? null,
     linkedResourceTitle: conversationNode.resourceByResourceId?.title ?? null
   };
 
@@ -144,7 +158,8 @@ export async function fetchChatConversationDetail(
     id: node.id,
     direction: node.senderAccountId === currentAccountId ? "outgoing" : "incoming",
     body: node.body,
-    createdAt: node.createdAt
+    createdAt: node.createdAt,
+    imageUrls: (node.resourceMessageImagesByMessageId?.nodes ?? []).map((image) => image.imageUrl)
   })) as ChatMessageItem[];
 
   return {
@@ -156,7 +171,8 @@ export async function fetchChatConversationDetail(
 export async function sendResourceMessage(
   conversationId: string,
   senderAccountId: string,
-  messageText: string
+  messageText: string,
+  imageUrl?: string | null
 ): Promise<void> {
   const variables: { input: CreateResourceMessageInput } = {
     input: {
@@ -168,10 +184,25 @@ export async function sendResourceMessage(
     }
   };
 
-  await apolloClient.mutate<CreateResourceMessageMutationResult, { input: CreateResourceMessageInput }>({
+  const result = await apolloClient.mutate<CreateResourceMessageMutationResult, { input: CreateResourceMessageInput }>({
     mutation: CREATE_RESOURCE_MESSAGE_MUTATION,
     variables
   });
+
+  const messageId = result.data?.createResourceMessage?.resourceMessage?.id;
+  if (imageUrl && messageId) {
+    await apolloClient.mutate<CreateResourceMessageImageMutationResult, { input: CreateResourceMessageImageInput }>({
+      mutation: CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION,
+      variables: {
+        input: {
+          resourceMessageImage: {
+            messageId,
+            imageUrl
+          }
+        }
+      }
+    });
+  }
 }
 
 export async function markConversationMessagesRead(conversationId: string): Promise<void> {

@@ -6,7 +6,9 @@ import { ChatDetailScreen, type ChatDetailConversation, type ChatMessageItem } f
 
 const CONVERSATION: ChatDetailConversation = {
   id: "conv-001",
+  otherAccountId: "account-marie",
   otherAccountDisplayName: "Marie",
+  linkedResourceId: "resource-001",
   linkedResourceTitle: "Cargo bike weekend rental"
 };
 

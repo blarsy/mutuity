@@ -17,9 +17,9 @@ export interface ListingContextHeaderProps {
   deletedAt?: string | null;
   testID?: string;
   accessibilityLabel?: string;
-  onPress?: () => void;
-  onPressListing?: () => void;
-  onPressAuthor?: () => void;
+  onPress?: (() => void) | undefined;
+  onPressListing?: (() => void) | undefined;
+  onPressAuthor?: (() => void) | undefined;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
