@@ -1,5 +1,13 @@
 import { gql } from "@apollo/client";
 
+export const ACCOUNT_EVENTS_SUBSCRIPTION = gql`
+  subscription AccountEvents($topic: String!) {
+    listen(topic: $topic) {
+      relatedNodeId
+    }
+  }
+`;
+
 export const ACCOUNT_BY_ID_QUERY = gql`
   query AccountById($id: UUID!) {
     accountById(id: $id) {

@@ -21,6 +21,7 @@ import {
   markConversationMessagesRead,
   sendResourceMessage
 } from "../../services/graphql/chat";
+import { subscribeToAccountEvents } from "../../services/realtime/accountEvents";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -110,6 +111,33 @@ export function ChatDetailScreen({
   useEffect(() => {
     void loadConversation();
   }, [loadConversation]);
+
+  const refreshMessagesSilently = useCallback(async (): Promise<void> => {
+    if (hasInjectedDetail || !conversationId || !currentAccountId) {
+      return;
+    }
+
+    try {
+      const result = await fetchChatConversationDetail(conversationId, currentAccountId);
+      setRemoteConversation(result.conversation);
+      setRemoteMessages(result.messages);
+      await markConversationMessagesRead(conversationId);
+    } catch {
+      // Ignore transient real-time refresh errors; the next event or a manual retry will resync.
+    }
+  }, [conversationId, currentAccountId, hasInjectedDetail]);
+
+  useEffect(() => {
+    if (hasInjectedDetail || !currentAccountId) {
+      return undefined;
+    }
+
+    const subscription = subscribeToAccountEvents(currentAccountId, () => {
+      void refreshMessagesSilently();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [currentAccountId, hasInjectedDetail, refreshMessagesSilently]);
 
   const resolvedConversation = conversation ?? remoteConversation;
   const resolvedMessages = messages ?? remoteMessages;

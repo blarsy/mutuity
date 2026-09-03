@@ -47,6 +47,7 @@
     "expo-location": "~18.1.6",
     "expo-secure-store": "~14.2.4",
     "graphql": "^16.14.2",
+    "graphql-ws": "^6.2.1",
     "i18next": "^26.3.4",
     "react": "19.0.0",
     "react-i18next": "^17.0.8",
