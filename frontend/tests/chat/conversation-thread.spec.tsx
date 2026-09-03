@@ -6,7 +6,7 @@ import {
   isComposerBodyReady,
   parseImageUrls,
   MAX_IMAGE_ATTACHMENTS,
-  sortMessagesByCreatedAtDesc
+  sortMessagesByCreatedAtAsc
 } from "../../src/features/chat/ConversationThread";
 import { conversationParticipantUrl } from "../../src/features/chat/chatRouting";
 
@@ -182,15 +182,15 @@ describe("parseImageUrls", () => {
   });
 });
 
-describe("sortMessagesByCreatedAtDesc", () => {
-  it("orders the newest messages first", () => {
+describe("sortMessagesByCreatedAtAsc", () => {
+  it("orders the oldest messages first", () => {
     expect(
-      sortMessagesByCreatedAtDesc([
+      sortMessagesByCreatedAtAsc([
         { createdAt: "2024-01-01T10:00:00.000Z", id: "older" },
         { createdAt: "2024-01-01T12:00:00.000Z", id: "newer" },
         { createdAt: "2024-01-01T11:00:00.000Z", id: "middle" }
       ]).map(message => message.id)
-    ).toEqual(["newer", "middle", "older"]);
+    ).toEqual(["older", "middle", "newer"]);
   });
 });
 

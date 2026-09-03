@@ -127,12 +127,12 @@ type MarkClaimMessagesReadMutationData = {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const NEAR_BOTTOM_THRESHOLD_PX = 80;
+const NEAR_BOTTOM_THRESHOLD_PX = 50;
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export function sortMessagesByCreatedAtDesc<T extends { createdAt: string }>(messages: T[]): T[] {
+export function sortMessagesByCreatedAtAsc<T extends { createdAt: string }>(messages: T[]): T[] {
   return [...messages].sort(
-    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    (left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
   );
 }
 
@@ -195,13 +195,13 @@ export function ConversationThread({
   const claimConv = claimData?.claimConversationById ?? null;
 
   const messages: Message[] = isResource
-    ? sortMessagesByCreatedAtDesc(
+    ? sortMessagesByCreatedAtAsc(
         (resourceConv?.resourceMessagesByConversationId.nodes ?? []).map(m => ({
           ...m,
           images: m.resourceMessageImagesByMessageId.nodes
         }))
       )
-    : sortMessagesByCreatedAtDesc(
+    : sortMessagesByCreatedAtAsc(
         (claimConv?.claimMessagesByConversationId.nodes ?? []).map(m => ({
           ...m,
           images: m.claimMessageImagesByMessageId.nodes
@@ -257,46 +257,52 @@ export function ConversationThread({
   const [showScrollDown, setShowScrollDown] = useState(false);
   const isInitialLoad = useRef(true);
   const prevMessageCount = useRef(0);
+  // Tracks the pre-render position, since appended messages grow scrollHeight before effects run.
+  const wasAtBottom = useRef(true);
 
-  const isNearTop = useCallback(() => {
+  const isNearBottom = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return true;
-    return el.scrollTop <= NEAR_BOTTOM_THRESHOLD_PX;
+    return el.scrollHeight - el.scrollTop - el.clientHeight <= NEAR_BOTTOM_THRESHOLD_PX;
   }, []);
 
-  const scrollToTop = useCallback((smooth = false) => {
+  const scrollToBottom = useCallback((smooth = false) => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollTo({ top: 0, behavior: smooth ? "smooth" : "instant" });
+    wasAtBottom.current = true;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "instant" });
   }, []);
 
   const handleScroll = useCallback(() => {
-    setShowScrollDown(!isNearTop());
-  }, [isNearTop]);
+    const nearBottom = isNearBottom();
+    wasAtBottom.current = nearBottom;
+    setShowScrollDown(!nearBottom);
+  }, [isNearBottom]);
 
   // Scroll on initial load; conditionally on new messages
   useEffect(() => {
     if (messages.length === 0) return;
     if (isInitialLoad.current) {
-      scrollToTop(false);
+      scrollToBottom(false);
       isInitialLoad.current = false;
       prevMessageCount.current = messages.length;
       return;
     }
     if (messages.length > prevMessageCount.current) {
       prevMessageCount.current = messages.length;
-      if (isNearTop()) {
-        scrollToTop(true);
+      if (wasAtBottom.current) {
+        scrollToBottom(true);
       } else {
         setShowScrollDown(true);
       }
     }
-  }, [messages.length, scrollToTop, isNearTop]);
+  }, [messages.length, scrollToBottom]);
 
   // Reset on conversation change
   useEffect(() => {
     isInitialLoad.current = true;
     prevMessageCount.current = 0;
+    wasAtBottom.current = true;
     setShowScrollDown(false);
   }, [conversationId]);
 
@@ -403,7 +409,7 @@ export function ConversationThread({
         <Box sx={{ bottom: 80, position: "absolute", right: 16, zIndex: 10 }}>
           <Fab
             color="primary"
-            onClick={() => scrollToTop(true)}
+            onClick={() => scrollToBottom(true)}
             size="small"
           >
             <KeyboardDoubleArrowDownIcon />
@@ -424,8 +430,8 @@ export function ConversationThread({
           onSent={() => {
             if (isResource) resourceRefetch();
             else claimRefetch();
-            // After sending, keep the latest message visible at the top.
-            setTimeout(() => scrollToTop(true), 100);
+            // After sending, keep the latest message visible at the bottom.
+            setTimeout(() => scrollToBottom(true), 100);
           }}
           resourceConv={resourceConv}
           t={t}
