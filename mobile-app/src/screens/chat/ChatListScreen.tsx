@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Badge, Text } from "react-native-paper";
+import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import ChatBackground from "../../assets/img/background-chat.svg";
+import { AccountAvatar } from "../../components/AccountAvatar";
 import { ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -14,7 +16,9 @@ import { designTokens } from "../../theme/tokens";
 export interface ChatConversationItem {
   id: string;
   otherAccountDisplayName: string;
+  otherAccountAvatarUrl?: string | null;
   linkedResourceTitle: string | null;
+  linkedResourceImageUrl?: string | null;
   lastMessagePreview: string;
   lastMessageAt: string | null;
   unreadCount: number;
@@ -93,15 +97,14 @@ export function ChatListScreen({
 
   return (
     <ScreenContainer testID="chat-list-screen" style={styles.root}>
-      <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-        {t("chatLabel", { defaultValue: "Chat" })}
-      </Text>
-
+      <ChatBackground width="100%" height="100%" fill={designTokens.colors.secondary} style={styles.background} />
       <ScrollView contentContainerStyle={styles.listContent}>
         {sortedConversations.map((conversation) => {
           const formattedDate = conversation.lastMessageAt
             ? new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit" }).format(new Date(conversation.lastMessageAt))
             : t("dateUnknown", { defaultValue: "Unknown date" });
+          const contextTitle = conversation.linkedResourceTitle
+            ?? t("chatGenericThread", { defaultValue: "Conversation" });
 
           return (
             <Pressable
@@ -119,17 +122,30 @@ export function ChatListScreen({
               style={styles.row}
               testID={`chat-list-row-${conversation.id}`}
             >
+              <View style={styles.mediaFrame}>
+                {conversation.linkedResourceImageUrl ? (
+                  <Image source={{ uri: conversation.linkedResourceImageUrl }} style={styles.resourceImage} />
+                ) : (
+                  <View style={styles.resourceImagePlaceholder}>
+                    <Icon source="image-off-outline" size={26} color="rgba(0, 0, 0, 0.48)" />
+                  </View>
+                )}
+                <View style={styles.avatarWrap}>
+                  <AccountAvatar
+                    authenticated
+                    displayName={conversation.otherAccountDisplayName}
+                    avatarUrl={conversation.otherAccountAvatarUrl ?? null}
+                    size={46}
+                  />
+                </View>
+              </View>
+
               <View style={styles.rowMain}>
                 <Text variant="titleMedium" numberOfLines={1} style={styles.rowTitle}>
                   {conversation.otherAccountDisplayName}
                 </Text>
                 <Text variant="bodySmall" numberOfLines={1} style={styles.rowSubtitle}>
-                  {conversation.linkedResourceTitle
-                    ? t("chatLinkedResource", {
-                      defaultValue: "About: {{title}}",
-                      title: conversation.linkedResourceTitle
-                    })
-                    : t("chatGenericThread", { defaultValue: "Conversation" })}
+                  {contextTitle}
                 </Text>
                 <Text variant="bodySmall" numberOfLines={2} style={styles.previewText}>
                   {conversation.lastMessagePreview}
@@ -137,10 +153,10 @@ export function ChatListScreen({
               </View>
 
               <View style={styles.rowRight}>
-                <Text variant="labelSmall" style={styles.dateLabel}>
+                {conversation.unreadCount > 0 ? <Icon source="circle" size={18} color={designTokens.colors.primary} /> : null}
+                <Text variant="labelSmall" style={[styles.dateLabel, conversation.unreadCount > 0 ? styles.unreadDateLabel : null]}>
                   {formattedDate}
                 </Text>
-                {conversation.unreadCount > 0 ? <Badge size={22}>{conversation.unreadCount}</Badge> : null}
               </View>
             </Pressable>
           );
@@ -152,49 +168,94 @@ export function ChatListScreen({
 
 const styles = StyleSheet.create({
   root: {
-    paddingTop: designTokens.spacing.lg
+    flex: 1,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    position: "relative",
+    backgroundColor: "#ffffff"
   },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6
+  background: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
   },
   listContent: {
-    paddingTop: designTokens.spacing.sm,
-    gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
   },
   row: {
-    backgroundColor: designTokens.colors.secondary,
-    borderRadius: designTokens.radius.md,
-    padding: designTokens.spacing.md,
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: designTokens.spacing.md
+    alignItems: "center",
+    minHeight: 94,
+    paddingLeft: designTokens.spacing.xs,
+    paddingRight: designTokens.spacing.md,
+    paddingVertical: designTokens.spacing.sm,
+    borderBottomColor: "#cccccc",
+    borderBottomWidth: StyleSheet.hairlineWidth
+  },
+  mediaFrame: {
+    width: 90,
+    height: 78,
+    position: "relative",
+    marginRight: designTokens.spacing.sm
+  },
+  resourceImage: {
+    width: 70,
+    height: 70,
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: designTokens.colors.secondary
+  },
+  resourceImagePlaceholder: {
+    width: 70,
+    height: 70,
+    borderRadius: designTokens.radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: designTokens.colors.secondary
+  },
+  avatarWrap: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#ffffff",
+    overflow: "hidden"
   },
   rowMain: {
     flex: 1,
-    gap: designTokens.spacing.xs
+    alignSelf: "stretch",
+    justifyContent: "center",
+    gap: 2
   },
   rowRight: {
-    minWidth: 44,
+    minWidth: 56,
+    alignSelf: "stretch",
     alignItems: "flex-end",
-    gap: designTokens.spacing.xs
+    justifyContent: "space-between",
+    paddingVertical: 2
   },
   rowTitle: {
     fontFamily: appFontFamilies.altGeneral,
     fontSize: 18,
-    lineHeight: 22
+    lineHeight: 22,
+    color: designTokens.colors.primary
   },
   rowSubtitle: {
     fontFamily: appFontFamilies.general,
-    opacity: 0.75
+    color: "#111111",
+    textTransform: "uppercase"
   },
   previewText: {
     fontFamily: appFontFamilies.general,
-    opacity: 0.82
+    color: "#111111"
   },
   dateLabel: {
-    opacity: 0.7
+    color: designTokens.colors.primary,
+    fontFamily: appFontFamilies.general
+  },
+  unreadDateLabel: {
+    fontFamily: appFontFamilies.altGeneral
   }
 });

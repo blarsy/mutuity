@@ -5815,11 +5815,13 @@ export type ListChatConversationsConnection = {
 export type ListChatConversationsRecord = {
   __typename: 'ListChatConversationsRecord';
   contextId: Maybe<Scalars['UUID']['output']>;
+  contextImageUrl: Maybe<Scalars['String']['output']>;
   contextTitle: Maybe<Scalars['String']['output']>;
   conversationId: Maybe<Scalars['UUID']['output']>;
   conversationKind: Maybe<ChatContextKind>;
   lastActivityAt: Maybe<Scalars['Datetime']['output']>;
   lastMessagePreview: Maybe<Scalars['String']['output']>;
+  otherAccountAvatarUrl: Maybe<Scalars['String']['output']>;
   otherAccountDisplayName: Maybe<Scalars['String']['output']>;
   otherAccountId: Maybe<Scalars['UUID']['output']>;
   unreadCount: Maybe<Scalars['Int']['output']>;
@@ -8636,6 +8638,8 @@ export type Query = Node & {
   /** Reads and enables pagination through a set of `Account`. */
   latestLandingAccounts: Maybe<AccountsConnection>;
   latestLandingItems: Maybe<LatestLandingItemsConnection>;
+  /** Approved campaigns that are currently active and therefore linkable from public search flows. */
+  linkableCampaigns: Maybe<CampaignsConnection>;
   listChatConversations: Maybe<ListChatConversationsConnection>;
   /** Reads a single `Need` using its globally unique `ID`. */
   need: Maybe<Need>;
@@ -9465,6 +9469,16 @@ export type QueryLatestLandingItemsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   limitCount?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryLinkableCampaignsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 

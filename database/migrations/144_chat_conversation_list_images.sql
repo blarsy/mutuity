@@ -1,4 +1,8 @@
-create or replace function app_public.list_chat_conversations(
+begin;
+
+drop function if exists app_public.list_chat_conversations(text, integer, integer);
+
+create function app_public.list_chat_conversations(
   p_search text default null,
   p_limit integer default 25,
   p_offset integer default 0
@@ -96,3 +100,8 @@ $$;
 
 comment on function app_public.list_chat_conversations(text, integer, integer) is
   '@name listChatConversations';
+
+grant execute on function app_public.list_chat_conversations(text, integer, integer)
+  to identified_account, admin;
+
+commit;

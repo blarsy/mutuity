@@ -663,8 +663,10 @@ export const CHAT_CONVERSATIONS_QUERY = gql`
         conversationId
         conversationKind
         contextTitle
+        contextImageUrl
         otherAccountId
         otherAccountDisplayName
+        otherAccountAvatarUrl
         lastMessagePreview
         lastActivityAt
         unreadCount
@@ -683,14 +685,17 @@ export const RESOURCE_CONVERSATION_BY_ID_QUERY = gql`
       resourceByResourceId {
         id
         title
+        imageUrls
       }
       accountByOwnerAccountId {
         id
         displayName
+        avatarUrl
       }
       accountByBidderAccountId {
         id
         displayName
+        avatarUrl
       }
     }
   }

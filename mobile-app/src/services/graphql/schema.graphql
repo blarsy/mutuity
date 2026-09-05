@@ -6396,11 +6396,13 @@ type ListChatConversationsConnection {
 """The return type of our `listChatConversations` query."""
 type ListChatConversationsRecord {
   contextId: UUID
+  contextImageUrl: String
   contextTitle: String
   conversationId: UUID
   conversationKind: ChatContextKind
   lastActivityAt: Datetime
   lastMessagePreview: String
+  otherAccountAvatarUrl: String
   otherAccountDisplayName: String
   otherAccountId: UUID
   unreadCount: Int
@@ -10119,6 +10121,24 @@ type Query implements Node {
     """
     offset: Int
   ): LatestLandingItemsConnection
+  """
+  Approved campaigns that are currently active and therefore linkable from public search flows.
+  """
+  linkableCampaigns(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): CampaignsConnection
   listChatConversations(
     """Read all values in the set after (below) this cursor."""
     after: Cursor

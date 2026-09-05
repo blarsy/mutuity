@@ -26,7 +26,9 @@ interface ChatConversationsQueryResult {
     nodes: Array<{
       conversationId: string | null;
       contextTitle: string | null;
+      contextImageUrl: string | null;
       otherAccountDisplayName: string | null;
+      otherAccountAvatarUrl: string | null;
       lastMessagePreview: string | null;
       lastActivityAt: string | null;
       unreadCount: number | null;
@@ -39,9 +41,9 @@ interface ResourceConversationByIdQueryResult {
     id: string;
     ownerAccountId: string;
     bidderAccountId: string;
-    accountByOwnerAccountId: { id: string; displayName: string | null } | null;
-    accountByBidderAccountId: { id: string; displayName: string | null } | null;
-    resourceByResourceId: { id: string; title: string | null } | null;
+    accountByOwnerAccountId: { id: string; displayName: string | null; avatarUrl: string | null } | null;
+    accountByBidderAccountId: { id: string; displayName: string | null; avatarUrl: string | null } | null;
+    resourceByResourceId: { id: string; title: string | null; imageUrls: Array<string | null> | null } | null;
   } | null;
 }
 
@@ -107,7 +109,9 @@ export async function fetchChatConversations(): Promise<ChatConversationItem[]> 
       return {
         id: node.conversationId,
         otherAccountDisplayName: node.otherAccountDisplayName ?? "Conversation",
+        otherAccountAvatarUrl: node.otherAccountAvatarUrl,
         linkedResourceTitle: node.contextTitle,
+        linkedResourceImageUrl: node.contextImageUrl,
         lastMessagePreview: node.lastMessagePreview ?? "",
         lastMessageAt: node.lastActivityAt,
         unreadCount: node.unreadCount ?? 0
@@ -142,6 +146,7 @@ export async function fetchChatConversationDetail(
   const owner = conversationNode.accountByOwnerAccountId;
   const bidder = conversationNode.accountByBidderAccountId;
   const otherAccountDisplayName = owner?.id === currentAccountId ? bidder?.displayName : owner?.displayName;
+  const otherAccountAvatarUrl = owner?.id === currentAccountId ? bidder?.avatarUrl : owner?.avatarUrl;
   const otherAccountId = conversationNode.ownerAccountId === currentAccountId
     ? conversationNode.bidderAccountId
     : conversationNode.ownerAccountId;
@@ -150,8 +155,10 @@ export async function fetchChatConversationDetail(
     id: conversationNode.id,
     otherAccountId: otherAccountId ?? null,
     otherAccountDisplayName: otherAccountDisplayName ?? "Conversation",
+    otherAccountAvatarUrl: otherAccountAvatarUrl ?? null,
     linkedResourceId: conversationNode.resourceByResourceId?.id ?? null,
-    linkedResourceTitle: conversationNode.resourceByResourceId?.title ?? null
+    linkedResourceTitle: conversationNode.resourceByResourceId?.title ?? null,
+    linkedResourceImageUrl: conversationNode.resourceByResourceId?.imageUrls?.[0] ?? null
   };
 
   const messages = (messagesResult.data?.allResourceMessages?.nodes ?? []).map((node) => ({

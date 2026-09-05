@@ -39,8 +39,10 @@ export interface ChatDetailConversation {
   id: string;
   otherAccountId: string | null;
   otherAccountDisplayName: string;
+  otherAccountAvatarUrl?: string | null;
   linkedResourceId: string | null;
   linkedResourceTitle: string | null;
+  linkedResourceImageUrl?: string | null;
 }
 
 export interface ChatDetailScreenProps {
@@ -250,6 +252,8 @@ export function ChatDetailScreen({
           kind="resource"
           title={resolvedConversation.linkedResourceTitle ?? t("chatGenericThread", { defaultValue: "Conversation" })}
           authorDisplayName={resolvedConversation.otherAccountDisplayName}
+          authorAvatarUrl={resolvedConversation.otherAccountAvatarUrl ?? null}
+          listingImageUrl={resolvedConversation.linkedResourceImageUrl ?? null}
           onPressListing={
             resolvedConversation.linkedResourceId && onOpenLinkedResource
               ? () => onOpenLinkedResource(resolvedConversation.linkedResourceId!)
