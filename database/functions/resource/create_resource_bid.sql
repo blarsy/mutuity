@@ -52,6 +52,7 @@ declare
   v_existing_reserved_amount integer := 0;
   v_new_reserved_amount integer := 0;
   v_reserve_delta integer := 0;
+  v_bidder_display_name text;
 begin
   v_account_id := app_private.current_account_id();
 
@@ -93,6 +94,11 @@ begin
   if v_has_existing_bid and v_existing_bid.status = 'accepted' then
     return v_existing_bid;
   end if;
+
+  select coalesce(display_name, external_subject)
+  into v_bidder_display_name
+  from app_public.account
+  where id = v_account_id;
 
   v_effective_token_amount := coalesce(
     create_resource_bid.proposed_token_amount,
@@ -142,7 +148,9 @@ begin
     'resource_bid_created',
     jsonb_build_object(
       'resourceId', v_resource.id,
+      'resourceName', v_resource.title,
       'bidderAccountId', v_account_id,
+      'bidderDisplayName', coalesce(v_bidder_display_name, v_account_id::text),
       'status', v_bid.status,
       'proposedTokenAmount', v_bid.proposed_token_amount
     )

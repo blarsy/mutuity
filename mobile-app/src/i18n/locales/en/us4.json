@@ -39,5 +39,29 @@
   "preferences.new_resources.title": "New resources",
   "preferences.unread_notifications.title": "Unread notifications",
   "myPreferencesTitle": "My preferences",
-  "backLabel": "Back"
+  "backLabel": "Back",
+  "notifications": {
+    "events": {
+      "giftTokensReceived": { "headline1": "Tokens received!", "headline2": "{{senderName}}", "description": "{{amount}} tokens sent your way" },
+      "campaignAirdropComingSoon": { "headline1": "Airdrop coming soon", "headline2": "{{campaignName}}", "description": "Lands on {{date}}" },
+      "campaignAirdropDone": { "headline1": "Airdrop received!", "headline2": "{{campaignName}}", "description": "{{amount}} tokens" },
+      "welcomeProfileReward": { "headline1": "Welcome to Mutuity!", "headline2": "Complete your profile", "description": "Earn tokens for a polished profile." },
+      "campaignApproved": { "headline1": "Campaign approved", "headline2": "{{campaignName}}", "description": "Your campaign is now live." },
+      "campaignModerationNoteReceived": { "headline1": "Moderation note", "headline2": "{{campaignName}}", "description": "{{noteBody}}" },
+      "campaignCreatorAdaptationSubmitted": { "headline1": "Campaign updated", "headline2": "{{creatorName}}", "description": "{{campaignName}}" },
+      "claimCreated": { "headline1": "New claim", "headline2": "{{claimerName}}", "description": "{{needName}}" },
+      "claimSettled": { "headline1": "Claim settled", "headline2": "", "description": "{{needName}}" },
+      "claimDeclined": { "headline1": "Claim declined", "headline2": "", "description": "" },
+      "resourceBidCreated": { "headline1": "New bid", "headline2": "{{bidderName}}", "description": "{{resourceName}}" },
+      "resourceBidAccepted": { "headline1": "Bid accepted", "headline2": "{{responderName}}", "description": "{{resourceName}}" },
+      "resourceBidDeclined": { "headline1": "Bid declined", "headline2": "{{responderName}}", "description": "{{resourceName}}" },
+      "resourceBidExpired": { "headline1": "Bid expired", "headline2": "", "description": "{{resourceName}}" },
+      "resourceBidCancelled": { "headline1": "Bid cancelled", "headline2": "", "description": "{{resourceName}}" },
+      "resourceBidExpiringSoon": { "headline1": "Bid expiring soon", "headline2": "", "description": "{{resourceName}}" }
+    },
+    "fallback": { "headline1": "{{eventType}}", "headline2": "", "description": "" },
+    "someone": "Someone",
+    "unknownNeed": "your need",
+    "unknownResource": "your resource"
+  }
 }

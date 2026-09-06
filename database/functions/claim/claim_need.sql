@@ -43,6 +43,7 @@ declare
   v_account_id uuid;
   v_need app_public.need;
   v_claim app_public.need_claim;
+  v_claimer_display_name text;
 begin
   v_account_id := app_private.current_account_id();
 
@@ -84,13 +85,20 @@ begin
       updated_at = now()
   returning * into v_claim;
 
+  select coalesce(display_name, external_subject)
+  into v_claimer_display_name
+  from app_public.account
+  where id = v_account_id;
+
   perform app_private.create_need_claim_notification(
     v_need.creator_account_id,
     v_claim.id,
     'claim_created',
     jsonb_build_object(
       'needId', v_need.id,
+      'needName', v_need.title,
       'claimerAccountId', v_account_id,
+      'claimerDisplayName', coalesce(v_claimer_display_name, v_account_id::text),
       'status', v_claim.status
     )
   );

@@ -31,6 +31,7 @@ begin
     n.creator_account_id as need_creator_account_id,
     n.is_active as need_is_active,
     n.expires_at as need_expires_at,
+    n.title as need_title,
     coalesce(n.proposed_topes_amount, 0) as topes_amount
   into v_need_context
   from app_public.need n
@@ -139,6 +140,7 @@ begin
     'claim_settled',
     jsonb_build_object(
       'needId', v_current_claim.need_id,
+      'needName', v_need_context.need_title,
       'topesAmount', v_topes_amount
     )
   );

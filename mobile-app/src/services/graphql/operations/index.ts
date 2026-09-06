@@ -859,6 +859,58 @@ export const MARK_ALL_NOTIFICATIONS_READ_MUTATION = gql`
   }
 `;
 
+export const NEED_CLAIM_NOTIFICATIONS_QUERY = gql`
+  query NeedClaimNotifications($first: Int) {
+    allNeedClaimNotifications(first: $first) {
+      nodes {
+        id
+        needClaimId
+        eventType
+        payload
+        createdAt
+        readAt
+      }
+    }
+  }
+`;
+
+export const RESOURCE_BID_NOTIFICATIONS_QUERY = gql`
+  query ResourceBidNotifications($first: Int) {
+    allResourceBidNotifications(first: $first) {
+      nodes {
+        id
+        resourceBidId
+        eventType
+        payload
+        createdAt
+        readAt
+      }
+    }
+  }
+`;
+
+export const MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION = gql`
+  mutation MarkNeedClaimNotificationRead($input: MarkNeedClaimNotificationReadInput!) {
+    markNeedClaimNotificationRead(input: $input) {
+      needClaimNotification {
+        id
+        readAt
+      }
+    }
+  }
+`;
+
+export const MARK_RESOURCE_BID_NOTIFICATION_READ_MUTATION = gql`
+  mutation MarkResourceBidNotificationRead($input: MarkResourceBidNotificationReadInput!) {
+    markResourceBidNotificationRead(input: $input) {
+      resourceBidNotification {
+        id
+        readAt
+      }
+    }
+  }
+`;
+
 export const ACCOUNT_PROFILE_QUERY = gql`
   query AccountProfile($id: UUID!) {
     accountById(id: $id) {

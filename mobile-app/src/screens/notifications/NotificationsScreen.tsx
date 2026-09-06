@@ -14,11 +14,17 @@ import {
 } from "../../services/graphql/notifications";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { getNotificationIcon } from "./notificationIcons";
+
+export type NotificationSource = "account" | "need-claim" | "resource-bid";
 
 export interface NotificationFeedItem {
   id: string;
-  title: string;
-  body: string;
+  source: NotificationSource;
+  eventType?: string | null;
+  headline1: string;
+  headline2: string;
+  description: string;
   createdAt: string | null;
   readAt: string | null;
 }
@@ -30,7 +36,7 @@ export interface NotificationsScreenProps {
   errorMessage?: string | null;
   onRetry?: () => void;
   onOpenNotification?: (notificationId: string) => void;
-  onMarkRead?: (notificationId: string) => void;
+  onMarkRead?: (notificationId: string, source: NotificationSource) => void;
   onLoadEarlier?: () => void;
 }
 
@@ -115,6 +121,7 @@ export function NotificationsScreen({
       <ScrollView contentContainerStyle={styles.listContent}>
         {sortedNotifications.map((entry) => {
           const unread = !entry.readAt;
+          const NotificationIcon = getNotificationIcon(entry.eventType);
           const createdAtLabel = entry.createdAt
             ? new Intl.DateTimeFormat(undefined, {
               day: "2-digit",
@@ -128,12 +135,12 @@ export function NotificationsScreen({
             <Pressable
               key={entry.id}
               accessibilityRole="button"
-              accessibilityLabel={`${entry.title}. ${entry.body}`}
+              accessibilityLabel={`${entry.headline1}. ${entry.headline2}. ${entry.description}`}
               onPress={() => {
                 if (unread && onMarkRead) {
-                  onMarkRead(entry.id);
+                  onMarkRead(entry.id, entry.source);
                 } else if (unread && accountId) {
-                  void markNotificationRead(entry.id)
+                  void markNotificationRead(entry.id, entry.source)
                     .then(() => loadNotifications("replace"))
                     .catch(() => setRemoteErrorMessage(t("notificationsReadError", { defaultValue: "We could not update notifications." })));
                 }
@@ -141,21 +148,46 @@ export function NotificationsScreen({
                   onOpenNotification(entry.id);
                 }
               }}
-              style={[styles.notificationCard, unread ? styles.unreadCard : null]}
+              style={styles.notificationRow}
               testID={`notification-row-${entry.id}`}
             >
-              <View style={styles.rowTop}>
-                <Text variant="titleMedium" style={styles.rowTitle} numberOfLines={2}>
-                  {entry.title}
-                </Text>
-                {unread ? <Icon source="circle" size={12} color={designTokens.colors.primary} /> : null}
+              <View style={styles.iconFrame}>
+                <NotificationIcon width={70} height={70} />
               </View>
-              <Text variant="bodySmall" style={styles.rowBody}>
-                {entry.body}
-              </Text>
-              <Text variant="labelSmall" style={styles.rowMeta}>
-                {createdAtLabel}
-              </Text>
+
+              <View style={styles.rowMain}>
+                <View style={styles.rowHeadlines}>
+                  <Text variant="bodySmall" style={styles.rowHeadline} numberOfLines={1}>
+                    {entry.headline1}
+                  </Text>
+                  {entry.headline2 ? (
+                    <Text variant="bodySmall" style={styles.rowHeadline} numberOfLines={1}>
+                      {entry.headline2}
+                    </Text>
+                  ) : null}
+                </View>
+                <Text
+                  variant="bodyMedium"
+                  style={[styles.rowDescription, unread ? styles.rowDescriptionUnread : null]}
+                  numberOfLines={3}
+                >
+                  {entry.description}
+                </Text>
+              </View>
+
+              <View style={styles.rowRight}>
+                <Text variant="bodySmall" style={[styles.rowMeta, unread ? styles.rowMetaUnread : null]}>
+                  {createdAtLabel}
+                </Text>
+                {unread ? (
+                  <Icon
+                    testID={`notification-row-${entry.id}-unread`}
+                    source="circle"
+                    size={12}
+                    color={designTokens.colors.primary}
+                  />
+                ) : null}
+              </View>
             </Pressable>
           );
         })}
@@ -196,36 +228,49 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6
   },
   listContent: {
-    gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
   },
-  notificationCard: {
+  notificationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.md,
+    paddingVertical: designTokens.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: "#CCCCCC"
+  },
+  iconFrame: {
+    width: 70,
+    height: 70,
     borderRadius: designTokens.radius.md,
-    backgroundColor: designTokens.colors.secondary,
-    padding: designTokens.spacing.md,
+    overflow: "hidden"
+  },
+  rowMain: {
+    flex: 1,
+    flexDirection: "column",
     gap: designTokens.spacing.xs
   },
-  unreadCard: {
-    borderWidth: 1,
-    borderColor: designTokens.colors.primary
+  rowHeadlines: {
+    flexDirection: "column"
   },
-  rowTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
+  rowHeadline: {
+    opacity: 0.72
   },
-  rowTitle: {
-    flex: 1,
+  rowDescription: {
     fontFamily: appFontFamilies.altGeneral,
-    fontSize: 18,
-    lineHeight: 22
+    color: designTokens.colors.primary
   },
-  rowBody: {
-    fontFamily: appFontFamilies.general,
-    opacity: 0.84
+  rowDescriptionUnread: {
+    fontWeight: "bold"
+  },
+  rowRight: {
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: designTokens.spacing.xs
   },
   rowMeta: {
-    opacity: 0.65
+    color: designTokens.colors.primary
+  },
+  rowMetaUnread: {
+    fontWeight: "bold"
   }
 });

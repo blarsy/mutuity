@@ -15,6 +15,7 @@ declare
   v_bid app_public.resource_bid;
   v_event_type text;
   v_reserved_amount integer := 0;
+  v_responder_display_name text;
 begin
   v_account_id := app_private.current_account_id();
 
@@ -115,14 +116,21 @@ begin
     else 'resource_bid_declined'
   end;
 
+  select coalesce(display_name, external_subject)
+  into v_responder_display_name
+  from app_public.account
+  where id = v_account_id;
+
   perform app_private.create_resource_bid_notification(
     v_bid.bidder_account_id,
     v_bid.id,
     v_event_type,
     jsonb_build_object(
       'resourceId', v_bid.resource_id,
+      'resourceName', v_context.resource_title,
       'status', v_bid.status,
-      'respondedByAccountId', v_account_id
+      'respondedByAccountId', v_account_id,
+      'responderDisplayName', coalesce(v_responder_display_name, v_account_id::text)
     )
   );
 

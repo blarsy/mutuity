@@ -7,22 +7,28 @@ describe("US4 notifications continuity acceptance", () => {
   const mockNotifications = [
     {
       id: "notif-1",
-      title: "New bid received",
-      body: "Someone placed a bid on your resource",
+      source: "account" as const,
+      headline1: "New bid",
+      headline2: "",
+      description: "Someone placed a bid on your resource",
       createdAt: "2026-07-29T10:00:00Z",
       readAt: null
     },
     {
       id: "notif-2",
-      title: "Resource approved",
-      body: "Your resource has been approved",
+      source: "account" as const,
+      headline1: "Resource approved",
+      headline2: "",
+      description: "Your resource has been approved",
       createdAt: "2026-07-28T09:00:00Z",
       readAt: "2026-07-28T10:00:00Z"
     },
     {
       id: "notif-3",
-      title: "Campaign update",
-      body: "A campaign you follow has been updated",
+      source: "account" as const,
+      headline1: "Campaign update",
+      headline2: "",
+      description: "A campaign you follow has been updated",
       createdAt: "2026-07-27T08:00:00Z",
       readAt: "2026-07-27T09:00:00Z"
     }
@@ -39,7 +45,7 @@ describe("US4 notifications continuity acceptance", () => {
 
     await waitFor(() => {
       // Unread notification should be visible
-      expect(screen.getByText("New bid received")).toBeTruthy();
+      expect(screen.getByText("New bid")).toBeTruthy();
       // Read notifications should also be visible
       expect(screen.getByText("Resource approved")).toBeTruthy();
       expect(screen.getByText("Campaign update")).toBeTruthy();
