@@ -18,7 +18,7 @@ const LANGUAGE_STORAGE_KEY = "mutuity-language";
 
 export type AuthStatus = "loading" | "authenticated" | "anonymous";
 
-type AuthContextValue = {
+export type AuthContextValue = {
   session: AuthSession;
   status: AuthStatus;
   refreshSession: () => Promise<void>;
@@ -57,7 +57,7 @@ export async function resolveSessionAfterSignOut(
   }
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession>(ANONYMOUS_SESSION);

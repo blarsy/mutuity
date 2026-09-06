@@ -11,7 +11,9 @@
     "graphql:check": "npm run graphql:schema && npm run graphql:codegen",
     "typecheck": "npm run graphql:check && tsc --noEmit -p tsconfig.json",
     "lint": "next lint && npm run typecheck",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@apollo/client": "^4.1.6",
@@ -46,6 +48,10 @@
     "@graphql-codegen/typed-document-node": "^6.1.8",
     "@graphql-codegen/typescript": "^5.0.10",
     "@graphql-codegen/typescript-operations": "^5.1.0",
+    "@storybook/addon-essentials": "^8.6.18",
+    "@storybook/addon-links": "^8.6.18",
+    "@storybook/nextjs": "^8.6.18",
+    "@storybook/react": "^8.6.18",
     "@types/google.maps": "^3.64.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
@@ -54,6 +60,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.3",
     "jest": "^29.7.0",
+    "storybook": "^8.6.18",
     "typescript": "^5.4.5"
   }
 }
