@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { IconButton, Snackbar, Text } from "react-native-paper";
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 
 import { AccountAvatar } from "../../components/AccountAvatar";
 import { NavigationBackHeader, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { fetchMyProfile } from "../../services/graphql/profile";
+import { NeedIntensity } from "../../services/graphql/generated";
 import type { MyProfileRecord } from "./MyProfileScreen";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -20,6 +21,19 @@ export interface AccountPublicProfileScreenProps {
   onBack?: () => void;
 }
 
+function formatPublishedDate(value: string | null, locale: string): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+}
+
 export function AccountPublicProfileScreen({
   accountId,
   profile,
@@ -28,7 +42,7 @@ export function AccountPublicProfileScreen({
   onRetry,
   onBack
 }: AccountPublicProfileScreenProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(true);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
@@ -64,8 +78,23 @@ export function AccountPublicProfileScreen({
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedProfile ? remoteErrorMessage : null);
   const profileLinks = resolvedProfile?.profileLinks ?? [];
   const resources = resolvedProfile?.resources ?? [];
+  const needs = resolvedProfile?.needs ?? [];
   const location = resolvedProfile?.location;
   const hasLocationMap = Boolean(location?.latitude != null && location?.longitude != null);
+  const hasBio = Boolean(resolvedProfile?.bio.trim());
+
+  const intensityLabelMeta = (intensity: NeedIntensity): { key: string; defaultValue: string } => {
+    if (intensity === NeedIntensity.Commitment) {
+      return { key: "needIntensityCommitment", defaultValue: "Commitment" };
+    }
+    if (intensity === NeedIntensity.LegUp) {
+      return { key: "needIntensityLegUp", defaultValue: "Leg up" };
+    }
+    if (intensity === NeedIntensity.RareContribution) {
+      return { key: "needIntensityRareContribution", defaultValue: "Rare contribution" };
+    }
+    return { key: "needIntensitySharing", defaultValue: "Sharing" };
+  };
 
   const resolveLinkTarget = (url: string): string => {
     const trimmed = url.trim();
@@ -157,10 +186,12 @@ export function AccountPublicProfileScreen({
 
         {showMoreInfo ? (
           <View style={styles.sectionCard}>
-            <Text variant="labelLarge" style={styles.sectionTitle}>{t("bioLabel", { defaultValue: "Bio" })}</Text>
-            <Text variant="bodyMedium" style={styles.bioText}>
-              {resolvedProfile.bio.trim() || t("emptyBioLabel", { defaultValue: "No bio provided." })}
-            </Text>
+            {hasBio ? (
+              <View style={styles.inlineStack}>
+                <Text variant="labelLarge" style={styles.sectionTitle}>{t("bioLabel", { defaultValue: "Bio" })}</Text>
+                <Text variant="bodyMedium" style={styles.bioText}>{resolvedProfile.bio.trim()}</Text>
+              </View>
+            ) : null}
 
             {profileLinks.length > 0 ? (
               <View style={styles.inlineStack}>
@@ -212,13 +243,54 @@ export function AccountPublicProfileScreen({
             <Text variant="labelLarge" style={styles.sectionTitle}>{t("availableResourcesLabel", { defaultValue: "Available resources" })}</Text>
             <View style={styles.resourceList}>
               {resources.map((resource) => (
-                <View key={resource.id} style={styles.resourceCard}>
-                  <Text variant="titleMedium" style={styles.resourceTitle}>{resource.title}</Text>
-                  {resource.description ? (
-                    <Text variant="bodyMedium" style={styles.resourceDescription}>{resource.description}</Text>
-                  ) : null}
+                <View key={resource.id} style={styles.resourceCard} testID={`resource-card-${resource.id}`}>
+                  {resource.imageUrls[0] ? (
+                    <Image source={{ uri: resource.imageUrls[0] }} style={styles.resourceCardImage} />
+                  ) : (
+                    <View style={styles.resourceCardImageFallback}>
+                      <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
+                    </View>
+                  )}
+                  <View style={styles.resourceCardContent}>
+                    <Text variant="labelSmall" style={styles.resourceCardPublishedAt}>
+                      {`${t("publishedAtLabel", { defaultValue: "Published" })} ${formatPublishedDate(resource.createdAt, i18n.language) ?? "-"}`}
+                    </Text>
+                    <View style={styles.resourceCardBody}>
+                      <Text variant="titleMedium" numberOfLines={2} style={styles.resourceTitle}>{resource.title}</Text>
+                      <Text variant="labelSmall" style={styles.resourceCardAuthor}>
+                        {`${t("broughtByLabel", { defaultValue: "Brought by" })} ${resolvedProfile.displayName || t("anonymousLabel", { defaultValue: "Anonymous" })}`}
+                      </Text>
+                      <View style={styles.resourceCardFlagsRow}>
+                        {resource.canBeGifted ? <Text variant="labelSmall" style={styles.resourceCardFlagText}>{t("canBeGiftedLabel", { defaultValue: "Gift" })}</Text> : null}
+                        {resource.canBeExchanged ? <Text variant="labelSmall" style={styles.resourceCardFlagText}>{t("canBeExchangedLabel", { defaultValue: "Exchange" })}</Text> : null}
+                      </View>
+                    </View>
+                  </View>
                 </View>
               ))}
+            </View>
+          </View>
+        ) : null}
+
+        {needs.length > 0 ? (
+          <View style={styles.sectionCard}>
+            <Text variant="labelLarge" style={styles.sectionTitle}>{t("availableNeedsLabel", { defaultValue: "Available needs" })}</Text>
+            <View style={styles.resourceList}>
+              {needs.map((need) => {
+                const intensity = intensityLabelMeta(need.intensity);
+                return (
+                  <View key={need.id} style={styles.needCard} testID={`need-card-${need.id}`}>
+                    <View style={styles.needCardHeader}>
+                      <Text variant="titleMedium" style={styles.needTitle}>{need.title}</Text>
+                      <Chip compact>{t(intensity.key, { defaultValue: intensity.defaultValue })}</Chip>
+                    </View>
+                    <Text variant="bodySmall" numberOfLines={2}>{need.description || t("needDescriptionEmpty", { defaultValue: "No description yet." })}</Text>
+                    <Text variant="labelSmall" style={styles.needTokenLine}>
+                      {t("needTokenAmount", { defaultValue: "{{amount}} token", amount: need.proposedTokenAmount })}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
         ) : null}
@@ -333,15 +405,84 @@ const styles = StyleSheet.create({
     gap: designTokens.spacing.sm
   },
   resourceCard: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 12,
     backgroundColor: designTokens.colors.primaryContainer,
     borderRadius: designTokens.radius.sm,
     padding: designTokens.spacing.sm,
-    gap: designTokens.spacing.xs
+  },
+  resourceCardImage: {
+    width: 92,
+    height: 92,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff"
+  },
+  resourceCardImageFallback: {
+    width: 92,
+    height: 92,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  resourceCardContent: {
+    flex: 1,
+    marginRight: 4
+  },
+  resourceCardPublishedAt: {
+    color: designTokens.colors.primary,
+    alignSelf: "flex-end",
+    fontFamily: appFontFamilies.general,
+    fontSize: 10,
+    lineHeight: 12
+  },
+  resourceCardBody: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 2
   },
   resourceTitle: {
-    fontFamily: appFontFamilies.altGeneral
+    fontFamily: appFontFamilies.altGeneral,
+    fontSize: 16,
+    lineHeight: 20
   },
-  resourceDescription: {
+  resourceCardAuthor: {
+    color: designTokens.colors.primary,
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: appFontFamilies.general
+  },
+  resourceCardFlagsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 1
+  },
+  resourceCardFlagText: {
+    textTransform: "uppercase",
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: appFontFamilies.altGeneral,
+    letterSpacing: 0.35
+  },
+  needCard: {
+    backgroundColor: designTokens.colors.primaryContainer,
+    borderRadius: designTokens.radius.md,
+    padding: designTokens.spacing.sm,
+    gap: designTokens.spacing.xs
+  },
+  needCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: designTokens.spacing.sm
+  },
+  needTitle: {
+    fontFamily: appFontFamilies.altGeneral,
+    flex: 1
+  },
+  needTokenLine: {
+    color: designTokens.colors.primary,
     fontFamily: appFontFamilies.general
   }
 });

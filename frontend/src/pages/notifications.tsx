@@ -5,15 +5,13 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Checkbox,
   Chip,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Stack,
   Typography
 } from "@mui/material";
@@ -76,7 +74,9 @@ type UnifiedNotification = {
   payload: Record<string, unknown>;
   createdAt: string;
   readAt: string | null;
-  message: string;
+  headline1: string;
+  headline2: string;
+  description: string;
   url: string;
 };
 
@@ -98,54 +98,97 @@ function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
 }
 
-function notificationMessage(notification: UnifiedNotification, t: TranslateFn) {
+// Icons ported from Tope-là's notification artwork (frontend/public/topela/notifications).
+const EXACT_EVENT_TYPE_ICONS: Record<string, string> = {
+  gift_tokens_received: "money-in.svg",
+  gift_tokens_sent: "gift-sent.svg",
+  campaign_airdrop_coming_soon: "airdrop.svg",
+  campaign_airdrop_done: "thumb-up.svg",
+  welcome_profile_reward: "hey.svg",
+  campaign_approved: "prize-won.svg",
+  campaign_moderation_note_received: "moderation.svg",
+  campaign_creator_adaptation_submitted: "moderation.svg",
+  resource_bid_expiring_soon: "time-up.svg",
+  resource_bid_accepted: "prize-won.svg",
+  resource_bid_declined: "denied.svg",
+  resource_bid_expired: "gone.svg",
+  resource_bid_cancelled: "time-up.svg",
+  claim_created: "claim.svg",
+  claim_settled: "bid-received.svg",
+  claim_declined: "denied.svg"
+};
+
+const PREFIX_EVENT_TYPE_ICONS: Array<[prefix: string, icon: string]> = [
+  ["campaign_airdrop", "thumb-up.svg"],
+  ["campaign", "campaign.svg"],
+  ["resource_bid", "bid-received.svg"],
+  ["gift_tokens", "money-in.svg"],
+  ["claim", "claim.svg"]
+];
+
+function notificationIcon(eventType: string) {
+  const exactMatch = EXACT_EVENT_TYPE_ICONS[eventType];
+  const prefixMatch = PREFIX_EVENT_TYPE_ICONS.find(([prefix]) => eventType.startsWith(prefix));
+  return `/topela/notifications/${exactMatch ?? prefixMatch?.[1] ?? "thanks.svg"}`;
+}
+
+function notificationCopy(notification: UnifiedNotification, t: TranslateFn) {
   const needName = asText(notification.payload.needName) ?? asText(notification.payload.needTitle);
   const resourceName = asText(notification.payload.resourceName) ?? asText(notification.payload.resourceTitle);
   const campaignName = asText(notification.payload.campaignName);
   const creatorName = asText(notification.payload.creatorName);
   const senderName = asText(notification.payload.senderName);
+  const claimerName = asText(notification.payload.claimerDisplayName);
+  const bidderName = asText(notification.payload.bidderDisplayName);
+  const responderName = asText(notification.payload.responderDisplayName);
   const amount = asNumber(notification.payload.amountReceived);
   const unknownNeed = t("eventFallback.unknownNeed");
   const unknownResource = t("eventFallback.unknownResource");
   const unknownCampaign = t("eventFallback.unknownCampaign");
   const someone = t("eventFallback.someone");
 
+  const build = (key: string, vars: Record<string, unknown> = {}) => ({
+    headline1: t(`events.${key}.headline1`, vars),
+    headline2: t(`events.${key}.headline2`, vars),
+    description: t(`events.${key}.description`, vars)
+  });
+
   switch (notification.eventType) {
     case "claim_created":
-      return t("events.claimCreated", { needName: needName ?? unknownNeed });
+      return build("claimCreated", { claimerName: claimerName ?? someone, needName: needName ?? unknownNeed });
     case "resource_bid_created":
-      return t("events.resourceBidCreated", { resourceName: resourceName ?? unknownResource });
+      return build("resourceBidCreated", { bidderName: bidderName ?? someone, resourceName: resourceName ?? unknownResource });
     case "resource_bid_expiring_soon":
-      return t("events.resourceBidExpiringSoon");
+      return build("resourceBidExpiringSoon", { resourceName: resourceName ?? unknownResource });
     case "campaign_airdrop_coming_soon":
-      return t("events.campaignAirdropComingSoon", { campaignName: campaignName ?? unknownCampaign });
+      return build("campaignAirdropComingSoon", { campaignName: campaignName ?? unknownCampaign });
     case "campaign_airdrop_done":
-      return t("events.campaignAirdropDone", { campaignName: campaignName ?? unknownCampaign });
+      return build("campaignAirdropDone", { campaignName: campaignName ?? unknownCampaign, amount: amount ?? 0 });
     case "welcome_profile_reward":
-      return t("events.welcomeProfileReward");
+      return build("welcomeProfileReward");
     case "gift_tokens_received":
-      return t("events.giftTokensReceived", { senderName: senderName ?? someone, amount: amount ?? 0 });
+      return build("giftTokensReceived", { senderName: senderName ?? someone, amount: amount ?? 0 });
     case "claim_settled":
-      return t("events.claimSettled", { needName: needName ?? unknownNeed });
+      return build("claimSettled", { needName: needName ?? unknownNeed });
     case "resource_bid_accepted":
-      return t("events.resourceBidAccepted", { resourceName: resourceName ?? unknownResource });
+      return build("resourceBidAccepted", { responderName: responderName ?? someone, resourceName: resourceName ?? unknownResource });
     case "resource_bid_declined":
-      return t("events.resourceBidDeclined", { resourceName: resourceName ?? unknownResource });
+      return build("resourceBidDeclined", { responderName: responderName ?? someone, resourceName: resourceName ?? unknownResource });
     case "resource_bid_cancelled":
-      return t("events.resourceBidCancelled", { resourceName: resourceName ?? unknownResource });
+      return build("resourceBidCancelled", { resourceName: resourceName ?? unknownResource });
     case "resource_bid_expired":
-      return t("events.resourceBidExpired", { resourceName: resourceName ?? unknownResource });
+      return build("resourceBidExpired", { resourceName: resourceName ?? unknownResource });
     case "campaign_moderation_note_received":
-      return t("events.campaignModerationNoteReceived", { campaignName: campaignName ?? unknownCampaign });
+      return build("campaignModerationNoteReceived", { campaignName: campaignName ?? unknownCampaign });
     case "campaign_approved":
-      return t("events.campaignApproved", { campaignName: campaignName ?? unknownCampaign });
+      return build("campaignApproved", { campaignName: campaignName ?? unknownCampaign });
     case "campaign_creator_adaptation_submitted":
-      return t("events.campaignCreatorAdaptationSubmitted", {
+      return build("campaignCreatorAdaptationSubmitted", {
         creatorName: creatorName ?? someone,
         campaignName: campaignName ?? unknownCampaign
       });
     default:
-      return t("events.fallback", { eventType: formatEvent(notification.eventType) });
+      return build("fallback", { eventType: formatEvent(notification.eventType) });
   }
 }
 
@@ -193,13 +236,15 @@ export default function NotificationsPage() {
         payload: normalizedPayload,
         createdAt: notification.createdAt,
         readAt: notification.readAt,
-        message: "",
+        headline1: "",
+        headline2: "",
+        description: "",
         url: ""
       };
 
       return {
         ...baseNotification,
-        message: notificationMessage(baseNotification, t),
+        ...notificationCopy(baseNotification, t),
         url: notificationUrl(baseNotification)
       };
     });
@@ -217,13 +262,15 @@ export default function NotificationsPage() {
         payload: normalizedPayload,
         createdAt: notification.createdAt,
         readAt: notification.readAt,
-        message: "",
+        headline1: "",
+        headline2: "",
+        description: "",
         url: ""
       };
 
       return {
         ...baseNotification,
-        message: notificationMessage(baseNotification, t),
+        ...notificationCopy(baseNotification, t),
         url: notificationUrl(baseNotification)
       };
     });
@@ -237,13 +284,15 @@ export default function NotificationsPage() {
         payload,
         createdAt: notification.createdAt,
         readAt: notification.readAt,
-        message: "",
+        headline1: "",
+        headline2: "",
+        description: "",
         url: ""
       };
 
       return {
         ...baseNotification,
-        message: notificationMessage(baseNotification, t),
+        ...notificationCopy(baseNotification, t),
         url: notificationUrl(baseNotification)
       };
     });
@@ -336,41 +385,57 @@ export default function NotificationsPage() {
           {items.length === 0 ? (
             <Alert severity="info">{t("empty")}</Alert>
           ) : (
-            <Stack spacing={1.5}>
-              {items.map(item => (
-                <Card key={`${item.source}-${item.id}`} variant="outlined">
-                  <CardContent>
-                    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
-                      <Stack spacing={0.5} sx={{ minWidth: 0 }}>
-                        <Typography variant="body1">{item.message}</Typography>
-                        <Typography color="text.secondary" variant="caption">
-                          {formatTimestamp(item.createdAt)}
-                        </Typography>
-                      </Stack>
+            <Stack divider={<Divider />} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
+              {items.map(item => {
+                const unread = !item.readAt;
 
-                      <Stack alignItems={{ xs: "flex-start", sm: "flex-end" }} direction={{ xs: "column", sm: "row" }} spacing={1}>
-                        <Checkbox
-                          checked={Boolean(item.readAt)}
-                          disabled={busy || Boolean(item.readAt)}
-                          onChange={() => {
-                            void markSingleRead(item);
-                          }}
-                        />
-                        <Button
-                          disabled={busy}
-                          onClick={() => {
-                            void navigateFromNotification(item);
-                          }}
-                          size="small"
-                          variant="contained"
-                        >
-                          {t("open")}
-                        </Button>
-                      </Stack>
+                return (
+                  <Box
+                    key={`${item.source}-${item.id}`}
+                    onClick={() => {
+                      void navigateFromNotification(item);
+                    }}
+                    sx={{
+                      alignItems: "center",
+                      cursor: busy ? "default" : "pointer",
+                      display: "flex",
+                      gap: 2,
+                      p: 1.5,
+                      pointerEvents: busy ? "none" : "auto"
+                    }}
+                  >
+                    <Box
+                      alt=""
+                      component="img"
+                      src={notificationIcon(item.eventType)}
+                      sx={{ borderRadius: 1.5, flexShrink: 0, height: 56, width: 56 }}
+                    />
+
+                    <Stack spacing={0.25} sx={{ flexGrow: 1, minWidth: 0 }}>
+                      <Typography color="text.secondary" noWrap variant="body2">
+                        {item.headline1}
+                      </Typography>
+                      {item.headline2 ? (
+                        <Typography color="text.secondary" noWrap variant="body2">
+                          {item.headline2}
+                        </Typography>
+                      ) : null}
+                      <Typography color="primary" noWrap sx={{ fontWeight: unread ? 700 : 400 }} variant="body1">
+                        {item.description}
+                      </Typography>
                     </Stack>
-                  </CardContent>
-                </Card>
-              ))}
+
+                    <Stack alignItems="flex-end" spacing={0.5} sx={{ flexShrink: 0 }}>
+                      <Typography color="primary" sx={{ fontWeight: unread ? 700 : 400 }} variant="caption">
+                        {formatTimestamp(item.createdAt)}
+                      </Typography>
+                      {unread ? (
+                        <Box sx={{ bgcolor: "primary.main", borderRadius: "50%", height: 10, width: 10 }} />
+                      ) : null}
+                    </Stack>
+                  </Box>
+                );
+              })}
             </Stack>
           )}
         </Stack>

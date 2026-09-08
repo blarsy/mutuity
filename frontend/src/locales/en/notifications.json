@@ -18,21 +18,85 @@
     "someone": "Someone"
   },
   "events": {
-    "claimCreated": "You got a claim for your need {{needName}}",
-    "resourceBidCreated": "You got a bid for your resource {{resourceName}}",
-    "resourceBidExpiringSoon": "A bid you received is about to expire",
-    "campaignAirdropComingSoon": "The airdrop of campaign {{campaignName}} is coming soon!",
-    "campaignAirdropDone": "Airdrop done on campaign {{campaignName}}! Check your contribution page to see if you got it",
-    "welcomeProfileReward": "Welcome to tope-la, make a polished profile, and earn some Topes!",
-    "giftTokensReceived": "{{senderName}} gave you {{amount}} Topes!",
-    "claimSettled": "Congratulations, your claim on {{needName}} has been settled",
-    "resourceBidAccepted": "Congratulations, your bid on {{resourceName}} has been accepted",
-    "resourceBidDeclined": "Your bid on {{resourceName}} has been rejected",
-    "resourceBidCancelled": "Your bid on {{resourceName}} has been cancelled",
-    "resourceBidExpired": "Your bid on {{resourceName}} has expired without a response",
-    "campaignModerationNoteReceived": "You received a moderation note for campaign {{campaignName}}",
-    "campaignApproved": "Your campaign {{campaignName}} has been approved",
-    "campaignCreatorAdaptationSubmitted": "{{creatorName}} updated campaign {{campaignName}} and it now awaits review",
-    "fallback": "{{eventType}}"
+    "claimCreated": {
+      "headline1": "New claim",
+      "headline2": "from {{claimerName}}",
+      "description": "{{needName}}"
+    },
+    "resourceBidCreated": {
+      "headline1": "New bid",
+      "headline2": "from {{bidderName}}",
+      "description": "{{resourceName}}"
+    },
+    "resourceBidExpiringSoon": {
+      "headline1": "Bid expiring soon",
+      "headline2": "",
+      "description": "{{resourceName}}"
+    },
+    "campaignAirdropComingSoon": {
+      "headline1": "Airdrop coming soon",
+      "headline2": "{{campaignName}}",
+      "description": "Don't miss it!"
+    },
+    "campaignAirdropDone": {
+      "headline1": "Airdrop received!",
+      "headline2": "{{campaignName}}",
+      "description": "Check your contribution page"
+    },
+    "welcomeProfileReward": {
+      "headline1": "Welcome to Mutuity!",
+      "headline2": "",
+      "description": "Complete your profile and earn some Topes!"
+    },
+    "giftTokensReceived": {
+      "headline1": "Topes received!",
+      "headline2": "from {{senderName}}",
+      "description": "{{amount}} Topes"
+    },
+    "claimSettled": {
+      "headline1": "Claim settled",
+      "headline2": "",
+      "description": "{{needName}}"
+    },
+    "resourceBidAccepted": {
+      "headline1": "Bid accepted",
+      "headline2": "by {{responderName}}",
+      "description": "{{resourceName}}"
+    },
+    "resourceBidDeclined": {
+      "headline1": "Bid rejected",
+      "headline2": "by {{responderName}}",
+      "description": "{{resourceName}}"
+    },
+    "resourceBidCancelled": {
+      "headline1": "Bid cancelled",
+      "headline2": "",
+      "description": "{{resourceName}}"
+    },
+    "resourceBidExpired": {
+      "headline1": "Bid expired",
+      "headline2": "",
+      "description": "{{resourceName}}"
+    },
+    "campaignModerationNoteReceived": {
+      "headline1": "Moderation note",
+      "headline2": "{{campaignName}}",
+      "description": "A moderator left you a note"
+    },
+    "campaignApproved": {
+      "headline1": "Campaign approved",
+      "headline2": "",
+      "description": "{{campaignName}}"
+    },
+    "campaignCreatorAdaptationSubmitted": {
+      "headline1": "Campaign updated",
+      "headline2": "by {{creatorName}}",
+      "description": "{{campaignName}}"
+    },
+    "fallback": {
+      "headline1": "Notification",
+      "headline2": "",
+      "description": "{{eventType}}"
+    }
   }
 }

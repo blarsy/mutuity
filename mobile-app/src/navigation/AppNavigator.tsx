@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Dimensions, Linking, Pressable, StatusBar, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Dimensions, Linking, Pressable, StatusBar, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -89,6 +89,7 @@ interface MainTabScreenProps {
 
 interface MyHubScreenProps extends MainTabScreenProps {
   drawerVisible: boolean;
+  onRequestCloseDrawer: () => void;
 }
 
 interface AuthScreenShellProps {
@@ -224,7 +225,7 @@ function MyHubDrawerPlaceholderSurface({ title, body }: { title: string; body: s
   );
 }
 
-function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScreenProps): React.JSX.Element {
+function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestCloseDrawer }: MyHubScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   const { signOut } = useAuth();
@@ -238,6 +239,16 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
   const [openedBidResourceId, setOpenedBidResourceId] = useState<string | null>(null);
   const [openedBidAccountId, setOpenedBidAccountId] = useState<string | null>(null);
   const [openedBidConversationId, setOpenedBidConversationId] = useState<string | null>(null);
+  const drawerAnimation = useRef(new Animated.Value(drawerVisible ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(drawerAnimation, {
+      toValue: drawerVisible ? 1 : 0,
+      friction: 5,
+      tension: 60,
+      useNativeDriver: true
+    }).start();
+  }, [drawerVisible, drawerAnimation]);
 
   const canAccessMyHub = authenticated && Boolean(accountId);
 
@@ -460,8 +471,23 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
   return (
     <View style={styles.myHubLayout}>
       {drawerVisible ? (
-        <View style={styles.myHubDrawer}>
-          <View style={styles.myHubDrawerSection}>
+        <Pressable style={styles.myHubDrawerOverlay} onPress={onRequestCloseDrawer} accessibilityLabel={t("closeDrawer", { ns: "us1", defaultValue: "Close drawer" })} />
+      ) : null}
+
+      <Animated.View
+        pointerEvents={drawerVisible ? "auto" : "none"}
+        style={[
+          styles.myHubDrawer,
+          {
+            opacity: drawerAnimation,
+            transform: [
+              { scale: drawerAnimation.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) },
+              { translateX: drawerAnimation.interpolate({ inputRange: [0, 1], outputRange: [-40, 0] }) }
+            ]
+          }
+        ]}
+      >
+        <View style={styles.myHubDrawerSection}>
             {topDrawerItems.map((item) => {
               const selected = activeDrawerItem === item.key;
 
@@ -506,8 +532,7 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible }: MyHubScree
               );
             })}
           </View>
-        </View>
-      ) : null}
+      </Animated.View>
 
       <View style={styles.myHubContent}>{renderActiveSurface()}</View>
     </View>
@@ -635,6 +660,16 @@ function RootNavigator(): React.JSX.Element {
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
   const [myHubDrawerVisible, setMyHubDrawerVisible] = useState(true);
   const [showSupport, setShowSupport] = useState(false);
+  const drawerToggleBounce = useRef(new Animated.Value(1)).current;
+
+  const toggleMyHubDrawer = (): void => {
+    setMyHubDrawerVisible((previous) => !previous);
+    drawerToggleBounce.setValue(1);
+    Animated.sequence([
+      Animated.spring(drawerToggleBounce, { toValue: 1.35, friction: 3, tension: 200, useNativeDriver: true }),
+      Animated.spring(drawerToggleBounce, { toValue: 1, friction: 4, tension: 200, useNativeDriver: true })
+    ]).start();
+  };
 
   const versionStatus = useMemo(() => getAppVersionStatus("0.1.0"), []);
 
@@ -814,14 +849,16 @@ function RootNavigator(): React.JSX.Element {
         <Appbar.Header mode="center-aligned" statusBarHeight={0} style={styles.header}>
           <View style={styles.headerLeadingActions}>
             {activeRouteName === "MyHub" ? (
-              <Appbar.Action
-                accessibilityLabel={t("toggleDrawer", { ns: "us1", defaultValue: "Toggle drawer" })}
-                icon={myHubDrawerVisible ? "menu-open" : "menu"}
-                size={24}
-                color="#000"
-                style={styles.headerAction}
-                onPress={() => setMyHubDrawerVisible((previous) => !previous)}
-              />
+              <Animated.View style={{ transform: [{ scale: drawerToggleBounce }] }}>
+                <Appbar.Action
+                  accessibilityLabel={t("toggleDrawer", { ns: "us1", defaultValue: "Toggle drawer" })}
+                  icon={myHubDrawerVisible ? "menu-open" : "menu"}
+                  size={24}
+                  color="#000"
+                  style={styles.headerAction}
+                  onPress={toggleMyHubDrawer}
+                />
+              </Animated.View>
             ) : (
               <View style={styles.headerActionSpacer} />
             )}
@@ -980,6 +1017,7 @@ function RootNavigator(): React.JSX.Element {
                       authenticated={authenticated}
                       onRequestAuth={requestAuth}
                       drawerVisible={myHubDrawerVisible}
+                      onRequestCloseDrawer={() => setMyHubDrawerVisible(false)}
                     />
                   )}
                 </Tab.Screen>
@@ -1074,16 +1112,34 @@ const styles = StyleSheet.create({
   },
   myHubLayout: {
     flex: 1,
-    flexDirection: "row"
+    position: "relative"
+  },
+  myHubDrawerOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 5
   },
   myHubDrawer: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 10,
+    elevation: 10,
     backgroundColor: "#fff2e6",
     borderRightWidth: 1,
     borderRightColor: "#f1d6bf",
     paddingVertical: 4,
     paddingRight: 8,
     paddingLeft: 0,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    shadowColor: "#000000",
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6
   },
   myHubDrawerSection: {
     gap: 8

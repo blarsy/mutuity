@@ -19,6 +19,7 @@ import { useAuth } from "../../services/auth/AuthProvider";
 import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { NeedIntensity } from "../../services/graphql/generated";
 
 export interface PublicProfileLink {
   type: "website" | "facebook" | "instagram" | "x";
@@ -31,6 +32,17 @@ export interface PublicProfileResource {
   title: string;
   description: string;
   imageUrls: string[];
+  createdAt: string | null;
+  canBeExchanged: boolean;
+  canBeGifted: boolean;
+}
+
+export interface PublicProfileNeed {
+  id: string;
+  title: string;
+  description: string;
+  proposedTokenAmount: number;
+  intensity: NeedIntensity;
 }
 
 export interface MyProfileRecord {
@@ -42,6 +54,7 @@ export interface MyProfileRecord {
   bio: string;
   profileLinks?: PublicProfileLink[];
   resources?: PublicProfileResource[];
+  needs?: PublicProfileNeed[];
 }
 
 const PROFILE_LINK_TYPES: ReadonlyArray<PublicProfileLink["type"]> = ["website", "facebook", "instagram", "x"];

@@ -6578,10 +6578,6 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SettleNeedClaimInput!
   ): SettleNeedClaimPayload
-  submitResourceBid(
-    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
-    input: SubmitResourceBidInput!
-  ): SubmitResourceBidPayload
   """Updates a single `Account` using its globally unique id and a patch."""
   updateAccount(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -10432,42 +10428,6 @@ type SettleNeedClaimPayload {
   ): NeedClaimsEdge
   """Our root query field type. Allows us to run any query from our mutation payload."""
   query: Query
-}
-
-"""All input for the `submitResourceBid` mutation."""
-input SubmitResourceBidInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  message: String
-  proposedTokenAmount: Int
-  resourceId: UUID
-  validHours: Int
-}
-
-"""The output of our `submitResourceBid` mutation."""
-type SubmitResourceBidPayload {
-  """Reads a single `Account` that is related to this `ResourceBid`."""
-  accountByBidderAccountId: Account
-  """Reads a single `Account` that is related to this `ResourceBid`."""
-  accountByRespondedByAccountId: Account
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """Our root query field type. Allows us to run any query from our mutation payload."""
-  query: Query
-  resourceBid: ResourceBid
-  """An edge for our `ResourceBid`. May be used by Relay 1."""
-  resourceBidEdge(
-    """The method to use when ordering `ResourceBid`."""
-    orderBy: [ResourceBidsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ResourceBidsEdge
-  """Reads a single `Resource` that is related to this `ResourceBid`."""
-  resourceByResourceId: Resource
 }
 
 """The root subscription type: contains realtime events you can subscribe to with the `subscription` operation."""

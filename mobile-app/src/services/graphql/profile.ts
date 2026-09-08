@@ -10,8 +10,10 @@ import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "./operat
 import type {
   MyProfileRecord,
   PublicProfileLink,
+  PublicProfileNeed,
   PublicProfileResource
 } from "../../screens/profile/MyProfileScreen";
+import { NeedIntensity } from "./generated";
 import type { ProximityLocationValue } from "../../components/primitives/ProximityLocationEditor";
 
 interface AccountProfileQueryResult {
@@ -22,6 +24,18 @@ interface AccountProfileQueryResult {
       title?: string | null;
       description?: string | null;
       imageUrls?: Array<string | null> | null;
+      createdAt?: string | null;
+      canBeExchanged?: boolean | null;
+      canBeGiven?: boolean | null;
+    }> | null;
+  } | null;
+  allNeeds?: {
+    nodes?: Array<{
+      id?: string | null;
+      title?: string | null;
+      description?: string | null;
+      proposedTopesAmount?: number | null;
+      intensity?: NeedIntensity | null;
     }> | null;
   } | null;
 }
@@ -70,7 +84,15 @@ function normalizePublicResources(value: unknown): PublicProfileResource[] {
         return null;
       }
 
-      const candidate = resource as { id?: unknown; title?: unknown; description?: unknown; imageUrls?: unknown };
+      const candidate = resource as {
+        id?: unknown;
+        title?: unknown;
+        description?: unknown;
+        imageUrls?: unknown;
+        createdAt?: unknown;
+        canBeExchanged?: unknown;
+        canBeGiven?: unknown;
+      };
       const id = typeof candidate.id === "string" ? candidate.id : "";
       const title = typeof candidate.title === "string" ? candidate.title : "";
       const description = typeof candidate.description === "string" ? candidate.description : "";
@@ -86,15 +108,63 @@ function normalizePublicResources(value: unknown): PublicProfileResource[] {
         id,
         title,
         description,
-        imageUrls
+        imageUrls,
+        createdAt: typeof candidate.createdAt === "string" ? candidate.createdAt : null,
+        canBeExchanged: candidate.canBeExchanged === true,
+        canBeGifted: candidate.canBeGiven === true
       };
     })
     .filter((resource): resource is PublicProfileResource => resource !== null);
 }
 
+function normalizePublicNeeds(value: unknown): PublicProfileNeed[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((need) => {
+      if (!need || typeof need !== "object") {
+        return null;
+      }
+
+      const candidate = need as {
+        id?: unknown;
+        title?: unknown;
+        description?: unknown;
+        proposedTopesAmount?: unknown;
+        intensity?: unknown;
+      };
+      const id = typeof candidate.id === "string" ? candidate.id : "";
+      const title = typeof candidate.title === "string" ? candidate.title : "";
+
+      if (!id || !title) {
+        return null;
+      }
+
+      return {
+        id,
+        title,
+        description: typeof candidate.description === "string" ? candidate.description : "",
+        proposedTokenAmount:
+          typeof candidate.proposedTopesAmount === "number" && Number.isFinite(candidate.proposedTopesAmount)
+            ? candidate.proposedTopesAmount
+            : 0,
+        intensity:
+          candidate.intensity === NeedIntensity.Commitment ||
+          candidate.intensity === NeedIntensity.LegUp ||
+          candidate.intensity === NeedIntensity.RareContribution
+            ? candidate.intensity
+            : NeedIntensity.Sharing
+      };
+    })
+    .filter((need): need is PublicProfileNeed => need !== null);
+}
+
 function toProfileRecord(
   account: NonNullable<AccountProfileQueryResult["accountById"]>,
-  allResources: unknown = []
+  allResources: unknown = [],
+  allNeeds: unknown = []
 ): MyProfileRecord {
   const locationLabel = account.location ?? "";
   const latitude = typeof account.latitude === "number" ? account.latitude : undefined;
@@ -110,7 +180,8 @@ function toProfileRecord(
       : null,
     bio: account.bio ?? "",
     profileLinks: normalizeProfileLinks((account as { profileLinks?: unknown }).profileLinks),
-    resources: normalizePublicResources(allResources)
+    resources: normalizePublicResources(allResources),
+    needs: normalizePublicNeeds(allNeeds)
   };
 }
 
@@ -128,7 +199,7 @@ export async function fetchMyProfile(accountId: string): Promise<MyProfileRecord
     return null;
   }
 
-  return toProfileRecord(account, data?.allResources?.nodes ?? []);
+  return toProfileRecord(account, data?.allResources?.nodes ?? [], data?.allNeeds?.nodes ?? []);
 }
 
 export async function updateMyProfile(

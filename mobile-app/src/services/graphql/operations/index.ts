@@ -930,6 +930,18 @@ export const ACCOUNT_PROFILE_QUERY = gql`
         title
         description
         imageUrls
+        createdAt
+        canBeExchanged
+        canBeGiven
+      }
+    }
+    allNeeds(condition: { creatorAccountId: $id, isActive: true }, first: 10, orderBy: ID_DESC) {
+      nodes {
+        id
+        title
+        description
+        proposedTopesAmount
+        intensity
       }
     }
   }
