@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Checkbox, Chip, Divider, IconButton, Snackbar, Text } from "react-native-paper";
+import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Checkbox, Chip, Divider, Icon, IconButton, Snackbar, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
   AppSegmentedButtons,
   FormTextInput,
   PickerDialog,
-  PrimaryButton,
   ScreenContainer
 } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
@@ -15,7 +14,6 @@ import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import {
-  claimNeedById,
   fetchSearchNeeds,
   type NeedItem,
   type SearchNeedsFilters
@@ -31,7 +29,6 @@ export interface SearchNeedsScreenProps {
   onRetry?: () => void;
   onSwitchToResources?: () => void;
   onOpenNeed?: (need: NeedItem) => void;
-  onClaimNeed?: (need: NeedItem) => Promise<void> | void;
   currentAccountId?: string | null;
 }
 
@@ -55,6 +52,19 @@ function intensityFilterOptions(): NeedIntensity[] {
   return [NeedIntensity.Sharing, NeedIntensity.Commitment, NeedIntensity.LegUp, NeedIntensity.RareContribution];
 }
 
+function formatPublishedDate(value: string | null, locale: string): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+}
+
 export function SearchNeedsScreen({
   needs,
   loading = false,
@@ -62,10 +72,9 @@ export function SearchNeedsScreen({
   onRetry,
   onSwitchToResources,
   onOpenNeed,
-  onClaimNeed,
   currentAccountId = null
 }: SearchNeedsScreenProps): React.JSX.Element {
-  const { t } = useTranslation(["common", "us2"]);
+  const { t, i18n } = useTranslation(["common", "us2"]);
   const [searchTerm, setSearchTerm] = useState("");
   const [maxTokenAmount, setMaxTokenAmount] = useState("");
   const [selectedIntensities, setSelectedIntensities] = useState<NeedIntensity[]>([]);
@@ -76,10 +85,6 @@ export function SearchNeedsScreen({
   const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
-  const [claimedNeedIds, setClaimedNeedIds] = useState<string[]>([]);
-  const [claimingNeedIds, setClaimingNeedIds] = useState<string[]>([]);
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-
   const hasInjectedNeeds = needs !== undefined;
 
   const parsedMaxTokenAmount = useMemo(() => {
@@ -142,13 +147,11 @@ export function SearchNeedsScreen({
         (need.campaignId !== null &&
           need.campaignId !== undefined &&
           selectedCampaignIds.includes(need.campaignId));
-      const isClaimed = need.isClaimedByCurrentAccount || claimedNeedIds.includes(need.id);
-      const matchesClaimedVisibility = !hideClaimedNeeds || !isClaimed;
+      const matchesClaimedVisibility = !hideClaimedNeeds || !need.isClaimedByCurrentAccount;
 
       return matchesSearch && matchesIntensity && matchesTokenAmount && matchesCampaign && matchesClaimedVisibility;
     });
   }, [
-    claimedNeedIds,
     hideClaimedNeeds,
     parsedMaxTokenAmount,
     searchTerm,
@@ -175,42 +178,6 @@ export function SearchNeedsScreen({
     }
 
     void loadNeeds();
-  };
-
-  const handleClaimNeed = async (need: NeedItem): Promise<void> => {
-    if (claimingNeedIds.includes(need.id) || claimedNeedIds.includes(need.id) || need.isClaimedByCurrentAccount) {
-      return;
-    }
-
-    if (!currentAccountId) {
-      setSnackbarMessage(
-        t("claimNeedLoginRequired", {
-          ns: "us2",
-          defaultValue: "Sign in to claim this need."
-        })
-      );
-      return;
-    }
-
-    setClaimingNeedIds((previous) => [...previous, need.id]);
-
-    try {
-      if (onClaimNeed) {
-        await onClaimNeed(need);
-      } else {
-        await claimNeedById(need.id);
-      }
-      setClaimedNeedIds((previous) => [...previous, need.id]);
-    } catch {
-      setSnackbarMessage(
-        t("claimNeedError", {
-          ns: "us2",
-          defaultValue: "We could not claim this need."
-        })
-      );
-    } finally {
-      setClaimingNeedIds((previous) => previous.filter((value) => value !== need.id));
-    }
   };
 
   const clearFilters = (): void => {
@@ -256,16 +223,19 @@ export function SearchNeedsScreen({
             value={searchTerm}
             onChangeText={setSearchTerm}
             style={styles.searchField}
+            right={<TextInput.Icon icon="magnify" />}
           />
-          <PrimaryButton
-            label={t("retry", { ns: "common", defaultValue: "Retry" })}
+          <IconButton
+            icon="refresh"
+            mode="outlined"
             onPress={handleRetry}
+            accessibilityLabel={t("retry", { ns: "common", defaultValue: "Retry" })}
           />
         </View>
 
         <FormTextInput
-          label={t("maxNeedTokenAmountLabel", { ns: "us2", defaultValue: "Max token amount" })}
-          accessibilityLabel={t("maxNeedTokenAmountLabel", { ns: "us2", defaultValue: "Max token amount" })}
+          label={t("maxNeedTokenAmountLabel", { ns: "us2", defaultValue: "Max Tope amount" })}
+          accessibilityLabel={t("maxNeedTokenAmountLabel", { ns: "us2", defaultValue: "Max Tope amount" })}
           value={maxTokenAmount}
           onChangeText={setMaxTokenAmount}
           keyboardType="number-pad"
@@ -356,50 +326,42 @@ export function SearchNeedsScreen({
         ) : (
           <View style={styles.list}>
             {filteredNeeds.map((need) => {
-              const isClaimed = need.isClaimedByCurrentAccount || claimedNeedIds.includes(need.id);
-              const isClaiming = claimingNeedIds.includes(need.id);
-
               return (
                 <Pressable
                   key={need.id}
                   accessibilityRole="button"
-                  accessibilityLabel={`${need.title}. ${need.proposedTokenAmount} token.`}
+                  accessibilityLabel={`${need.title}. ${need.proposedTokenAmount} Tope.`}
                   onPress={() => onOpenNeed?.(need)}
                   style={styles.needCard}
                   testID={`need-card-${need.id}`}
                 >
-                  <View style={styles.cardHeader}>
-                    <Text variant="titleMedium" style={styles.needTitle}>
-                      {need.title}
+                  {need.imageUrls?.[0] ? (
+                    <Image source={{ uri: need.imageUrls[0] }} style={styles.needCardImage} />
+                  ) : (
+                    <View style={styles.needCardImageFallback}>
+                      <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
+                    </View>
+                  )}
+                  <View style={styles.needCardContent}>
+                    <Text variant="labelSmall" style={styles.needCardPublishedAt}>
+                      {`${t("publishedAtLabel", { defaultValue: "Published" })} ${formatPublishedDate(need.createdAt, i18n.language) ?? "-"}`}
                     </Text>
-                    <Chip compact>
-                      {t(intensityLabelMeta(need.intensity).key, {
-                        ns: "us2",
-                        defaultValue: intensityLabelMeta(need.intensity).defaultValue
-                      })}
-                    </Chip>
+                    <View style={styles.needCardBody}>
+                      <Text variant="titleMedium" numberOfLines={2} style={styles.needTitle}>
+                        {need.title}
+                      </Text>
+                      <Text variant="labelSmall" style={styles.needCardAuthor}>
+                        {`${t("broughtByLabel", { defaultValue: "Brought by" })} ${need.creatorDisplayName ?? t("anonymousLabel", { defaultValue: "Anonymous" })}`}
+                      </Text>
+                      <Text variant="labelSmall" style={styles.tokenLine}>
+                        {t("needTokenAmount", {
+                          ns: "us2",
+                          defaultValue: "{{amount}} Topes",
+                          amount: need.proposedTokenAmount
+                        })}
+                      </Text>
+                    </View>
                   </View>
-                  <Text variant="bodySmall" numberOfLines={2}>
-                    {need.description || t("needDescriptionEmpty", { ns: "us2", defaultValue: "No description yet." })}
-                  </Text>
-                  <Text variant="labelSmall" style={styles.tokenLine}>
-                    {t("needTokenAmount", {
-                      ns: "us2",
-                      defaultValue: "{{amount}} token",
-                      amount: need.proposedTokenAmount
-                    })}
-                  </Text>
-                  <PrimaryButton
-                    label={
-                      isClaimed
-                        ? t("needClaimedLabel", { ns: "us2", defaultValue: "Claimed" })
-                        : t("claimNeedLabel", { ns: "us2", defaultValue: "Claim need" })
-                    }
-                    onPress={() => void handleClaimNeed(need)}
-                    disabled={isClaimed || isClaiming}
-                    loading={isClaiming}
-                    testID={`need-card-claim-${need.id}`}
-                  />
                 </Pressable>
               );
             })}
@@ -420,9 +382,6 @@ export function SearchNeedsScreen({
         testID="needs-campaign-filter-dialog"
       />
 
-      <Snackbar visible={snackbarMessage !== null} onDismiss={() => setSnackbarMessage(null)}>
-        {snackbarMessage ?? ""}
-      </Snackbar>
     </ScreenContainer>
   );
 }
@@ -476,20 +435,56 @@ const styles = StyleSheet.create({
     gap: designTokens.spacing.sm
   },
   needCard: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 12,
     backgroundColor: designTokens.colors.primaryContainer,
     borderRadius: designTokens.radius.md,
-    padding: designTokens.spacing.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 8
+  },
+  needCardImage: {
+    width: 92,
+    height: 92,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff"
+  },
+  needCardImageFallback: {
+    width: 92,
+    height: 92,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  needCardContent: {
+    flex: 1,
+    marginRight: 4,
     gap: designTokens.spacing.xs
   },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
+  needCardPublishedAt: {
+    color: designTokens.colors.primary,
+    alignSelf: "flex-end",
+    fontFamily: appFontFamilies.general,
+    fontSize: 10,
+    lineHeight: 12
+  },
+  needCardBody: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 2
   },
   needTitle: {
     fontFamily: appFontFamilies.altGeneral,
-    flex: 1
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 20
+  },
+  needCardAuthor: {
+    color: designTokens.colors.primary,
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: appFontFamilies.general
   },
   tokenLine: {
     color: designTokens.colors.primary,

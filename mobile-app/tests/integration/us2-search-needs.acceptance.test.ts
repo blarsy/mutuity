@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Image } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -8,6 +9,11 @@ import { NeedIntensity } from "../../src/services/graphql/generated";
 import type { NeedItem } from "../../src/services/graphql/needs";
 
 import "../../src/i18n";
+
+jest.mock("../../src/services/graphql/needs", () => ({
+  claimNeedById: jest.fn(),
+  fetchSearchNeeds: jest.fn()
+}));
 
 jest.mock("../../src/services/graphql/campaigns", () => ({
   fetchLinkableCampaigns: jest.fn().mockResolvedValue([
@@ -26,6 +32,8 @@ const injectedNeeds: NeedItem[] = [
     campaignId: "campaign-education",
     createdAt: "2026-07-24T12:00:00.000Z",
     creatorAccountId: "00000000-0000-0000-0000-000000000001",
+    creatorDisplayName: "Nora Ibrahim",
+    imageUrls: ["https://example.com/lamp.jpg"],
     claimCount: 0,
     isClaimedByCurrentAccount: false
   },
@@ -38,6 +46,8 @@ const injectedNeeds: NeedItem[] = [
     campaignId: "campaign-mobility",
     createdAt: "2026-07-25T12:00:00.000Z",
     creatorAccountId: "00000000-0000-0000-0000-000000000001",
+    creatorDisplayName: "Nora Ibrahim",
+    imageUrls: [],
     claimCount: 0,
     isClaimedByCurrentAccount: false
   }
@@ -61,11 +71,13 @@ describe("US2 search needs acceptance", () => {
     );
 
     expect(screen.getByPlaceholderText("Search needs")).toBeTruthy();
+    expect(screen.getAllByText("Brought by Nora Ibrahim")).toHaveLength(2);
+    expect(screen.getByTestId("need-card-need-sharing").findByType(Image)).toBeTruthy();
 
     fireEvent.changeText(screen.getByPlaceholderText("Search needs"), "child");
     expect(screen.getByTestId("need-card-need-urgent")).toBeTruthy();
 
-    fireEvent.changeText(screen.getByLabelText("Max token amount"), "20");
+    fireEvent.changeText(screen.getByLabelText("Max Tope amount"), "20");
     expect(screen.queryByTestId("need-card-need-urgent")).toBeNull();
 
     fireEvent.changeText(screen.getByPlaceholderText("Search needs"), "");

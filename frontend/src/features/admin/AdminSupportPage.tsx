@@ -635,7 +635,7 @@ function GrantCreatePageAction() {
             <TextField
               fullWidth
               required
-              label="Awarded token amount"
+              label="Awarded Tope amount"
               type="number"
               inputProps={{ min: 1 }}
               value={tokenAmount}
@@ -739,7 +739,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "name", label: "Name", render: row => asString(row.name) || "-" },
       { key: "email", label: "Email", render: row => asString(row.email) || "-" },
       { key: "language", label: "Language", render: row => asString(row.language) || "-" },
-      { key: "tokenAmount", label: "Tokens", render: row => asString(row.tokenAmount) || "0" },
+      { key: "tokenAmount", label: "Topes", render: row => asString(row.tokenAmount) || "0" },
       { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
       { key: "address", label: "Address", render: row => asString(row.address) || "-" }
     ]
@@ -757,7 +757,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "receiverName", label: "Receiver", render: row => asString(row.receiverName) || "-" },
       { key: "resourceTitle", label: "Resource", render: row => asString(row.resourceTitle) || "-" },
       { key: "intensity", label: "Intensity", render: row => asString(row.intensity) || "-" },
-      { key: "tokenAmount", label: "Tokens", render: row => asString(row.tokenAmount) || "0" },
+      { key: "tokenAmount", label: "Topes", render: row => asString(row.tokenAmount) || "0" },
       { key: "status", label: "Status", render: row => asString(row.status) || "-" },
       { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
       { key: "expirationDatetime", label: "Expires", render: row => renderDate(row.expirationDatetime) }
@@ -775,7 +775,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "title", label: "Title", render: row => asString(row.title) || "-" },
       { key: "creatorName", label: "Creator", render: row => asString(row.creatorName) || "-" },
       { key: "intensity", label: "Intensity", render: row => asString(row.intensity) || "-" },
-      { key: "tokenAmount", label: "Tokens", render: row => asString(row.tokenAmount) || "0" },
+      { key: "tokenAmount", label: "Topes", render: row => asString(row.tokenAmount) || "0" },
       { key: "imageCount", label: "Images", render: row => asString(row.imageCount) || "0" },
       { key: "location", label: "Location", render: row => asString(row.location) || "-" },
       { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
@@ -831,7 +831,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "moderationStatus", label: "Status", render: row => asString(row.moderationStatus) || "-" },
       {
         key: "airdropTokenAmount",
-        label: "Airdrop Tokens",
+        label: "Airdrop Topes",
         render: row => asString(row.airdropTokenAmount) || "0"
       },
       { key: "airdropDatetime", label: "Airdrop At", render: row => renderDate(row.airdropDatetime) },

@@ -4,7 +4,7 @@
   "loading": "Loading your contribution history…",
   "loadMore": "Load more",
   "loadingMore": "Loading more…",
-  "empty": "No token movements recorded yet.",
+  "empty": "No Tope movements recorded yet.",
   "ledgerInfo": "This ledger slice records profile-completion rewards, first resource milestone rewards, bid reserves/refunds, claim settlement transfers, direct gifts between accounts, delayed 24-hour rewards, and campaign airdrop payouts.",
   "ledgerEntriesCount": "{{count}} ledger entries",
   "topesAmount": "{{amount}} Topes",

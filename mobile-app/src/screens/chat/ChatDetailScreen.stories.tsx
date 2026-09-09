@@ -34,7 +34,7 @@ const SAMPLE_MESSAGES: ChatMessageItem[] = [
   {
     id: "msg-004",
     direction: "outgoing",
-    body: "Great, I'll have it ready for you. The rental is 45 tokens for the weekend.",
+    body: "Great, I'll have it ready for you. The rental is 45 Topes for the weekend.",
     createdAt: "2026-07-29T10:12:00.000Z"
   },
   {

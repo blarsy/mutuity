@@ -286,7 +286,7 @@ export function AccountPublicProfileScreen({
                     </View>
                     <Text variant="bodySmall" numberOfLines={2}>{need.description || t("needDescriptionEmpty", { defaultValue: "No description yet." })}</Text>
                     <Text variant="labelSmall" style={styles.needTokenLine}>
-                      {t("needTokenAmount", { defaultValue: "{{amount}} token", amount: need.proposedTokenAmount })}
+                      {t("needTokenAmount", { defaultValue: "{{amount}} Topes", amount: need.proposedTokenAmount })}
                     </Text>
                   </View>
                 );

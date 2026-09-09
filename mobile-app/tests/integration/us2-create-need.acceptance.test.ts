@@ -8,6 +8,10 @@ import type { NeedItem } from "../../src/services/graphql/needs";
 
 import "../../src/i18n";
 
+jest.mock("../../src/services/graphql/needs", () => ({
+  fetchMyNeeds: jest.fn()
+}));
+
 function CreateNeedHarness(): React.JSX.Element {
   const [needs, setNeeds] = useState<NeedItem[]>([]);
 
@@ -44,6 +48,6 @@ describe("US2 create need acceptance", () => {
     fireEvent.press(screen.getAllByRole("button", { name: "Add need" })[0]);
 
     expect(screen.getByTestId("my-need-card-need-created")).toBeTruthy();
-    expect(screen.getByLabelText("Urgent grocery pickup. 25 token.")).toBeTruthy();
+    expect(screen.getByLabelText("Urgent grocery pickup. 25 Tope.")).toBeTruthy();
   });
 });

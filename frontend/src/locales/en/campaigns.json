@@ -76,7 +76,7 @@
       "joiningSingle": "Sending…",
       "joinSuccess": "Join request sent for {{count}} resource(s).",
       "joinFailed": "Unable to send join request. Please try again.",
-      "tokens": "Suggested tokens: {{count}}",
+      "tokens": "Suggested Topes: {{count}}",
       "status": {
         "joined": "Joined",
         "waitingApproval": "Waiting approval",
@@ -101,7 +101,7 @@
       "joiningSingle": "Sending…",
       "joinSuccess": "Join request sent for {{count}} need(s).",
       "joinFailed": "Unable to send join request. Please try again.",
-      "tokens": "Proposed tokens: {{count}}",
+      "tokens": "Proposed Topes: {{count}}",
       "status": {
         "joined": "Joined",
         "waitingApproval": "Waiting approval",
@@ -184,7 +184,7 @@
     "campaignLabel": "Campaign",
     "resourceFallback": "Resource {{resourceId}}",
     "location": "Location",
-    "defaultTokens": "Default tokens",
+    "defaultTokens": "Default Topes",
     "joined": "Joined",
     "triaged": "Triaged",
     "na": "N/A",

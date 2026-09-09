@@ -11,7 +11,7 @@
     "notifications": "Notifications"
   },
   "topbar": {
-    "tokenBalance": "{{count}} tokens",
+    "tokenBalance": "{{count}} Topes",
     "switchToDark": "Switch to dark mode",
     "switchToLight": "Switch to light mode",
     "toggleColorMode": "Toggle color mode",

@@ -42,10 +42,10 @@
   "backLabel": "Retour",
   "notifications": {
     "events": {
-      "giftTokensReceived": { "headline1": "Tokens reçus !", "headline2": "{{senderName}}", "description": "{{amount}} tokens reçus" },
+      "giftTokensReceived": { "headline1": "Topes reçus !", "headline2": "{{senderName}}", "description": "{{amount}} Topes reçus" },
       "campaignAirdropComingSoon": { "headline1": "Airdrop bientôt disponible", "headline2": "{{campaignName}}", "description": "Arrive le {{date}}" },
-      "campaignAirdropDone": { "headline1": "Airdrop reçu !", "headline2": "{{campaignName}}", "description": "{{amount}} tokens" },
-      "welcomeProfileReward": { "headline1": "Bienvenue sur Mutuity !", "headline2": "Complétez votre profil", "description": "Gagnez des tokens pour un profil soigné." },
+      "campaignAirdropDone": { "headline1": "Airdrop reçu !", "headline2": "{{campaignName}}", "description": "{{amount}} Topes" },
+      "welcomeProfileReward": { "headline1": "Bienvenue sur Mutuity !", "headline2": "Complétez votre profil", "description": "Gagnez des Topes pour un profil soigné." },
       "campaignApproved": { "headline1": "Campagne approuvée", "headline2": "{{campaignName}}", "description": "Votre campagne est maintenant en ligne." },
       "campaignModerationNoteReceived": { "headline1": "Note de modération", "headline2": "{{campaignName}}", "description": "{{noteBody}}" },
       "campaignCreatorAdaptationSubmitted": { "headline1": "Campagne mise à jour", "headline2": "{{creatorName}}", "description": "{{campaignName}}" },

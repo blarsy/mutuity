@@ -31,7 +31,7 @@ const SAMPLE_NOTIFICATIONS: NotificationFeedItem[] = [
     eventType: "campaign_airdrop_done",
     headline1: "Airdrop received!",
     headline2: "Sustainable Mobility Week",
-    description: "3000 tokens",
+    description: "3000 Topes",
     createdAt: "2026-07-15T00:00:00.000Z",
     readAt: "2026-07-15T08:00:00.000Z"
   }
@@ -104,9 +104,9 @@ const ALL_EVENT_TYPES: NotificationFeedItem[] = [
     id: "event-gift_tokens_received",
     source: "account",
     eventType: "gift_tokens_received",
-    headline1: "Tokens received!",
+    headline1: "Topes received!",
     headline2: "Marie",
-    description: "500 tokens sent your way",
+    description: "500 Topes sent your way",
     createdAt: "2026-09-05T09:00:00.000Z",
     readAt: null
   },
@@ -126,7 +126,7 @@ const ALL_EVENT_TYPES: NotificationFeedItem[] = [
     eventType: "campaign_airdrop_done",
     headline1: "Airdrop received!",
     headline2: "Sustainable Mobility Week",
-    description: "3000 tokens",
+    description: "3000 Topes",
     createdAt: "2026-09-05T06:00:00.000Z",
     readAt: null
   },
@@ -136,7 +136,7 @@ const ALL_EVENT_TYPES: NotificationFeedItem[] = [
     eventType: "welcome_profile_reward",
     headline1: "Welcome to Mutuity!",
     headline2: "Complete your profile",
-    description: "Earn tokens for a polished profile.",
+    description: "Earn Topes for a polished profile.",
     createdAt: "2026-09-05T05:00:00.000Z",
     readAt: null
   },

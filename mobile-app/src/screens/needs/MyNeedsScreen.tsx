@@ -124,7 +124,7 @@ export function MyNeedsScreen({
             <Pressable
               key={need.id}
               accessibilityRole="button"
-              accessibilityLabel={`${need.title}. ${need.proposedTokenAmount} token.`}
+              accessibilityLabel={`${need.title}. ${need.proposedTokenAmount} Tope.`}
               onPress={() => onEditNeed(need)}
               style={styles.needCard}
               testID={`my-need-card-${need.id}`}
@@ -144,7 +144,7 @@ export function MyNeedsScreen({
               <Text variant="labelSmall" style={styles.tokenAmountText}>
                 {t("needTokenAmount", {
                   ns: "us2",
-                  defaultValue: "{{amount}} token",
+                  defaultValue: "{{amount}} Topes",
                   amount: need.proposedTokenAmount
                 })}
               </Text>

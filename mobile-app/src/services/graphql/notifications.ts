@@ -108,9 +108,9 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
   switch (eventType) {
     case "gift_tokens_received":
       return translateEvent("giftTokensReceived", { senderName: asText(p.senderName, someone), amount: asNumber(p.amountReceived) }, {
-        headline1: "Tokens received!",
+        headline1: "Topes received!",
         headline2: asText(p.senderName, someone),
-        description: `${asNumber(p.amountReceived)} tokens sent your way`
+        description: `${asNumber(p.amountReceived)} Topes sent your way`
       });
     case "campaign_airdrop_coming_soon":
       return translateEvent("campaignAirdropComingSoon", { campaignName: asText(p.campaignName, unknownNeed), date: formatDate(p.airdropAt) }, {
@@ -122,13 +122,13 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
       return translateEvent("campaignAirdropDone", { campaignName: asText(p.campaignName, ""), amount: asNumber(p.amountReceived) }, {
         headline1: "Airdrop received!",
         headline2: asText(p.campaignName, ""),
-        description: `${asNumber(p.amountReceived)} tokens`
+        description: `${asNumber(p.amountReceived)} Topes`
       });
     case "welcome_profile_reward":
       return translateEvent("welcomeProfileReward", {}, {
         headline1: "Welcome to Mutuity!",
         headline2: "Complete your profile",
-        description: "Earn tokens for a polished profile."
+        description: "Earn Topes for a polished profile."
       });
     case "campaign_approved":
       return translateEvent("campaignApproved", { campaignName: asText(p.campaignName, "") }, {

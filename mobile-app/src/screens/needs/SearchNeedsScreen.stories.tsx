@@ -66,8 +66,7 @@ const meta = {
     errorMessage: null,
     onRetry: () => undefined,
     onSwitchToResources: () => undefined,
-    onOpenNeed: () => undefined,
-    onClaimNeed: async () => undefined
+    onOpenNeed: () => undefined
   }
 } satisfies Meta<typeof SearchNeedsScreen>;
 

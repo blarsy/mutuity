@@ -29,16 +29,16 @@
     "title": "Conditions d'utilisation",
     "sections": {
       "purposeTitle": "1. Objet de la plateforme",
-      "purposeBody": "{{productName}} est une plateforme d'echange collaborative visant des interactions non monetaires, basees sur une unite de compte interne nommee token.",
-      "tokenNatureTitle": "2. Nature du token",
-      "tokenNatureBody": "token est une unite interne utilisee dans {{productName}}. Ce n'est pas :",
-      "tokenPropertiesTitle": "token ne :",
+      "purposeBody": "{{productName}} est une plateforme d'echange collaborative visant des interactions non monetaires, basees sur une unite de compte interne nommee Tope.",
+      "tokenNatureTitle": "2. Nature du Tope",
+      "tokenNatureBody": "Le Tope est une unite interne utilisee dans {{productName}}. Ce n'est pas :",
+      "tokenPropertiesTitle": "Le Tope ne :",
       "exchangesTitle": "3. Echanges entre utilisateurs",
       "exchangesBody": "Les echanges sont negocies librement entre les participants, sans bareme officiel. Chaque utilisateur reste responsable de ses obligations legales, fiscales et sociales eventuelles.",
       "endowmentTitle": "4. Mecanisme de dotation de la plateforme",
-      "endowmentBody": "Pour soutenir le fonctionnement et le developpement de la plateforme, une dotation equivalente a 10% du volume de chaque echange valide peut etre creee en token et attribuee a un compte dedie de la plateforme.",
+      "endowmentBody": "Pour soutenir le fonctionnement et le developpement de la plateforme, une dotation equivalente a 10% du volume de chaque echange valide peut etre creee en Topes et attribuee a un compte dedie de la plateforme.",
       "transparencyTitle": "5. Transparence et evolution",
-      "transparencyBody": "{{productName}} communique les principes essentiels d'usage du token et peut faire evoluer le systeme pour garantir conformite legale et durabilite produit."
+      "transparencyBody": "{{productName}} communique les principes essentiels d'usage du Tope et peut faire evoluer le systeme pour garantir conformite legale et durabilite produit."
     },
     "tokenIsNot": [
       "une monnaie legale",

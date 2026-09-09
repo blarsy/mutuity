@@ -274,7 +274,7 @@ export function ResourceDetailScreen({
 
     const parsedAmount = Number.parseInt(bidAmountValue.trim(), 10);
     if (!Number.isInteger(parsedAmount) || parsedAmount <= 0) {
-      setBidErrorMessage(t("bidInvalidAmountLabel", { defaultValue: "Enter a valid token amount." }));
+      setBidErrorMessage(t("bidInvalidAmountLabel", { defaultValue: "Enter a valid Tope amount." }));
       return;
     }
 
@@ -524,7 +524,7 @@ export function ResourceDetailScreen({
 
       {hasTokenAmount ? (
         <>
-          <DetailField title={t("referenceTokenAmountLabel", { defaultValue: "Reference token amount" })}>
+          <DetailField title={t("referenceTokenAmountLabel", { defaultValue: "Reference Tope amount" })}>
             <TokenAmount amount={resolvedResource.defaultTokenAmount ?? 0} size={28} />
           </DetailField>
           <View style={styles.hr} />
@@ -643,8 +643,8 @@ export function ResourceDetailScreen({
             </Text>
 
             <FormTextInput
-              label={t("amountOfTokenLabel", { defaultValue: "Token amount" })}
-              accessibilityLabel={t("amountOfTokenLabel", { defaultValue: "Token amount" })}
+              label={t("amountOfTokenLabel", { defaultValue: "Tope amount" })}
+              accessibilityLabel={t("amountOfTokenLabel", { defaultValue: "Tope amount" })}
               value={bidAmountValue}
               onChangeText={(value) => {
                 setBidAmountValue(value);
@@ -677,7 +677,7 @@ export function ResourceDetailScreen({
 
             {loadingTokenBalance ? (
               <Text variant="bodySmall" style={styles.bidDialogHintText}>
-                {t("tokenBalanceLoadingLabel", { defaultValue: "Loading token balance..." })}
+                {t("tokenBalanceLoadingLabel", { defaultValue: "Loading Tope balance..." })}
               </Text>
             ) : null}
 

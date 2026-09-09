@@ -161,7 +161,7 @@ export function EditNeedScreen({
     if (!isTokenAmountInRange) {
       return t("needTokenAmountRangeError", {
         ns: "us2",
-        defaultValue: "Token amount is outside the allowed range for this intensity."
+        defaultValue: "Tope amount is outside the allowed range for this intensity."
       });
     }
 
@@ -297,8 +297,8 @@ export function EditNeedScreen({
         <ProximityLocationEditor value={location} onChange={setLocation} />
 
         <PriceSetter
-          label={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Token amount" })}
-          accessibilityLabel={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Token amount" })}
+          label={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}
+          accessibilityLabel={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}
           value={tokenAmount}
           onChange={setTokenAmount}
         />

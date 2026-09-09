@@ -51,7 +51,7 @@ describe("E2E Smoke S5 - Needs Create and Claim", () => {
 
     // The new need should appear in the list
     expect(screen.getByTestId("my-need-card-need-e2e-smoke")).toBeTruthy();
-    expect(screen.getByLabelText("E2E Smoke Need - Help moving furniture. 150 token.")).toBeTruthy();
+    expect(screen.getByLabelText("E2E Smoke Need - Help moving furniture. 150 Tope.")).toBeTruthy();
   });
 
   it("created need shows correct intensity and token amount", () => {

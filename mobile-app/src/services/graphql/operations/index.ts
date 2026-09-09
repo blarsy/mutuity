@@ -128,6 +128,9 @@ export const SEARCH_NEEDS_QUERY = gql`
       nodes {
         id
         creatorAccountId
+        accountByCreatorAccountId {
+          displayName
+        }
         title
         description
         createdAt

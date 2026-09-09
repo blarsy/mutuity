@@ -76,7 +76,7 @@
       "joiningSingle": "Envoi…",
       "joinSuccess": "Demande envoyee pour {{count}} ressource(s).",
       "joinFailed": "Impossible d'envoyer la demande. Veuillez reessayer.",
-      "tokens": "Tokens suggeres : {{count}}",
+      "tokens": "Topes suggeres : {{count}}",
       "status": {
         "joined": "Rattachee",
         "waitingApproval": "En attente d'approbation",
@@ -101,7 +101,7 @@
       "joiningSingle": "Envoi…",
       "joinSuccess": "Demande envoyee pour {{count}} besoin(s).",
       "joinFailed": "Impossible d'envoyer la demande. Veuillez reessayer.",
-      "tokens": "Tokens proposes : {{count}}",
+      "tokens": "Topes proposes : {{count}}",
       "status": {
         "joined": "Rattache",
         "waitingApproval": "En attente d'approbation",
@@ -184,7 +184,7 @@
     "campaignLabel": "Campagne",
     "resourceFallback": "Ressource {{resourceId}}",
     "location": "Localisation",
-    "defaultTokens": "Tokens par defaut",
+    "defaultTokens": "Topes par defaut",
     "joined": "Rattache",
     "triaged": "Trie",
     "na": "N/A",

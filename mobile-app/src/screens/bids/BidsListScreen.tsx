@@ -299,7 +299,7 @@ export function BidsListScreen({
                 key={bid.id}
                 testID={`my-bid-card-${bid.id}`}
                 accessibilityRole="button"
-                accessibilityLabel={`${bid.title}. ${bid.tokenAmount} token.`}
+                accessibilityLabel={`${bid.title}. ${bid.tokenAmount} Tope.`}
                 onPress={() => {
                   setOpenUpdatedTooltipBidId(null);
                   if (onOpenBid) {

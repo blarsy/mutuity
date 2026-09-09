@@ -338,8 +338,8 @@ export function EditResourceScreen({
         <Divider style={styles.divider} />
 
         <PriceSetter
-          label={t("resourcePriceEditLabel", { defaultValue: "Token amount" })}
-          accessibilityLabel={t("resourcePriceEditLabel", { defaultValue: "Token amount" })}
+          label={t("resourcePriceEditLabel", { defaultValue: "Tope amount" })}
+          accessibilityLabel={t("resourcePriceEditLabel", { defaultValue: "Tope amount" })}
           value={tokenAmount}
           onChange={setTokenAmount}
         />

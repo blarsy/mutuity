@@ -119,7 +119,7 @@ export function MyEconomicsScreen({
           {resolvedBalance}
         </Text>
         <Text variant="bodyMedium" style={styles.balanceUnit}>
-          {t("tokenLabel", { defaultValue: "Token" })}
+          {t("tokenLabel", { defaultValue: "Tope" })}
         </Text>
       </View>
 
@@ -174,7 +174,7 @@ export function MyEconomicsScreen({
                     {formattedDate}
                   </Text>
                   <Text variant="bodyMedium" style={styles.historyAmount}>
-                    {item.tokenChange >= 0 ? "+" : ""}{item.tokenChange} {t("tokenLabel", { defaultValue: "Token" })}
+                    {item.tokenChange >= 0 ? "+" : ""}{item.tokenChange} {t("tokenLabel", { defaultValue: "Tope" })}
                   </Text>
                 </View>
               );

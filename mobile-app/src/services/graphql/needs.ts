@@ -53,6 +53,7 @@ export interface NeedItem {
   expiresAt?: string | null;
   createdAt: string | null;
   creatorAccountId: string | null;
+  creatorDisplayName?: string | null;
   claimCount: number;
   isClaimedByCurrentAccount: boolean;
 }
@@ -241,6 +242,7 @@ function normalizeNeed(node: Need, currentAccountId: string | null): NeedItem | 
     expiresAt: typeof node.expiresAt === "string" ? node.expiresAt : null,
     createdAt: typeof node.createdAt === "string" ? node.createdAt : null,
     creatorAccountId: typeof node.creatorAccountId === "string" ? node.creatorAccountId : null,
+    creatorDisplayName: node.accountByCreatorAccountId?.displayName ?? null,
     claimCount: activeClaims.length,
     isClaimedByCurrentAccount:
       currentAccountId !== null &&

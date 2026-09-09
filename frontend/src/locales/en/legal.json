@@ -29,16 +29,16 @@
     "title": "Terms Of Use",
     "sections": {
       "purposeTitle": "1. Platform purpose",
-      "purposeBody": "{{productName}} is a collaborative exchange platform designed to support non-monetary interactions through an internal accounting unit named token.",
-      "tokenNatureTitle": "2. Nature of token",
-      "tokenNatureBody": "token is an internal unit used within {{productName}}. It is not:",
-      "tokenPropertiesTitle": "token also:",
+      "purposeBody": "{{productName}} is a collaborative exchange platform designed to support non-monetary interactions through an internal accounting unit named Tope.",
+      "tokenNatureTitle": "2. Nature of the Tope",
+      "tokenNatureBody": "The Tope is an internal unit used within {{productName}}. It is not:",
+      "tokenPropertiesTitle": "The Tope also:",
       "exchangesTitle": "3. Exchanges between users",
       "exchangesBody": "Exchanges are negotiated freely between participants, with no official pricing table. Users are solely responsible for legal, tax, and social obligations that may apply to their activity.",
       "endowmentTitle": "4. Platform endowment mechanism",
-      "endowmentBody": "To support platform operation and development, a platform endowment equivalent to 10% of each validated exchange volume may be minted in token and assigned to a dedicated platform account.",
+      "endowmentBody": "To support platform operation and development, a platform endowment equivalent to 10% of each validated exchange volume may be minted in Topes and assigned to a dedicated platform account.",
       "transparencyTitle": "5. Transparency and evolution",
-      "transparencyBody": "{{productName}} communicates the core principles of token usage and may evolve the system over time to preserve legal compliance and product sustainability."
+      "transparencyBody": "{{productName}} communicates the core principles of Tope usage and may evolve the system over time to preserve legal compliance and product sustainability."
     },
     "tokenIsNot": [
       "legal tender",
