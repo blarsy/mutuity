@@ -11,6 +11,7 @@ export interface SentBidsScreenProps {
   onOpenResource?: (resourceId: string) => void;
   onOpenCounterparty?: (accountId: string) => void;
   onOpenConversation?: (conversationId: string) => void;
+  onOpenDrawer?: () => void;
 }
 
 export function SentBidsScreen({
@@ -18,7 +19,8 @@ export function SentBidsScreen({
   onBackToMyHub,
   onOpenResource,
   onOpenCounterparty,
-  onOpenConversation
+  onOpenConversation,
+  onOpenDrawer
 }: SentBidsScreenProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -35,6 +37,7 @@ export function SentBidsScreen({
       {...(onOpenResource ? { onOpenResource } : {})}
       {...(onOpenCounterparty ? { onOpenCounterparty } : {})}
       {...(onOpenConversation ? { onOpenConversation } : {})}
+      {...(onOpenDrawer ? { onOpenDrawer } : {})}
     />
   );
 }

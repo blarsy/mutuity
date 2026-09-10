@@ -4,6 +4,7 @@ import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchCurrentTokenBalance, fetchTokenHistory } from "../../services/graphql/economics";
@@ -26,6 +27,7 @@ export interface MyEconomicsScreenProps {
   onRetry?: () => void;
   onBack?: () => void;
   onLearnMore?: () => void;
+  onOpenDrawer?: () => void;
 }
 
 export function MyEconomicsScreen({
@@ -36,7 +38,8 @@ export function MyEconomicsScreen({
   errorMessage = null,
   onRetry,
   onBack,
-  onLearnMore
+  onLearnMore,
+  onOpenDrawer
 }: MyEconomicsScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [historyExpanded, setHistoryExpanded] = useState(true);
@@ -105,9 +108,12 @@ export function MyEconomicsScreen({
   return (
     <ScreenContainer testID="my-economics-screen" style={styles.root}>
       <View style={styles.headerRow}>
-        <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-          {t("contributionLabel", { defaultValue: "Contribution" })}
-        </Text>
+        <View style={styles.headerTitleGroup}>
+          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
+          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
+            {t("contributionLabel", { defaultValue: "Contribution" })}
+          </Text>
+        </View>
         {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
       </View>
 
@@ -197,10 +203,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: designTokens.spacing.sm
   },
+  headerTitleGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
+  },
   title: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
-    letterSpacing: 0.6
+    letterSpacing: 0.6,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+    paddingTop: 8
   },
   balanceCard: {
     borderRadius: designTokens.radius.md,

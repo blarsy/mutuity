@@ -4,6 +4,7 @@ import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { ScreenContainer } from "../../components/primitives";
+import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
@@ -19,6 +20,7 @@ export interface MyClaimsScreenProps {
   injectedClaims?: NeedClaimItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
+  onOpenDrawer?: () => void;
 }
 
 export function MyClaimsScreen({
@@ -26,7 +28,8 @@ export function MyClaimsScreen({
   accountId = null,
   injectedClaims,
   injectedLoading,
-  injectedErrorMessage
+  injectedErrorMessage,
+  onOpenDrawer
 }: MyClaimsScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us2"]);
   const [claims, setClaims] = useState<NeedClaimItem[]>([]);
@@ -80,11 +83,14 @@ export function MyClaimsScreen({
   return (
     <ScreenContainer testID={`my-claims-screen-${direction}`} style={styles.root}>
       <View style={styles.headerRow}>
-        <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-          {direction === "received"
-            ? t("myClaimsReceivedTitle", { defaultValue: "Received claims" })
-            : t("myClaimsSentTitle", { defaultValue: "Sent claims" })}
-        </Text>
+        <View style={styles.headerTitleGroup}>
+          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
+          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
+            {direction === "received"
+              ? t("myClaimsReceivedTitle", { defaultValue: "Received claims" })
+              : t("myClaimsSentTitle", { defaultValue: "Sent claims" })}
+          </Text>
+        </View>
       </View>
 
       {sourceClaims.length === 0 ? (
@@ -122,10 +128,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: designTokens.spacing.sm
   },
+  headerTitleGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
+  },
   title: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
-    letterSpacing: 0.6
+    letterSpacing: 0.6,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+    paddingTop: 8
   },
   list: {
     gap: designTokens.spacing.xs

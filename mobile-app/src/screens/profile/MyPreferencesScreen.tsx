@@ -4,6 +4,7 @@ import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AppSegmentedButtons, FormFieldLabel, PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
 import {
   fetchNotificationPreferencesFromBackend,
   getNotificationPreferences,
@@ -58,9 +59,10 @@ function hydrateState(preferences: NotificationPreferenceRecord[]): Record<Categ
 export interface MyPreferencesScreenProps {
   accountId?: string | null;
   onBack?: () => void;
+  onOpenDrawer?: () => void;
 }
 
-export function MyPreferencesScreen({ accountId = null, onBack }: MyPreferencesScreenProps = {}): React.JSX.Element {
+export function MyPreferencesScreen({ accountId = null, onBack, onOpenDrawer }: MyPreferencesScreenProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -127,9 +129,12 @@ export function MyPreferencesScreen({ accountId = null, onBack }: MyPreferencesS
   return (
     <ScreenContainer testID="my-preferences-screen" style={styles.root}>
       <View style={styles.headerRow}>
-        <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-          {t("myPreferencesTitle", { defaultValue: "My preferences" })}
-        </Text>
+        <View style={styles.headerTitleGroup}>
+          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
+          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
+            {t("myPreferencesTitle", { defaultValue: "My preferences" })}
+          </Text>
+        </View>
         {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
       </View>
 
@@ -252,10 +257,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: designTokens.spacing.sm
   },
+  headerTitleGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
+  },
   title: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
-    letterSpacing: 0.6
+    letterSpacing: 0.6,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+    paddingTop: 8
   },
   content: {
     gap: designTokens.spacing.sm,

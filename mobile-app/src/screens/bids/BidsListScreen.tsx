@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
+import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
 import { PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -27,6 +28,7 @@ export interface BidsListScreenProps {
   onCancelBid?: (bid: BidWorkspaceItem) => Promise<void>;
   onAcceptBid?: (bid: BidWorkspaceItem) => Promise<void>;
   onDeclineBid?: (bid: BidWorkspaceItem) => Promise<void>;
+  onOpenDrawer?: () => void;
 }
 
 function formatDate(value: string | null, fallbackLabel: string): string {
@@ -168,13 +170,13 @@ export function BidsListScreen({
   includeInactiveDefault = false,
   onRetry,
   onOpenBid,
-  onBackToMyHub,
   onOpenResource,
   onOpenCounterparty,
   onOpenConversation,
   onCancelBid,
   onAcceptBid,
-  onDeclineBid
+  onDeclineBid,
+  onOpenDrawer
 }: BidsListScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [includeInactive, setIncludeInactive] = useState(includeInactiveDefault);
@@ -241,15 +243,12 @@ export function BidsListScreen({
   return (
     <ScreenContainer testID={testID} style={styles.root}>
       <View style={styles.headerRow}>
-        <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-          {title}
-        </Text>
-        {onBackToMyHub ? (
-          <PrimaryButton
-            label={t("backToMyHubLabel", { defaultValue: "Back to My Hub" })}
-            onPress={onBackToMyHub}
-          />
-        ) : null}
+        <View style={styles.headerTitleGroup}>
+          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
+          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
+            {title}
+          </Text>
+        </View>
       </View>
 
       <Pressable
@@ -447,10 +446,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: designTokens.spacing.sm
   },
+  headerTitleGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
+  },
   title: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
-    letterSpacing: 0.6
+    letterSpacing: 0.6,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+    paddingTop: 8
   },
   includeInactiveRow: {
     flexDirection: "row",
