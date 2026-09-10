@@ -239,24 +239,19 @@ export function MyCampaignsScreen({
   return (
     <ScreenContainer testID="my-campaigns-screen" style={styles.root}>
       <View style={styles.headerRow}>
-        <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
-          {t("myCampaignsTitle", { ns: "us3", defaultValue: "My campaigns" })}
-        </Text>
         <PrimaryButton
           label={t("createCampaignLabel", { ns: "us3", defaultValue: "Create campaign" })}
           onPress={onAddCampaign}
         />
-      </View>
-
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => void openInspiration()}
-        style={styles.inspirationLink}
-      >
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => void openInspiration()}
+        >
         <Text variant="labelSmall" style={styles.inspirationLinkText}>
           {t("seeInspiration", { ns: "us3", defaultValue: "See inspiration" })}
         </Text>
       </Pressable>
+      </View>
 
       {resolvedCampaigns.length === 0 ? (
         <EmptyState
@@ -343,18 +338,14 @@ const styles = StyleSheet.create({
     paddingTop: designTokens.spacing.lg
   },
   headerRow: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
-    justifyContent: "space-between",
     gap: designTokens.spacing.md
   },
   pageTitle: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
     letterSpacing: 0.6
-  },
-  inspirationLink: {
-    alignSelf: "flex-start"
   },
   inspirationLinkText: {
     color: designTokens.colors.primary,

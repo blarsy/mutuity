@@ -114,10 +114,6 @@ export function NotificationsScreen({
 
   return (
     <ScreenContainer testID="notifications-screen" style={styles.root}>
-      <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-        {t("notificationsLabel", { defaultValue: "Notifications" })}
-      </Text>
-
       <ScrollView contentContainerStyle={styles.listContent}>
         {sortedNotifications.map((entry) => {
           const unread = !entry.readAt;
