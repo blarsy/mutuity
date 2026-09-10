@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, Linking, Pressable, StatusBar, StyleSheet, View } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Appbar, Menu, Text } from "react-native-paper";
@@ -47,6 +47,14 @@ import {
   TopelaModifyIcon,
   TopelaSearchIcon
 } from "../components/icons/TopelaBottomTabIcons";
+
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#ffffff"
+  }
+};
 
 type MainRouteName = "Explore" | "MyHub" | "Campaigns" | "Chat" | "Notifications";
 type AuthEntryScreen = "login" | "register" | "forgotPassword";
@@ -924,7 +932,7 @@ function RootNavigator(): React.JSX.Element {
           />
         ) : (
           <View accessible accessibilityLabel={t("mainNavigation", { ns: "us1", defaultValue: "Main navigation" })} style={styles.fill}>
-            <NavigationContainer>
+            <NavigationContainer theme={navigationTheme}>
               <Tab.Navigator
                 key={mainNavigatorVersion}
                 initialRouteName={activeRouteName}

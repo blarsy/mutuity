@@ -370,7 +370,7 @@ export function SearchResourcesScreen({
             />
             <IconButton
               icon="refresh"
-              mode="outlined"
+              mode="contained-tonal"
               onPress={handleRetry}
               accessibilityLabel={t("retry", { defaultValue: "Retry" })}
             />

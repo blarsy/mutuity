@@ -238,7 +238,7 @@ export function SearchNeedsScreen({
         ]}
       />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.contentScroll} contentContainerStyle={styles.content}>
         <View style={styles.searchRow}>
           <FormTextInput
             label={t("searchNeedsLabel", { ns: "us2", defaultValue: "Search needs" })}
@@ -250,7 +250,7 @@ export function SearchNeedsScreen({
           />
           <IconButton
             icon="refresh"
-            mode="outlined"
+            mode="contained-tonal"
             onPress={handleRetry}
             accessibilityLabel={t("retry", { ns: "common", defaultValue: "Retry" })}
           />
@@ -413,6 +413,10 @@ const styles = StyleSheet.create({
   root: {
     paddingTop: designTokens.spacing.lg,
     paddingBottom: designTokens.spacing.sm
+  },
+  contentScroll: {
+    flex: 1,
+    marginTop: designTokens.spacing.sm
   },
   content: {
     gap: designTokens.spacing.sm,
