@@ -213,22 +213,6 @@ export function EditResourceScreen({
     }
   };
 
-  const handleDelete = async (): Promise<void> => {
-    if (!initialResource?.id) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await deleteResourceById(initialResource.id);
-      onSaved();
-    } catch {
-      setSnackbarMessage(t("resourceDeleteError", { defaultValue: "Something went wrong" }));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
     <ScreenContainer testID="edit-resource-screen" style={styles.root}>
       <NavigationBackHeader
@@ -236,7 +220,7 @@ export function EditResourceScreen({
         accessibilityLabel={t("backToMyHubLabel", { defaultValue: "Back to My Hub" })}
       />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
           {initialResource
             ? t("editResourceLabel", { defaultValue: "Edit Resource" })
@@ -412,7 +396,9 @@ export function EditResourceScreen({
             {t("offlineResourceSaveWarning", { defaultValue: "Saving is unavailable while offline" })}
           </Text>
         ) : null}
+      </ScrollView>
 
+      <View style={styles.saveFooter}>
         <PrimaryButton
           label={t("saveResource", { defaultValue: "Save resource" })}
           accessibilityLabel={t("saveResource", { defaultValue: "Save resource" })}
@@ -420,16 +406,7 @@ export function EditResourceScreen({
           loading={saving}
           disabled={saving}
         />
-
-        {initialResource ? (
-          <PrimaryButton
-            label={t("deleteResourceLabel", { defaultValue: "Delete Resource" })}
-            accessibilityLabel={t("deleteResourceLabel", { defaultValue: "Delete Resource" })}
-            onPress={() => void handleDelete()}
-            disabled={saving}
-          />
-        ) : null}
-      </ScrollView>
+      </View>
 
       <PickerDialog
         visible={showCategoriesDialog}
@@ -488,6 +465,9 @@ const styles = StyleSheet.create({
   root: {
     paddingTop: designTokens.spacing.lg
   },
+  scroll: {
+    flex: 1
+  },
   pageTitle: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
@@ -496,6 +476,11 @@ const styles = StyleSheet.create({
   content: {
     gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
+  },
+  saveFooter: {
+    paddingTop: designTokens.spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#f1d6bf"
   },
   divider: {
     marginVertical: designTokens.spacing.xs

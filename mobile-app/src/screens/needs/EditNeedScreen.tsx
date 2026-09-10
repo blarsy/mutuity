@@ -231,7 +231,7 @@ export function EditNeedScreen({
         accessibilityLabel={t("backToMyHubLabel", { ns: "common", defaultValue: "Back to My Hub" })}
       />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
           {initialNeed
             ? t("editNeedLabel", { ns: "us2", defaultValue: "Edit need" })
@@ -352,14 +352,16 @@ export function EditNeedScreen({
         />
 
         {hasAttemptedSubmit && validationError ? <Text style={styles.warningText}>{validationError}</Text> : null}
+      </ScrollView>
 
+      <View style={styles.saveFooter}>
         <PrimaryButton
           label={t("saveNeedLabel", { ns: "us2", defaultValue: "Save need" })}
           onPress={() => void saveNeed()}
           loading={saving}
           disabled={saving}
         />
-      </ScrollView>
+      </View>
 
       <PickerDialog
         visible={showCampaignDialog}
@@ -389,6 +391,9 @@ const styles = StyleSheet.create({
   root: {
     paddingTop: designTokens.spacing.lg
   },
+  scroll: {
+    flex: 1
+  },
   pageTitle: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
@@ -397,6 +402,11 @@ const styles = StyleSheet.create({
   content: {
     gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
+  },
+  saveFooter: {
+    paddingTop: designTokens.spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#f1d6bf"
   },
   intensityBlock: {
     gap: designTokens.spacing.xs
