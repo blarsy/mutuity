@@ -133,6 +133,7 @@ export const SEARCH_NEEDS_QUERY = gql`
         }
         title
         description
+        imageUrls
         createdAt
         proposedTopesAmount
         intensity
@@ -466,6 +467,14 @@ export const DELETE_RESOURCE_BY_ID_MUTATION = gql`
   mutation DeleteResourceById($id: UUID!) {
     deleteResourceById(input: { id: $id }) {
       deletedResourceId
+    }
+  }
+`;
+
+export const DELETE_NEED_BY_ID_MUTATION = gql`
+  mutation DeleteNeedById($id: UUID!) {
+    deleteNeedById(input: { id: $id }) {
+      deletedNeedId
     }
   }
 `;

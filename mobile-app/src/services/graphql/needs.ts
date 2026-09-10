@@ -13,6 +13,7 @@ import {
   CREATE_CAMPAIGN_NEED_MUTATION,
   CREATE_NEED_MUTATION,
   DELETE_CAMPAIGN_NEED_MUTATION,
+  DELETE_NEED_BY_ID_MUTATION,
   MY_NEEDS_QUERY,
   RECEIVED_NEED_CLAIMS_QUERY,
   SEARCH_NEEDS_QUERY,
@@ -58,6 +59,11 @@ export interface NeedItem {
   isClaimedByCurrentAccount: boolean;
 }
 
+export interface DeleteNeedResult {
+  ok: boolean;
+  deletedNeedId?: string | null;
+}
+
 export interface UpsertNeedInput {
   title: string;
   description: string;
@@ -68,7 +74,6 @@ export interface UpsertNeedInput {
     longitude?: number;
   } | null;
   proposedTokenAmount: number;
-  intensity: NeedIntensity;
   objectRequired: boolean;
   competenceRequired: boolean;
   toolingRequired: boolean;
@@ -78,6 +83,22 @@ export interface UpsertNeedInput {
   requiredPeopleCount: number | null;
   campaignId: string | null;
   expiresAt: string | null;
+}
+
+export function getNeedIntensityForTokenAmount(tokenAmount: number): NeedIntensity {
+  if (tokenAmount < 100) {
+    return NeedIntensity.LegUp;
+  }
+
+  if (tokenAmount < 1000) {
+    return NeedIntensity.Sharing;
+  }
+
+  if (tokenAmount < 5000) {
+    return NeedIntensity.Commitment;
+  }
+
+  return NeedIntensity.RareContribution;
 }
 
 export interface NeedClaimItem {
@@ -122,6 +143,10 @@ interface CreateNeedMutationResult {
 
 interface UpdateNeedByIdMutationResult {
   updateNeedById: Pick<Mutation, "updateNeedById">["updateNeedById"];
+}
+
+interface DeleteNeedByIdMutationResult {
+  deleteNeedById: Pick<Mutation, "deleteNeedById">["deleteNeedById"];
 }
 
 interface ClaimNeedMutationResult {
@@ -341,6 +366,7 @@ export async function fetchMyNeeds(creatorAccountId: string): Promise<NeedItem[]
 }
 
 export async function createNeedForAccount(creatorAccountId: string, input: UpsertNeedInput): Promise<NeedItem | null> {
+  const proposedTokenAmount = Math.max(0, Math.round(input.proposedTokenAmount));
   const optionalCreateInput: Partial<CreateNeedInput> = {
     ...(input.description.trim() ? { description: input.description.trim() } : {}),
     ...(input.imageUrls.length > 0 ? { imageUrls: input.imageUrls } : {}),
@@ -357,8 +383,8 @@ export async function createNeedForAccount(creatorAccountId: string, input: Upse
   const variables: { input: CreateNeedInput } = {
     input: {
       title: input.title.trim(),
-      proposedTopesAmount: Math.max(0, Math.round(input.proposedTokenAmount)),
-      intensity: input.intensity,
+      proposedTopesAmount: proposedTokenAmount,
+      intensity: getNeedIntensityForTokenAmount(proposedTokenAmount),
       objectRequired: input.objectRequired,
       competenceRequired: input.competenceRequired,
       toolingRequired: input.toolingRequired,
@@ -382,6 +408,7 @@ export async function createNeedForAccount(creatorAccountId: string, input: Upse
 }
 
 export async function updateNeedById(needId: string, input: UpsertNeedInput): Promise<NeedItem | null> {
+  const proposedTokenAmount = Math.max(0, Math.round(input.proposedTokenAmount));
   const optionalNeedPatch: Partial<NeedPatch> = {
     ...(input.description.trim() ? { description: input.description.trim() } : {}),
     ...(input.imageUrls.length > 0 ? { imageUrls: input.imageUrls } : {}),
@@ -398,8 +425,8 @@ export async function updateNeedById(needId: string, input: UpsertNeedInput): Pr
     id: needId,
     needPatch: {
       title: input.title.trim(),
-      proposedTopesAmount: Math.max(0, Math.round(input.proposedTokenAmount)),
-      intensity: input.intensity,
+      proposedTopesAmount: proposedTokenAmount,
+      intensity: getNeedIntensityForTokenAmount(proposedTokenAmount),
       objectRequired: input.objectRequired,
       competenceRequired: input.competenceRequired,
       toolingRequired: input.toolingRequired,
@@ -441,6 +468,20 @@ export async function updateNeedById(needId: string, input: UpsertNeedInput): Pr
 
   const normalizedNeed = normalizeNeed(updatedNeed as Need, null);
   return normalizedNeed ? { ...normalizedNeed, campaignId: input.campaignId } : null;
+}
+
+export async function deleteNeedById(needId: string): Promise<DeleteNeedResult> {
+  const { data } = await apolloClient.mutate<DeleteNeedByIdMutationResult, { id: string }>({
+    mutation: DELETE_NEED_BY_ID_MUTATION,
+    variables: { id: needId }
+  });
+
+  const deletedNeedId = data?.deleteNeedById?.deletedNeedId;
+
+  return {
+    ok: deletedNeedId !== null,
+    deletedNeedId: deletedNeedId ?? null
+  };
 }
 
 export async function claimNeedById(needId: string, message: string | null = null): Promise<ClaimedNeedRecord | null> {

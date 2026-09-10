@@ -16,7 +16,6 @@ import {
   type ProximityLocationValue,
   ScreenContainer
 } from "../../components/primitives";
-import { NeedIntensity } from "../../services/graphql/generated";
 import {
   createNeedForAccount,
   type NeedItem,
@@ -33,19 +32,19 @@ export interface EditNeedScreenProps {
   onSaved: () => void;
 }
 
-interface IntensityToggleRowProps {
+interface NatureToggleRowProps {
   label: string;
   selected: boolean;
   onPress: () => void;
 }
 
-function IntensityToggleRow({ label, selected, onPress }: IntensityToggleRowProps): React.JSX.Element {
+function NatureToggleRow({ label, selected, onPress }: NatureToggleRowProps): React.JSX.Element {
   const color = selected ? designTokens.colors.primary : "#000";
 
   return (
-    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={onPress}>
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: selected }} onPress={onPress}>
       <View style={styles.radioRow}>
-        <Icon source={selected ? "radiobox-marked" : "radiobox-blank"} size={24} color={color} />
+        <Icon source={selected ? "checkbox-marked" : "checkbox-blank-outline"} size={24} color={color} />
         <Text style={[styles.radioLabel, { color }]}>{label}</Text>
       </View>
     </Pressable>
@@ -64,7 +63,6 @@ export function EditNeedScreen({
   const [imageUrls, setImageUrls] = useState<string[]>(initialNeed?.imageUrls ?? []);
   const [location, setLocation] = useState<ProximityLocationValue | null>(initialNeed?.location ?? null);
   const [tokenAmount, setTokenAmount] = useState(initialNeed?.proposedTokenAmount ?? 0);
-  const [intensity, setIntensity] = useState<NeedIntensity>(initialNeed?.intensity ?? NeedIntensity.Sharing);
   const [objectRequired, setObjectRequired] = useState(initialNeed?.objectRequired ?? true);
   const [competenceRequired, setCompetenceRequired] = useState(initialNeed?.competenceRequired ?? false);
   const [toolingRequired, setToolingRequired] = useState(initialNeed?.toolingRequired ?? false);
@@ -102,24 +100,8 @@ export function EditNeedScreen({
   }, [requiredPeopleCountText]);
 
   const isTokenAmountInRange = useMemo(() => {
-    if (parsedTokenAmount <= 0) {
-      return true;
-    }
-
-    if (intensity === NeedIntensity.LegUp) {
-      return parsedTokenAmount >= 10 && parsedTokenAmount <= 99;
-    }
-
-    if (intensity === NeedIntensity.Sharing) {
-      return parsedTokenAmount >= 100 && parsedTokenAmount <= 999;
-    }
-
-    if (intensity === NeedIntensity.Commitment) {
-      return parsedTokenAmount >= 1000 && parsedTokenAmount <= 4999;
-    }
-
-    return parsedTokenAmount >= 5000;
-  }, [intensity, parsedTokenAmount]);
+    return parsedTokenAmount >= 10;
+  }, [parsedTokenAmount]);
 
   const validationError = useMemo(() => {
     if (title.trim().length === 0) {
@@ -128,13 +110,6 @@ export function EditNeedScreen({
 
     if (!location?.label?.trim()) {
       return t("needLocationRequired", { ns: "us2", defaultValue: "Location is required." });
-    }
-
-    if (!objectRequired && !competenceRequired && !toolingRequired && !multiplePeopleRequired) {
-      return t("needNatureRequired", {
-        ns: "us2",
-        defaultValue: "Select at least one need nature flag."
-      });
     }
 
     if (toolingRequired && requiredToolingText.trim().length === 0) {
@@ -171,7 +146,6 @@ export function EditNeedScreen({
     isTokenAmountInRange,
     location?.label,
     multiplePeopleRequired,
-    objectRequired,
     parsedRequiredPeopleCount,
     requiredCompetenceText,
     requiredToolingText,
@@ -208,7 +182,6 @@ export function EditNeedScreen({
           imageUrls,
           location: location?.label?.trim() ? location : null,
           proposedTokenAmount: parsedTokenAmount,
-          intensity,
           objectRequired,
           competenceRequired,
           toolingRequired,
@@ -226,7 +199,6 @@ export function EditNeedScreen({
           imageUrls,
           location: location?.label?.trim() ? location : null,
           proposedTokenAmount: parsedTokenAmount,
-          intensity,
           objectRequired,
           competenceRequired,
           toolingRequired,
@@ -305,59 +277,24 @@ export function EditNeedScreen({
 
         <View style={styles.intensityBlock}>
           <FormFieldLabel>
-            {t("needIntensityLabel", { ns: "us2", defaultValue: "Intensity" })}
+            {t("needOptionsLabel", { ns: "us2", defaultValue: "Need options" })}
           </FormFieldLabel>
-          <IntensityToggleRow
-            label={t("needIntensitySharing", { ns: "us2", defaultValue: "Sharing" })}
-            selected={intensity === NeedIntensity.Sharing}
-            onPress={() => setIntensity(NeedIntensity.Sharing)}
-          />
-          <IntensityToggleRow
-            label={t("needIntensityCommitment", { ns: "us2", defaultValue: "Commitment" })}
-            selected={intensity === NeedIntensity.Commitment}
-            onPress={() => setIntensity(NeedIntensity.Commitment)}
-          />
-          <IntensityToggleRow
-            label={t("needIntensityLegUp", { ns: "us2", defaultValue: "Leg up" })}
-            selected={intensity === NeedIntensity.LegUp}
-            onPress={() => setIntensity(NeedIntensity.LegUp)}
-          />
-          <IntensityToggleRow
-            label={t("needIntensityRareContribution", { ns: "us2", defaultValue: "Rare contribution" })}
-            selected={intensity === NeedIntensity.RareContribution}
-            onPress={() => setIntensity(NeedIntensity.RareContribution)}
-          />
-        </View>
-
-        <View style={styles.intensityHintCard}>
-          <Text style={styles.intensityHintText}>
-            {t("needTokenAmountRangeHint", {
-              ns: "us2",
-              defaultValue: "LEG_UP: 10-99, SHARING: 100-999, COMMITMENT: 1000-4999, RARE_CONTRIBUTION: 5000+"
-            })}
-          </Text>
-        </View>
-
-        <View style={styles.intensityBlock}>
-          <FormFieldLabel>
-            {withRequiredMark(t("needNatureLabel", { ns: "us2", defaultValue: "Need nature" }))}
-          </FormFieldLabel>
-          <IntensityToggleRow
+          <NatureToggleRow
             label={t("needObjectRequiredLabel", { ns: "us2", defaultValue: "Object required" })}
             selected={objectRequired}
             onPress={() => setObjectRequired((previous) => !previous)}
           />
-          <IntensityToggleRow
+          <NatureToggleRow
             label={t("needToolingRequiredLabel", { ns: "us2", defaultValue: "Tooling required" })}
             selected={toolingRequired}
             onPress={() => setToolingRequired((previous) => !previous)}
           />
-          <IntensityToggleRow
+          <NatureToggleRow
             label={t("needCompetenceRequiredLabel", { ns: "us2", defaultValue: "Competence required" })}
             selected={competenceRequired}
             onPress={() => setCompetenceRequired((previous) => !previous)}
           />
-          <IntensityToggleRow
+          <NatureToggleRow
             label={t("needMultiplePeopleRequiredLabel", { ns: "us2", defaultValue: "Multiple people required" })}
             selected={multiplePeopleRequired}
             onPress={() => setMultiplePeopleRequired((previous) => !previous)}
@@ -463,17 +400,6 @@ const styles = StyleSheet.create({
   },
   intensityBlock: {
     gap: designTokens.spacing.xs
-  },
-  intensityHintCard: {
-    backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.md,
-    paddingHorizontal: designTokens.spacing.sm,
-    paddingVertical: designTokens.spacing.xs
-  },
-  intensityHintText: {
-    color: designTokens.colors.primary,
-    fontFamily: appFontFamilies.general,
-    fontSize: 12
   },
   radioRow: {
     flexDirection: "row",

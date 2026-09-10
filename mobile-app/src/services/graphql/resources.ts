@@ -157,6 +157,22 @@ export interface UpsertResourceInput {
   campaignId: string | null;
 }
 
+export function getResourceIntensityForTokenAmount(tokenAmount: number): NeedIntensity {
+  if (tokenAmount < 100) {
+    return NeedIntensity.LegUp;
+  }
+
+  if (tokenAmount < 1000) {
+    return NeedIntensity.Sharing;
+  }
+
+  if (tokenAmount < 5000) {
+    return NeedIntensity.Commitment;
+  }
+
+  return NeedIntensity.RareContribution;
+}
+
 export interface SearchResourceResultItem {
   id: string;
   title: string;
@@ -506,16 +522,17 @@ export async function createResourceForAccount(
   creatorAccountId: string,
   input: UpsertResourceInput
 ): Promise<MyResourceItem | null> {
+  const defaultTokenAmount = Math.max(0, Math.round(input.defaultTokenAmount));
   const variables: { input: CreateResourceInput } = {
     input: {
       resource: {
         creatorAccountId,
         title: input.title.trim(),
         description: input.description.trim(),
-        defaultTokenAmount: Math.max(0, Math.round(input.defaultTokenAmount)),
+        defaultTokenAmount,
         imageUrls: input.imageUrls,
         ...(input.expiresAt ? { expiresAt: input.expiresAt } : {}),
-        intensity: NeedIntensity.Sharing,
+        intensity: getResourceIntensityForTokenAmount(defaultTokenAmount),
         isProduct: input.isProduct,
         isService: input.isService,
         canBeTakenAway: input.canBeTakenAway,
@@ -548,14 +565,16 @@ export async function createResourceForAccount(
 }
 
 export async function updateResourceById(resourceId: string, input: UpsertResourceInput): Promise<MyResourceItem | null> {
+  const defaultTokenAmount = Math.max(0, Math.round(input.defaultTokenAmount));
   const variables: { id: string; resourcePatch: ResourcePatch } = {
     id: resourceId,
     resourcePatch: {
       title: input.title.trim(),
       description: input.description.trim(),
-      defaultTokenAmount: Math.max(0, Math.round(input.defaultTokenAmount)),
+      defaultTokenAmount,
       imageUrls: input.imageUrls,
       expiresAt: input.expiresAt,
+      intensity: getResourceIntensityForTokenAmount(defaultTokenAmount),
       isProduct: input.isProduct,
       isService: input.isService,
       canBeTakenAway: input.canBeTakenAway,

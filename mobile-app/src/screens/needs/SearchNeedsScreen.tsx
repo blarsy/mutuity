@@ -65,6 +65,22 @@ function formatPublishedDate(value: string | null, locale: string): string | nul
   return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
 }
 
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delayMs);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [delayMs, value]);
+
+  return debouncedValue;
+}
+
 export function SearchNeedsScreen({
   needs,
   loading = false,
@@ -87,10 +103,22 @@ export function SearchNeedsScreen({
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const hasInjectedNeeds = needs !== undefined;
 
+  const filterSnapshot = useMemo(
+    () => ({
+      searchTerm,
+      maxTokenAmount,
+      selectedIntensities,
+      selectedCampaignIds,
+      hideClaimedNeeds
+    }),
+    [hideClaimedNeeds, maxTokenAmount, searchTerm, selectedCampaignIds, selectedIntensities]
+  );
+  const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
+
   const parsedMaxTokenAmount = useMemo(() => {
-    const parsed = Number.parseInt(maxTokenAmount, 10);
+    const parsed = Number.parseInt(debouncedFilters.maxTokenAmount, 10);
     return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
-  }, [maxTokenAmount]);
+  }, [debouncedFilters.maxTokenAmount]);
 
   const loadNeeds = useCallback(async () => {
     if (hasInjectedNeeds) {
@@ -101,10 +129,10 @@ export function SearchNeedsScreen({
     setRemoteErrorMessage(null);
 
     const filters: SearchNeedsFilters = {
-      searchTerm,
-      intensityFilters: selectedIntensities,
+      searchTerm: debouncedFilters.searchTerm,
+      intensityFilters: debouncedFilters.selectedIntensities,
       maxProposedTokenAmount: parsedMaxTokenAmount,
-      hideClaimedNeeds,
+      hideClaimedNeeds: debouncedFilters.hideClaimedNeeds,
       currentAccountId
     };
 
@@ -116,7 +144,7 @@ export function SearchNeedsScreen({
     } finally {
       setRemoteLoading(false);
     }
-  }, [currentAccountId, hasInjectedNeeds, hideClaimedNeeds, parsedMaxTokenAmount, searchTerm, selectedIntensities, t]);
+  }, [currentAccountId, debouncedFilters, hasInjectedNeeds, parsedMaxTokenAmount, t]);
 
   useEffect(() => {
     void loadNeeds();
@@ -135,30 +163,25 @@ export function SearchNeedsScreen({
   );
 
   const filteredNeeds = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
+    const normalizedSearch = debouncedFilters.searchTerm.trim().toLowerCase();
 
     return sourceNeeds.filter((need) => {
       const matchesSearch =
         normalizedSearch.length === 0 || `${need.title} ${need.description}`.toLowerCase().includes(normalizedSearch);
-      const matchesIntensity = selectedIntensities.length === 0 || selectedIntensities.includes(need.intensity);
+      const matchesIntensity =
+        debouncedFilters.selectedIntensities.length === 0 ||
+        debouncedFilters.selectedIntensities.includes(need.intensity);
       const matchesTokenAmount = parsedMaxTokenAmount === null || need.proposedTokenAmount <= parsedMaxTokenAmount;
       const matchesCampaign =
-        selectedCampaignIds.length === 0 ||
+        debouncedFilters.selectedCampaignIds.length === 0 ||
         (need.campaignId !== null &&
           need.campaignId !== undefined &&
-          selectedCampaignIds.includes(need.campaignId));
-      const matchesClaimedVisibility = !hideClaimedNeeds || !need.isClaimedByCurrentAccount;
+          debouncedFilters.selectedCampaignIds.includes(need.campaignId));
+      const matchesClaimedVisibility = !debouncedFilters.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
 
       return matchesSearch && matchesIntensity && matchesTokenAmount && matchesCampaign && matchesClaimedVisibility;
     });
-  }, [
-    hideClaimedNeeds,
-    parsedMaxTokenAmount,
-    searchTerm,
-    selectedCampaignIds,
-    selectedIntensities,
-    sourceNeeds
-  ]);
+  }, [debouncedFilters, parsedMaxTokenAmount, sourceNeeds]);
 
   const resolvedLoading = loading || (!hasInjectedNeeds && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedNeeds ? remoteErrorMessage : null);

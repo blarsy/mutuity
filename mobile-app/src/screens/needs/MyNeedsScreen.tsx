@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Chip, Text } from "react-native-paper";
+import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Icon, IconButton, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { TokenAmount } from "../../components/TokenAmount";
+import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
-import { fetchMyNeeds, type NeedItem } from "../../services/graphql/needs";
-import { NeedIntensity } from "../../services/graphql/generated";
+import { deleteNeedById, fetchMyNeeds, type NeedItem } from "../../services/graphql/needs";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -20,22 +20,6 @@ export interface MyNeedsScreenProps {
   injectedNeeds?: NeedItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
-}
-
-function intensityLabelMeta(intensity: NeedIntensity): { key: string; defaultValue: string } {
-  if (intensity === NeedIntensity.Commitment) {
-    return { key: "needIntensityCommitment", defaultValue: "Commitment" };
-  }
-
-  if (intensity === NeedIntensity.LegUp) {
-    return { key: "needIntensityLegUp", defaultValue: "Leg up" };
-  }
-
-  if (intensity === NeedIntensity.RareContribution) {
-    return { key: "needIntensityRareContribution", defaultValue: "Rare contribution" };
-  }
-
-  return { key: "needIntensitySharing", defaultValue: "Sharing" };
 }
 
 export function MyNeedsScreen({
@@ -51,6 +35,9 @@ export function MyNeedsScreen({
   const [needs, setNeeds] = useState<NeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pendingDeleteNeed, setPendingDeleteNeed] = useState<NeedItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
 
   const hasInjectedState =
     injectedNeeds !== undefined || injectedLoading !== undefined || injectedErrorMessage !== undefined;
@@ -92,6 +79,29 @@ export function MyNeedsScreen({
   const resolvedLoading = injectedLoading ?? (hasInjectedState ? false : loading);
   const resolvedErrorMessage = injectedErrorMessage ?? errorMessage;
 
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!pendingDeleteNeed) {
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteErrorMessage(null);
+
+    try {
+      const result = await deleteNeedById(pendingDeleteNeed.id);
+      if (!result.ok) {
+        throw new Error("Delete failed");
+      }
+
+      setNeeds((previous) => previous.filter((need) => need.id !== pendingDeleteNeed.id));
+      setPendingDeleteNeed(null);
+    } catch {
+      setDeleteErrorMessage(t("deleteNeedError", { ns: "us2", defaultValue: "We could not delete this need." }));
+    } finally {
+      setDeleting(false);
+    }
+  }, [pendingDeleteNeed, t]);
+
   if (resolvedLoading) {
     return <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />;
   }
@@ -112,6 +122,12 @@ export function MyNeedsScreen({
         />
       </View>
 
+      {deleteErrorMessage ? (
+        <View style={styles.inlineError}>
+          <Text style={styles.inlineErrorText}>{deleteErrorMessage}</Text>
+        </View>
+      ) : null}
+
       {sortedNeeds.length === 0 ? (
         <EmptyState
           message={t("myNeedsEmpty", { ns: "us2", defaultValue: "You have no needs yet." })}
@@ -124,38 +140,78 @@ export function MyNeedsScreen({
             <Pressable
               key={need.id}
               accessibilityRole="button"
-              accessibilityLabel={`${need.title}. ${need.proposedTokenAmount} Tope.`}
+              accessibilityLabel={t("editNeedAccessibilityLabel", {
+                ns: "us2",
+                defaultValue: "Edit {{title}}",
+                title: need.title
+              })}
               onPress={() => onEditNeed(need)}
-              style={styles.needCard}
+              style={({ pressed }) => [styles.needCard, pressed && styles.needCardPressed]}
               testID={`my-need-card-${need.id}`}
             >
-              <View style={styles.cardHeader}>
-                <Text variant="titleMedium" style={styles.needTitle}>
-                  {need.title}
-                </Text>
-                <Chip compact>
-                  {t(intensityLabelMeta(need.intensity).key, {
-                    ns: "us2",
-                    defaultValue: intensityLabelMeta(need.intensity).defaultValue
-                  })}
-                </Chip>
+              <View style={styles.cardTopRow}>
+                <View style={styles.cardSpacer} />
+                <IconButton
+                  icon="delete-outline"
+                  size={28}
+                  style={styles.cardDeleteButton}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    setPendingDeleteNeed(need);
+                  }}
+                  accessibilityLabel={t("deleteNeedLabel", { ns: "us2", defaultValue: "Delete need" })}
+                  disabled={deleting}
+                />
               </View>
 
-              <Text variant="labelSmall" style={styles.tokenAmountText}>
-                {t("needTokenAmount", {
-                  ns: "us2",
-                  defaultValue: "{{amount}} Topes",
-                  amount: need.proposedTokenAmount
-                })}
-              </Text>
+              {need.imageUrls?.[0] ? (
+                <Image source={{ uri: need.imageUrls[0] }} style={styles.cardImage} resizeMode="cover" />
+              ) : (
+                <View style={styles.cardImageFallback}>
+                  <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
+                </View>
+              )}
 
-              <Text variant="bodySmall" numberOfLines={2}>
-                {need.description || t("needDescriptionEmpty", { ns: "us2", defaultValue: "No description yet." })}
+              <TokenAmount amount={need.proposedTokenAmount} />
+
+              <Text variant="titleMedium" numberOfLines={2} style={styles.cardTitle}>
+                {need.title}
               </Text>
             </Pressable>
           ))}
         </ScrollView>
       )}
+
+      <Portal>
+        <ThemedDialog
+          visible={Boolean(pendingDeleteNeed)}
+          onDismiss={() => setPendingDeleteNeed(null)}
+          title={t("deleteNeedConfirmTitle", { ns: "us2", defaultValue: "Delete need?" })}
+          content={
+            <Text variant="bodyMedium">
+              {t("deleteNeedConfirmBody", {
+                ns: "us2",
+                defaultValue: 'This will remove "{{title}}" from your needs.',
+                title: pendingDeleteNeed?.title ?? ""
+              })}
+            </Text>
+          }
+          actions={[
+            <Button key="cancel" onPress={() => setPendingDeleteNeed(null)} disabled={deleting}>
+              {t("cancelLabel", { ns: "common", defaultValue: "Cancel" })}
+            </Button>,
+            <Button
+              key="delete"
+              textColor="#d32f2f"
+              onPress={() => void handleDeleteConfirm()}
+              loading={deleting}
+              disabled={deleting}
+            >
+              {t("deleteNeedLabel", { ns: "us2", defaultValue: "Delete need" })}
+            </Button>
+          ]}
+        />
+      </Portal>
     </ScreenContainer>
   );
 }
@@ -177,28 +233,67 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6
   },
   listContent: {
-    gap: designTokens.spacing.sm,
-    paddingBottom: designTokens.spacing.md
+    gap: designTokens.spacing.md,
+    paddingBottom: designTokens.spacing.md,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between"
   },
   needCard: {
-    backgroundColor: designTokens.colors.primaryContainer,
+    width: "48%",
     borderRadius: designTokens.radius.md,
-    padding: designTokens.spacing.sm,
-    gap: designTokens.spacing.xs
+    backgroundColor: designTokens.colors.secondary,
+    paddingHorizontal: designTokens.spacing.sm,
+    paddingVertical: designTokens.spacing.sm,
+    gap: designTokens.spacing.sm,
+    minHeight: 252,
+    position: "relative"
   },
-  cardHeader: {
+  needCardPressed: {
+    opacity: 0.8
+  },
+  cardTopRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: designTokens.spacing.sm
+    justifyContent: "flex-end",
+    minHeight: 24
   },
-  needTitle: {
-    fontFamily: appFontFamilies.altGeneral,
+  cardSpacer: {
     flex: 1
   },
-  tokenAmountText: {
-    color: designTokens.colors.primary,
-    fontFamily: appFontFamilies.general,
-    textTransform: "uppercase"
+  cardDeleteButton: {
+    marginRight: -8,
+    marginTop: -8
+  },
+  cardImage: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: "#fff"
+  },
+  cardImageFallback: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  cardTitle: {
+    textAlign: "left",
+    minHeight: 48,
+    fontFamily: appFontFamilies.altGeneral,
+    fontSize: 18,
+    lineHeight: 23
+  },
+  inlineError: {
+    paddingHorizontal: designTokens.spacing.sm,
+    paddingVertical: designTokens.spacing.xs,
+    borderRadius: designTokens.radius.sm,
+    backgroundColor: "#fde8e8"
+  },
+  inlineErrorText: {
+    color: "#b42318",
+    fontSize: 14
   }
 });
