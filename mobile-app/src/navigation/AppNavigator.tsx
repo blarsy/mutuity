@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, Linking, Pressable, StatusBar, StyleSheet, View } from "react-native";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, useNavigationContainerRef } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Appbar, Menu, Text } from "react-native-paper";
+import { Appbar, Menu, Portal, Snackbar, Text } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +22,7 @@ import { ReceivedBidsScreen } from "../screens/bids/ReceivedBidsScreen";
 import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
 import { ChatListScreen } from "../screens/chat/ChatListScreen";
+import type { ChatConversationItem } from "../screens/chat/ChatListScreen";
 import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
 import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
 import { NotificationsScreen as MobileNotificationsScreen } from "../screens/notifications/NotificationsScreen";
@@ -37,6 +38,12 @@ import type { SocialProvider } from "../screens/auth/SocialAuthButtons";
 import type { MyResourceItem } from "../services/graphql/resources";
 import type { NeedItem } from "../services/graphql/needs";
 import { getAppVersionStatus } from "../services/app/version";
+import {
+  fetchChatConversations,
+  fetchUnreadChatConversationCount
+} from "../services/graphql/chat";
+import type { ChatConversationKind } from "../services/graphql/chat";
+import { subscribeToAccountEvents } from "../services/realtime/accountEvents";
 import { designTokens } from "../theme/tokens";
 import { appFontFamilies } from "../theme/fonts";
 import { US2ExploreScreen } from "./US2Navigator";
@@ -57,6 +64,7 @@ const navigationTheme = {
 };
 
 type MainRouteName = "Explore" | "MyHub" | "Campaigns" | "Chat" | "Notifications";
+type MainTabParamList = Record<MainRouteName, undefined>;
 type AuthEntryScreen = "login" | "register" | "forgotPassword";
 type MyHubDrawerItem =
   | "myResources"
@@ -95,6 +103,20 @@ interface MainTabScreenProps {
   onRequestAuth: (screen: AuthEntryScreen, routeName: MainRouteName) => void;
 }
 
+interface ActiveChatConversation {
+  id: string;
+  kind: ChatConversationKind;
+}
+
+interface ChatScreenProps extends MainTabScreenProps {
+  activeConversation: ActiveChatConversation | null;
+  conversations: ChatConversationItem[];
+  onOpenConversation: (conversation: ActiveChatConversation) => void;
+  onCloseConversation: () => void;
+  onDisplayedConversationChange: (conversationId: string | null) => void;
+  onMessagesRead: () => void;
+}
+
 interface MyHubScreenProps extends MainTabScreenProps {
   drawerVisible: boolean;
   onRequestOpenDrawer: () => void;
@@ -113,7 +135,7 @@ interface AuthScreenShellProps {
   onDismiss: () => void;
 }
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 const mockAuthenticatedToken = "mock:123e4567-e89b-12d3-a456-426614174000";
 const safeSocialDestinationMap = {
   Explore: "/explore",
@@ -572,12 +594,34 @@ function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): 
   return <US3Navigator currentAccountId={accountId} />;
 }
 
-function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
+function ChatScreen({
+  authenticated,
+  onRequestAuth,
+  activeConversation,
+  conversations,
+  onOpenConversation,
+  onCloseConversation,
+  onDisplayedConversationChange,
+  onMessagesRead
+}: ChatScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [openedResourceId, setOpenedResourceId] = useState<string | null>(null);
   const [openedAccountId, setOpenedAccountId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOpenedResourceId(null);
+    setOpenedAccountId(null);
+  }, [activeConversation]);
+
+  useEffect(() => {
+    const displayedConversationId = activeConversation && !openedResourceId && !openedAccountId
+      ? activeConversation.id
+      : null;
+    onDisplayedConversationChange(displayedConversationId);
+
+    return () => onDisplayedConversationChange(null);
+  }, [activeConversation, onDisplayedConversationChange, openedAccountId, openedResourceId]);
 
   if (!authenticated) {
     return (
@@ -613,23 +657,31 @@ function ChatScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React
     );
   }
 
-  if (activeConversationId) {
+  if (activeConversation) {
     return (
       <ChatDetailScreen
-        conversationId={activeConversationId}
+        conversationId={activeConversation.id}
+        conversationKind={activeConversation.kind}
         currentAccountId={accountId}
         conversation={null}
-        onBackToList={() => setActiveConversationId(null)}
-        onOpenLinkedResource={(resourceId) => setOpenedResourceId(resourceId)}
+        onBackToList={onCloseConversation}
+        {...(activeConversation.kind === "resource"
+          ? { onOpenLinkedResource: (resourceId: string) => setOpenedResourceId(resourceId) }
+          : {})}
         onOpenLinkedAccount={(otherAccountId) => setOpenedAccountId(otherAccountId)}
+        onMessagesRead={onMessagesRead}
       />
     );
   }
 
   return (
     <ChatListScreen
+      conversations={conversations}
       onOpenMyHub={() => undefined}
-      onOpenConversation={(conversationId) => setActiveConversationId(conversationId)}
+      onOpenConversation={(conversationId) => {
+        const conversation = conversations.find((item) => item.id === conversationId);
+        onOpenConversation({ id: conversationId, kind: conversation?.kind ?? "resource" });
+      }}
     />
   );
 }
@@ -673,8 +725,75 @@ function RootNavigator(): React.JSX.Element {
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
   const [myHubDrawerVisible, setMyHubDrawerVisible] = useState(true);
   const [showSupport, setShowSupport] = useState(false);
+  const [activeChatConversation, setActiveChatConversation] = useState<ActiveChatConversation | null>(null);
+  const [displayedChatConversationId, setDisplayedChatConversationId] = useState<string | null>(null);
+  const [chatConversations, setChatConversations] = useState<ChatConversationItem[]>([]);
+  const [unreadChatConversationCount, setUnreadChatConversationCount] = useState(0);
+  const [incomingChatMessage, setIncomingChatMessage] = useState<ChatConversationItem | null>(null);
+  const previousChatConversationsRef = useRef<Map<string, number> | null>(null);
+  const navigationRef = useNavigationContainerRef<MainTabParamList>();
 
   const versionStatus = useMemo(() => getAppVersionStatus("0.1.0"), []);
+
+  const refreshChatState = useCallback(async (showIncomingAlert: boolean): Promise<void> => {
+    if (!authenticated || !accountId) {
+      return;
+    }
+
+    try {
+      const [nextConversations, nextUnreadCount] = await Promise.all([
+        fetchChatConversations(),
+        fetchUnreadChatConversationCount()
+      ]);
+      const previousConversations = previousChatConversationsRef.current;
+
+      if (showIncomingAlert && previousConversations) {
+        const newlyUnreadConversation = nextConversations.find((conversation) => {
+          const previousUnreadCount = previousConversations.get(conversation.id) ?? 0;
+          const isCurrentlyDisplayed = activeRouteName === "Chat"
+            && displayedChatConversationId === conversation.id;
+          return conversation.unreadCount > previousUnreadCount && !isCurrentlyDisplayed;
+        });
+
+        if (newlyUnreadConversation) {
+          setIncomingChatMessage(newlyUnreadConversation);
+        }
+      }
+
+      previousChatConversationsRef.current = new Map(
+        nextConversations.map((conversation) => [conversation.id, conversation.unreadCount])
+      );
+      setChatConversations(nextConversations);
+      setUnreadChatConversationCount(nextUnreadCount);
+    } catch {
+      // Keep the last known badge and conversation list until the next account event.
+    }
+  }, [accountId, activeRouteName, authenticated, displayedChatConversationId]);
+
+  useEffect(() => {
+    if (!authenticated || !accountId) {
+      previousChatConversationsRef.current = null;
+      setChatConversations([]);
+      setUnreadChatConversationCount(0);
+      setIncomingChatMessage(null);
+      setActiveChatConversation(null);
+      return undefined;
+    }
+
+    void refreshChatState(false);
+    const subscription = subscribeToAccountEvents(accountId, () => {
+      void refreshChatState(true);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [accountId, authenticated, refreshChatState]);
+
+  const openChatConversation = useCallback((conversation: ActiveChatConversation): void => {
+    setIncomingChatMessage(null);
+    setActiveChatConversation(conversation);
+    setActiveRouteName("Chat");
+    navigationRef.current?.navigate("Chat");
+  }, []);
 
   const requestAuth = (screen: AuthEntryScreen, routeName: MainRouteName): void => {
     setAuthEntry({ screen, returnTo: routeName });
@@ -932,7 +1051,7 @@ function RootNavigator(): React.JSX.Element {
           />
         ) : (
           <View accessible accessibilityLabel={t("mainNavigation", { ns: "us1", defaultValue: "Main navigation" })} style={styles.fill}>
-            <NavigationContainer theme={navigationTheme}>
+            <NavigationContainer ref={navigationRef} theme={navigationTheme}>
               <Tab.Navigator
                 key={mainNavigatorVersion}
                 initialRouteName={activeRouteName}
@@ -1014,14 +1133,73 @@ function RootNavigator(): React.JSX.Element {
                 <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
                 </Tab.Screen>
-                <Tab.Screen name="Chat" options={{ tabBarLabel: t("chatLabel", { ns: "us1" }).toUpperCase() }}>
-                  {() => <ChatScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
+                <Tab.Screen
+                  name="Chat"
+                  options={{
+                    tabBarLabel: t("chatLabel", { ns: "us1" }).toUpperCase(),
+                    ...(unreadChatConversationCount > 0
+                      ? { tabBarBadge: unreadChatConversationCount }
+                      : {})
+                  }}
+                >
+                  {() => (
+                    <ChatScreen
+                      authenticated={authenticated}
+                      onRequestAuth={requestAuth}
+                      activeConversation={activeChatConversation}
+                      conversations={chatConversations}
+                      onOpenConversation={openChatConversation}
+                      onCloseConversation={() => setActiveChatConversation(null)}
+                      onDisplayedConversationChange={setDisplayedChatConversationId}
+                      onMessagesRead={() => void refreshChatState(false)}
+                    />
+                  )}
                 </Tab.Screen>
                 <Tab.Screen name="Notifications" options={{ tabBarLabel: t("notificationsLabel", { ns: "us1" }).toUpperCase() }}>
                   {() => <NotificationsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
                 </Tab.Screen>
               </Tab.Navigator>
             </NavigationContainer>
+            <Portal>
+              <Snackbar
+                visible={incomingChatMessage !== null}
+                duration={6000}
+                onDismiss={() => setIncomingChatMessage(null)}
+                style={styles.chatMessageSnackbar}
+              >
+                {incomingChatMessage ? (
+                  <View style={styles.chatMessageAlert}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t("chatOpenConversation", {
+                        defaultValue: "Open conversation with {{name}}",
+                        name: incomingChatMessage.otherAccountDisplayName
+                      })}
+                      onPress={() => openChatConversation({
+                        id: incomingChatMessage.id,
+                        kind: incomingChatMessage.kind
+                      })}
+                      style={styles.chatMessageAlertContent}
+                    >
+                      <Text variant="titleMedium" numberOfLines={1}>
+                        {incomingChatMessage.otherAccountDisplayName}
+                      </Text>
+                      <Text variant="bodyMedium" numberOfLines={2}>
+                        {incomingChatMessage.lastMessagePreview || "<image>"}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t("close", { ns: "common", defaultValue: "Close" })}
+                      onPress={() => setIncomingChatMessage(null)}
+                      style={styles.chatMessageAlertClose}
+                    >
+                      <MaterialCommunityIcons name="close" size={18} color="#000" />
+                    </Pressable>
+                  </View>
+                ) : null}
+              </Snackbar>
+            </Portal>
           </View>
         )}
       </SafeAreaView>
@@ -1159,6 +1337,24 @@ const styles = StyleSheet.create({
   },
   myHubContent: {
     flex: 1
+  },
+  chatMessageSnackbar: {
+    backgroundColor: designTokens.colors.secondary
+  },
+  chatMessageAlert: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  chatMessageAlertContent: {
+    flex: 1,
+    gap: 2,
+    paddingVertical: designTokens.spacing.xs
+  },
+  chatMessageAlertClose: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center"
   }
 });
 

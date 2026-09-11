@@ -687,6 +687,12 @@ export const CHAT_CONVERSATIONS_QUERY = gql`
   }
 `;
 
+export const COUNT_UNREAD_CHAT_CONVERSATIONS_QUERY = gql`
+  query CountUnreadChatConversations {
+    countUnreadChatConversations
+  }
+`;
+
 export const RESOURCE_CONVERSATION_BY_ID_QUERY = gql`
   query ResourceConversationById($id: UUID!) {
     resourceConversationById(id: $id) {
@@ -705,6 +711,32 @@ export const RESOURCE_CONVERSATION_BY_ID_QUERY = gql`
         avatarUrl
       }
       accountByBidderAccountId {
+        id
+        displayName
+        avatarUrl
+      }
+    }
+  }
+`;
+
+export const CLAIM_CONVERSATION_BY_ID_QUERY = gql`
+  query ClaimConversationById($id: UUID!) {
+    claimConversationById(id: $id) {
+      id
+      needId
+      creatorAccountId
+      claimerAccountId
+      needByNeedId {
+        id
+        title
+        imageUrls
+      }
+      accountByCreatorAccountId {
+        id
+        displayName
+        avatarUrl
+      }
+      accountByClaimerAccountId {
         id
         displayName
         avatarUrl
@@ -752,6 +784,33 @@ export const RESOURCE_MESSAGES_QUERY = gql`
   }
 `;
 
+export const CLAIM_MESSAGES_QUERY = gql`
+  query ClaimMessages($conversationId: UUID!, $first: Int, $after: Cursor) {
+    allClaimMessages(
+      condition: { conversationId: $conversationId }
+      first: $first
+      after: $after
+      orderBy: ID_ASC
+    ) {
+      nodes {
+        id
+        body
+        createdAt
+        senderAccountId
+        claimMessageImagesByMessageId {
+          nodes {
+            imageUrl
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
 export const CREATE_RESOURCE_MESSAGE_MUTATION = gql`
   mutation CreateResourceMessage($input: CreateResourceMessageInput!) {
     createResourceMessage(input: $input) {
@@ -769,6 +828,30 @@ export const CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION = gql`
   mutation CreateResourceMessageImage($input: CreateResourceMessageImageInput!) {
     createResourceMessageImage(input: $input) {
       resourceMessageImage {
+        id
+        imageUrl
+      }
+    }
+  }
+`;
+
+export const CREATE_CLAIM_MESSAGE_MUTATION = gql`
+  mutation CreateClaimMessage($input: CreateClaimMessageInput!) {
+    createClaimMessage(input: $input) {
+      claimMessage {
+        id
+        body
+        createdAt
+        senderAccountId
+      }
+    }
+  }
+`;
+
+export const CREATE_CLAIM_MESSAGE_IMAGE_MUTATION = gql`
+  mutation CreateClaimMessageImage($input: CreateClaimMessageImageInput!) {
+    createClaimMessageImage(input: $input) {
+      claimMessageImage {
         id
         imageUrl
       }
@@ -824,6 +907,14 @@ export const RESPOND_TO_RESOURCE_BID_MUTATION = gql`
 export const MARK_RESOURCE_MESSAGES_READ_MUTATION = gql`
   mutation MarkResourceMessagesRead($input: MarkResourceMessagesReadInput!) {
     markResourceMessagesRead(input: $input) {
+      integer
+    }
+  }
+`;
+
+export const MARK_CLAIM_MESSAGES_READ_MUTATION = gql`
+  mutation MarkClaimMessagesRead($input: MarkClaimMessagesReadInput!) {
+    markClaimMessagesRead(input: $input) {
       integer
     }
   }

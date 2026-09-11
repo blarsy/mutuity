@@ -19,8 +19,10 @@ import { LoadingState } from "../../components/state/LoadingState";
 import {
   fetchChatConversationDetail,
   markConversationMessagesRead,
+  sendClaimMessage,
   sendResourceMessage
 } from "../../services/graphql/chat";
+import type { ChatConversationKind } from "../../services/graphql/chat";
 import { subscribeToAccountEvents } from "../../services/realtime/accountEvents";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -47,6 +49,7 @@ export interface ChatDetailConversation {
 
 export interface ChatDetailScreenProps {
   conversationId?: string | null;
+  conversationKind?: ChatConversationKind;
   currentAccountId?: string | null;
   conversation: ChatDetailConversation | null;
   messages?: ChatMessageItem[];
@@ -58,10 +61,12 @@ export interface ChatDetailScreenProps {
   onOpenLinkedResource?: (resourceId: string) => void;
   onOpenLinkedAccount?: (accountId: string) => void;
   onSendMessage?: (messageText: string, imageUri?: string | null) => void;
+  onMessagesRead?: () => void;
 }
 
 export function ChatDetailScreen({
   conversationId,
+  conversationKind = "resource",
   currentAccountId = null,
   conversation,
   messages,
@@ -72,7 +77,8 @@ export function ChatDetailScreen({
   onBackToList,
   onOpenLinkedResource,
   onOpenLinkedAccount,
-  onSendMessage
+  onSendMessage,
+  onMessagesRead
 }: ChatDetailScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [composerValue, setComposerValue] = useState("");
@@ -87,6 +93,7 @@ export function ChatDetailScreen({
   const isNearBottomRef = useRef(true);
   const previousMessageCountRef = useRef(0);
   const pendingAutoScrollRef = useRef<{ animated: boolean } | null>(null);
+  const markingReadRef = useRef(false);
 
   const hasInjectedDetail = conversation !== null || messages !== undefined;
 
@@ -99,16 +106,15 @@ export function ChatDetailScreen({
     setRemoteErrorMessage(null);
 
     try {
-      const result = await fetchChatConversationDetail(conversationId, currentAccountId);
+      const result = await fetchChatConversationDetail(conversationId, currentAccountId, conversationKind);
       setRemoteConversation(result.conversation);
       setRemoteMessages(result.messages);
-      await markConversationMessagesRead(conversationId);
     } catch {
       setRemoteErrorMessage(t("chatConversationMissing", { defaultValue: "We could not load this conversation." }));
     } finally {
       setRemoteLoading(false);
     }
-  }, [conversationId, currentAccountId, hasInjectedDetail, t]);
+  }, [conversationId, conversationKind, currentAccountId, hasInjectedDetail, t]);
 
   useEffect(() => {
     void loadConversation();
@@ -120,14 +126,13 @@ export function ChatDetailScreen({
     }
 
     try {
-      const result = await fetchChatConversationDetail(conversationId, currentAccountId);
+      const result = await fetchChatConversationDetail(conversationId, currentAccountId, conversationKind);
       setRemoteConversation(result.conversation);
       setRemoteMessages(result.messages);
-      await markConversationMessagesRead(conversationId);
     } catch {
       // Ignore transient real-time refresh errors; the next event or a manual retry will resync.
     }
-  }, [conversationId, currentAccountId, hasInjectedDetail]);
+  }, [conversationId, conversationKind, currentAccountId, hasInjectedDetail]);
 
   useEffect(() => {
     if (hasInjectedDetail || !currentAccountId) {
@@ -156,6 +161,30 @@ export function ChatDetailScreen({
     setHasNewMessages(false);
   }, []);
 
+  const markReadIfAtBottom = useCallback(async (): Promise<void> => {
+    if (
+      hasInjectedDetail
+      || !conversationId
+      || !currentAccountId
+      || !isNearBottomRef.current
+      || markingReadRef.current
+    ) {
+      return;
+    }
+
+    markingReadRef.current = true;
+    try {
+      const markedCount = await markConversationMessagesRead(conversationId, conversationKind);
+      if (markedCount > 0) {
+        onMessagesRead?.();
+      }
+    } catch {
+      // The next scroll or account event retries transient read-marking failures.
+    } finally {
+      markingReadRef.current = false;
+    }
+  }, [conversationId, conversationKind, currentAccountId, hasInjectedDetail, onMessagesRead]);
+
   const handleMessagesContentSizeChange = useCallback((): void => {
     if (!pendingAutoScrollRef.current) {
       return;
@@ -164,7 +193,8 @@ export function ChatDetailScreen({
     const { animated } = pendingAutoScrollRef.current;
     pendingAutoScrollRef.current = null;
     scrollToBottom(animated);
-  }, [scrollToBottom]);
+    void markReadIfAtBottom();
+  }, [markReadIfAtBottom, scrollToBottom]);
 
   const handleMessagesScroll = (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -173,6 +203,7 @@ export function ChatDetailScreen({
     isNearBottomRef.current = nearBottom;
     if (nearBottom) {
       setHasNewMessages(false);
+      void markReadIfAtBottom();
     }
   };
 
@@ -189,10 +220,11 @@ export function ChatDetailScreen({
       pendingAutoScrollRef.current = { animated: previousCount !== 0 };
       // ScrollView layout may already reflect the new content by now; try immediately and again once measured.
       scrollToBottom(previousCount !== 0);
+      void markReadIfAtBottom();
     } else {
       setHasNewMessages(true);
     }
-  }, [sortedMessages, scrollToBottom]);
+  }, [markReadIfAtBottom, sortedMessages, scrollToBottom]);
 
   const handleSend = (): void => {
     const trimmedValue = composerValue.trim();
@@ -214,7 +246,8 @@ export function ChatDetailScreen({
     }
 
     setRemoteSending(true);
-    void sendResourceMessage(conversationId, currentAccountId, messageBody, pendingImageUri)
+    const sendMessage = conversationKind === "need" ? sendClaimMessage : sendResourceMessage;
+    void sendMessage(conversationId, currentAccountId, messageBody, pendingImageUri)
       .then(async () => {
         setComposerValue("");
         setPendingImageUri(null);

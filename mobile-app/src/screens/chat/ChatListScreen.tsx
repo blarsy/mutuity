@@ -10,11 +10,13 @@ import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchChatConversations } from "../../services/graphql/chat";
+import type { ChatConversationKind } from "../../services/graphql/chat";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
 export interface ChatConversationItem {
   id: string;
+  kind: ChatConversationKind;
   otherAccountDisplayName: string;
   otherAccountAvatarUrl?: string | null;
   linkedResourceTitle: string | null;

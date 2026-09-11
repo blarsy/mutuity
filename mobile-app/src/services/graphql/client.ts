@@ -137,7 +137,7 @@ function createDebugLink(): ApolloLink {
 }
 
 function createSubscriptionLink(subscriptionsUrl: string | undefined): ApolloLink | null {
-  if (!subscriptionsUrl) {
+  if (!subscriptionsUrl || typeof WebSocket === "undefined") {
     return null;
   }
 

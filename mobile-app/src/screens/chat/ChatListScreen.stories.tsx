@@ -7,6 +7,7 @@ import { ChatListScreen, type ChatConversationItem } from "./ChatListScreen";
 const SAMPLE_CONVERSATIONS: ChatConversationItem[] = [
   {
     id: "conv-001",
+    kind: "resource",
     otherAccountDisplayName: "Marie",
     linkedResourceTitle: "Cargo bike weekend rental",
     lastMessagePreview: "Yes, Saturday morning works perfectly!",
@@ -15,6 +16,7 @@ const SAMPLE_CONVERSATIONS: ChatConversationItem[] = [
   },
   {
     id: "conv-002",
+    kind: "resource",
     otherAccountDisplayName: "Karim",
     linkedResourceTitle: null,
     lastMessagePreview: "Thanks for the tutoring session!",
@@ -23,6 +25,7 @@ const SAMPLE_CONVERSATIONS: ChatConversationItem[] = [
   },
   {
     id: "conv-003",
+    kind: "resource",
     otherAccountDisplayName: "Samira",
     linkedResourceTitle: "School Starter Kit",
     lastMessagePreview: "I'll drop it off tomorrow morning.",
