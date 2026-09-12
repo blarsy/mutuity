@@ -26,7 +26,9 @@ import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import {
   ACCOUNT_PROFILE_QUERY,
+  CURRENT_ACCOUNT_EMAIL_QUERY,
   DELETE_MY_ACCOUNT_MUTATION,
+  REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION,
   UPDATE_ACCOUNT_PROFILE_MUTATION
 } from "../features/profile/profile.queries";
 import { LocationPicker } from "../components/LocationPicker";
@@ -58,6 +60,12 @@ type AccountProfileData = {
 
 type PreferredLanguage = "en" | "fr";
 
+type CurrentAccountEmailData = {
+  currentAccountEmail: string | null;
+};
+
+const EMAIL_FORMAT_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const PROFILE_LINK_TYPE_OPTIONS: Array<{ value: ProfileLinkType; label: string }> = [
   { value: "website", label: "linkTypes.website" },
   { value: "facebook", label: "linkTypes.facebook" },
@@ -83,8 +91,12 @@ export default function ProfilePage() {
     skip: !accountId,
     variables: { accountId }
   });
+  const { data: emailData, refetch: refetchCurrentEmail } = useQuery<CurrentAccountEmailData>(CURRENT_ACCOUNT_EMAIL_QUERY, {
+    skip: !accountId
+  });
   const [updateProfile, { loading: saving, error: saveError }] = useMutation(UPDATE_ACCOUNT_PROFILE_MUTATION);
   const [deleteMyAccount, { loading: deleting, error: deleteError }] = useMutation(DELETE_MY_ACCOUNT_MUTATION);
+  const [requestAccountEmailChange, { loading: requestingEmailChange }] = useMutation(REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
@@ -96,8 +108,43 @@ export default function ProfilePage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [emailDraft, setEmailDraft] = useState("");
+  const [pendingEmailChangeAddress, setPendingEmailChangeAddress] = useState<string | null>(null);
+  const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(saveError);
   const deleteErrorMessage = getUserFacingGraphQLErrorMessage(deleteError);
+
+  useEffect(() => {
+    const nextEmail = emailData?.currentAccountEmail ?? "";
+    setCurrentEmail(nextEmail);
+    setEmailDraft(nextEmail);
+  }, [emailData?.currentAccountEmail]);
+
+  const canRequestEmailChange =
+    emailDraft.trim().length > 0 &&
+    emailDraft.trim().toLowerCase() !== currentEmail.trim().toLowerCase() &&
+    EMAIL_FORMAT_PATTERN.test(emailDraft.trim());
+
+  const handleRequestEmailChange = async () => {
+    const trimmedDraft = emailDraft.trim();
+
+    if (!EMAIL_FORMAT_PATTERN.test(trimmedDraft)) {
+      setEmailChangeError(t("emailChange.invalidEmail"));
+      return;
+    }
+
+    setEmailChangeError(null);
+
+    try {
+      await requestAccountEmailChange({ variables: { newIdentifier: trimmedDraft } });
+      setPendingEmailChangeAddress(trimmedDraft);
+      setEmailDraft(currentEmail);
+      await refetchCurrentEmail();
+    } catch {
+      setEmailChangeError(t("emailChange.error"));
+    }
+  };
 
   useEffect(() => {
     const profile = data?.accountById;
@@ -229,6 +276,26 @@ export default function ProfilePage() {
             <CardContent>
               <Stack spacing={2}>
                 <TextField label={t("fields.displayName")} onChange={event => setDisplayName(event.target.value)} value={displayName} />
+                <TextField
+                  label={t("fields.email")}
+                  onChange={event => {
+                    setEmailDraft(event.target.value);
+                    setEmailChangeError(null);
+                  }}
+                  type="email"
+                  value={emailDraft}
+                />
+                {emailChangeError ? <Alert severity="error">{emailChangeError}</Alert> : null}
+                {canRequestEmailChange ? (
+                  <Stack direction="row" justifyContent="flex-end">
+                    <Button disabled={requestingEmailChange} onClick={() => void handleRequestEmailChange()} variant="outlined">
+                      {t("emailChange.sendConfirmationButton")}
+                    </Button>
+                  </Stack>
+                ) : null}
+                {pendingEmailChangeAddress ? (
+                  <Alert severity="info">{t("emailChange.pendingNote", { email: pendingEmailChangeAddress })}</Alert>
+                ) : null}
                 <TextField
                   label={t("fields.bio")}
                   minRows={3}

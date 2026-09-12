@@ -8,7 +8,7 @@ type DeliverAuthEmailsPayload = {
   mailId?: string;
 };
 
-type TokenKind = "email_verification" | "password_reset";
+type TokenKind = "email_verification" | "password_reset" | "email_change";
 
 type SupportedLocale = "en" | "fr";
 
@@ -18,6 +18,7 @@ type PendingAuthEmail = {
   mail_kind: string;
   auth_token: string | null;
   locale: string | null;
+  metadata: { newIdentifier?: string } | null;
 };
 
 type RenderedMailRow = {
@@ -61,7 +62,32 @@ const EMAIL_TEMPLATES: LocalizedEmailTemplates = {
       text: `Une réinitialisation du mot de passe a été demandée pour votre compte ${productName}. Définissez un nouveau mot de passe via ce lien : ${link}`,
       html: `<p>Une réinitialisation du mot de passe a été demandée pour votre compte ${productName}.</p><p>Définissez un nouveau mot de passe via ce lien :</p><p><a href="${link}">${link}</a></p>`
     })
+  },
+  email_change: {
+    en: (productName, link) => ({
+      subject: `Confirm your new email for ${productName}`,
+      text: `Confirm this is your new email address for ${productName} by opening this link: ${link}`,
+      html: `<p>Confirm this is your new email address for ${productName} by opening this link:</p><p><a href="${link}">${link}</a></p>`
+    }),
+    fr: (productName, link) => ({
+      subject: `Confirmez votre nouvelle adresse e-mail pour ${productName}`,
+      text: `Confirmez que cette adresse e-mail est bien la vôtre pour ${productName} en ouvrant ce lien : ${link}`,
+      html: `<p>Confirmez que cette adresse e-mail est bien la vôtre pour ${productName} en ouvrant ce lien :</p><p><a href="${link}">${link}</a></p>`
+    })
   }
+};
+
+const EMAIL_CHANGE_HEADS_UP_TEMPLATES: Record<SupportedLocale, (productName: string, newEmail: string) => EmailStrings> = {
+  en: (productName, newEmail) => ({
+    subject: `Your ${productName} email is changing`,
+    text: `A request was made to change the email address on your ${productName} account to ${newEmail}. If you did not request this, please contact support immediately.`,
+    html: `<p>A request was made to change the email address on your ${productName} account to <strong>${newEmail}</strong>.</p><p>If you did not request this, please contact support immediately.</p>`
+  }),
+  fr: (productName, newEmail) => ({
+    subject: `Votre adresse e-mail ${productName} va changer`,
+    text: `Une demande de changement d'adresse e-mail vers ${newEmail} a été effectuée sur votre compte ${productName}. Si vous n'êtes pas à l'origine de cette demande, contactez le support immédiatement.`,
+    html: `<p>Une demande de changement d'adresse e-mail vers <strong>${newEmail}</strong> a été effectuée sur votre compte ${productName}.</p><p>Si vous n'êtes pas à l'origine de cette demande, contactez le support immédiatement.</p>`
+  })
 };
 
 const CLAIM_PENDING_EMAILS_SQL =
@@ -93,24 +119,49 @@ function getWebAppBaseUrl() {
   return process.env.MAIL_WEB_APP_URL ?? "http://localhost:3000";
 }
 
+function resolveLocale(email: PendingAuthEmail): SupportedLocale {
+  const rawLocale = email.locale?.trim().toLowerCase() ?? "en";
+  return rawLocale === "fr" ? "fr" : "en";
+}
+
 function buildAuthEmailContent(email: PendingAuthEmail) {
+  if (email.mail_kind === "account_email_change_requested") {
+    const newEmail = email.metadata?.newIdentifier?.trim() ?? "";
+    const { subject, text, html } = EMAIL_CHANGE_HEADS_UP_TEMPLATES[resolveLocale(email)](getProductName(), newEmail);
+
+    return {
+      from: getFromAddress(),
+      to: email.recipient_email,
+      subject,
+      text,
+      html
+    };
+  }
+
   const tokenKind: TokenKind =
-    email.mail_kind === "auth_email_verification" ? "email_verification" : "password_reset";
+    email.mail_kind === "auth_email_verification"
+      ? "email_verification"
+      : email.mail_kind === "account_email_change_confirmation"
+        ? "email_change"
+        : "password_reset";
   const token = email.auth_token?.trim() ?? "";
 
   if (token.length === 0) {
     throw new Error(`Missing auth token for outbox message ${email.id}`);
   }
 
-  const route = tokenKind === "email_verification" ? "/verify-email" : "/restore-access";
+  const route =
+    tokenKind === "email_verification"
+      ? "/verify-email"
+      : tokenKind === "email_change"
+        ? "/confirm-email-change"
+        : "/restore-access";
   const url = new URL(route, getWebAppBaseUrl().endsWith("/") ? getWebAppBaseUrl() : `${getWebAppBaseUrl()}/`);
   url.searchParams.set("token", token);
 
   const link = url.toString();
   const productName = getProductName();
-  const rawLocale = email.locale?.trim().toLowerCase() ?? "en";
-  const locale: SupportedLocale = rawLocale === "fr" ? "fr" : "en";
-  const { subject, text, html } = EMAIL_TEMPLATES[tokenKind][locale](productName, link);
+  const { subject, text, html } = EMAIL_TEMPLATES[tokenKind][resolveLocale(email)](productName, link);
 
   return {
     from: getFromAddress(),
@@ -213,6 +264,8 @@ export const deliverAuthEmailsTask: Task = async payload => {
           email.mail_kind !== "auth_email_verification"
           && email.mail_kind !== "auth_password_reset"
           && email.mail_kind !== "notification_digest"
+          && email.mail_kind !== "account_email_change_confirmation"
+          && email.mail_kind !== "account_email_change_requested"
         ) {
           await client.query(MARK_FAILED_SQL, [
             email.id,

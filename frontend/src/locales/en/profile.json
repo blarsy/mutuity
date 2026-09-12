@@ -15,6 +15,7 @@
     "bio": "Bio",
     "location": "Location",
     "language": "Preferred language",
+    "email": "Email",
     "avatarUrl": "Avatar image URL",
     "avatarPlaceholder": "https://example.com/avatar.png",
     "linkType": "Type",
@@ -32,6 +33,12 @@
     "facebook": "Facebook",
     "instagram": "Instagram",
     "x": "X"
+  },
+  "emailChange": {
+    "sendConfirmationButton": "Send confirmation link",
+    "invalidEmail": "Please enter a valid email address.",
+    "pendingNote": "Check {{email}} to confirm your new email address. Your current email stays active until then.",
+    "error": "We could not start this email change. Please try again."
   },
   "dangerZone": {
     "title": "Danger zone",

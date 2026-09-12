@@ -5,6 +5,7 @@ import {
   AUTH_LOGIN_MUTATION,
   AUTH_LOGOUT_MUTATION,
   AUTH_SESSION_QUERY,
+  CONFIRM_ACCOUNT_EMAIL_CHANGE_MUTATION,
   CONFIRM_EMAIL_VERIFICATION_MUTATION,
   CONFIRM_PASSWORD_RESET_WITH_PASSWORD_MUTATION,
   REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION,
@@ -187,6 +188,22 @@ export function confirmEmailVerification(input: { token: string }) {
     })
     .then(() => ({
       message: "Email verified."
+    }))
+    .catch(error => {
+      throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
+    });
+}
+
+export function confirmAccountEmailChange(input: { token: string }) {
+  return apolloClient
+    .mutate<{ confirmAccountEmailChange?: { boolean?: boolean | null } }>({
+      mutation: CONFIRM_ACCOUNT_EMAIL_CHANGE_MUTATION,
+      variables: {
+        token: input.token
+      }
+    })
+    .then(() => ({
+      message: "Email changed."
     }))
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));

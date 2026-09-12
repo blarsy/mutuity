@@ -6,7 +6,12 @@ import {
   type QueryAccountByIdArgs,
   type UpdateAccountByIdInput
 } from "./generated";
-import { ACCOUNT_PROFILE_QUERY, UPDATE_ACCOUNT_PROFILE_MUTATION } from "./operations";
+import {
+  ACCOUNT_PROFILE_QUERY,
+  CURRENT_ACCOUNT_EMAIL_QUERY,
+  REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION,
+  UPDATE_ACCOUNT_PROFILE_MUTATION
+} from "./operations";
 import type {
   MyProfileRecord,
   PublicProfileLink,
@@ -234,3 +239,28 @@ export async function updateMyProfile(
 
   return toProfileRecord(account);
 }
+
+interface CurrentAccountEmailQueryResult {
+  currentAccountEmail?: string | null;
+}
+
+export async function fetchCurrentAccountEmail(): Promise<string | null> {
+  const { data } = await apolloClient.query<CurrentAccountEmailQueryResult>({
+    query: CURRENT_ACCOUNT_EMAIL_QUERY,
+    fetchPolicy: "network-only"
+  });
+
+  return data?.currentAccountEmail ?? null;
+}
+
+interface RequestAccountEmailChangeMutationResult {
+  requestAccountEmailChange?: { boolean?: boolean | null } | null;
+}
+
+export async function requestAccountEmailChange(newEmail: string): Promise<void> {
+  await apolloClient.mutate<RequestAccountEmailChangeMutationResult, { newIdentifier: string }>({
+    mutation: REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION,
+    variables: { newIdentifier: newEmail.trim() }
+  });
+}
+

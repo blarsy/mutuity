@@ -17,7 +17,7 @@ import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { useAuth } from "../../services/auth/AuthProvider";
-import { fetchMyProfile, updateMyProfile } from "../../services/graphql/profile";
+import { fetchCurrentAccountEmail, fetchMyProfile, requestAccountEmailChange, updateMyProfile } from "../../services/graphql/profile";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { NeedIntensity } from "../../services/graphql/generated";
@@ -81,6 +81,7 @@ export interface MyProfileScreenProps {
   onRetry?: () => void;
   onBack?: () => void;
   onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { avatarUrl?: string | null }) => void;
+  onRequestEmailChange?: (newEmail: string) => Promise<void> | void;
   onOpenChangePassword?: () => void;
   onOpenPreferences?: () => void;
   onOpenContribution?: () => void;
@@ -98,6 +99,7 @@ export function MyProfileScreen({
   onRetry,
   onBack,
   onSaveProfile,
+  onRequestEmailChange,
   onOpenChangePassword,
   onOpenPreferences,
   onOpenContribution,
@@ -124,6 +126,11 @@ export function MyProfileScreen({
   const [profileLinkDraft, setProfileLinkDraft] = useState<PublicProfileLink>(EMPTY_PROFILE_LINK_DRAFT);
   const [linkEditorVisible, setLinkEditorVisible] = useState(false);
   const [linkEditorError, setLinkEditorError] = useState<string | null>(null);
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [emailDraft, setEmailDraft] = useState("");
+  const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
+  const [emailChangeSubmitting, setEmailChangeSubmitting] = useState(false);
+  const [pendingEmailChangeAddress, setPendingEmailChangeAddress] = useState<string | null>(null);
 
   const withRequiredMark = (label: string): string => `${label} *`;
 
@@ -199,13 +206,15 @@ export function MyProfileScreen({
     setRemoteLoading(true);
     setRemoteErrorMessage(null);
     try {
-      const nextProfile = await fetchMyProfile(accountId);
+      const [nextProfile, nextEmail] = await Promise.all([fetchMyProfile(accountId), fetchCurrentAccountEmail()]);
       setRemoteProfile(nextProfile);
       setDisplayName(nextProfile?.displayName ?? "");
       setAvatarUri(nextProfile?.avatarUrl ?? null);
       setLocation(nextProfile?.location ?? null);
       setBio(nextProfile?.bio ?? "");
       setProfileLinks(nextProfile?.profileLinks ?? []);
+      setCurrentEmail(nextEmail ?? "");
+      setEmailDraft(nextEmail ?? "");
     } catch {
       setRemoteErrorMessage(t("profileLoadError", { defaultValue: "We could not load your profile." }));
     } finally {
@@ -220,14 +229,58 @@ export function MyProfileScreen({
       setLocation(resolvedProfile.location ?? null);
       setBio(resolvedProfile.bio);
       setProfileLinks(resolvedProfile.profileLinks ?? []);
+
+      if (hasInjectedProfile) {
+        setCurrentEmail(resolvedProfile.email);
+        setEmailDraft(resolvedProfile.email);
+      }
     }
-  }, [resolvedProfile]);
+  }, [hasInjectedProfile, resolvedProfile]);
 
   useEffect(() => {
     void loadProfile();
   }, [loadProfile]);
 
   const canSave = useMemo(() => displayName.trim().length > 0, [displayName]);
+
+  const hasValidEmailFormat = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+  const canRequestEmailChange = useMemo(() => {
+    const trimmedDraft = emailDraft.trim();
+    return trimmedDraft.length > 0 && trimmedDraft.toLowerCase() !== currentEmail.trim().toLowerCase() && hasValidEmailFormat(trimmedDraft);
+  }, [currentEmail, emailDraft]);
+
+  const handleRequestEmailChange = (): void => {
+    const trimmedDraft = emailDraft.trim();
+
+    if (!hasValidEmailFormat(trimmedDraft)) {
+      setEmailChangeError(t("mustBeValidEmail", { defaultValue: "Please enter a valid email address." }));
+      return;
+    }
+
+    setEmailChangeError(null);
+    setEmailChangeSubmitting(true);
+
+    const request = onRequestEmailChange ? onRequestEmailChange(trimmedDraft) : requestAccountEmailChange(trimmedDraft);
+
+    void Promise.resolve(request)
+      .then(() => {
+        setPendingEmailChangeAddress(trimmedDraft);
+        setEmailDraft(currentEmail);
+        setFeedback(
+          t("emailChangeRequested", {
+            defaultValue: "Check {{email}} to confirm your new email address.",
+            email: trimmedDraft
+          })
+        );
+      })
+      .catch(() => {
+        setEmailChangeError(t("emailChangeError", { defaultValue: "We could not start this email change. Please try again." }));
+      })
+      .finally(() => {
+        setEmailChangeSubmitting(false);
+      });
+  };
 
   const handleSave = (): void => {
     setHasAttemptedSubmit(true);
@@ -308,9 +361,37 @@ export function MyProfileScreen({
         <FormTextInput
           label={t("emailLabel", { defaultValue: "Email" })}
           accessibilityLabel={t("emailLabel", { defaultValue: "Email" })}
-          value={resolvedProfile?.email ?? ""}
-          editable={false}
+          value={emailDraft}
+          onChangeText={(value) => {
+            setEmailDraft(value);
+            setEmailChangeError(null);
+          }}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
+
+        {emailChangeError ? <Text style={styles.warningText}>{emailChangeError}</Text> : null}
+
+        {canRequestEmailChange ? (
+          <Button
+            testID="email-change-request"
+            mode="outlined"
+            onPress={handleRequestEmailChange}
+            loading={emailChangeSubmitting}
+            disabled={emailChangeSubmitting}
+          >
+            {t("sendEmailConfirmationButton", { defaultValue: "Send confirmation link" })}
+          </Button>
+        ) : null}
+
+        {pendingEmailChangeAddress ? (
+          <Text testID="email-change-pending-note" style={styles.secondaryNoteText}>
+            {t("emailChangePendingNote", {
+              defaultValue: "Check {{email}} to confirm your new email address. Your current email stays active until then.",
+              email: pendingEmailChangeAddress
+            })}
+          </Text>
+        ) : null}
 
         <ImagePickerField
           label={t("avatarLabel", { defaultValue: "Profile picture" })}

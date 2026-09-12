@@ -108,4 +108,29 @@ describe("MyProfileScreen", () => {
       })
     );
   });
+
+  it("only offers to send a confirmation link once a valid, different email is entered", async () => {
+    const onRequestEmailChange = jest.fn().mockResolvedValue(undefined);
+    const screen = renderWithPaper(
+      <MyProfileScreen
+        accountId={invalidProfile.accountId}
+        profile={{ ...invalidProfile, displayName: "Alex" }}
+        onSaveProfile={() => undefined}
+        onRequestEmailChange={onRequestEmailChange}
+      />
+    );
+
+    expect(screen.queryByTestId("email-change-request")).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Email"), "not-an-email");
+    expect(screen.queryByTestId("email-change-request")).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Email"), "new-address@example.com");
+    expect(screen.getByTestId("email-change-request")).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId("email-change-request"));
+
+    expect(onRequestEmailChange).toHaveBeenCalledWith("new-address@example.com");
+    expect(await screen.findByTestId("email-change-pending-note")).toBeTruthy();
+  });
 });

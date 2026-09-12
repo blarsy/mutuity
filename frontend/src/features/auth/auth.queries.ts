@@ -155,6 +155,14 @@ export const CONFIRM_EMAIL_VERIFICATION_MUTATION = gql`
   }
 `;
 
+export const CONFIRM_ACCOUNT_EMAIL_CHANGE_MUTATION = gql`
+  mutation ConfirmAccountEmailChange($token: String!) {
+    confirmAccountEmailChange(input: { token: $token }) {
+      boolean
+    }
+  }
+`;
+
 export const REQUEST_PASSWORD_RESET_MUTATION = gql`
   mutation RequestPasswordReset($identifier: String!, $resetTtlMs: BigInt, $throttleMs: BigInt) {
     requestPasswordReset(
