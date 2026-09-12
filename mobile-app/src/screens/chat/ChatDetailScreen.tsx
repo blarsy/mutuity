@@ -245,15 +245,27 @@ export function ChatDetailScreen({
       return;
     }
 
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimisticMessage: ChatMessageItem = {
+      id: optimisticId,
+      direction: "outgoing",
+      body: messageBody,
+      createdAt: new Date().toISOString(),
+      imageUrls: pendingImageUri ? [pendingImageUri] : []
+    };
+
+    setRemoteMessages((previous) => [...previous, optimisticMessage]);
+    setComposerValue("");
+    setPendingImageUri(null);
     setRemoteSending(true);
+
     const sendMessage = conversationKind === "need" ? sendClaimMessage : sendResourceMessage;
     void sendMessage(conversationId, currentAccountId, messageBody, pendingImageUri)
-      .then(async () => {
-        setComposerValue("");
-        setPendingImageUri(null);
-        await loadConversation();
+      .then((sentMessage) => {
+        setRemoteMessages((previous) => previous.map((message) => (message.id === optimisticId ? sentMessage : message)));
       })
       .catch(() => {
+        setRemoteMessages((previous) => previous.filter((message) => message.id !== optimisticId));
         setRemoteErrorMessage(t("chatSendError", { defaultValue: "We could not send your message." }));
       })
       .finally(() => {
