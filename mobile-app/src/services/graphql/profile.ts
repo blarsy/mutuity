@@ -9,6 +9,7 @@ import {
 import {
   ACCOUNT_PROFILE_QUERY,
   CURRENT_ACCOUNT_EMAIL_QUERY,
+  DELETE_MY_ACCOUNT_MUTATION,
   REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION,
   UPDATE_ACCOUNT_PROFILE_MUTATION
 } from "./operations";
@@ -263,4 +264,12 @@ export async function requestAccountEmailChange(newEmail: string): Promise<void>
     variables: { newIdentifier: newEmail.trim() }
   });
 }
+
+export async function deleteMyAccount(): Promise<void> {
+  await apolloClient.mutate({
+    mutation: DELETE_MY_ACCOUNT_MUTATION
+  });
+}
+
+export { changeAccountPassword } from "./auth";
 

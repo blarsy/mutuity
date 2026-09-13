@@ -40,6 +40,11 @@
     "pendingNote": "Verifiez {{email}} pour confirmer votre nouvelle adresse e-mail. Votre adresse actuelle reste active jusque-la.",
     "error": "Impossible de demarrer ce changement d'adresse e-mail. Veuillez reessayer."
   },
+  "security": {
+    "title": "Sécurité",
+    "description": "Gérez votre mot de passe et vos identifiants d'authentification.",
+    "changePasswordButton": "Changer le mot de passe"
+  },
   "dangerZone": {
     "title": "Zone sensible",
     "description": "Supprimez votre compte et anonymisez vos donnees de profil. Cette action est irreversible.",

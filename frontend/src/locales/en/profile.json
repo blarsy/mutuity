@@ -40,6 +40,11 @@
     "pendingNote": "Check {{email}} to confirm your new email address. Your current email stays active until then.",
     "error": "We could not start this email change. Please try again."
   },
+  "security": {
+    "title": "Security",
+    "description": "Manage your password and authentication credentials.",
+    "changePasswordButton": "Change password"
+  },
   "dangerZone": {
     "title": "Danger zone",
     "description": "Delete your account and anonymize your profile data. This action is irreversible.",

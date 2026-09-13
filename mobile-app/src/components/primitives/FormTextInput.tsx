@@ -66,7 +66,7 @@ export function FormTextInput({
       activeUnderlineColor={inlineMode ? "transparent" : activeUnderlineColor}
       selectionColor="transparent"
       theme={resolveTheme(theme)}
-      contentStyle={[styles.content, inlineMode ? styles.inlineContent : null, contentStyle]}
+      contentStyle={[inlineMode ? styles.inlineContent : null, contentStyle, { color: textColor }]}
       style={[styles.input, style]}
     />
   );
@@ -76,9 +76,6 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "transparent",
     marginTop: 0
-  },
-  content: {
-    color: "#000"
   },
   inlineContent: {
     padding: 0

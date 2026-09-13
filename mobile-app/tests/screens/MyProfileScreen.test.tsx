@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { MyProfileScreen, type MyProfileRecord } from "../../src/screens/profile/MyProfileScreen";
@@ -132,5 +132,95 @@ describe("MyProfileScreen", () => {
 
     expect(onRequestEmailChange).toHaveBeenCalledWith("new-address@example.com");
     expect(await screen.findByTestId("email-change-pending-note")).toBeTruthy();
+  });
+
+  it("opens change password dialog and validates input fields", async () => {
+    const onChangePassword = jest.fn().mockResolvedValue(undefined);
+    const screen = renderWithPaper(
+      <MyProfileScreen
+        accountId={invalidProfile.accountId}
+        profile={{ ...invalidProfile, displayName: "Alex" }}
+        onChangePassword={onChangePassword}
+      />
+    );
+
+    expect(screen.queryByTestId("change-password-dialog")).toBeNull();
+
+    fireEvent.press(screen.getByTestId("change-password-button"));
+    expect(screen.getByTestId("change-password-dialog")).toBeTruthy();
+
+    // Click confirm with empty inputs
+    fireEvent.press(screen.getByTestId("change-password-confirm"));
+    expect(onChangePassword).not.toHaveBeenCalled();
+    expect(screen.getByTestId("change-password-current-error")).toBeTruthy();
+
+    // Fill current password but leave new password empty
+    fireEvent.changeText(screen.getByTestId("change-password-current-input"), "current123");
+    fireEvent.press(screen.getByTestId("change-password-confirm"));
+    expect(onChangePassword).not.toHaveBeenCalled();
+    expect(screen.getByTestId("change-password-new-error")).toBeTruthy();
+
+    // Enter short new password (< 8 chars)
+    fireEvent.changeText(screen.getByTestId("change-password-new-input"), "short");
+    fireEvent.changeText(screen.getByTestId("change-password-confirm-input"), "short");
+    fireEvent.press(screen.getByTestId("change-password-confirm"));
+    expect(onChangePassword).not.toHaveBeenCalled();
+    expect(screen.getByTestId("change-password-new-error")).toBeTruthy();
+
+    // Enter non-matching confirmation
+    fireEvent.changeText(screen.getByTestId("change-password-new-input"), "newpassword123");
+    fireEvent.changeText(screen.getByTestId("change-password-confirm-input"), "differentpassword");
+    fireEvent.press(screen.getByTestId("change-password-confirm"));
+    expect(onChangePassword).not.toHaveBeenCalled();
+    expect(screen.getByTestId("change-password-confirm-error")).toBeTruthy();
+
+    // Enter matching valid passwords and submit successfully
+    fireEvent.changeText(screen.getByTestId("change-password-confirm-input"), "newpassword123");
+    fireEvent.press(screen.getByTestId("change-password-confirm"));
+
+    expect(onChangePassword).toHaveBeenCalledWith({
+      currentPassword: "current123",
+      newPassword: "newpassword123"
+    });
+
+    expect(await screen.findByText("Password changed successfully.")).toBeTruthy();
+    expect(screen.queryByTestId("change-password-dialog")).toBeNull();
+  });
+
+  it("displays an error message if changing password fails", async () => {
+    const onChangePassword = jest.fn().mockRejectedValue(new Error("Current password is incorrect."));
+    const screen = renderWithPaper(
+      <MyProfileScreen
+        accountId={invalidProfile.accountId}
+        profile={{ ...invalidProfile, displayName: "Alex" }}
+        onChangePassword={onChangePassword}
+      />
+    );
+
+    fireEvent.press(screen.getByTestId("change-password-button"));
+    fireEvent.changeText(screen.getByTestId("change-password-current-input"), "wrongpass");
+    fireEvent.changeText(screen.getByTestId("change-password-new-input"), "newpassword123");
+    fireEvent.changeText(screen.getByTestId("change-password-confirm-input"), "newpassword123");
+
+    fireEvent.press(screen.getByTestId("change-password-confirm"));
+
+    expect(onChangePassword).toHaveBeenCalled();
+    expect(await screen.findByTestId("change-password-error")).toBeTruthy();
+    expect(screen.getByText("Current password is incorrect.")).toBeTruthy();
+  });
+
+  it("can cancel and dismiss change password dialog", () => {
+    const screen = renderWithPaper(
+      <MyProfileScreen
+        accountId={invalidProfile.accountId}
+        profile={{ ...invalidProfile, displayName: "Alex" }}
+      />
+    );
+
+    fireEvent.press(screen.getByTestId("change-password-button"));
+    expect(screen.getByTestId("change-password-dialog")).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId("change-password-cancel"));
+    expect(screen.queryByTestId("change-password-dialog")).toBeNull();
   });
 });

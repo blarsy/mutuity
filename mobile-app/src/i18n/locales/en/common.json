@@ -42,5 +42,17 @@
   "noCampaignLabel": "No campaign",
   "campaignsLoadError": "We could not load campaigns.",
   "offlineResourceSaveWarningLabel": "Offline resource save warning",
-  "offlineResourceSaveWarning": "Saving is unavailable while offline"
+  "offlineResourceSaveWarning": "Saving is unavailable while offline",
+  "changePasswordLabel": "Change password",
+  "changePasswordTitle": "Change password",
+  "currentPasswordLabel": "Current password",
+  "newPasswordLabel": "New password",
+  "confirmPasswordLabel": "Confirm new password",
+  "changePasswordSuccess": "Password changed successfully.",
+  "changePasswordError": "We could not change your password. Please verify your current password and try again.",
+  "passwordMismatch": "Passwords do not match.",
+  "passwordTooShort": "Password must be at least 8 characters.",
+  "ok_caption": "OK",
+  "cancel_caption": "Cancel",
+  "fieldRequired": "This field is required."
 }

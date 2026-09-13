@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 import { apolloClient } from "./client";
-import { type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs } from "./generated";
-import { ACCOUNT_BY_ID_QUERY } from "./operations";
+import { type AuthChangePasswordInput, type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs } from "./generated";
+import { ACCOUNT_BY_ID_QUERY, AUTH_CHANGE_PASSWORD_MUTATION } from "./operations";
 
 export type RegisterSocialIdentityInput = {
   identifier: string;
@@ -108,5 +108,19 @@ export async function registerWithSocialIdentity(input: RegisterSocialIdentityIn
         preferredLanguage: input.preferredLanguage ?? "en"
       }
     }
+  });
+}
+
+export async function changeAccountPassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
+  const variables: { input: AuthChangePasswordInput } = {
+    input: {
+      currentPassword: input.currentPassword,
+      newPassword: input.newPassword
+    }
+  };
+
+  await apolloClient.mutate({
+    mutation: AUTH_CHANGE_PASSWORD_MUTATION,
+    variables
   });
 }

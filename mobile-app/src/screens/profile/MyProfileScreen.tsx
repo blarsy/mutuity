@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, IconButton, Snackbar, Text } from "react-native-paper";
+import { Button, Checkbox, IconButton, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -17,7 +17,7 @@ import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { useAuth } from "../../services/auth/AuthProvider";
-import { fetchCurrentAccountEmail, fetchMyProfile, requestAccountEmailChange, updateMyProfile } from "../../services/graphql/profile";
+import { deleteMyAccount, fetchCurrentAccountEmail, fetchMyProfile, requestAccountEmailChange, updateMyProfile, changeAccountPassword } from "../../services/graphql/profile";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { NeedIntensity } from "../../services/graphql/generated";
@@ -82,6 +82,7 @@ export interface MyProfileScreenProps {
   onBack?: () => void;
   onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { avatarUrl?: string | null }) => void;
   onRequestEmailChange?: (newEmail: string) => Promise<void> | void;
+  onChangePassword?: (input: { currentPassword: string; newPassword: string }) => Promise<void> | void;
   onOpenChangePassword?: () => void;
   onOpenPreferences?: () => void;
   onOpenContribution?: () => void;
@@ -100,6 +101,7 @@ export function MyProfileScreen({
   onBack,
   onSaveProfile,
   onRequestEmailChange,
+  onChangePassword,
   onOpenChangePassword,
   onOpenPreferences,
   onOpenContribution,
@@ -108,7 +110,7 @@ export function MyProfileScreen({
   onOpenDrawer
 }: MyProfileScreenProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { refreshSession } = useAuth();
+  const { refreshSession, signOut } = useAuth();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
@@ -131,6 +133,19 @@ export function MyProfileScreen({
   const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
   const [emailChangeSubmitting, setEmailChangeSubmitting] = useState(false);
   const [pendingEmailChangeAddress, setPendingEmailChangeAddress] = useState<string | null>(null);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const [changePasswordDialogVisible, setChangePasswordDialogVisible] = useState(false);
+  const [currentPasswordDraft, setCurrentPasswordDraft] = useState("");
+  const [newPasswordDraft, setNewPasswordDraft] = useState("");
+  const [confirmPasswordDraft, setConfirmPasswordDraft] = useState("");
+  const [changePasswordSubmitting, setChangePasswordSubmitting] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState<string | null>(null);
+  const [currentPasswordFieldError, setCurrentPasswordFieldError] = useState<string | null>(null);
+  const [newPasswordFieldError, setNewPasswordFieldError] = useState<string | null>(null);
+  const [confirmPasswordFieldError, setConfirmPasswordFieldError] = useState<string | null>(null);
 
   const withRequiredMark = (label: string): string => `${label} *`;
 
@@ -327,6 +342,108 @@ export function MyProfileScreen({
       });
   };
 
+  const handleDeleteAccount = (): void => {
+    setDeleting(true);
+    setDeleteErrorMessage(null);
+
+    const request = onDeleteAccount ? Promise.resolve(onDeleteAccount()) : deleteMyAccount();
+
+    void request
+      .then(async () => {
+        setDeleteDialogVisible(false);
+        if (onLogout) {
+          onLogout();
+        } else {
+          await signOut();
+        }
+      })
+      .catch(() => {
+        setDeleteErrorMessage(t("deleteAccountError", { defaultValue: "We could not delete your account. Please try again." }));
+      })
+      .finally(() => {
+        setDeleting(false);
+      });
+  };
+
+  const openChangePasswordDialog = (): void => {
+    setCurrentPasswordDraft("");
+    setNewPasswordDraft("");
+    setConfirmPasswordDraft("");
+    setChangePasswordError(null);
+    setCurrentPasswordFieldError(null);
+    setNewPasswordFieldError(null);
+    setConfirmPasswordFieldError(null);
+    setChangePasswordDialogVisible(true);
+    if (onOpenChangePassword) {
+      onOpenChangePassword();
+    }
+  };
+
+  const closeChangePasswordDialog = (): void => {
+    setChangePasswordDialogVisible(false);
+    setCurrentPasswordDraft("");
+    setNewPasswordDraft("");
+    setConfirmPasswordDraft("");
+    setChangePasswordError(null);
+    setCurrentPasswordFieldError(null);
+    setNewPasswordFieldError(null);
+    setConfirmPasswordFieldError(null);
+  };
+
+  const handleChangePasswordSubmit = (): void => {
+    let hasError = false;
+    setCurrentPasswordFieldError(null);
+    setNewPasswordFieldError(null);
+    setConfirmPasswordFieldError(null);
+    setChangePasswordError(null);
+
+    if (!currentPasswordDraft.trim()) {
+      setCurrentPasswordFieldError(t("fieldRequired", { defaultValue: "This field is required." }));
+      hasError = true;
+    }
+
+    if (!newPasswordDraft) {
+      setNewPasswordFieldError(t("fieldRequired", { defaultValue: "This field is required." }));
+      hasError = true;
+    } else if (newPasswordDraft.length < 8) {
+      setNewPasswordFieldError(t("passwordTooShort", { defaultValue: "Password must be at least 8 characters." }));
+      hasError = true;
+    }
+
+    if (!confirmPasswordDraft) {
+      setConfirmPasswordFieldError(t("fieldRequired", { defaultValue: "This field is required." }));
+      hasError = true;
+    } else if (confirmPasswordDraft !== newPasswordDraft) {
+      setConfirmPasswordFieldError(t("passwordMismatch", { defaultValue: "Passwords do not match." }));
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    setChangePasswordSubmitting(true);
+    const request = onChangePassword
+      ? Promise.resolve(onChangePassword({ currentPassword: currentPasswordDraft, newPassword: newPasswordDraft }))
+      : changeAccountPassword({ currentPassword: currentPasswordDraft, newPassword: newPasswordDraft });
+
+    void request
+      .then(() => {
+        closeChangePasswordDialog();
+        setFeedback(t("changePasswordSuccess", { defaultValue: "Password changed successfully." }));
+      })
+      .catch((err: unknown) => {
+        const fallbackMsg = t("changePasswordError", {
+          defaultValue: "We could not change your password. Please verify your current password and try again."
+        });
+        const errorMsg = err instanceof Error && err.message ? err.message : fallbackMsg;
+        setChangePasswordError(errorMsg);
+      })
+      .finally(() => {
+        setChangePasswordSubmitting(false);
+      });
+  };
+
   const resolvedLoading = loading || (!hasInjectedProfile && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedProfile ? remoteErrorMessage : null);
 
@@ -350,7 +467,7 @@ export function MyProfileScreen({
         {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <FormTextInput
           label={withRequiredMark(t("fullNameLabel", { defaultValue: "Full name" }))}
           accessibilityLabel={t("fullNameLabel", { defaultValue: "Full name" })}
@@ -453,64 +570,143 @@ export function MyProfileScreen({
           <Text style={styles.warningText}>{t("fieldRequired", { defaultValue: "Title is required." })}</Text>
         ) : null}
 
+        <View style={styles.actionsZone}>
+          <Button
+            testID="change-password-button"
+            mode="outlined"
+            icon="lock-check"
+            style={styles.secondaryButton}
+            labelStyle={styles.secondaryButtonLabel}
+            onPress={openChangePasswordDialog}
+          >
+            {t("changePasswordLabel", { defaultValue: "Change password" })}
+          </Button>
+
+          {onOpenPreferences ? (
+            <Button
+              mode="outlined"
+              style={styles.secondaryButton}
+              labelStyle={styles.secondaryButtonLabel}
+              onPress={() => {
+                onOpenPreferences();
+              }}
+            >
+              {t("myPreferencesTitle", { defaultValue: "My preferences" })}
+            </Button>
+          ) : null}
+
+          {onOpenContribution ? (
+            <Button
+              mode="outlined"
+              style={styles.secondaryButton}
+              labelStyle={styles.secondaryButtonLabel}
+              onPress={() => {
+                onOpenContribution();
+              }}
+            >
+              {t("contributionLabel", { defaultValue: "Contribution" })}
+            </Button>
+          ) : null}
+
+          <Button
+            mode="outlined"
+            icon="logout"
+            style={styles.secondaryButton}
+            labelStyle={styles.secondaryButtonLabel}
+            onPress={() => {
+              if (onLogout) {
+                onLogout();
+              }
+            }}
+          >
+            {t("logoutLabel", { defaultValue: "Logout" })}
+          </Button>
+
+          <Button
+            mode="outlined"
+            icon="delete-forever"
+            style={styles.secondaryButton}
+            labelStyle={styles.secondaryButtonLabel}
+            onPress={() => {
+              setDeleteConfirmChecked(false);
+              setDeleteErrorMessage(null);
+              setDeleteDialogVisible(true);
+            }}
+          >
+            {t("deleteAccountLabel", { defaultValue: "Delete account" })}
+          </Button>
+        </View>
+      </ScrollView>
+
+      <View style={styles.saveFooter}>
         <PrimaryButton
           label={t("saveLabel", { defaultValue: "Save" })}
           onPress={handleSave}
           loading={saving}
           disabled={saving}
         />
-
-        <View style={styles.actionsZone}>
-          <PrimaryButton
-            label={t("changePasswordLabel", { defaultValue: "Change password" })}
-            onPress={() => {
-              if (onOpenChangePassword) {
-                onOpenChangePassword();
-              }
-            }}
-          />
-
-          {onOpenPreferences ? (
-            <PrimaryButton
-              label={t("myPreferencesTitle", { defaultValue: "My preferences" })}
-              onPress={() => {
-                onOpenPreferences();
-              }}
-            />
-          ) : null}
-
-          {onOpenContribution ? (
-            <PrimaryButton
-              label={t("contributionLabel", { defaultValue: "Contribution" })}
-              onPress={() => {
-                onOpenContribution();
-              }}
-            />
-          ) : null}
-
-          <PrimaryButton
-            label={t("logoutLabel", { defaultValue: "Logout" })}
-            onPress={() => {
-              if (onLogout) {
-                onLogout();
-              }
-            }}
-          />
-
-          <PrimaryButton
-            label={t("deleteAccountLabel", { defaultValue: "Delete account" })}
-            onPress={() => {
-              if (onDeleteAccount) {
-                onDeleteAccount();
-              }
-            }}
-          />
-        </View>
-      </ScrollView>
+      </View>
 
       <Snackbar visible={feedback !== null} onDismiss={() => setFeedback(null)}>
         {feedback ?? ""}
       </Snackbar>
+
+      <ThemedDialog
+        visible={deleteDialogVisible}
+        title={t("deleteAccountDialogTitle", { defaultValue: "Delete your account?" })}
+        onDismiss={() => {
+          if (!deleting) {
+            setDeleteDialogVisible(false);
+          }
+        }}
+        content={(
+          <View style={styles.deleteDialogContent}>
+            <Text style={styles.secondaryNoteText}>
+              {t("deleteAccountDialogDescription", {
+                defaultValue: "This will permanently delete your account. Please review what happens next before confirming."
+              })}
+            </Text>
+            <Text style={styles.deleteDialogBulletText}>
+              {`\u2022 ${t("deleteAccountConsequenceSignOut", { defaultValue: "You will be signed out immediately." })}`}
+            </Text>
+            <Text style={styles.deleteDialogBulletText}>
+              {`\u2022 ${t("deleteAccountConsequenceAnonymization", { defaultValue: "Your personal data will be anonymized." })}`}
+            </Text>
+            <Text style={styles.deleteDialogBulletText}>
+              {`\u2022 ${t("deleteAccountConsequenceIrreversible", { defaultValue: "This action cannot be undone." })}`}
+            </Text>
+            <Checkbox.Item
+              label={t("deleteAccountConfirmLabel", { defaultValue: "I understand, delete my account." })}
+              status={deleteConfirmChecked ? "checked" : "unchecked"}
+              disabled={deleting}
+              onPress={() => setDeleteConfirmChecked((current) => !current)}
+              style={styles.deleteDialogCheckbox}
+            />
+            {deleteErrorMessage ? <Text style={styles.warningText}>{deleteErrorMessage}</Text> : null}
+          </View>
+        )}
+        actions={[
+          <Button
+            key="cancel"
+            testID="delete-account-cancel"
+            mode="outlined"
+            disabled={deleting}
+            onPress={() => setDeleteDialogVisible(false)}
+          >
+            {t("cancelLabel", { defaultValue: "Cancel" })}
+          </Button>,
+          <Button
+            key="confirm"
+            testID="delete-account-confirm"
+            mode="contained"
+            disabled={!deleteConfirmChecked || deleting}
+            loading={deleting}
+            onPress={handleDeleteAccount}
+          >
+            {t("deleteAccountConfirmButton", { defaultValue: "Delete account" })}
+          </Button>
+        ]}
+      />
 
       <ThemedDialog
         visible={linkEditorVisible}
@@ -599,6 +795,101 @@ export function MyProfileScreen({
           </Button>
         ]}
       />
+
+      <ThemedDialog
+        visible={changePasswordDialogVisible}
+        title={t("changePasswordTitle", { defaultValue: "Change password" })}
+        testID="change-password-dialog"
+        onDismiss={() => {
+          if (!changePasswordSubmitting) {
+            closeChangePasswordDialog();
+          }
+        }}
+        content={(
+          <View style={styles.changePasswordDialogContent}>
+            <FormTextInput
+              testID="change-password-current-input"
+              label={withRequiredMark(t("currentPasswordLabel", { defaultValue: "Current password" }))}
+              accessibilityLabel={t("currentPasswordLabel", { defaultValue: "Current password" })}
+              value={currentPasswordDraft}
+              onChangeText={(val) => {
+                setCurrentPasswordDraft(val);
+                setChangePasswordError(null);
+                setCurrentPasswordFieldError(null);
+              }}
+              secureTextEntry
+              textContentType="password"
+              autoCapitalize="none"
+            />
+            {currentPasswordFieldError ? (
+              <Text testID="change-password-current-error" style={styles.warningText}>{currentPasswordFieldError}</Text>
+            ) : null}
+
+            <FormTextInput
+              testID="change-password-new-input"
+              label={withRequiredMark(t("newPasswordLabel", { defaultValue: "New password" }))}
+              accessibilityLabel={t("newPasswordLabel", { defaultValue: "New password" })}
+              value={newPasswordDraft}
+              onChangeText={(val) => {
+                setNewPasswordDraft(val);
+                setChangePasswordError(null);
+                setNewPasswordFieldError(null);
+              }}
+              secureTextEntry
+              textContentType="newPassword"
+              autoCapitalize="none"
+            />
+            {newPasswordFieldError ? (
+              <Text testID="change-password-new-error" style={styles.warningText}>{newPasswordFieldError}</Text>
+            ) : null}
+
+            <FormTextInput
+              testID="change-password-confirm-input"
+              label={withRequiredMark(t("confirmPasswordLabel", { defaultValue: "Confirm new password" }))}
+              accessibilityLabel={t("confirmPasswordLabel", { defaultValue: "Confirm new password" })}
+              value={confirmPasswordDraft}
+              onChangeText={(val) => {
+                setConfirmPasswordDraft(val);
+                setChangePasswordError(null);
+                setConfirmPasswordFieldError(null);
+              }}
+              secureTextEntry
+              textContentType="newPassword"
+              autoCapitalize="none"
+            />
+            {confirmPasswordFieldError ? (
+              <Text testID="change-password-confirm-error" style={styles.warningText}>{confirmPasswordFieldError}</Text>
+            ) : null}
+
+            {changePasswordError ? (
+              <Text testID="change-password-error" accessibilityRole="alert" style={styles.warningText}>
+                {changePasswordError}
+              </Text>
+            ) : null}
+          </View>
+        )}
+        actions={[
+          <Button
+            key="cancel"
+            testID="change-password-cancel"
+            mode="outlined"
+            disabled={changePasswordSubmitting}
+            onPress={closeChangePasswordDialog}
+          >
+            {t("cancel_caption", { defaultValue: "Cancel" })}
+          </Button>,
+          <Button
+            key="submit"
+            testID="change-password-confirm"
+            mode="contained"
+            loading={changePasswordSubmitting}
+            disabled={changePasswordSubmitting}
+            onPress={handleChangePasswordSubmit}
+          >
+            {t("ok_caption", { defaultValue: "OK" })}
+          </Button>
+        ]}
+      />
     </ScreenContainer>
   );
 }
@@ -630,6 +921,14 @@ const styles = StyleSheet.create({
   content: {
     gap: designTokens.spacing.sm,
     paddingBottom: designTokens.spacing.md
+  },
+  scroll: {
+    flex: 1
+  },
+  saveFooter: {
+    paddingTop: designTokens.spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#f1d6bf"
   },
   warningText: {
     color: designTokens.colors.primary,
@@ -685,5 +984,27 @@ const styles = StyleSheet.create({
   actionsZone: {
     gap: designTokens.spacing.sm,
     marginTop: designTokens.spacing.sm
+  },
+  secondaryButton: {
+    backgroundColor: designTokens.colors.secondary,
+    borderColor: "#000",
+    borderWidth: 1
+  },
+  secondaryButtonLabel: {
+    color: "#000"
+  },
+  deleteDialogContent: {
+    gap: designTokens.spacing.xs
+  },
+  deleteDialogBulletText: {
+    fontFamily: appFontFamilies.general,
+    opacity: 0.8
+  },
+  deleteDialogCheckbox: {
+    paddingHorizontal: 0
+  },
+  changePasswordDialogContent: {
+    gap: designTokens.spacing.sm,
+    paddingTop: designTokens.spacing.xs
   }
 });

@@ -20,6 +20,18 @@ export const ACCOUNT_BY_ID_QUERY = gql`
   }
 `;
 
+export const AUTH_CHANGE_PASSWORD_MUTATION = gql`
+  mutation AuthChangePassword($input: AuthChangePasswordInput!) {
+    authChangePassword(input: $input) {
+      authSession {
+        account {
+          id
+        }
+      }
+    }
+  }
+`;
+
 export const SEARCH_RESOURCES_QUERY = gql`
   query SearchResources(
     $first: Int
@@ -1076,6 +1088,14 @@ export const CURRENT_ACCOUNT_EMAIL_QUERY = gql`
 export const REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION = gql`
   mutation RequestAccountEmailChange($newIdentifier: String!) {
     requestAccountEmailChange(input: { newIdentifier: $newIdentifier }) {
+      boolean
+    }
+  }
+`;
+
+export const DELETE_MY_ACCOUNT_MUTATION = gql`
+  mutation DeleteMyAccount {
+    deleteMyAccount(input: {}) {
       boolean
     }
   }

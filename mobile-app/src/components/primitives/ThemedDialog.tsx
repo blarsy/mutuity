@@ -26,7 +26,11 @@ export function ThemedDialog({
   style,
   contentStyle,
   actionZoneStyle
-}: ThemedDialogProps): React.JSX.Element {
+}: ThemedDialogProps): React.JSX.Element | null {
+  if (!visible) {
+    return null;
+  }
+
   const dialogProps = onDismiss ? { onDismiss } : {};
   const testIdProps = testID ? { testID } : {};
 

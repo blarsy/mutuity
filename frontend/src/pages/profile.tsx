@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
+import { ChangePasswordDialog } from "../features/auth/ChangePasswordDialog";
 import {
   ACCOUNT_PROFILE_QUERY,
   CURRENT_ACCOUNT_EMAIL_QUERY,
@@ -108,6 +109,7 @@ export default function ProfilePage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+  const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
   const [currentEmail, setCurrentEmail] = useState("");
   const [emailDraft, setEmailDraft] = useState("");
   const [pendingEmailChangeAddress, setPendingEmailChangeAddress] = useState<string | null>(null);
@@ -418,6 +420,32 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
+          <Card variant="outlined">
+            <CardContent>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="h6">
+                    {t("security.title")}
+                  </Typography>
+                  <Typography color="text.secondary" variant="body2">
+                    {t("security.description")}
+                  </Typography>
+                </Box>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button
+                    data-testid="change-password-button"
+                    onClick={() => {
+                      setChangePasswordDialogOpen(true);
+                    }}
+                    variant="outlined"
+                  >
+                    {t("security.changePasswordButton")}
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+
           <Card sx={{ borderColor: "error.main" }} variant="outlined">
             <CardContent>
               <Stack spacing={2}>
@@ -500,6 +528,16 @@ export default function ProfilePage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ChangePasswordDialog
+        onClose={() => {
+          setChangePasswordDialogOpen(false);
+        }}
+        onSuccess={() => {
+          setSuccessMessage(t("changePassword.success", { ns: "auth" }));
+        }}
+        open={changePasswordDialogOpen}
+      />
     </Container>
   );
 }
