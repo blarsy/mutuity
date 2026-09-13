@@ -63,15 +63,22 @@ const DEFAULT_MAP_REGION = {
 const mapProviderProps: { provider?: typeof PROVIDER_GOOGLE } =
   Platform.OS === "android" ? { provider: PROVIDER_GOOGLE } : {};
 
-function toDraftCoordinates(value: ProximityLocationValue | null): { latitude?: number; longitude?: number } {
+function toDraftCoordinates(
+  value: ProximityLocationValue | null,
+  fallbackLatitude?: number,
+  fallbackLongitude?: number
+): { latitude?: number; longitude?: number } {
   const coordinates: { latitude?: number; longitude?: number } = {};
 
-  if (value?.latitude !== undefined) {
-    coordinates.latitude = value.latitude;
+  const latitude = value?.latitude ?? fallbackLatitude;
+  const longitude = value?.longitude ?? fallbackLongitude;
+
+  if (latitude !== undefined) {
+    coordinates.latitude = latitude;
   }
 
-  if (value?.longitude !== undefined) {
-    coordinates.longitude = value.longitude;
+  if (longitude !== undefined) {
+    coordinates.longitude = longitude;
   }
 
   return coordinates;
@@ -165,6 +172,49 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
   const searchRequestId = useRef(0);
   const suggestionsCache = useRef<Map<string, LocationSuggestion[]>>(new Map());
 
+  const [resolvedCoordinates, setResolvedCoordinates] = useState<{ latitude?: number; longitude?: number }>({
+    latitude: value?.latitude,
+    longitude: value?.longitude
+  });
+
+  useEffect(() => {
+    const label = value?.label?.trim();
+    if (!label) {
+      setResolvedCoordinates({});
+      return;
+    }
+
+    if (value?.latitude !== undefined && value?.longitude !== undefined) {
+      setResolvedCoordinates({ latitude: value.latitude, longitude: value.longitude });
+      return;
+    }
+
+    let isMounted = true;
+    void (async () => {
+      try {
+        const geocoded = await ExpoLocation.geocodeAsync(label);
+        const firstMatch = geocoded[0];
+        if (isMounted && firstMatch?.latitude !== undefined && firstMatch?.longitude !== undefined) {
+          setResolvedCoordinates({ latitude: firstMatch.latitude, longitude: firstMatch.longitude });
+          onChange({
+            label,
+            latitude: firstMatch.latitude,
+            longitude: firstMatch.longitude
+          });
+        }
+      } catch {
+        // Silent catch if geocoding fails
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [value?.label, value?.latitude, value?.longitude]);
+
+  const effectiveLatitude = value?.latitude ?? resolvedCoordinates.latitude;
+  const effectiveLongitude = value?.longitude ?? resolvedCoordinates.longitude;
+
   const editorMapRegion = useMemo(
     () =>
       hasDraftCoordinates(draftCoordinates)
@@ -179,13 +229,13 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
   );
 
   const canRenderMap = useMemo(
-    () => value?.latitude !== undefined && value?.longitude !== undefined,
-    [value?.latitude, value?.longitude]
+    () => Boolean(value?.label && effectiveLatitude !== undefined && effectiveLongitude !== undefined),
+    [value?.label, effectiveLatitude, effectiveLongitude]
   );
 
   const openEditor = (): void => {
     setDraftLocationLabel(value?.label ?? "");
-    setDraftCoordinates(toDraftCoordinates(value));
+    setDraftCoordinates(toDraftCoordinates(value, effectiveLatitude, effectiveLongitude));
     setLocationSuggestions([]);
     setSuggestionsLoading(false);
     setEditorError(null);
@@ -407,7 +457,7 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
         </View>
       )}
 
-      {canRenderMap && value && !showEditorDialog ? (
+      {canRenderMap && value && !showEditorDialog && effectiveLatitude !== undefined && effectiveLongitude !== undefined ? (
         <MapView
           {...mapProviderProps}
           style={styles.mapPreview}
@@ -416,13 +466,13 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
           rotateEnabled={false}
           pitchEnabled={false}
           region={{
-            latitude: value.latitude!,
-            longitude: value.longitude!,
+            latitude: effectiveLatitude,
+            longitude: effectiveLongitude,
             latitudeDelta: 0.02,
             longitudeDelta: 0.02
           }}
         >
-          <Marker coordinate={{ latitude: value.latitude!, longitude: value.longitude! }} />
+          <Marker coordinate={{ latitude: effectiveLatitude, longitude: effectiveLongitude }} />
         </MapView>
       ) : null}
 

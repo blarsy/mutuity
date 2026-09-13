@@ -6,6 +6,7 @@ import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen"
 import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScreen";
 import type { SearchResourceItem } from "../screens/resources/SearchResourcesScreen";
 import { SearchNeedsScreen } from "../screens/needs/SearchNeedsScreen";
+import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
 import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
 import { ErrorState } from "../components/state/ErrorState";
 import { LoadingState } from "../components/state/LoadingState";
@@ -22,6 +23,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
   const { t } = useTranslation();
   const [activeSurface, setActiveSurface] = useState<ExploreSurface>("resources");
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+  const [selectedNeedId, setSelectedNeedId] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [openingConversation, setOpeningConversation] = useState(false);
@@ -110,6 +112,17 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     );
   }
 
+  if (selectedNeedId) {
+    return (
+      <NeedDetailScreen
+        needId={selectedNeedId}
+        currentAccountId={currentAccountId}
+        onOpenCreatorAccount={handleOpenCreatorAccount}
+        onBack={() => setSelectedNeedId(null)}
+      />
+    );
+  }
+
   if (activeConversationId && currentAccountId) {
     return (
       <ChatDetailScreen
@@ -127,6 +140,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     return (
       <SearchNeedsScreen
         currentAccountId={currentAccountId}
+        onOpenNeed={(need) => setSelectedNeedId(need.id)}
         onSwitchToResources={() => setActiveSurface("resources")}
       />
     );

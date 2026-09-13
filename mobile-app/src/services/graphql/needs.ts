@@ -15,6 +15,7 @@ import {
   DELETE_CAMPAIGN_NEED_MUTATION,
   DELETE_NEED_BY_ID_MUTATION,
   MY_NEEDS_QUERY,
+  NEED_BY_ID_QUERY,
   RECEIVED_NEED_CLAIMS_QUERY,
   SEARCH_NEEDS_QUERY,
   SENT_NEED_CLAIMS_QUERY,
@@ -57,6 +58,12 @@ export interface NeedItem {
   creatorDisplayName?: string | null;
   claimCount: number;
   isClaimedByCurrentAccount: boolean;
+}
+
+export interface NeedDetailItem extends NeedItem {
+  creatorAccountId: string;
+  creatorDisplayName: string;
+  creatorAvatarUrl: string | null;
 }
 
 export interface DeleteNeedResult {
@@ -345,6 +352,33 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
 
     return matchesSearch && matchesIntensity && matchesTokenAmount && matchesClaimedVisibility;
   });
+}
+
+export async function fetchNeedById(needId: string): Promise<NeedDetailItem | null> {
+  const { data } = await apolloClient.query<Pick<Query, "needById">, { id: string }>({
+    query: NEED_BY_ID_QUERY,
+    variables: { id: needId },
+    fetchPolicy: "network-only"
+  });
+
+  const need = data?.needById;
+  if (!need) {
+    return null;
+  }
+
+  const normalizedNeed = normalizeNeed(need as Need, null);
+  if (!normalizedNeed?.creatorAccountId) {
+    return null;
+  }
+
+  return {
+    ...normalizedNeed,
+    creatorAccountId: normalizedNeed.creatorAccountId,
+    creatorDisplayName: normalizedNeed.creatorDisplayName?.trim() || "Unknown account",
+    creatorAvatarUrl: typeof need.accountByCreatorAccountId?.avatarUrl === "string"
+      ? need.accountByCreatorAccountId.avatarUrl
+      : null
+  };
 }
 
 export async function fetchMyNeeds(creatorAccountId: string): Promise<NeedItem[]> {

@@ -301,8 +301,26 @@ export const NEED_BY_ID_QUERY = gql`
       id
       title
       description
+      creatorAccountId
+      createdAt
+      expiresAt
       proposedTopesAmount
       intensity
+      objectRequired
+      competenceRequired
+      toolingRequired
+      multiplePeopleRequired
+      requiredCompetenceText
+      requiredToolingText
+      requiredPeopleCount
+      location
+      latitude
+      longitude
+      imageUrls
+      accountByCreatorAccountId {
+        displayName
+        avatarUrl
+      }
     }
   }
 `;

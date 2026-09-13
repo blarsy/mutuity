@@ -54,6 +54,29 @@ const injectedNeeds: NeedItem[] = [
 ];
 
 describe("US2 search needs acceptance", () => {
+  it("opens a found need", () => {
+    const onOpenNeed = jest.fn();
+    const screen = render(
+      React.createElement(
+        SafeAreaProvider,
+        null,
+        React.createElement(
+          PaperProvider,
+          null,
+          React.createElement(SearchNeedsScreen, {
+            needs: injectedNeeds,
+            currentAccountId: "123e4567-e89b-12d3-a456-426614174000",
+            onOpenNeed
+          })
+        )
+      )
+    );
+
+    fireEvent.press(screen.getByTestId("need-card-need-sharing"));
+
+    expect(onOpenNeed).toHaveBeenCalledWith(injectedNeeds[0]);
+  });
+
   it("search needs with filters", () => {
     const screen = render(
       React.createElement(

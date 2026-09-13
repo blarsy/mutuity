@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import * as ExpoLocation from "expo-location";
 import { useTranslation } from "react-i18next";
 
 import { AccountAvatar } from "../../components/AccountAvatar";
@@ -80,7 +81,37 @@ export function AccountPublicProfileScreen({
   const resources = resolvedProfile?.resources ?? [];
   const needs = resolvedProfile?.needs ?? [];
   const location = resolvedProfile?.location;
-  const hasLocationMap = Boolean(location?.latitude != null && location?.longitude != null);
+
+  const [geocodedLocation, setGeocodedLocation] = useState<{ latitude?: number; longitude?: number } | null>(null);
+
+  useEffect(() => {
+    const label = location?.label?.trim();
+    if (!label || (location?.latitude != null && location?.longitude != null)) {
+      setGeocodedLocation(null);
+      return;
+    }
+
+    let isMounted = true;
+    void (async () => {
+      try {
+        const geocoded = await ExpoLocation.geocodeAsync(label);
+        const firstMatch = geocoded[0];
+        if (isMounted && firstMatch?.latitude != null && firstMatch?.longitude != null) {
+          setGeocodedLocation({ latitude: firstMatch.latitude, longitude: firstMatch.longitude });
+        }
+      } catch {
+        // Silent catch
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location?.label, location?.latitude, location?.longitude]);
+
+  const effectiveLat = location?.latitude ?? geocodedLocation?.latitude;
+  const effectiveLng = location?.longitude ?? geocodedLocation?.longitude;
+  const hasLocationMap = Boolean(effectiveLat != null && effectiveLng != null);
   const hasBio = Boolean(resolvedProfile?.bio.trim());
 
   const intensityLabelMeta = (intensity: NeedIntensity): { key: string; defaultValue: string } => {
@@ -217,22 +248,24 @@ export function AccountPublicProfileScreen({
               </View>
             ) : null}
 
-            {location?.label && hasLocationMap && location.latitude != null && location.longitude != null ? (
+            {location?.label ? (
               <View style={styles.inlineStack}>
                 <Text variant="labelLarge" style={styles.sectionTitle}>{t("locationLabel", { defaultValue: "Location" })}</Text>
                 <Text variant="bodyMedium" style={styles.locationText}>{location.label}</Text>
-                <MapView
-                  provider={PROVIDER_GOOGLE}
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: location.latitude,
-                    longitude: location.longitude,
-                    latitudeDelta: 0.05,
-                    longitudeDelta: 0.05
-                  }}
-                >
-                  <Marker coordinate={{ latitude: location.latitude, longitude: location.longitude }} />
-                </MapView>
+                {hasLocationMap && effectiveLat != null && effectiveLng != null ? (
+                  <MapView
+                    provider={PROVIDER_GOOGLE}
+                    style={styles.map}
+                    region={{
+                      latitude: effectiveLat,
+                      longitude: effectiveLng,
+                      latitudeDelta: 0.05,
+                      longitudeDelta: 0.05
+                    }}
+                  >
+                    <Marker coordinate={{ latitude: effectiveLat, longitude: effectiveLng }} />
+                  </MapView>
+                ) : null}
               </View>
             ) : null}
           </View>

@@ -188,6 +188,7 @@ function PickerMap({ latitude, longitude, onMapClick }: PickerMapProps) {
   return (
     <Map
       style={{ width: "100%", height: "100%" }}
+      center={{ lat: latitude, lng: longitude }}
       defaultCenter={{ lat: latitude, lng: longitude }}
       defaultZoom={15}
       disableDefaultUI

@@ -18,6 +18,7 @@ import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
 import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen";
 import { EditNeedScreen } from "../screens/needs/EditNeedScreen";
 import { MyNeedsScreen } from "../screens/needs/MyNeedsScreen";
+import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
 import { ReceivedBidsScreen } from "../screens/bids/ReceivedBidsScreen";
 import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
@@ -607,21 +608,23 @@ function ChatScreen({
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   const [openedResourceId, setOpenedResourceId] = useState<string | null>(null);
+  const [openedNeedId, setOpenedNeedId] = useState<string | null>(null);
   const [openedAccountId, setOpenedAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     setOpenedResourceId(null);
+    setOpenedNeedId(null);
     setOpenedAccountId(null);
   }, [activeConversation]);
 
   useEffect(() => {
-    const displayedConversationId = activeConversation && !openedResourceId && !openedAccountId
+    const displayedConversationId = activeConversation && !openedResourceId && !openedNeedId && !openedAccountId
       ? activeConversation.id
       : null;
     onDisplayedConversationChange(displayedConversationId);
 
     return () => onDisplayedConversationChange(null);
-  }, [activeConversation, onDisplayedConversationChange, openedAccountId, openedResourceId]);
+  }, [activeConversation, onDisplayedConversationChange, openedAccountId, openedNeedId, openedResourceId]);
 
   if (!authenticated) {
     return (
@@ -657,6 +660,17 @@ function ChatScreen({
     );
   }
 
+  if (openedNeedId) {
+    return (
+      <NeedDetailScreen
+        needId={openedNeedId}
+        currentAccountId={accountId}
+        onOpenCreatorAccount={(creatorAccountId) => setOpenedAccountId(creatorAccountId)}
+        onBack={() => setOpenedNeedId(null)}
+      />
+    );
+  }
+
   if (activeConversation) {
     return (
       <ChatDetailScreen
@@ -665,9 +679,8 @@ function ChatScreen({
         currentAccountId={accountId}
         conversation={null}
         onBackToList={onCloseConversation}
-        {...(activeConversation.kind === "resource"
-          ? { onOpenLinkedResource: (resourceId: string) => setOpenedResourceId(resourceId) }
-          : {})}
+        onOpenLinkedResource={(resourceId) => setOpenedResourceId(resourceId)}
+        onOpenLinkedNeed={(needId) => setOpenedNeedId(needId)}
         onOpenLinkedAccount={(otherAccountId) => setOpenedAccountId(otherAccountId)}
         onMessagesRead={onMessagesRead}
       />

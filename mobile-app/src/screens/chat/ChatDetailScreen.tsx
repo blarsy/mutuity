@@ -59,6 +59,7 @@ export interface ChatDetailScreenProps {
   onRetry?: () => void;
   onBackToList: () => void;
   onOpenLinkedResource?: (resourceId: string) => void;
+  onOpenLinkedNeed?: (needId: string) => void;
   onOpenLinkedAccount?: (accountId: string) => void;
   onSendMessage?: (messageText: string, imageUri?: string | null) => void;
   onMessagesRead?: () => void;
@@ -76,6 +77,7 @@ export function ChatDetailScreen({
   onRetry,
   onBackToList,
   onOpenLinkedResource,
+  onOpenLinkedNeed,
   onOpenLinkedAccount,
   onSendMessage,
   onMessagesRead
@@ -151,6 +153,7 @@ export function ChatDetailScreen({
   const resolvedLoading = loading || (!hasInjectedDetail && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedDetail ? remoteErrorMessage : null);
   const resolvedSending = sending || (!hasInjectedDetail && remoteSending);
+  const onOpenLinkedListing = conversationKind === "need" ? onOpenLinkedNeed : onOpenLinkedResource;
 
   const sortedMessages = useMemo(() => {
     return [...resolvedMessages].sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""));
@@ -294,14 +297,14 @@ export function ChatDetailScreen({
     <ScreenContainer testID="chat-detail-screen" style={styles.root}>
       <NavigationBackHeader onBack={onBackToList}>
         <ListingContextHeader
-          kind="resource"
+          kind={conversationKind}
           title={resolvedConversation.linkedResourceTitle ?? t("chatGenericThread", { defaultValue: "Conversation" })}
           authorDisplayName={resolvedConversation.otherAccountDisplayName}
           authorAvatarUrl={resolvedConversation.otherAccountAvatarUrl ?? null}
           listingImageUrl={resolvedConversation.linkedResourceImageUrl ?? null}
           onPressListing={
-            resolvedConversation.linkedResourceId && onOpenLinkedResource
-              ? () => onOpenLinkedResource(resolvedConversation.linkedResourceId!)
+            resolvedConversation.linkedResourceId && onOpenLinkedListing
+              ? () => onOpenLinkedListing(resolvedConversation.linkedResourceId!)
               : undefined
           }
           onPressAuthor={

@@ -32,6 +32,7 @@ import {
   REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION,
   UPDATE_ACCOUNT_PROFILE_MUTATION
 } from "../features/profile/profile.queries";
+import { normalizeCoordinate } from "../features/profile/profileCoordinates";
 import { LocationPicker } from "../components/LocationPicker";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { ZoomableImage } from "../components/ZoomableImage";
@@ -51,8 +52,8 @@ type AccountProfileData = {
     displayName: string | null;
     bio: string | null;
     location: string | null;
-    latitude: number | null;
-    longitude: number | null;
+    latitude: number | string | null;
+    longitude: number | string | null;
     avatarUrl: string | null;
     preferredLanguage: "en" | "fr" | null;
     profileLinks: ProfileLink[] | null;
@@ -66,6 +67,8 @@ type CurrentAccountEmailData = {
 };
 
 const EMAIL_FORMAT_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_LATITUDE = 50.6072;
+const DEFAULT_LONGITUDE = 3.3889;
 
 const PROFILE_LINK_TYPE_OPTIONS: Array<{ value: ProfileLinkType; label: string }> = [
   { value: "website", label: "linkTypes.website" },
@@ -101,8 +104,8 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
-  const [latitude, setLatitude] = useState<number>(50.6072);
-  const [longitude, setLongitude] = useState<number>(3.3889);
+  const [latitude, setLatitude] = useState<number>(DEFAULT_LATITUDE);
+  const [longitude, setLongitude] = useState<number>(DEFAULT_LONGITUDE);
   const [avatarUrl, setAvatarUrl] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>("fr");
   const [profileLinks, setProfileLinks] = useState<ProfileLink[]>([]);
@@ -158,8 +161,8 @@ export default function ProfilePage() {
     setDisplayName(profile.displayName ?? "");
     setBio(profile.bio ?? "");
     setLocation(profile.location ?? "");
-    setLatitude(profile.latitude ?? 50.6072);
-    setLongitude(profile.longitude ?? 3.3889);
+    setLatitude(normalizeCoordinate(profile.latitude, DEFAULT_LATITUDE));
+    setLongitude(normalizeCoordinate(profile.longitude, DEFAULT_LONGITUDE));
     setAvatarUrl(profile.avatarUrl ?? "");
     setPreferredLanguage(profile.preferredLanguage === "en" ? "en" : "fr");
     setProfileLinks(
