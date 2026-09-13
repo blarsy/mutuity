@@ -10,7 +10,7 @@ import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
 import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
 import { ErrorState } from "../components/state/ErrorState";
 import { LoadingState } from "../components/state/LoadingState";
-import { openOrCreateResourceConversation } from "../services/graphql/chat";
+import { openOrCreateNeedConversation, openOrCreateResourceConversation } from "../services/graphql/chat";
 import type { ResourceDetailItem } from "../services/graphql/resources";
 
 type ExploreSurface = "resources" | "needs";
@@ -25,7 +25,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [selectedNeedId, setSelectedNeedId] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeConversation, setActiveConversation] = useState<{ id: string; kind: "resource" | "need" } | null>(null);
   const [openingConversation, setOpeningConversation] = useState(false);
   const [openDetailError, setOpenDetailError] = useState<string | null>(null);
 
@@ -66,11 +66,34 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
           title: resource.title
         })
       });
-      setActiveConversationId(conversationId);
+      setActiveConversation({ id: conversationId, kind: "resource" });
     } catch {
       setOpenDetailError(
         t("chatOpenError", { defaultValue: "We could not open this conversation." })
       );
+    } finally {
+      setOpeningConversation(false);
+    }
+  };
+
+  const handleOpenNeedChat = async (needId: string, needTitle: string): Promise<void> => {
+    if (!currentAccountId) return;
+
+    setOpeningConversation(true);
+    setOpenDetailError(null);
+    try {
+      const conversationId = await openOrCreateNeedConversation({
+        needId,
+        initialMessage: t("needChatInitialMessage", {
+          ns: "us2",
+          defaultValue: "Hello, I would like to help with {{title}}.",
+          title: needTitle
+        })
+      });
+      setActiveConversation({ id: conversationId, kind: "need" });
+      setSelectedNeedId(null);
+    } catch {
+      setOpenDetailError(t("chatOpenError", { defaultValue: "We could not open this conversation." }));
     } finally {
       setOpeningConversation(false);
     }
@@ -113,24 +136,31 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
   }
 
   if (selectedNeedId) {
+    if (openDetailError) {
+      return <ErrorState message={openDetailError} onRetry={() => setOpenDetailError(null)} />;
+    }
+
     return (
       <NeedDetailScreen
         needId={selectedNeedId}
         currentAccountId={currentAccountId}
         onOpenCreatorAccount={handleOpenCreatorAccount}
+        onOpenNeedChat={(need) => { void handleOpenNeedChat(need.id, need.title); }}
         onBack={() => setSelectedNeedId(null)}
       />
     );
   }
 
-  if (activeConversationId && currentAccountId) {
+  if (activeConversation && currentAccountId) {
     return (
       <ChatDetailScreen
-        conversationId={activeConversationId}
+        conversationId={activeConversation.id}
+        conversationKind={activeConversation.kind}
         currentAccountId={currentAccountId}
         conversation={null}
-        onBackToList={() => setActiveConversationId(null)}
+        onBackToList={() => setActiveConversation(null)}
         onOpenLinkedResource={(resourceId) => setSelectedResourceId(resourceId)}
+        onOpenLinkedNeed={(needId) => setSelectedNeedId(needId)}
         onOpenLinkedAccount={(accountId) => setSelectedAccountId(accountId)}
       />
     );

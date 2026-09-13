@@ -13,13 +13,14 @@ import {
   type NativeSyntheticEvent
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { Chip, Icon, IconButton, Text } from "react-native-paper";
+import { Button, Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import ChatIcon from "../../assets/img/CHAT.svg";
 
-import { NavigationBackHeader } from "../../components/primitives";
+import { FormTextInput, NavigationBackHeader, ThemedDialog } from "../../components/primitives";
 import { TokenAmount } from "../../components/TokenAmount";
-import { fetchNeedById, type NeedDetailItem } from "../../services/graphql/needs";
-import { NeedIntensity } from "../../services/graphql/generated";
+import { claimNeedById, fetchNeedById, type NeedDetailItem } from "../../services/graphql/needs";
+import { NeedClaimStatus, NeedIntensity } from "../../services/graphql/generated";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -35,6 +36,7 @@ interface NeedDetailScreenProps {
   currentAccountId?: string | null;
   onBack?: () => void;
   onOpenCreatorAccount?: (accountId: string) => void;
+  onOpenNeedChat?: (need: NeedDetailItem) => void;
   onRetry?: () => void;
 }
 
@@ -87,6 +89,7 @@ export function NeedDetailScreen({
   currentAccountId = null,
   onBack,
   onOpenCreatorAccount,
+  onOpenNeedChat,
   onRetry
 }: NeedDetailScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation(["common", "us2"]);
@@ -95,6 +98,12 @@ export function NeedDetailScreen({
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [focusedImageUrl, setFocusedImageUrl] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [claimDialogVisible, setClaimDialogVisible] = useState(false);
+  const [claimMessage, setClaimMessage] = useState("");
+  const [claimSubmitting, setClaimSubmitting] = useState(false);
+  const [claimErrorMessage, setClaimErrorMessage] = useState<string | null>(null);
+  const [claimSuccessVisible, setClaimSuccessVisible] = useState(false);
+  const [submittedClaim, setSubmittedClaim] = useState<NeedDetailItem["ownClaim"]>(null);
   const hasInjectedNeed = need !== undefined;
 
   const loadNeed = useCallback(async (): Promise<void> => {
@@ -102,13 +111,13 @@ export function NeedDetailScreen({
     setRemoteLoading(true);
     setRemoteErrorMessage(null);
     try {
-      setRemoteNeed(await fetchNeedById(needId));
+      setRemoteNeed(await fetchNeedById(needId, currentAccountId));
     } catch {
       setRemoteErrorMessage(t("needLoadError", { ns: "us2", defaultValue: "We could not load this need." }));
     } finally {
       setRemoteLoading(false);
     }
-  }, [hasInjectedNeed, needId, t]);
+  }, [currentAccountId, hasInjectedNeed, needId, t]);
 
   useEffect(() => { void loadNeed(); }, [loadNeed]);
 
@@ -135,6 +144,32 @@ export function NeedDetailScreen({
     setCurrentImageIndex(Math.max(0, Math.min(images.length - 1, page)));
   };
 
+  const handleSubmitClaim = (): void => {
+    setClaimSubmitting(true);
+    setClaimErrorMessage(null);
+
+    void claimNeedById(needId, claimMessage.trim() || null)
+      .then((claim) => {
+        if (!claim) {
+          throw new Error("Need claim was not created");
+        }
+
+        setSubmittedClaim({
+          id: claim.id,
+          message: claimMessage.trim() || null,
+          status: claim.status
+        });
+        setClaimDialogVisible(false);
+        setClaimSuccessVisible(true);
+      })
+      .catch(() => {
+        setClaimErrorMessage(t("claimNeedError", { ns: "us2", defaultValue: "We could not claim this need." }));
+      })
+      .finally(() => {
+        setClaimSubmitting(false);
+      });
+  };
+
   if (resolvedLoading || resolvedErrorMessage || !resolvedNeed) {
     return (
       <View style={styles.stateRoot}>
@@ -156,6 +191,7 @@ export function NeedDetailScreen({
 
   const intensityMeta = intensityTranslation(resolvedNeed.intensity);
   const isViewerOwner = resolvedNeed.creatorAccountId === currentAccountId;
+  const existingClaim = submittedClaim ?? resolvedNeed.ownClaim;
   const requirements = [
     resolvedNeed.objectRequired ? t("needObjectRequiredLabel", { ns: "us2", defaultValue: "Object required" }) : null,
     resolvedNeed.competenceRequired ? t("needCompetenceRequiredLabel", { ns: "us2", defaultValue: "Competence required" }) : null,
@@ -188,13 +224,38 @@ export function NeedDetailScreen({
         ) : null}
 
         <DetailField title={t("broughtByLabel", { defaultValue: "Brought by" })} titleOnOwnLine>
-          <Pressable
-            disabled={!onOpenCreatorAccount}
-            accessibilityRole={onOpenCreatorAccount ? "button" : undefined}
-            onPress={() => onOpenCreatorAccount?.(resolvedNeed.creatorAccountId)}
-          >
-            <Text variant="bodyMedium" style={styles.creatorNameText}>{resolvedNeed.creatorDisplayName}</Text>
-          </Pressable>
+          <View style={styles.creatorRow}>
+            <Pressable
+              disabled={!onOpenCreatorAccount}
+              accessibilityRole={onOpenCreatorAccount ? "button" : undefined}
+              onPress={() => onOpenCreatorAccount?.(resolvedNeed.creatorAccountId)}
+              style={styles.creatorNameZone}
+            >
+              <Text variant="bodyMedium" style={styles.creatorNameText}>{resolvedNeed.creatorDisplayName}</Text>
+            </Pressable>
+            {!isViewerOwner && currentAccountId && onOpenNeedChat ? (
+              <IconButton
+                icon={() => <ChatIcon width={26} height={26} />}
+                size={22}
+                onPress={() => onOpenNeedChat(resolvedNeed)}
+                accessibilityLabel={t("chatLabel", { defaultValue: "Chat" })}
+              />
+            ) : null}
+            {!isViewerOwner && currentAccountId ? (
+              <IconButton
+                icon="hand-front-right"
+                size={26}
+                onPress={() => {
+                  setClaimMessage(existingClaim?.message ?? "");
+                  setClaimErrorMessage(null);
+                  setClaimDialogVisible(true);
+                }}
+                accessibilityLabel={existingClaim?.status === NeedClaimStatus.Open
+                  ? t("updateClaimNoteLabel", { ns: "us2", defaultValue: "Update claim note" })
+                  : t("claimNeedLabel", { ns: "us2", defaultValue: "Claim need" })}
+              />
+            ) : null}
+          </View>
         </DetailField>
 
         <View style={styles.hr} />
@@ -284,6 +345,53 @@ export function NeedDetailScreen({
           {focusedImageUrl ? <Image source={{ uri: focusedImageUrl }} style={styles.focusedImage} resizeMode="contain" /> : null}
         </View>
       </Modal>
+
+      <ThemedDialog
+        visible={claimDialogVisible}
+        title={existingClaim
+          ? t("updateClaimDialogTitle", { ns: "us2", defaultValue: "Update your claim" })
+          : t("claimDialogTitle", { ns: "us2", defaultValue: "Claim this need" })}
+        onDismiss={() => {
+          if (!claimSubmitting) setClaimDialogVisible(false);
+        }}
+        content={(
+          <View style={styles.claimDialogContent}>
+            <Text variant="bodyMedium">
+              {t("claimDialogHint", {
+                ns: "us2",
+                defaultValue: "You are claiming {{title}}. Add an optional note for its creator.",
+                title: resolvedNeed.title
+              })}
+            </Text>
+            <FormTextInput
+              label={t("claimDialogOptionalMessage", { ns: "us2", defaultValue: "Optional message" })}
+              placeholder={t("claimDialogPlaceholder", { ns: "us2", defaultValue: "Explain how you can help" })}
+              value={claimMessage}
+              onChangeText={(value) => {
+                setClaimMessage(value);
+                setClaimErrorMessage(null);
+              }}
+              multiline
+            />
+            {claimErrorMessage ? <Text style={styles.claimErrorText}>{claimErrorMessage}</Text> : null}
+          </View>
+        )}
+        actions={[
+          <Button key="cancel" onPress={() => setClaimDialogVisible(false)} disabled={claimSubmitting}>
+            {t("cancelLabel", { ns: "common", defaultValue: "Cancel" })}
+          </Button>,
+          <Button key="submit" mode="contained" onPress={handleSubmitClaim} loading={claimSubmitting} disabled={claimSubmitting}>
+            {existingClaim
+              ? t("claimDialogSave", { ns: "us2", defaultValue: "Save claim" })
+              : t("claimDialogSubmit", { ns: "us2", defaultValue: "Submit claim" })}
+          </Button>
+        ]}
+        testID="need-claim-dialog"
+      />
+
+      <Snackbar visible={claimSuccessVisible} onDismiss={() => setClaimSuccessVisible(false)}>
+        {t("claimSuccessMessage", { ns: "us2", defaultValue: "Your claim has been submitted." })}
+      </Snackbar>
     </ScrollView>
   );
 }
@@ -298,6 +406,8 @@ const styles = StyleSheet.create({
   galleryFrame: { position: "relative" },
   gallerySlide: { alignItems: "center", justifyContent: "center" },
   needImage: { borderRadius: IMAGE_BORDER_RADIUS, backgroundColor: "#ffffff" },
+  creatorRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  creatorNameZone: { flex: 1 },
   creatorNameText: { color: designTokens.colors.primary, textDecorationLine: "underline", fontFamily: appFontFamilies.general },
   hr: { height: 2, backgroundColor: designTokens.colors.primaryContainer },
   fieldOwnLine: { gap: 6 },
@@ -314,6 +424,8 @@ const styles = StyleSheet.create({
   imageDot: { width: 7, height: 7, borderRadius: 999, backgroundColor: "#d9d9d9" },
   imageDotActive: { backgroundColor: designTokens.colors.primary },
   publishedText: { alignSelf: "flex-end", color: designTokens.colors.primary, fontFamily: appFontFamilies.general },
+  claimDialogContent: { gap: designTokens.spacing.md, paddingTop: designTokens.spacing.sm },
+  claimErrorText: { color: "#d32f2f", fontFamily: appFontFamilies.general },
   focusedImageOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.9)", justifyContent: "center", alignItems: "center", padding: 12 },
   closeFocusedImageButton: { position: "absolute", right: 12, top: 40 },
   focusedImage: { width: "100%", height: "78%" }

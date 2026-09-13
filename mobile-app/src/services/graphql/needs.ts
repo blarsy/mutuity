@@ -64,6 +64,11 @@ export interface NeedDetailItem extends NeedItem {
   creatorAccountId: string;
   creatorDisplayName: string;
   creatorAvatarUrl: string | null;
+  ownClaim: {
+    id: string;
+    message: string | null;
+    status: NeedClaimStatus;
+  } | null;
 }
 
 export interface DeleteNeedResult {
@@ -354,7 +359,7 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
   });
 }
 
-export async function fetchNeedById(needId: string): Promise<NeedDetailItem | null> {
+export async function fetchNeedById(needId: string, currentAccountId: string | null = null): Promise<NeedDetailItem | null> {
   const { data } = await apolloClient.query<Pick<Query, "needById">, { id: string }>({
     query: NEED_BY_ID_QUERY,
     variables: { id: needId },
@@ -366,7 +371,7 @@ export async function fetchNeedById(needId: string): Promise<NeedDetailItem | nu
     return null;
   }
 
-  const normalizedNeed = normalizeNeed(need as Need, null);
+  const normalizedNeed = normalizeNeed(need as Need, currentAccountId);
   if (!normalizedNeed?.creatorAccountId) {
     return null;
   }
@@ -377,6 +382,17 @@ export async function fetchNeedById(needId: string): Promise<NeedDetailItem | nu
     creatorDisplayName: normalizedNeed.creatorDisplayName?.trim() || "Unknown account",
     creatorAvatarUrl: typeof need.accountByCreatorAccountId?.avatarUrl === "string"
       ? need.accountByCreatorAccountId.avatarUrl
+      : null,
+    ownClaim: currentAccountId
+      ? (need.needClaimsByNeedId?.nodes ?? []).flatMap((claim) => (
+          claim.claimerAccountId === currentAccountId && claim.id
+            ? [{
+                id: String(claim.id),
+                message: typeof claim.message === "string" ? claim.message : null,
+                status: claim.status
+              }]
+            : []
+        ))[0] ?? null
       : null
   };
 }

@@ -20,6 +20,7 @@ import {
   RESOURCE_CONVERSATION_LOOKUP_QUERY,
   RESOURCE_CONVERSATION_BY_ID_QUERY,
   RESOURCE_MESSAGES_QUERY,
+  SEND_NEED_MESSAGE_MUTATION,
   SEND_RESOURCE_MESSAGE_DIRECT_MUTATION
 } from "./operations";
 import type { ChatConversationItem } from "../../screens/chat/ChatListScreen";
@@ -119,6 +120,41 @@ interface SendResourceMessageDirectMutationResult {
       id: string;
     } | null;
   } | null;
+}
+
+interface SendNeedMessageMutationResult {
+  sendNeedMessage: {
+    claimMessage: {
+      id: string;
+      conversationId: string;
+    } | null;
+  } | null;
+}
+
+export async function openOrCreateNeedConversation(input: {
+  needId: string;
+  initialMessage: string;
+}): Promise<string> {
+  const { data } = await apolloClient.mutate<
+    SendNeedMessageMutationResult,
+    { input: { pNeedId: string; pBody: string; pImageUrls: string[] } }
+  >({
+    mutation: SEND_NEED_MESSAGE_MUTATION,
+    variables: {
+      input: {
+        pNeedId: input.needId,
+        pBody: input.initialMessage,
+        pImageUrls: []
+      }
+    }
+  });
+
+  const conversationId = data?.sendNeedMessage?.claimMessage?.conversationId;
+  if (!conversationId) {
+    throw new Error("Need conversation was not created");
+  }
+
+  return conversationId;
 }
 
 export async function fetchChatConversations(): Promise<ChatConversationItem[]> {

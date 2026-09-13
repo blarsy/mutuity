@@ -666,6 +666,7 @@ function ChatScreen({
         needId={openedNeedId}
         currentAccountId={accountId}
         onOpenCreatorAccount={(creatorAccountId) => setOpenedAccountId(creatorAccountId)}
+        onOpenNeedChat={() => setOpenedNeedId(null)}
         onBack={() => setOpenedNeedId(null)}
       />
     );

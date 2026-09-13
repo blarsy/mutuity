@@ -321,6 +321,14 @@ export const NEED_BY_ID_QUERY = gql`
         displayName
         avatarUrl
       }
+      needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
+        nodes {
+          id
+          claimerAccountId
+          message
+          status
+        }
+      }
     }
   }
 `;
@@ -368,6 +376,20 @@ export const CLAIM_NEED_MUTATION = gql`
         needId
         claimerAccountId
         status
+      }
+    }
+  }
+`;
+
+export const SEND_NEED_MESSAGE_MUTATION = gql`
+  mutation SendNeedMessage($input: SendNeedMessageInput!) {
+    sendNeedMessage(input: $input) {
+      claimMessage {
+        id
+        conversationId
+        senderAccountId
+        body
+        createdAt
       }
     }
   }
