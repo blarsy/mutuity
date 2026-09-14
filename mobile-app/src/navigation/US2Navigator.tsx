@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
+import { ChatDetailScreen, type ChatDetailConversation } from "../screens/chat/ChatDetailScreen";
 import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen";
 import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScreen";
 import type { SearchResourceItem } from "../screens/resources/SearchResourcesScreen";
@@ -10,10 +10,19 @@ import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
 import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
 import { ErrorState } from "../components/state/ErrorState";
 import { LoadingState } from "../components/state/LoadingState";
-import { openOrCreateNeedConversation, openOrCreateResourceConversation } from "../services/graphql/chat";
+import {
+  findNeedConversation,
+  findResourceConversation,
+  startNeedConversation,
+  startResourceConversation
+} from "../services/graphql/chat";
 import type { ResourceDetailItem } from "../services/graphql/resources";
+import type { NeedDetailItem } from "../services/graphql/needs";
 
 type ExploreSurface = "resources" | "needs";
+type ActiveConversation =
+  | { id: string; kind: "resource" | "need" }
+  | { id: null; kind: "resource" | "need"; draft: ChatDetailConversation };
 
 export interface US2ExploreScreenProps {
   currentAccountId: string | null;
@@ -25,7 +34,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [selectedNeedId, setSelectedNeedId] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const [activeConversation, setActiveConversation] = useState<{ id: string; kind: "resource" | "need" } | null>(null);
+  const [activeConversation, setActiveConversation] = useState<ActiveConversation | null>(null);
   const [openingConversation, setOpeningConversation] = useState(false);
   const [openDetailError, setOpenDetailError] = useState<string | null>(null);
 
@@ -57,16 +66,27 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     setOpenDetailError(null);
 
     try {
-      const conversationId = await openOrCreateResourceConversation({
+      const conversationId = await findResourceConversation({
         resourceId: resource.id,
         ownerAccountId: resource.creatorAccountId,
-        bidderAccountId: currentAccountId,
-        initialMessage: t("resourceChatInitialMessage", {
-          defaultValue: "Hello, I am interested in {{title}}.",
-          title: resource.title
-        })
+        bidderAccountId: currentAccountId
       });
-      setActiveConversation({ id: conversationId, kind: "resource" });
+      setSelectedResourceId(null);
+      setActiveConversation(conversationId
+        ? { id: conversationId, kind: "resource" }
+        : {
+            id: null,
+            kind: "resource",
+            draft: {
+              id: "draft-resource",
+              otherAccountId: resource.creatorAccountId,
+              otherAccountDisplayName: resource.creatorDisplayName,
+              otherAccountAvatarUrl: resource.creatorAvatarUrl,
+              linkedResourceId: resource.id,
+              linkedResourceTitle: resource.title,
+              linkedResourceImageUrl: resource.imageUrls[0] ?? null
+            }
+          });
     } catch {
       setOpenDetailError(
         t("chatOpenError", { defaultValue: "We could not open this conversation." })
@@ -76,22 +96,33 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     }
   };
 
-  const handleOpenNeedChat = async (needId: string, needTitle: string): Promise<void> => {
+  const handleOpenNeedChat = async (need: NeedDetailItem): Promise<void> => {
     if (!currentAccountId) return;
 
     setOpeningConversation(true);
     setOpenDetailError(null);
     try {
-      const conversationId = await openOrCreateNeedConversation({
-        needId,
-        initialMessage: t("needChatInitialMessage", {
-          ns: "us2",
-          defaultValue: "Hello, I would like to help with {{title}}.",
-          title: needTitle
-        })
+      const conversationId = await findNeedConversation({
+        needId: need.id,
+        creatorAccountId: need.creatorAccountId,
+        claimerAccountId: currentAccountId
       });
-      setActiveConversation({ id: conversationId, kind: "need" });
       setSelectedNeedId(null);
+      setActiveConversation(conversationId
+        ? { id: conversationId, kind: "need" }
+        : {
+            id: null,
+            kind: "need",
+            draft: {
+              id: "draft-need",
+              otherAccountId: need.creatorAccountId,
+              otherAccountDisplayName: need.creatorDisplayName,
+              otherAccountAvatarUrl: need.creatorAvatarUrl,
+              linkedResourceId: need.id,
+              linkedResourceTitle: need.title,
+              linkedResourceImageUrl: need.imageUrls?.[0] ?? null
+            }
+          });
     } catch {
       setOpenDetailError(t("chatOpenError", { defaultValue: "We could not open this conversation." }));
     } finally {
@@ -145,23 +176,42 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
         needId={selectedNeedId}
         currentAccountId={currentAccountId}
         onOpenCreatorAccount={handleOpenCreatorAccount}
-        onOpenNeedChat={(need) => { void handleOpenNeedChat(need.id, need.title); }}
+        onOpenNeedChat={(need) => { void handleOpenNeedChat(need); }}
         onBack={() => setSelectedNeedId(null)}
       />
     );
   }
 
   if (activeConversation && currentAccountId) {
+    const draft = activeConversation.id === null ? activeConversation.draft : null;
+
     return (
       <ChatDetailScreen
         conversationId={activeConversation.id}
         conversationKind={activeConversation.kind}
         currentAccountId={currentAccountId}
-        conversation={null}
+        conversation={draft}
         onBackToList={() => setActiveConversation(null)}
         onOpenLinkedResource={(resourceId) => setSelectedResourceId(resourceId)}
         onOpenLinkedNeed={(needId) => setSelectedNeedId(needId)}
         onOpenLinkedAccount={(accountId) => setSelectedAccountId(accountId)}
+        {...(draft ? {
+          onSendMessage: async (messageText: string, imageUri?: string | null) => {
+            const conversationId = activeConversation.kind === "resource"
+              ? await startResourceConversation({
+                  resourceId: draft.linkedResourceId!,
+                  otherAccountId: draft.otherAccountId!,
+                  messageText,
+                  ...(imageUri ? { imageUrl: imageUri } : {})
+                })
+              : await startNeedConversation({
+                  needId: draft.linkedResourceId!,
+                  messageText,
+                  ...(imageUri ? { imageUrl: imageUri } : {})
+                });
+            setActiveConversation({ id: conversationId, kind: activeConversation.kind });
+          }
+        } : {})}
       />
     );
   }

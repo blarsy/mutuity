@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../../features/auth/AuthProvider";
 import { CLAIM_CONVERSATION_LOOKUP_QUERY } from "../../features/chat/chat.queries";
-import { StartConversationDialog } from "../../features/chat/StartConversationDialog";
+import { StartConversationButton } from "../../features/chat/StartConversationDialog";
 import { buildNeedContactLoginHref, shouldShowNeedContactCta } from "../../features/needs/needCta";
 import {
   buildNeedPageMeta,
@@ -80,7 +80,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
     needDescription: need?.description
   });
 
-  const { data: conversationData } = useQuery<ClaimConversationLookupData>(CLAIM_CONVERSATION_LOOKUP_QUERY, {
+  const { data: conversationData, loading: conversationLoading } = useQuery<ClaimConversationLookupData>(CLAIM_CONVERSATION_LOOKUP_QUERY, {
     skip: !need || !session.authenticated || !session.account?.id || need.creatorAccountId === session.account.id,
     variables: {
       needId,
@@ -135,11 +135,13 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
                   viewerAccountId: session.account?.id,
                   creatorAccountId: need.creatorAccountId
                 }) && session.authenticated ? (
-                  <StartConversationDialog
+                  <StartConversationButton
                     buttonLabel={t("page.contactCreator")}
+                    contextId={need.id}
                     existingConversationId={existingConversationId}
                     kind="need"
-                    needId={need.id}
+                    lookupLoading={conversationLoading}
+                    otherAccountId={need.creatorAccountId}
                     title={need.title}
                   />
                 ) : !session.authenticated ? (

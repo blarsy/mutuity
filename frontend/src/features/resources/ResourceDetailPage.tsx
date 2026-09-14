@@ -25,7 +25,7 @@ import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMe
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { IntensityDisplay } from "../../components/IntensityPicker";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
-import { StartConversationDialog } from "../chat/StartConversationDialog";
+import { StartConversationButton } from "../chat/StartConversationDialog";
 import { ResourceBidDialog } from "./ResourceBidDialog";
 import { RESOURCE_BIDS_FOR_RESOURCE_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY, RESOURCE_DETAIL_QUERY } from "./resources.queries";
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
@@ -66,7 +66,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
     variables: { resourceId }
   });
   const { data: categoryData } = useQuery<ResourceCategoryOptionsQuery>(RESOURCE_CATEGORY_OPTIONS_QUERY);
-  const { data: conversationData } = useQuery<ResourceConversationLookupQuery>(RESOURCE_CONVERSATION_LOOKUP_QUERY, {
+  const { data: conversationData, loading: conversationLoading } = useQuery<ResourceConversationLookupQuery>(RESOURCE_CONVERSATION_LOOKUP_QUERY, {
     skip: !resource || !currentAccountId || !resource.creatorAccountId || resource.creatorAccountId === currentAccountId,
     variables: {
       resourceId,
@@ -168,14 +168,15 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
 
           {session.authenticated && !isCreator ? (
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-              <StartConversationDialog
+              <StartConversationButton
                 buttonLabel={t("detail.chat")}
-                creatorAccountId={resource.creatorAccountId}
+                contextId={resource.id}
                 disabled={!resource.isActive || isExpired}
                 disabledReason={!resource.isActive || isExpired ? t("detail.notAcceptingBids") : null}
                 existingConversationId={existingConversationId}
                 kind="resource"
-                resourceId={resource.id}
+                lookupLoading={conversationLoading}
+                otherAccountId={resource.creatorAccountId}
                 title={resource.title}
               />
               <ResourceBidDialog

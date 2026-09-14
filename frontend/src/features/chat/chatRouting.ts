@@ -54,11 +54,13 @@ export function conversationDraftResourceUrl(params: {
 
 export function conversationDraftNeedUrl(params: {
   needId: string;
+  otherAccountId: string;
   title?: string | null;
 }): string {
   return conversationDraftUrl({
     kind: "need",
     contextId: params.needId,
+    otherAccountId: params.otherAccountId,
     title: params.title
   });
 }

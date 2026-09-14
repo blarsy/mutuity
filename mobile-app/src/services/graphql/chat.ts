@@ -7,6 +7,7 @@ import {
   type QueryResourceConversationByIdArgs
 } from "./generated";
 import {
+  CLAIM_CONVERSATION_LOOKUP_QUERY,
   CLAIM_CONVERSATION_BY_ID_QUERY,
   CLAIM_MESSAGES_QUERY,
   CHAT_CONVERSATIONS_QUERY,
@@ -110,6 +111,12 @@ interface ResourceConversationLookupQueryResult {
   } | null;
 }
 
+interface ClaimConversationLookupQueryResult {
+  claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId: {
+    id: string;
+  } | null;
+}
+
 interface SendResourceMessageDirectMutationResult {
   sendResourceMessageDirect: {
     resourceMessage: {
@@ -131,20 +138,39 @@ interface SendNeedMessageMutationResult {
   } | null;
 }
 
-export async function openOrCreateNeedConversation(input: {
+export async function findNeedConversation(input: {
   needId: string;
-  initialMessage: string;
-}): Promise<string> {
-  const { data } = await apolloClient.mutate<
-    SendNeedMessageMutationResult,
-    { input: { pNeedId: string; pBody: string; pImageUrls: string[] } }
+  creatorAccountId: string;
+  claimerAccountId: string;
+}): Promise<string | null> {
+  const { data } = await apolloClient.query<
+    ClaimConversationLookupQueryResult,
+    { needId: string; creatorAccountId: string; claimerAccountId: string }
   >({
+    query: CLAIM_CONVERSATION_LOOKUP_QUERY,
+    variables: {
+      needId: input.needId,
+      creatorAccountId: input.creatorAccountId,
+      claimerAccountId: input.claimerAccountId
+    },
+    fetchPolicy: "network-only"
+  });
+
+  return data?.claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId?.id ?? null;
+}
+
+export async function startNeedConversation(input: {
+  needId: string;
+  messageText: string;
+  imageUrl?: string | null;
+}): Promise<string> {
+  const { data } = await apolloClient.mutate<SendNeedMessageMutationResult>({
     mutation: SEND_NEED_MESSAGE_MUTATION,
     variables: {
       input: {
         pNeedId: input.needId,
-        pBody: input.initialMessage,
-        pImageUrls: []
+        pBody: input.messageText.trim(),
+        pImageUrls: input.imageUrl ? [input.imageUrl] : []
       }
     }
   });
@@ -407,12 +433,11 @@ export async function markConversationMessagesRead(
   return result.data?.markResourceMessagesRead?.integer ?? 0;
 }
 
-export async function openOrCreateResourceConversation(params: {
+export async function findResourceConversation(params: {
   resourceId: string;
   ownerAccountId: string;
   bidderAccountId: string;
-  initialMessage?: string;
-}): Promise<string> {
+}): Promise<string | null> {
   const lookupResult = await apolloClient.query<
     ResourceConversationLookupQueryResult,
     { resourceId: string; ownerAccountId: string; bidderAccountId: string }
@@ -426,22 +451,26 @@ export async function openOrCreateResourceConversation(params: {
     fetchPolicy: "network-only"
   });
 
-  const existingConversationId =
-    lookupResult.data?.resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId?.id;
-  if (existingConversationId) {
-    return existingConversationId;
-  }
+  return lookupResult.data?.resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId?.id ?? null;
+}
 
+export async function startResourceConversation(params: {
+  resourceId: string;
+  otherAccountId: string;
+  messageText: string;
+  imageUrl?: string | null;
+}): Promise<string> {
   const createResult = await apolloClient.mutate<
     SendResourceMessageDirectMutationResult,
-    { input: { pResourceId: string; pOtherAccountId: string; pBody: string } }
+    { input: { pResourceId: string; pOtherAccountId: string; pBody: string; pImageUrls: string[] } }
   >({
     mutation: SEND_RESOURCE_MESSAGE_DIRECT_MUTATION,
     variables: {
       input: {
         pResourceId: params.resourceId,
-        pOtherAccountId: params.ownerAccountId,
-        pBody: params.initialMessage?.trim() || "Hello"
+        pOtherAccountId: params.otherAccountId,
+        pBody: params.messageText.trim(),
+        pImageUrls: params.imageUrl ? [params.imageUrl] : []
       }
     }
   });

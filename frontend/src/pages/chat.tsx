@@ -34,11 +34,11 @@ export default function ChatPage() {
           otherAccountId: draftOtherAccountId,
           title: draftTitle
         }
-      : isDraft && selectedKind === "need" && draftContextId
+      : isDraft && selectedKind === "need" && draftContextId && draftOtherAccountId
         ? {
             kind: "need" as const,
             contextId: draftContextId,
-            otherAccountId: null,
+        otherAccountId: draftOtherAccountId,
             title: draftTitle
           }
       : null;

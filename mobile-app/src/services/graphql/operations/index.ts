@@ -797,6 +797,18 @@ export const CLAIM_CONVERSATION_BY_ID_QUERY = gql`
   }
 `;
 
+export const CLAIM_CONVERSATION_LOOKUP_QUERY = gql`
+  query ClaimConversationLookup($needId: UUID!, $creatorAccountId: UUID!, $claimerAccountId: UUID!) {
+    claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId(
+      needId: $needId
+      creatorAccountId: $creatorAccountId
+      claimerAccountId: $claimerAccountId
+    ) {
+      id
+    }
+  }
+`;
+
 export const RESOURCE_CONVERSATION_LOOKUP_QUERY = gql`
   query ResourceConversationLookup($resourceId: UUID!, $ownerAccountId: UUID!, $bidderAccountId: UUID!) {
     resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId(

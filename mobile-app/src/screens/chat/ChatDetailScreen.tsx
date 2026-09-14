@@ -61,7 +61,7 @@ export interface ChatDetailScreenProps {
   onOpenLinkedResource?: (resourceId: string) => void;
   onOpenLinkedNeed?: (needId: string) => void;
   onOpenLinkedAccount?: (accountId: string) => void;
-  onSendMessage?: (messageText: string, imageUri?: string | null) => void;
+  onSendMessage?: (messageText: string, imageUri?: string | null) => void | Promise<void>;
   onMessagesRead?: () => void;
 }
 
@@ -237,14 +237,7 @@ export function ChatDetailScreen({
 
     const messageBody = trimmedValue || t("chatImageMessageFallback", { defaultValue: "\uD83D\uDCF7 Photo" });
 
-    if (onSendMessage) {
-      onSendMessage(messageBody, pendingImageUri);
-      setComposerValue("");
-      setPendingImageUri(null);
-      return;
-    }
-
-    if (!conversationId || !currentAccountId) {
+    if ((!onSendMessage && !conversationId) || !currentAccountId) {
       return;
     }
 
@@ -262,10 +255,20 @@ export function ChatDetailScreen({
     setPendingImageUri(null);
     setRemoteSending(true);
 
-    const sendMessage = conversationKind === "need" ? sendClaimMessage : sendResourceMessage;
-    void sendMessage(conversationId, currentAccountId, messageBody, pendingImageUri)
+    const sendPromise = onSendMessage
+      ? Promise.resolve(onSendMessage(messageBody, pendingImageUri))
+      : (conversationKind === "need" ? sendClaimMessage : sendResourceMessage)(
+          conversationId!,
+          currentAccountId,
+          messageBody,
+          pendingImageUri
+        );
+
+    void sendPromise
       .then((sentMessage) => {
-        setRemoteMessages((previous) => previous.map((message) => (message.id === optimisticId ? sentMessage : message)));
+        if (sentMessage) {
+          setRemoteMessages((previous) => previous.map((message) => (message.id === optimisticId ? sentMessage : message)));
+        }
       })
       .catch(() => {
         setRemoteMessages((previous) => previous.filter((message) => message.id !== optimisticId));

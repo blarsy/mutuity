@@ -1,9 +1,18 @@
-import { conversationContextUrl, conversationThreadUrl } from "../../src/features/chat/chatRouting";
+import { conversationContextUrl, conversationDraftUrl, conversationThreadUrl } from "../../src/features/chat/chatRouting";
 
 describe("chat conversation routing", () => {
   it("builds the thread URL with kind and conversationId as query params", () => {
     expect(conversationThreadUrl("need", "conv-111")).toBe("/chat?kind=need&id=conv-111");
     expect(conversationThreadUrl("resource", "conv-222")).toBe("/chat?kind=resource&id=conv-222");
+  });
+
+  it("preserves the listing and other account in an unpersisted draft URL", () => {
+    expect(conversationDraftUrl({
+      kind: "need",
+      contextId: "need-111",
+      otherAccountId: "account-222",
+      title: "A lift to town"
+    })).toBe("/chat?kind=need&draft=1&contextId=need-111&otherAccountId=account-222&title=A+lift+to+town");
   });
 
   it("builds the context entity URL for navigation back from a conversation header", () => {
