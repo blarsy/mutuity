@@ -1,34 +1,4 @@
-create or replace function app_private.create_resource_bid_notification(
-  p_recipient_account_id uuid,
-  p_resource_bid_id uuid,
-  p_event_type text,
-  p_payload jsonb default '{}'::jsonb
-)
-returns app_public.resource_bid_notification
-language plpgsql
-security definer
-set search_path = app_public, app_private, public
-as $$
-declare
-  v_notification app_public.resource_bid_notification;
-begin
-  insert into app_public.resource_bid_notification (
-    recipient_account_id,
-    resource_bid_id,
-    event_type,
-    payload
-  )
-  values (
-    p_recipient_account_id,
-    p_resource_bid_id,
-    p_event_type,
-    coalesce(p_payload, '{}'::jsonb)
-  )
-  returning * into v_notification;
-
-  return v_notification;
-end;
-$$;
+begin;
 
 drop function if exists app_public.create_resource_bid(uuid, text, integer);
 
@@ -211,4 +181,7 @@ begin
 end;
 $$;
 
-comment on function app_public.create_resource_bid(uuid, text, integer, integer) is '@name submitResourceBid';
+comment on function app_public.create_resource_bid(uuid, text, integer, integer)
+  is '@name submitResourceBid';
+
+commit;

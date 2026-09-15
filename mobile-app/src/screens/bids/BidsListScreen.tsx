@@ -377,7 +377,8 @@ export function BidsListScreen({
                     <Button
                       compact
                       mode="outlined"
-                      textColor="#B00020"
+                      buttonColor="#fef0e3"
+                      textColor="#111111"
                       onPress={(event) => {
                         event.stopPropagation();
                         void runBidAction(bid, onCancelBid);
@@ -394,8 +395,9 @@ export function BidsListScreen({
                       <Button
                         compact
                         mode="contained"
-                        buttonColor="#2e7d32"
-                        onPress={(event) => {
+                          buttonColor="#fef0e3"
+                          textColor="#111111"
+                          onPress={(event) => {
                           event.stopPropagation();
                           void runBidAction(bid, onAcceptBid);
                         }}
@@ -407,7 +409,8 @@ export function BidsListScreen({
                       <Button
                         compact
                         mode="outlined"
-                        textColor="#B00020"
+                        buttonColor="#fef0e3"
+                        textColor="#111111"
                         onPress={(event) => {
                           event.stopPropagation();
                           void runBidAction(bid, onDeclineBid);

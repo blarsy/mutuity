@@ -2369,6 +2369,29 @@ export type CleanupReadNotificationsPayload = {
   query: Maybe<Query>;
 };
 
+/** All input for the `confirmAccountEmailChange` mutation. */
+export type ConfirmAccountEmailChangeInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  token?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `confirmAccountEmailChange` mutation. */
+export type ConfirmAccountEmailChangePayload = {
+  __typename: 'ConfirmAccountEmailChangePayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** All input for the `confirmEmailVerification` mutation. */
 export type ConfirmEmailVerificationInput = {
   /**
@@ -6034,6 +6057,7 @@ export type Mutation = {
   claimNeed: Maybe<ClaimNeedPayload>;
   cleanupOperationalLogs: Maybe<CleanupOperationalLogsPayload>;
   cleanupReadNotifications: Maybe<CleanupReadNotificationsPayload>;
+  confirmAccountEmailChange: Maybe<ConfirmAccountEmailChangePayload>;
   confirmEmailVerification: Maybe<ConfirmEmailVerificationPayload>;
   confirmPasswordReset: Maybe<ConfirmPasswordResetPayload>;
   confirmPasswordResetWithPassword: Maybe<ConfirmPasswordResetWithPasswordPayload>;
@@ -6256,6 +6280,7 @@ export type Mutation = {
   registerLocalAccountWithSocialIdentity: Maybe<RegisterLocalAccountWithSocialIdentityPayload>;
   rejectCampaignNeed: Maybe<RejectCampaignNeedPayload>;
   rejectCampaignResource: Maybe<RejectCampaignResourcePayload>;
+  requestAccountEmailChange: Maybe<RequestAccountEmailChangePayload>;
   requestEmailVerification: Maybe<RequestEmailVerificationPayload>;
   requestPasswordReset: Maybe<RequestPasswordResetPayload>;
   respondToResourceBid: Maybe<RespondToResourceBidPayload>;
@@ -6514,6 +6539,12 @@ export type MutationCleanupOperationalLogsArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCleanupReadNotificationsArgs = {
   input: CleanupReadNotificationsInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationConfirmAccountEmailChangeArgs = {
+  input: ConfirmAccountEmailChangeInput;
 };
 
 
@@ -7246,6 +7277,12 @@ export type MutationRejectCampaignNeedArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationRejectCampaignResourceArgs = {
   input: RejectCampaignResourceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationRequestAccountEmailChangeArgs = {
+  input: RequestAccountEmailChangeInput;
 };
 
 
@@ -8619,6 +8656,7 @@ export type Query = Node & {
   countChatConversations: Maybe<Scalars['Int']['output']>;
   countUnreadChatConversations: Maybe<Scalars['Int']['output']>;
   countUnreadNotifications: Maybe<Scalars['Int']['output']>;
+  currentAccountEmail: Maybe<Scalars['String']['output']>;
   currentTokenBalance: Maybe<Scalars['Int']['output']>;
   getGrantForClaim: Maybe<GetGrantForClaimConnection>;
   getOperationalLogRetentionDays: Maybe<Scalars['Int']['output']>;
@@ -9970,6 +10008,31 @@ export type RejectCampaignResourcePayload = {
 /** The output of our `rejectCampaignResource` mutation. */
 export type RejectCampaignResourcePayloadCampaignResourceEdgeArgs = {
   orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
+};
+
+/** All input for the `requestAccountEmailChange` mutation. */
+export type RequestAccountEmailChangeInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  newIdentifier?: InputMaybe<Scalars['String']['input']>;
+  throttleMs?: InputMaybe<Scalars['BigInt']['input']>;
+  verificationTtlMs?: InputMaybe<Scalars['BigInt']['input']>;
+};
+
+/** The output of our `requestAccountEmailChange` mutation. */
+export type RequestAccountEmailChangePayload = {
+  __typename: 'RequestAccountEmailChangePayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
 };
 
 /** All input for the `requestEmailVerification` mutation. */
