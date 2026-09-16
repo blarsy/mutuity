@@ -32,6 +32,8 @@ import { designTokens } from "../../theme/tokens";
 export interface EditResourceScreenProps {
   creatorAccountId: string | null;
   initialResource: MyResourceItem | null;
+  categories?: ResourceCategoryItem[];
+  campaigns?: LinkableCampaignItem[];
   onBack: () => void;
   onSaved: () => void;
 }
@@ -39,6 +41,8 @@ export interface EditResourceScreenProps {
 export function EditResourceScreen({
   creatorAccountId,
   initialResource,
+  categories: injectedCategories,
+  campaigns: injectedCampaigns,
   onBack,
   onSaved
 }: EditResourceScreenProps): React.JSX.Element {
@@ -49,12 +53,12 @@ export function EditResourceScreen({
   const [tokenAmount, setTokenAmount] = useState(initialResource?.defaultTokenAmount ?? 0);
   const [imageUrls, setImageUrls] = useState<string[]>(initialResource?.imageUrls ?? []);
   const [description, setDescription] = useState(initialResource?.description ?? "");
-  const [categories, setCategories] = useState<ResourceCategoryItem[]>([]);
+  const [categories, setCategories] = useState<ResourceCategoryItem[]>(injectedCategories ?? []);
   const [selectedCategoryCodes, setSelectedCategoryCodes] = useState<string[]>(
     initialResource?.categoryCodes.map(String) ?? []
   );
   const [showCategoriesDialog, setShowCategoriesDialog] = useState(false);
-  const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>([]);
+  const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>(injectedCampaigns ?? []);
   const [campaignId, setCampaignId] = useState(initialResource?.campaignId ?? "");
   const [showCampaignDialog, setShowCampaignDialog] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
@@ -92,6 +96,10 @@ export function EditResourceScreen({
   );
 
   useEffect(() => {
+    if (injectedCategories !== undefined) {
+      return;
+    }
+
     let isMounted = true;
 
     void fetchResourceCategories()
@@ -109,15 +117,19 @@ export function EditResourceScreen({
     return () => {
       isMounted = false;
     };
-  }, [t]);
+  }, [injectedCategories, t]);
 
   useEffect(() => {
+    if (injectedCampaigns !== undefined) {
+      return;
+    }
+
     void fetchLinkableCampaigns()
       .then(setCampaigns)
       .catch(() => {
         setSnackbarMessage(t("campaignsLoadError", { defaultValue: "We could not load campaigns." }));
       });
-  }, [t]);
+  }, [injectedCampaigns, t]);
 
   const validationErrors = useMemo(() => {
     const errors: string[] = [];

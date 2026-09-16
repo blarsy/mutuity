@@ -58,11 +58,12 @@ function hydrateState(preferences: NotificationPreferenceRecord[]): Record<Categ
 
 export interface MyPreferencesScreenProps {
   accountId?: string | null;
+  preferences?: NotificationPreferenceRecord[];
   onBack?: () => void;
   onOpenDrawer?: () => void;
 }
 
-export function MyPreferencesScreen({ accountId = null, onBack, onOpenDrawer }: MyPreferencesScreenProps = {}): React.JSX.Element {
+export function MyPreferencesScreen({ accountId = null, preferences, onBack, onOpenDrawer }: MyPreferencesScreenProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,7 +79,18 @@ export function MyPreferencesScreen({ accountId = null, onBack, onOpenDrawer }: 
     unread_notifications: { deliveryMode: "summary", summaryCadenceDays: 3 }
   });
 
+  const hasInjectedPreferences = preferences !== undefined;
+
   const loadPreferences = useCallback(() => {
+    if (hasInjectedPreferences) {
+      const nextState = hydrateState(preferences);
+      setStateByCategory(nextState);
+      setPersistedStateByCategory(nextState);
+      setErrorMessage(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     if (accountId) {
       void fetchNotificationPreferencesFromBackend(accountId)
@@ -108,7 +120,7 @@ export function MyPreferencesScreen({ accountId = null, onBack, onOpenDrawer }: 
     } finally {
       setLoading(false);
     }
-  }, [accountId, t]);
+  }, [accountId, hasInjectedPreferences, preferences, t]);
 
   useEffect(() => {
     loadPreferences();

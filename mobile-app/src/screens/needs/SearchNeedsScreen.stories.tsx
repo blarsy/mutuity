@@ -4,7 +4,13 @@ import { View } from "react-native";
 
 import { SearchNeedsScreen } from "./SearchNeedsScreen";
 import type { NeedItem } from "../../services/graphql/needs";
+import type { LinkableCampaignItem } from "../../services/graphql/campaigns";
 import { NeedIntensity } from "../../services/graphql/generated";
+
+const SAMPLE_CAMPAIGN_OPTIONS: LinkableCampaignItem[] = [
+  { id: "camp-001", title: "Winter shelter drive" },
+  { id: "camp-002", title: "Back to school kits" }
+];
 
 const SAMPLE_NEEDS: NeedItem[] = [
   {
@@ -62,6 +68,7 @@ const meta = {
   component: SearchNeedsScreen,
   args: {
     needs: SAMPLE_NEEDS,
+    campaignOptions: SAMPLE_CAMPAIGN_OPTIONS,
     loading: false,
     errorMessage: null,
     onRetry: () => undefined,

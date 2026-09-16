@@ -4,7 +4,13 @@ import { View } from "react-native";
 
 import { EditNeedScreen } from "./EditNeedScreen";
 import type { NeedItem } from "../../services/graphql/needs";
+import type { LinkableCampaignItem } from "../../services/graphql/campaigns";
 import { NeedIntensity } from "../../services/graphql/generated";
+
+const SAMPLE_CAMPAIGNS: LinkableCampaignItem[] = [
+  { id: "camp-001", title: "Winter shelter drive" },
+  { id: "camp-002", title: "Back to school kits" }
+];
 
 const EXISTING_NEED: NeedItem = {
   id: "need-100",
@@ -40,7 +46,8 @@ const meta = {
     creatorAccountId: "00000000-0000-0000-0000-000000000111",
     onBack: () => undefined,
     onSaved: () => undefined,
-    initialNeed: null
+    initialNeed: null,
+    campaigns: SAMPLE_CAMPAIGNS
   }
 } satisfies Meta<typeof EditNeedScreen>;
 

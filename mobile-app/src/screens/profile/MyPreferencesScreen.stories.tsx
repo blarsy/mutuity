@@ -3,12 +3,20 @@ import React from "react";
 import { View } from "react-native";
 
 import { MyPreferencesScreen } from "./MyPreferencesScreen";
+import type { NotificationPreferenceRecord } from "../../services/graphql/notificationPreferences";
+
+const SAMPLE_PREFERENCES: NotificationPreferenceRecord[] = [
+  { eventCategory: "chat", deliveryMode: "realtime" },
+  { eventCategory: "new_resources", deliveryMode: "realtime" },
+  { eventCategory: "unread_notifications", deliveryMode: "summary", summaryCadenceDays: 3 }
+];
 
 const meta = {
   title: "Screens/MyPreferencesScreen",
   component: MyPreferencesScreen,
   args: {
     accountId: "00000000-0000-0000-0000-000000000111",
+    preferences: SAMPLE_PREFERENCES,
     onBack: () => undefined
   }
 } satisfies Meta<typeof MyPreferencesScreen>;

@@ -4,6 +4,18 @@ import { View } from "react-native";
 
 import { EditResourceScreen } from "./EditResourceScreen";
 import type { MyResourceItem } from "../../services/graphql/resources";
+import type { LinkableCampaignItem } from "../../services/graphql/campaigns";
+import type { ResourceCategoryItem } from "../../services/graphql/resources";
+
+const SAMPLE_CAMPAIGNS: LinkableCampaignItem[] = [
+  { id: "camp-work", title: "Back to work support" },
+  { id: "camp-rights", title: "Housing rights clinic" }
+];
+
+const SAMPLE_CATEGORIES: ResourceCategoryItem[] = [
+  { code: 1, label: "Transport", labelFr: "Transport" },
+  { code: 2, label: "Furniture", labelFr: "Meubles" }
+];
 
 const EXISTING_RESOURCE: MyResourceItem = {
   id: "res-100",
@@ -34,7 +46,9 @@ const meta = {
     creatorAccountId: "00000000-0000-0000-0000-000000000111",
     onBack: () => undefined,
     onSaved: () => undefined,
-    initialResource: null
+    initialResource: null,
+    categories: SAMPLE_CATEGORIES,
+    campaigns: SAMPLE_CAMPAIGNS
   }
 } satisfies Meta<typeof EditResourceScreen>;
 

@@ -6,6 +6,7 @@ import { fetchReceivedBids, respondToResourceBid } from "../../services/graphql/
 import type { BidWorkspaceItem } from "./types";
 
 export interface ReceivedBidsScreenProps {
+  fetchBids?: (includeInactive: boolean) => Promise<BidWorkspaceItem[]>;
   onOpenBid?: (bid: BidWorkspaceItem) => void;
   onBackToMyHub?: () => void;
   onOpenResource?: (resourceId: string) => void;
@@ -15,6 +16,7 @@ export interface ReceivedBidsScreenProps {
 }
 
 export function ReceivedBidsScreen({
+  fetchBids = fetchReceivedBids,
   onOpenBid,
   onBackToMyHub,
   onOpenResource,
@@ -28,7 +30,7 @@ export function ReceivedBidsScreen({
     <BidsListScreen
       title={t("myBidsReceivedTitle", { defaultValue: "Received bids" })}
       testID="received-bids-screen"
-      fetchBids={fetchReceivedBids}
+      fetchBids={fetchBids}
       onAcceptBid={async (bid) => {
         await respondToResourceBid(bid.id, "ACCEPTED");
       }}

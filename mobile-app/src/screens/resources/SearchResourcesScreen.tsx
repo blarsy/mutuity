@@ -74,6 +74,8 @@ export interface SearchResourceItem {
 
 export interface SearchResourcesScreenProps {
   resources?: SearchResourceItem[];
+  campaignOptions?: LinkableCampaignItem[];
+  categoryOptions?: ResourceCategoryItem[];
   loading?: boolean;
   errorMessage?: string | null;
   onRetry?: () => void;
@@ -114,6 +116,8 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 export function SearchResourcesScreen({
   resources,
+  campaignOptions: injectedCampaignOptions,
+  categoryOptions: injectedCategoryOptions,
   loading = false,
   errorMessage,
   onRetry,
@@ -136,8 +140,8 @@ export function SearchResourcesScreen({
   const [showOptions, setShowOptions] = useState(false);
   const [showProximity, setShowProximity] = useState(false);
   const [remoteResources, setRemoteResources] = useState<SearchResourceItem[]>([]);
-  const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>([]);
-  const [categoryOptions, setCategoryOptions] = useState<ResourceCategoryItem[]>([]);
+  const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>(injectedCampaignOptions ?? []);
+  const [categoryOptions, setCategoryOptions] = useState<ResourceCategoryItem[]>(injectedCategoryOptions ?? []);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
@@ -148,8 +152,13 @@ export function SearchResourcesScreen({
 
   const hasInjectedResources = resources !== undefined;
   const sourceResources = hasInjectedResources ? resources : remoteResources;
+  const hasInjectedPickerOptions = injectedCampaignOptions !== undefined && injectedCategoryOptions !== undefined;
 
   useEffect(() => {
+    if (hasInjectedPickerOptions) {
+      return;
+    }
+
     void Promise.all([fetchLinkableCampaigns(), fetchResourceCategories()])
       .then(([nextCampaignOptions, nextCategoryOptions]) => {
         setCampaignOptions(nextCampaignOptions);
@@ -159,7 +168,7 @@ export function SearchResourcesScreen({
         setCampaignOptions([]);
         setCategoryOptions([]);
       });
-  }, []);
+  }, [hasInjectedPickerOptions]);
 
   const campaignTitleById = useMemo(
     () => new Map(campaignOptions.map((campaign) => [campaign.id, campaign.title])),

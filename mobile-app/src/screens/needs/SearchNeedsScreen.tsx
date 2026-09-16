@@ -24,6 +24,7 @@ import { designTokens } from "../../theme/tokens";
 
 export interface SearchNeedsScreenProps {
   needs?: NeedItem[];
+  campaignOptions?: LinkableCampaignItem[];
   loading?: boolean;
   errorMessage?: string | null;
   onRetry?: () => void;
@@ -83,6 +84,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 export function SearchNeedsScreen({
   needs,
+  campaignOptions: injectedCampaignOptions,
   loading = false,
   errorMessage = null,
   onRetry,
@@ -98,10 +100,11 @@ export function SearchNeedsScreen({
   const [showCampaignsDialog, setShowCampaignsDialog] = useState(false);
   const [hideClaimedNeeds, setHideClaimedNeeds] = useState(false);
   const [remoteNeeds, setRemoteNeeds] = useState<NeedItem[]>([]);
-  const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>([]);
+  const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>(injectedCampaignOptions ?? []);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const hasInjectedNeeds = needs !== undefined;
+  const hasInjectedCampaignOptions = injectedCampaignOptions !== undefined;
 
   const filterSnapshot = useMemo(
     () => ({
@@ -151,10 +154,14 @@ export function SearchNeedsScreen({
   }, [loadNeeds]);
 
   useEffect(() => {
+    if (hasInjectedCampaignOptions) {
+      return;
+    }
+
     void fetchLinkableCampaigns()
       .then(setCampaignOptions)
       .catch(() => setCampaignOptions([]));
-  }, []);
+  }, [hasInjectedCampaignOptions]);
 
   const sourceNeeds = hasInjectedNeeds ? needs : remoteNeeds;
   const campaignTitleById = useMemo(

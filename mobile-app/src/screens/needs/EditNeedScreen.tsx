@@ -28,6 +28,7 @@ import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../service
 export interface EditNeedScreenProps {
   creatorAccountId: string | null;
   initialNeed: NeedItem | null;
+  campaigns?: LinkableCampaignItem[];
   onBack: () => void;
   onSaved: () => void;
 }
@@ -54,6 +55,7 @@ function NatureToggleRow({ label, selected, onPress }: NatureToggleRowProps): Re
 export function EditNeedScreen({
   creatorAccountId,
   initialNeed,
+  campaigns: injectedCampaigns,
   onBack,
   onSaved
 }: EditNeedScreenProps): React.JSX.Element {
@@ -73,7 +75,7 @@ export function EditNeedScreen({
     initialNeed?.requiredPeopleCount ? String(initialNeed.requiredPeopleCount) : ""
   );
   const [campaignId, setCampaignId] = useState(initialNeed?.campaignId ?? "");
-  const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>([]);
+  const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>(injectedCampaigns ?? []);
   const [showCampaignDialog, setShowCampaignDialog] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
     initialNeed?.expiresAt ? new Date(initialNeed.expiresAt) : undefined
@@ -87,12 +89,16 @@ export function EditNeedScreen({
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
 
   useEffect(() => {
+    if (injectedCampaigns !== undefined) {
+      return;
+    }
+
     void fetchLinkableCampaigns()
       .then(setCampaigns)
       .catch(() => {
         setSnackbarMessage(t("campaignsLoadError", { defaultValue: "We could not load campaigns." }));
       });
-  }, [t]);
+  }, [injectedCampaigns, t]);
 
   const parsedRequiredPeopleCount = useMemo(() => {
     const parsed = Number.parseInt(requiredPeopleCountText, 10);

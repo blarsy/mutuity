@@ -6,6 +6,20 @@ import {
   SearchResourcesScreen,
   type SearchResourceItem
 } from "./SearchResourcesScreen";
+import type { LinkableCampaignItem } from "../../services/graphql/campaigns";
+import type { ResourceCategoryItem } from "../../services/graphql/resources";
+
+const SAMPLE_CAMPAIGN_OPTIONS: LinkableCampaignItem[] = [
+  { id: "camp-work", title: "Back to work support" },
+  { id: "camp-rights", title: "Housing rights clinic" },
+  { id: "camp-education", title: "Education essentials" }
+];
+
+const SAMPLE_CATEGORY_OPTIONS: ResourceCategoryItem[] = [
+  { code: 1, label: "Office", labelFr: "Bureau" },
+  { code: 2, label: "Services", labelFr: "Services" },
+  { code: 3, label: "Education", labelFr: "Éducation" }
+];
 
 const SAMPLE_RESOURCES: SearchResourceItem[] = [
   {
@@ -69,6 +83,8 @@ const meta = {
   component: SearchResourcesScreen,
   args: {
     resources: SAMPLE_RESOURCES,
+    campaignOptions: SAMPLE_CAMPAIGN_OPTIONS,
+    categoryOptions: SAMPLE_CATEGORY_OPTIONS,
     loading: false,
     errorMessage: null,
     onRetry: () => undefined,

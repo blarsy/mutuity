@@ -6,6 +6,7 @@ import { cancelResourceBid, fetchSentBids } from "../../services/graphql/bids";
 import type { BidWorkspaceItem } from "./types";
 
 export interface SentBidsScreenProps {
+  fetchBids?: (includeInactive: boolean) => Promise<BidWorkspaceItem[]>;
   onOpenBid?: (bid: BidWorkspaceItem) => void;
   onBackToMyHub?: () => void;
   onOpenResource?: (resourceId: string) => void;
@@ -15,6 +16,7 @@ export interface SentBidsScreenProps {
 }
 
 export function SentBidsScreen({
+  fetchBids = fetchSentBids,
   onOpenBid,
   onBackToMyHub,
   onOpenResource,
@@ -28,7 +30,7 @@ export function SentBidsScreen({
     <BidsListScreen
       title={t("myBidsSentTitle", { defaultValue: "Sent bids" })}
       testID="sent-bids-screen"
-      fetchBids={fetchSentBids}
+      fetchBids={fetchBids}
       onCancelBid={async (bid) => {
         await cancelResourceBid(bid.id);
       }}
