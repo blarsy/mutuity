@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Icon, Text } from "react-native-paper";
+import { Button, Icon, IconButton, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
 import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
-import { PrimaryButton, ScreenContainer } from "../../components/primitives";
+import { ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import type { BidWorkspaceItem } from "./types";
+import ChatIcon from "../../assets/img/CHAT.svg";
 
 export interface BidsListScreenProps {
   title: string;
@@ -292,7 +293,6 @@ export function BidsListScreen({
             const showChatButton = Boolean(bid.conversationId) && onOpenConversation;
             const showSentActions = bid.direction === "sent" && bid.isActive;
             const showReceivedActions = bid.direction === "received" && bid.isActive;
-
             return (
               <Pressable
                 key={bid.id}
@@ -307,15 +307,28 @@ export function BidsListScreen({
                 }}
                 style={styles.bidCard}
               >
-                <ListingContextHeader
-                  kind="resource"
-                  title={bid.title}
-                  authorDisplayName={bid.counterpartyDisplayName}
-                  authorAvatarUrl={bid.counterpartyAvatarUrl ?? null}
-                  listingImageUrl={bid.listingImageUrl ?? null}
-                  onPressListing={onOpenResource ? () => onOpenResource(bid.resourceId) : undefined}
-                  onPressAuthor={onOpenCounterparty ? () => onOpenCounterparty(bid.counterpartyAccountId) : undefined}
-                />
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <ListingContextHeader
+                    kind="resource"
+                    title={bid.title}
+                    authorDisplayName={bid.counterpartyDisplayName}
+                    authorAvatarUrl={bid.counterpartyAvatarUrl ?? null}
+                    listingImageUrl={bid.listingImageUrl ?? null}
+                    onPressListing={onOpenResource ? () => onOpenResource(bid.resourceId) : undefined}
+                    onPressAuthor={onOpenCounterparty ? () => onOpenCounterparty(bid.counterpartyAccountId) : undefined}
+                  />
+                  {showChatButton ? (
+                  <IconButton
+                    icon={() => <ChatIcon width={26} height={26} />}
+                    size={22}
+                    onPress={(event) => {
+                        event.stopPropagation();
+                        onOpenConversation(bid.conversationId!);
+                    }}
+                    accessibilityLabel={t("chatLabel", { defaultValue: "Chat" })}
+                  />
+                  ) : null}
+                </View>
 
                 <View style={styles.statusRow}>
                   <Text style={styles.statusChip}>{statusChipLabel(bid.status, t)}</Text>
@@ -359,26 +372,13 @@ export function BidsListScreen({
                 </View>
 
                 <View style={styles.actionsRow}>
-                  {showChatButton ? (
-                    <Button
-                      compact
-                      mode="text"
-                      onPress={(event) => {
-                        event.stopPropagation();
-                        onOpenConversation(bid.conversationId!);
-                      }}
-                      disabled={isActionPending}
-                    >
-                      {t("actions.chat", { defaultValue: "Chat" })}
-                    </Button>
-                  ) : null}
-
                   {showSentActions ? (
                     <Button
+                      icon="cancel"
                       compact
-                      mode="outlined"
-                      buttonColor="#fef0e3"
-                      textColor="#111111"
+                      mode="contained"
+                      style={styles.mainButton}
+                      contentStyle={styles.mainButtonContent}
                       onPress={(event) => {
                         event.stopPropagation();
                         void runBidAction(bid, onCancelBid);
@@ -393,11 +393,12 @@ export function BidsListScreen({
                   {showReceivedActions ? (
                     <>
                       <Button
+                        icon="thumb-up"
                         compact
                         mode="contained"
-                          buttonColor="#fef0e3"
-                          textColor="#111111"
-                          onPress={(event) => {
+                        style={styles.mainButton}
+                        contentStyle={styles.mainButtonContent}
+                        onPress={(event) => {
                           event.stopPropagation();
                           void runBidAction(bid, onAcceptBid);
                         }}
@@ -407,10 +408,11 @@ export function BidsListScreen({
                         {t("actions.accept", { defaultValue: "Accept" })}
                       </Button>
                       <Button
+                        icon="thumb-down"
                         compact
-                        mode="outlined"
-                        buttonColor="#fef0e3"
-                        textColor="#111111"
+                        mode="contained"
+                        style={styles.mainButton}
+                        contentStyle={styles.mainButtonContent}
                         onPress={(event) => {
                           event.stopPropagation();
                           void runBidAction(bid, onDeclineBid);
@@ -540,5 +542,14 @@ const styles = StyleSheet.create({
     marginTop: designTokens.spacing.xs,
     color: designTokens.colors.primary,
     fontFamily: appFontFamilies.altGeneral
+  },
+  mainButton: {
+    marginTop: designTokens.spacing.lg,
+    alignSelf: "center",
+    borderRadius: 15
+  },
+  mainButtonContent: {
+    minHeight: 46,
+    backgroundColor: designTokens.colors.primary
   }
 });

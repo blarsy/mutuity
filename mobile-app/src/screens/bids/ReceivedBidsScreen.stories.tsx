@@ -14,7 +14,7 @@ const SAMPLE_BIDS: BidWorkspaceItem[] = [
     counterpartyDisplayName: "Karim",
     counterpartyAccountId: "acc-karim",
     resourceId: "resource-002",
-    conversationId: null,
+    conversationId: "jqjemkfqjej",
     createdAt: "2026-07-27T08:30:00.000Z",
     validUntil: "2026-07-28T08:30:00.000Z",
     tokenAmount: 30,
@@ -27,7 +27,10 @@ const meta = {
   title: "Screens/ReceivedBidsScreen",
   component: ReceivedBidsScreen,
   args: {
-    fetchBids: async () => SAMPLE_BIDS
+    fetchBids: async () => SAMPLE_BIDS,
+    onOpenConversation: (conversationId: string) => {
+      console.log("Opening conversation:", conversationId);
+    }
   }
 } satisfies Meta<typeof ReceivedBidsScreen>;
 

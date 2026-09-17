@@ -9,9 +9,11 @@ import {
   type Query
 } from "./generated";
 import {
+  CANCEL_NEED_CLAIM_MUTATION,
   CLAIM_NEED_MUTATION,
   CREATE_CAMPAIGN_NEED_MUTATION,
   CREATE_NEED_MUTATION,
+  DECLINE_NEED_CLAIM_MUTATION,
   DELETE_CAMPAIGN_NEED_MUTATION,
   DELETE_NEED_BY_ID_MUTATION,
   MY_NEEDS_QUERY,
@@ -19,6 +21,7 @@ import {
   RECEIVED_NEED_CLAIMS_QUERY,
   SEARCH_NEEDS_QUERY,
   SENT_NEED_CLAIMS_QUERY,
+  SETTLE_NEED_CLAIM_MUTATION,
   UPDATE_NEED_BY_ID_MUTATION
 } from "./operations";
 
@@ -117,10 +120,17 @@ export interface NeedClaimItem {
   id: string;
   needId: string;
   needTitle: string;
+  needImageUrl: string | null;
+  message: string | null;
   createdAt: string | null;
+  updatedAt: string | null;
   status: NeedClaimStatus;
   claimerAccountId: string | null;
+  claimerDisplayName: string | null;
+  claimerAvatarUrl: string | null;
   ownerAccountId: string | null;
+  ownerDisplayName: string | null;
+  ownerAvatarUrl: string | null;
 }
 
 interface SearchNeedsQueryResult {
@@ -176,17 +186,36 @@ interface ReceivedNeedClaimsQueryResult {
     nodes: Array<{
       id: string;
       title: string;
+      imageUrls?: Array<string | null> | null;
       needClaimsByNeedId: {
         nodes: Array<{
           id: string;
           needId: string;
           claimerAccountId: string;
+          message?: string | null;
           status: NeedClaimStatus;
           createdAt: string;
+          updatedAt?: string | null;
+          accountByClaimerAccountId?: {
+            displayName?: string | null;
+            avatarUrl?: string | null;
+          } | null;
         }>;
       } | null;
     }>;
   } | null;
+}
+
+interface SettleNeedClaimMutationResult {
+  settleNeedClaim: Pick<Mutation, "settleNeedClaim">["settleNeedClaim"];
+}
+
+interface DeclineNeedClaimMutationResult {
+  declineNeedClaim: Pick<Mutation, "declineNeedClaim">["declineNeedClaim"];
+}
+
+interface CancelNeedClaimMutationResult {
+  cancelNeedClaim: Pick<Mutation, "cancelNeedClaim">["cancelNeedClaim"];
 }
 
 interface NeedClaimsQueryVariables {
@@ -551,6 +580,10 @@ export async function claimNeedById(needId: string, message: string | null = nul
   return normalizeNeedClaimPayload(data?.claimNeed);
 }
 
+function firstImageUrl(imageUrls: Array<string | null | undefined> | null | undefined): string | null {
+  return (imageUrls ?? []).find((value): value is string => typeof value === "string" && value.length > 0) ?? null;
+}
+
 function normalizeNeedClaim(
   node: NonNullable<NonNullable<NeedClaimsQueryResult["allNeedClaims"]>["nodes"][number]>
 ): NeedClaimItem | null {
@@ -562,10 +595,17 @@ function normalizeNeedClaim(
     id: String(node.id),
     needId: String(node.needId),
     needTitle: node.needByNeedId?.title ?? "",
+    needImageUrl: firstImageUrl(node.needByNeedId?.imageUrls),
+    message: typeof node.message === "string" ? node.message : null,
     createdAt: typeof node.createdAt === "string" ? node.createdAt : null,
+    updatedAt: typeof node.updatedAt === "string" ? node.updatedAt : null,
     status: node.status,
     claimerAccountId: typeof node.claimerAccountId === "string" ? node.claimerAccountId : null,
-    ownerAccountId: null
+    claimerDisplayName: null,
+    claimerAvatarUrl: null,
+    ownerAccountId: typeof node.needByNeedId?.creatorAccountId === "string" ? node.needByNeedId.creatorAccountId : null,
+    ownerDisplayName: node.needByNeedId?.accountByCreatorAccountId?.displayName ?? null,
+    ownerAvatarUrl: node.needByNeedId?.accountByCreatorAccountId?.avatarUrl ?? null
   };
 }
 
@@ -607,12 +647,40 @@ export async function fetchNeedClaimsForAccount(input: {
       id: String(claim.id),
       needId: String(claim.needId),
       needTitle: need.title,
+      needImageUrl: firstImageUrl(need.imageUrls),
+      message: typeof claim.message === "string" ? claim.message : null,
       createdAt: claim.createdAt,
+      updatedAt: typeof claim.updatedAt === "string" ? claim.updatedAt : null,
       status: claim.status,
       claimerAccountId: claim.claimerAccountId,
-      ownerAccountId: input.accountId
+      claimerDisplayName: claim.accountByClaimerAccountId?.displayName ?? null,
+      claimerAvatarUrl: claim.accountByClaimerAccountId?.avatarUrl ?? null,
+      ownerAccountId: input.accountId,
+      ownerDisplayName: null,
+      ownerAvatarUrl: null
     }))
   );
 
   return flattened.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}
+
+export async function settleNeedClaim(needClaimId: string): Promise<void> {
+  await apolloClient.mutate<SettleNeedClaimMutationResult, { input: { needClaimId: string } }>({
+    mutation: SETTLE_NEED_CLAIM_MUTATION,
+    variables: { input: { needClaimId } }
+  });
+}
+
+export async function declineNeedClaim(needClaimId: string): Promise<void> {
+  await apolloClient.mutate<DeclineNeedClaimMutationResult, { input: { needClaimId: string } }>({
+    mutation: DECLINE_NEED_CLAIM_MUTATION,
+    variables: { input: { needClaimId } }
+  });
+}
+
+export async function cancelNeedClaim(needClaimId: string): Promise<void> {
+  await apolloClient.mutate<CancelNeedClaimMutationResult, { input: { needClaimId: string } }>({
+    mutation: CANCEL_NEED_CLAIM_MUTATION,
+    variables: { input: { needClaimId } }
+  });
 }

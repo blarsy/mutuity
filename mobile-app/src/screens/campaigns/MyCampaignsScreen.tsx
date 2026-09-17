@@ -156,13 +156,13 @@ export function MyCampaignsScreen({
             return (
               <Pressable
                 accessibilityRole="button"
-        accessibilityLabel={`${campaign.title}. ${t("labels.status", { ns: "us3", defaultValue: "Status" })}: ${active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}.`}
+                accessibilityLabel={`${campaign.title}. ${t("labels.status", { ns: "us3", defaultValue: "Status" })}: ${active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}.`}
                 onPress={() => onEditCampaign(campaign)}
                 style={styles.campaignCard}
                 testID={`campaign-card-${campaign.id}`}
               >
                 <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.campaignTitle} numberOfLines={1}>
+                <Text variant="titleMedium" style={styles.campaignTitle} numberOfLines={1}>
                     {campaign.title}
                   </Text>
                 </View>

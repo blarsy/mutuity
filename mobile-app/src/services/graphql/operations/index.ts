@@ -676,11 +676,20 @@ export const SENT_NEED_CLAIMS_QUERY = gql`
         id
         needId
         claimerAccountId
+        message
         status
         createdAt
+        updatedAt
         needByNeedId {
           id
           title
+          imageUrls
+          creatorAccountId
+          accountByCreatorAccountId {
+            id
+            displayName
+            avatarUrl
+          }
         }
       }
       pageInfo {
@@ -702,19 +711,60 @@ export const RECEIVED_NEED_CLAIMS_QUERY = gql`
       nodes {
         id
         title
+        imageUrls
         needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
           nodes {
             id
             needId
             claimerAccountId
+            message
             status
             createdAt
+            updatedAt
+            accountByClaimerAccountId {
+              id
+              displayName
+              avatarUrl
+            }
           }
         }
       }
       pageInfo {
         hasNextPage
         endCursor
+      }
+    }
+  }
+`;
+
+export const SETTLE_NEED_CLAIM_MUTATION = gql`
+  mutation SettleNeedClaim($input: SettleNeedClaimInput!) {
+    settleNeedClaim(input: $input) {
+      needClaim {
+        id
+        status
+      }
+    }
+  }
+`;
+
+export const DECLINE_NEED_CLAIM_MUTATION = gql`
+  mutation DeclineNeedClaim($input: DeclineNeedClaimInput!) {
+    declineNeedClaim(input: $input) {
+      needClaim {
+        id
+        status
+      }
+    }
+  }
+`;
+
+export const CANCEL_NEED_CLAIM_MUTATION = gql`
+  mutation CancelNeedClaim($input: CancelNeedClaimInput!) {
+    cancelNeedClaim(input: $input) {
+      needClaim {
+        id
+        status
       }
     }
   }

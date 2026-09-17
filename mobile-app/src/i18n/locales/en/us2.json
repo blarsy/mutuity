@@ -68,5 +68,13 @@
   "myClaimsMissingAccountError": "We could not load claims.",
   "claimStatusLabel": "Status",
   "claimNeedMissingTitle": "Need",
+  "myClaimsActionError": "We could not complete this action.",
+  "claimStatuses": {
+    "OPEN": "Open",
+    "SETTLED": "Settled",
+    "DECLINED": "Declined",
+    "WITHDRAWN": "Withdrawn",
+    "EXPIRED": "Expired"
+  },
   "needDescriptionEmpty": "No description yet."
 }

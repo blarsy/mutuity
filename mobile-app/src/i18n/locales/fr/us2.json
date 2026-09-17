@@ -68,5 +68,13 @@
   "myClaimsMissingAccountError": "Impossible de charger les claims.",
   "claimStatusLabel": "Statut",
   "claimNeedMissingTitle": "Besoin",
+  "myClaimsActionError": "Impossible de terminer cette action.",
+  "claimStatuses": {
+    "OPEN": "Ouverte",
+    "SETTLED": "Reglee",
+    "DECLINED": "Refusee",
+    "WITHDRAWN": "Retiree",
+    "EXPIRED": "Expiree"
+  },
   "needDescriptionEmpty": "Aucune description pour le moment."
 }

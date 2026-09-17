@@ -271,6 +271,8 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
   const [openedBidResourceId, setOpenedBidResourceId] = useState<string | null>(null);
   const [openedBidAccountId, setOpenedBidAccountId] = useState<string | null>(null);
   const [openedBidConversationId, setOpenedBidConversationId] = useState<string | null>(null);
+  const [openedClaimNeedId, setOpenedClaimNeedId] = useState<string | null>(null);
+  const [openedClaimAccountId, setOpenedClaimAccountId] = useState<string | null>(null);
   const pendingDrawerCloseRef = useRef(false);
 
   useEffect(() => {
@@ -399,6 +401,12 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
           direction={activeDrawerItem === "receivedClaims" ? "received" : "sent"}
           accountId={accountId}
           onOpenDrawer={onRequestOpenDrawer}
+          onOpenNeed={(needId) => {
+            setOpenedClaimNeedId(needId);
+          }}
+          onOpenCounterparty={(counterpartyAccountId) => {
+            setOpenedClaimAccountId(counterpartyAccountId);
+          }}
         />
       );
     }
@@ -456,6 +464,32 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
         accountId={openedBidAccountId}
         onBack={() => {
           setOpenedBidAccountId(null);
+        }}
+      />
+    );
+  }
+
+  if (openedClaimAccountId) {
+    return (
+      <AccountPublicProfileScreen
+        accountId={openedClaimAccountId}
+        onBack={() => {
+          setOpenedClaimAccountId(null);
+        }}
+      />
+    );
+  }
+
+  if (openedClaimNeedId) {
+    return (
+      <NeedDetailScreen
+        needId={openedClaimNeedId}
+        currentAccountId={accountId}
+        onOpenCreatorAccount={(creatorAccountId) => {
+          setOpenedClaimAccountId(creatorAccountId);
+        }}
+        onBack={() => {
+          setOpenedClaimNeedId(null);
         }}
       />
     );
