@@ -13,7 +13,7 @@ import {
   ScreenContainer,
   ThemedDialog
 } from "../../components/primitives";
-import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { useAuth } from "../../services/auth/AuthProvider";
@@ -457,15 +457,11 @@ export function MyProfileScreen({
 
   return (
     <ScreenContainer testID="my-profile-screen" style={styles.root}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerTitleGroup}>
-          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
-          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-            {t("myProfileTitle", { defaultValue: "My profile" })}
-          </Text>
-        </View>
-        {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
-      </View>
+      <MyHubScreenHeader
+        title={t("myProfileTitle", { defaultValue: "My profile" })}
+        onOpenDrawer={onOpenDrawer}
+        right={onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : undefined}
+      />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <FormTextInput
@@ -898,25 +894,6 @@ const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.md,
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
-  },
-  headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: designTokens.spacing.xs
-  },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    paddingTop: 8
   },
   content: {
     gap: designTokens.spacing.sm,

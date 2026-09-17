@@ -4,7 +4,7 @@ import { Button, Icon, IconButton, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
-import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -132,19 +132,17 @@ export function MyResourcesScreen({
 
   return (
     <ScreenContainer testID="my-resources-screen" style={styles.root}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerTitleGroup}>
-          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
-          <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
-            {t("myResourcesTitle", { defaultValue: "My resources" })}
-          </Text>
-        </View>
-        <PrimaryButton
-          label={t("addResourceLabel", { defaultValue: "Add Resource" })}
-          accessibilityLabel={t("addResourceLabel", { defaultValue: "Add Resource" })}
-          onPress={onAddResource}
-        />
-      </View>
+      <MyHubScreenHeader
+        title={t("myResourcesTitle", { defaultValue: "My resources" })}
+        onOpenDrawer={onOpenDrawer}
+        right={
+          <PrimaryButton
+            label={t("addResourceLabel", { defaultValue: "Add Resource" })}
+            accessibilityLabel={t("addResourceLabel", { defaultValue: "Add Resource" })}
+            onPress={onAddResource}
+          />
+        }
+      />
 
       {deleteErrorMessage ? (
         <View style={styles.inlineError}>
@@ -232,25 +230,6 @@ const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.md,
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: designTokens.spacing.md
-  },
-  headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: designTokens.spacing.xs
-  },
-  pageTitle: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    paddingTop: 8
   },
   listContent: {
     gap: designTokens.spacing.md,

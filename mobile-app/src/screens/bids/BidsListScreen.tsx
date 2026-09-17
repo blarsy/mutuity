@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
-import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import { ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -243,14 +243,7 @@ export function BidsListScreen({
 
   return (
     <ScreenContainer testID={testID} style={styles.root}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerTitleGroup}>
-          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
-          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-            {title}
-          </Text>
-        </View>
-      </View>
+      <MyHubScreenHeader title={title} onOpenDrawer={onOpenDrawer} />
 
       <Pressable
         accessibilityRole="checkbox"
@@ -444,25 +437,6 @@ const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.md,
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
-  },
-  headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: designTokens.spacing.xs
-  },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    paddingTop: 8
   },
   includeInactiveRow: {
     flexDirection: "row",

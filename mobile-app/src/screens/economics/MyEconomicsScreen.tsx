@@ -4,7 +4,7 @@ import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
-import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import { TokenExplainerDialog } from "../../components/tokenExplainer/TokenExplainerDialog";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
@@ -109,15 +109,11 @@ export function MyEconomicsScreen({
 
   return (
     <ScreenContainer testID="my-economics-screen" style={styles.root}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerTitleGroup}>
-          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
-          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-            {t("contributionLabel", { defaultValue: "Contribution" })}
-          </Text>
-        </View>
-        {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
-      </View>
+      <MyHubScreenHeader
+        title={t("contributionLabel", { defaultValue: "Contribution" })}
+        onOpenDrawer={onOpenDrawer}
+        right={onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : undefined}
+      />
 
       <View style={styles.balanceCard}>
         <Text variant="labelSmall" style={styles.balanceLabel}>
@@ -198,25 +194,6 @@ const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.md,
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
-  },
-  headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: designTokens.spacing.xs
-  },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    paddingTop: 8
   },
   balanceCard: {
     borderRadius: designTokens.radius.md,

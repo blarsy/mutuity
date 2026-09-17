@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
 import { ScreenContainer } from "../../components/primitives";
-import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
@@ -128,16 +128,14 @@ export function MyClaimsScreen({
 
   return (
     <ScreenContainer testID={`my-claims-screen-${direction}`} style={styles.root}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerTitleGroup}>
-          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
-          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-            {direction === "received"
-              ? t("myClaimsReceivedTitle", { defaultValue: "Received claims" })
-              : t("myClaimsSentTitle", { defaultValue: "Sent claims" })}
-          </Text>
-        </View>
-      </View>
+      <MyHubScreenHeader
+        title={
+          direction === "received"
+            ? t("myClaimsReceivedTitle", { defaultValue: "Received claims" })
+            : t("myClaimsSentTitle", { defaultValue: "Sent claims" })
+        }
+        onOpenDrawer={onOpenDrawer}
+      />
 
       {actionErrorMessage ? (
         <View style={styles.actionErrorContainer}>
@@ -248,25 +246,6 @@ const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.md,
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
-  },
-  headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: designTokens.spacing.xs
-  },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    paddingTop: 8
   },
   actionErrorContainer: {
     borderRadius: designTokens.radius.sm,

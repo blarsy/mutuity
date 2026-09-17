@@ -4,7 +4,7 @@ import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AppSegmentedButtons, FormFieldLabel, PrimaryButton, ScreenContainer } from "../../components/primitives";
-import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import {
   fetchNotificationPreferencesFromBackend,
   getNotificationPreferences,
@@ -140,15 +140,11 @@ export function MyPreferencesScreen({ accountId = null, preferences, onBack, onO
 
   return (
     <ScreenContainer testID="my-preferences-screen" style={styles.root}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerTitleGroup}>
-          {onOpenDrawer ? <MyHubDrawerButton onPress={onOpenDrawer} /> : null}
-          <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-            {t("myPreferencesTitle", { defaultValue: "My preferences" })}
-          </Text>
-        </View>
-        {onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : null}
-      </View>
+      <MyHubScreenHeader
+        title={t("myPreferencesTitle", { defaultValue: "My preferences" })}
+        onOpenDrawer={onOpenDrawer}
+        right={onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : undefined}
+      />
 
       <ScrollView contentContainerStyle={styles.content}>
         {PREFERENCE_CATEGORIES.map((category) => {
@@ -262,25 +258,6 @@ const styles = StyleSheet.create({
   root: {
     gap: designTokens.spacing.md,
     paddingTop: designTokens.spacing.lg
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
-  },
-  headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: designTokens.spacing.xs
-  },
-  title: {
-    fontFamily: appFontFamilies.title,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    paddingTop: 8
   },
   content: {
     gap: designTokens.spacing.sm,
