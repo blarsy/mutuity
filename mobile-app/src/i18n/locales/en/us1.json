@@ -12,6 +12,27 @@
   "myHubDrawerProfile": "Profile",
   "myHubDrawerPreferences": "Preferences",
   "myHubDrawerContribution": "Contribution",
+  "topesGuide": {
+    "title": "Topes guide",
+    "stepLabel": "Step {{current}} of {{total}}",
+    "closeButton": "Close",
+    "previousButton": "Previous",
+    "nextButton": "Next",
+    "slides": {
+      "what": {
+        "title": "Topes track contribution, not price tags",
+        "body": "Topes are used to recognize participation across needs, resources, settlements, gifts, and campaign outcomes."
+      },
+      "earn": {
+        "title": "You earn Topes from actions",
+        "body": "Profile completion milestones, resource milestones, claim progress, and campaign events can credit your balance."
+      },
+      "spend": {
+        "title": "You spend Topes in exchanges",
+        "body": "Bids, claim settlements, and direct gifts can debit your balance, and related refunds or credits are recorded in the ledger."
+      }
+    }
+  },
   "campaignsLabel": "Campaigns",
   "chatLabel": "Chat",
   "notificationsLabel": "Notifications",

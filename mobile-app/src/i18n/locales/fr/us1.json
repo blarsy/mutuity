@@ -12,6 +12,27 @@
   "myHubDrawerProfile": "Profil",
   "myHubDrawerPreferences": "Preferences",
   "myHubDrawerContribution": "Contribution",
+  "topesGuide": {
+    "title": "Guide des Topes",
+    "stepLabel": "Etape {{current}} sur {{total}}",
+    "closeButton": "Fermer",
+    "previousButton": "Precedent",
+    "nextButton": "Suivant",
+    "slides": {
+      "what": {
+        "title": "Les Topes suivent la contribution, pas un prix fixe",
+        "body": "Les Topes servent a reconnaitre la participation dans les besoins, les ressources, les reglements, les dons et les campagnes."
+      },
+      "earn": {
+        "title": "Vous gagnez des Topes par vos actions",
+        "body": "Les jalons du profil, des ressources, des demandes et des campagnes peuvent crediter votre solde."
+      },
+      "spend": {
+        "title": "Vous depensez des Topes dans les echanges",
+        "body": "Les offres, les reglements de demandes et les dons directs peuvent debiter votre solde, avec remboursements et credits traces dans le registre."
+      }
+    }
+  },
   "campaignsLabel": "Campagnes",
   "chatLabel": "Chat",
   "notificationsLabel": "Notifications",

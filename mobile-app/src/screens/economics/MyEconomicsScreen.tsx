@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { MyHubDrawerButton } from "../../components/MyHubDrawerButton";
+import { TokenExplainerDialog } from "../../components/tokenExplainer/TokenExplainerDialog";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchCurrentTokenBalance, fetchTokenHistory } from "../../services/graphql/economics";
@@ -44,6 +45,7 @@ export function MyEconomicsScreen({
   const { t } = useTranslation();
   const [historyExpanded, setHistoryExpanded] = useState(true);
   const [historyScope, setHistoryScope] = useState<"all" | "earnings" | "spend">("all");
+  const [isExplainerOpen, setIsExplainerOpen] = useState(false);
   const [remoteBalance, setRemoteBalance] = useState(0);
   const [remoteHistory, setRemoteHistory] = useState<ContributionHistoryItem[]>([]);
   const [remoteLoading, setRemoteLoading] = useState(false);
@@ -134,7 +136,10 @@ export function MyEconomicsScreen({
         onPress={() => {
           if (onLearnMore) {
             onLearnMore();
+            return;
           }
+
+          setIsExplainerOpen(true);
         }}
       />
 
@@ -152,42 +157,39 @@ export function MyEconomicsScreen({
         ]}
       />
 
-      <View style={styles.accordionRow}>
-        <PrimaryButton
-          label={historyExpanded ? t("collapseLabel", { defaultValue: "Collapse" }) : t("expandLabel", { defaultValue: "Expand" })}
-          onPress={() => setHistoryExpanded((previous) => !previous)}
-        />
-      </View>
+      <ScrollView contentContainerStyle={styles.historyContent}>
+        {visibleHistory.length === 0 ? (
+          <Text variant="bodyMedium" style={styles.emptyText}>
+            {t("contributionEmpty", { defaultValue: "No contribution history yet." })}
+          </Text>
+        ) : (
+          visibleHistory.map((item) => {
+            const formattedDate = item.createdAt
+              ? new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(item.createdAt))
+              : t("dateUnknown", { defaultValue: "Unknown date" });
 
-      {historyExpanded ? (
-        <ScrollView contentContainerStyle={styles.historyContent}>
-          {visibleHistory.length === 0 ? (
-            <Text variant="bodyMedium" style={styles.emptyText}>
-              {t("contributionEmpty", { defaultValue: "No contribution history yet." })}
-            </Text>
-          ) : (
-            visibleHistory.map((item) => {
-              const formattedDate = item.createdAt
-                ? new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(item.createdAt))
-                : t("dateUnknown", { defaultValue: "Unknown date" });
+            return (
+              <View key={item.id} style={styles.historyCard} testID={`contribution-history-${item.id}`}>
+                <Text variant="titleMedium" style={styles.historyTitle}>
+                  {item.title}
+                </Text>
+                <Text variant="bodySmall" style={styles.historyMeta}>
+                  {formattedDate}
+                </Text>
+                <Text variant="bodyMedium" style={styles.historyAmount}>
+                  {item.tokenChange >= 0 ? "+" : ""}{item.tokenChange} {t("tokenLabel", { defaultValue: "Tope" })}
+                </Text>
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
 
-              return (
-                <View key={item.id} style={styles.historyCard} testID={`contribution-history-${item.id}`}>
-                  <Text variant="titleMedium" style={styles.historyTitle}>
-                    {item.title}
-                  </Text>
-                  <Text variant="bodySmall" style={styles.historyMeta}>
-                    {formattedDate}
-                  </Text>
-                  <Text variant="bodyMedium" style={styles.historyAmount}>
-                    {item.tokenChange >= 0 ? "+" : ""}{item.tokenChange} {t("tokenLabel", { defaultValue: "Tope" })}
-                  </Text>
-                </View>
-              );
-            })
-          )}
-        </ScrollView>
-      ) : null}
+      <TokenExplainerDialog
+        visible={isExplainerOpen}
+        onClose={() => setIsExplainerOpen(false)}
+        testID="token-explainer-dialog"
+      />
     </ScreenContainer>
   );
 }
