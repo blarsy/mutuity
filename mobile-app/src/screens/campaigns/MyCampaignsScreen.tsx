@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
-import { Chip, Portal, Text } from "react-native-paper";
+import { Chip, IconButton, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
@@ -17,6 +17,7 @@ export interface MyCampaignsScreenProps {
   refreshToken?: number;
   onAddCampaign: () => void;
   onEditCampaign: (campaign: CampaignItem) => void;
+  onOpenCampaign?: (campaign: CampaignItem) => void;
   injectedCampaigns?: CampaignItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
@@ -50,6 +51,7 @@ export function MyCampaignsScreen({
   refreshToken = 0,
   onAddCampaign,
   onEditCampaign,
+  onOpenCampaign,
   injectedCampaigns,
   injectedLoading,
   injectedErrorMessage
@@ -299,7 +301,20 @@ export function MyCampaignsScreen({
 
                   return (
                     <View style={styles.inspirationCard}>
-                      <Text variant="titleSmall">{item.title}</Text>
+                      <View style={styles.inspirationHeaderRow}>
+                        <Text variant="titleSmall" style={styles.inspirationTitle}>{item.title}</Text>
+                        {onOpenCampaign ? (
+                          <IconButton
+                            icon="eye"
+                            size={20}
+                            accessibilityLabel={t("openCampaignPublic", { ns: "us3", defaultValue: "View campaign" })}
+                            onPress={() => {
+                              setInspirationOpen(false);
+                              onOpenCampaign(item);
+                            }}
+                          />
+                        ) : null}
+                      </View>
                       <View style={styles.chipRow}>
                         <Chip
                           compact
@@ -412,6 +427,14 @@ const styles = StyleSheet.create({
     padding: designTokens.spacing.sm,
     gap: designTokens.spacing.xs,
     marginBottom: designTokens.spacing.sm
+  },
+  inspirationHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  inspirationTitle: {
+    flex: 1
   }
 });
 

@@ -2,10 +2,11 @@ import React, { useMemo, useState } from "react";
 
 import { MyCampaignsScreen } from "../screens/campaigns/MyCampaignsScreen";
 import { CampaignDetailScreen } from "../screens/campaigns/CampaignDetailScreen";
+import { CampaignPublicInfoScreen } from "../screens/campaigns/CampaignPublicInfoScreen";
 import { CampaignModerationStatus } from "../services/graphql/generated";
 import type { CampaignItem } from "../services/graphql/campaigns";
 
-type US3Screen = "list" | "detail";
+type US3Screen = "list" | "detail" | "public";
 
 export interface US3NavigatorProps {
   currentAccountId: string | null;
@@ -61,6 +62,19 @@ export function US3Navigator({ currentAccountId }: US3NavigatorProps): React.JSX
     );
   }
 
+  if (activeScreen === "public" && selectedCampaign) {
+    return (
+      <CampaignPublicInfoScreen
+        campaignId={selectedCampaign.id}
+        currentAccountId={currentAccountId}
+        onBack={() => {
+          setActiveScreen("list");
+          setSelectedCampaign(null);
+        }}
+      />
+    );
+  }
+
   return (
     <MyCampaignsScreen
       creatorAccountId={currentAccountId}
@@ -72,6 +86,7 @@ export function US3Navigator({ currentAccountId }: US3NavigatorProps): React.JSX
           title: "",
           theme: "",
           description: "",
+          imageUrl: null,
           startAt: defaultCampaignDates.startAt,
           airdropAt: defaultCampaignDates.airdropAt,
           endAt: defaultCampaignDates.endAt,
@@ -89,6 +104,10 @@ export function US3Navigator({ currentAccountId }: US3NavigatorProps): React.JSX
         setIsNewCampaign(false);
         setSelectedCampaign(campaign);
         setActiveScreen("detail");
+      }}
+      onOpenCampaign={(campaign) => {
+        setSelectedCampaign(campaign);
+        setActiveScreen("public");
       }}
     />
   );

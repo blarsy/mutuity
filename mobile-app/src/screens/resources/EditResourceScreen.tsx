@@ -34,8 +34,10 @@ export interface EditResourceScreenProps {
   initialResource: MyResourceItem | null;
   categories?: ResourceCategoryItem[];
   campaigns?: LinkableCampaignItem[];
+  initialCampaignId?: string | null;
   onBack: () => void;
   onSaved: () => void;
+  onOpenCampaign?: (campaignId: string) => void;
 }
 
 export function EditResourceScreen({
@@ -43,8 +45,10 @@ export function EditResourceScreen({
   initialResource,
   categories: injectedCategories,
   campaigns: injectedCampaigns,
+  initialCampaignId,
   onBack,
-  onSaved
+  onSaved,
+  onOpenCampaign
 }: EditResourceScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
   const { isConnected, isInternetReachable } = useNetworkStatus();
@@ -59,7 +63,7 @@ export function EditResourceScreen({
   );
   const [showCategoriesDialog, setShowCategoriesDialog] = useState(false);
   const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>(injectedCampaigns ?? []);
-  const [campaignId, setCampaignId] = useState(initialResource?.campaignId ?? "");
+  const [campaignId, setCampaignId] = useState(initialResource?.campaignId ?? initialCampaignId ?? "");
   const [showCampaignDialog, setShowCampaignDialog] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
     initialResource?.expiresAt ? new Date(initialResource.expiresAt) : undefined
@@ -436,7 +440,16 @@ export function EditResourceScreen({
       <PickerDialog
         visible={showCampaignDialog}
         title={t("campaignLabel", { defaultValue: "Campaign (optional)" })}
-        items={campaigns.map((campaign) => ({ value: campaign.id, label: campaign.title }))}
+        items={campaigns.map((campaign) => ({
+          value: campaign.id,
+          label: campaign.title,
+          ...(onOpenCampaign
+            ? {
+                actionIcon: "eye",
+                actionAccessibilityLabel: t("openCampaignPublic", { defaultValue: "View campaign" })
+              }
+            : {})
+        }))}
         selectedValues={[campaignId]}
         multiple={false}
         onDismiss={() => setShowCampaignDialog(false)}
@@ -444,6 +457,7 @@ export function EditResourceScreen({
           setCampaignId(values[0] ?? "");
           setShowCampaignDialog(false);
         }}
+        {...(onOpenCampaign ? { onItemAction: (item: { value: string }) => onOpenCampaign(item.value) } : {})}
         testID="resource-campaign-dialog"
       />
 

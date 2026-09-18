@@ -31,6 +31,7 @@ export interface SearchNeedsScreenProps {
   onSwitchToResources?: () => void;
   onOpenNeed?: (need: NeedItem) => void;
   currentAccountId?: string | null;
+  onOpenCampaign?: (campaignId: string) => void;
 }
 
 function intensityLabelMeta(intensity: NeedIntensity): { key: string; defaultValue: string } {
@@ -90,7 +91,8 @@ export function SearchNeedsScreen({
   onRetry,
   onSwitchToResources,
   onOpenNeed,
-  currentAccountId = null
+  currentAccountId = null,
+  onOpenCampaign
 }: SearchNeedsScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation(["common", "us2"]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -402,13 +404,23 @@ export function SearchNeedsScreen({
       <PickerDialog
         visible={showCampaignsDialog}
         title={t("campaignsLabel", { defaultValue: "Campaigns" })}
-        items={campaignOptions.map((campaign) => ({ value: campaign.id, label: campaign.title }))}
+        items={campaignOptions.map((campaign) => ({
+          value: campaign.id,
+          label: campaign.title,
+          ...(onOpenCampaign
+            ? {
+                actionIcon: "eye",
+                actionAccessibilityLabel: t("openCampaignPublic", { defaultValue: "View campaign" })
+              }
+            : {})
+        }))}
         selectedValues={selectedCampaignIds}
         onDismiss={() => setShowCampaignsDialog(false)}
         onConfirm={(nextSelectedCampaignIds) => {
           setSelectedCampaignIds(nextSelectedCampaignIds);
           setShowCampaignsDialog(false);
         }}
+        {...(onOpenCampaign ? { onItemAction: (item: { value: string }) => onOpenCampaign(item.value) } : {})}
         testID="needs-campaign-filter-dialog"
       />
 

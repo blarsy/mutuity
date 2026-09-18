@@ -31,5 +31,20 @@
   "campaignPendingCount_plural": "{{count}} entrées en attente",
   "approveLabel": "Approuver",
   "rejectLabel": "Rejeter",
-  "backToMyHubLabel": "Retour"
+  "backToMyHubLabel": "Retour",
+  "openCampaignPublic": "Voir la campagne",
+  "campaignPublicLoadError": "Impossible de charger cette campagne.",
+  "campaignPublicNotFound": "Cette campagne n'est pas disponible.",
+  "campaignPublicRewardsMultiplier": "Multiplicateur de récompenses",
+  "campaignPublicStart": "Début",
+  "campaignPublicEnd": "Fin",
+  "campaignPublicAirdropTitle": "Airdrop",
+  "campaignPublicAirdropDate": "Date",
+  "campaignPublicAirdropAmount": "Montant",
+  "campaignPublicAirdropConditions": "Conditions",
+  "campaignPublicAirdropConditionsText": "Avoir 2 annonces approuvées par le créateur de la campagne au moment de l'airdrop.",
+  "campaignPublicAirdropAmountValue": "{{amount}} Tokens",
+  "campaignPublicLaunchResource": "Ajouter une ressource",
+  "campaignPublicLaunchNeed": "Ajouter un besoin",
+  "campaignPublicJoinExplanation": "Vous pouvez également joindre une ressource ou un besoin existant à cette campagne. Ce sera envoyé au créateur de la campagne pour approbation, puis ajouté à la campagne une fois approuvé."
 }

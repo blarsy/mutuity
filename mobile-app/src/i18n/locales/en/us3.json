@@ -31,5 +31,20 @@
   "campaignPendingCount_plural": "{{count}} pending entries",
   "approveLabel": "Approve",
   "rejectLabel": "Reject",
-  "backToMyHubLabel": "Back"
+  "backToMyHubLabel": "Back",
+  "openCampaignPublic": "View campaign",
+  "campaignPublicLoadError": "We could not load this campaign.",
+  "campaignPublicNotFound": "This campaign is not available.",
+  "campaignPublicRewardsMultiplier": "Rewards multiplier",
+  "campaignPublicStart": "Start",
+  "campaignPublicEnd": "End",
+  "campaignPublicAirdropTitle": "Airdrop",
+  "campaignPublicAirdropDate": "Date",
+  "campaignPublicAirdropAmount": "Amount",
+  "campaignPublicAirdropConditions": "Conditions",
+  "campaignPublicAirdropConditionsText": "Have 2 listings approved by the campaign creator at the time of airdrop.",
+  "campaignPublicAirdropAmountValue": "{{amount}} Tokens",
+  "campaignPublicLaunchResource": "Add a resource",
+  "campaignPublicLaunchNeed": "Add a need",
+  "campaignPublicJoinExplanation": "You may also join an existing resource or need to this campaign. It will be sent to the campaign creator for approval, then added to the campaign once approved."
 }

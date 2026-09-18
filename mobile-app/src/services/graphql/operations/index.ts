@@ -338,10 +338,15 @@ export const CAMPAIGN_BY_ID_QUERY = gql`
     campaignById(id: $id) {
       id
       title
+      theme
       description
+      imageUrl
       moderationStatus
       startAt
+      airdropAt
       endAt
+      rewardsMultiplier
+      airdropAmount
     }
   }
 `;

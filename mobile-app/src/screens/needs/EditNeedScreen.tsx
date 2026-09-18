@@ -29,8 +29,10 @@ export interface EditNeedScreenProps {
   creatorAccountId: string | null;
   initialNeed: NeedItem | null;
   campaigns?: LinkableCampaignItem[];
+  initialCampaignId?: string | null;
   onBack: () => void;
   onSaved: () => void;
+  onOpenCampaign?: (campaignId: string) => void;
 }
 
 interface NatureToggleRowProps {
@@ -56,8 +58,10 @@ export function EditNeedScreen({
   creatorAccountId,
   initialNeed,
   campaigns: injectedCampaigns,
+  initialCampaignId,
   onBack,
-  onSaved
+  onSaved,
+  onOpenCampaign
 }: EditNeedScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us2"]);
   const [title, setTitle] = useState(initialNeed?.title ?? "");
@@ -74,7 +78,7 @@ export function EditNeedScreen({
   const [requiredPeopleCountText, setRequiredPeopleCountText] = useState(
     initialNeed?.requiredPeopleCount ? String(initialNeed.requiredPeopleCount) : ""
   );
-  const [campaignId, setCampaignId] = useState(initialNeed?.campaignId ?? "");
+  const [campaignId, setCampaignId] = useState(initialNeed?.campaignId ?? initialCampaignId ?? "");
   const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>(injectedCampaigns ?? []);
   const [showCampaignDialog, setShowCampaignDialog] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
@@ -374,7 +378,16 @@ export function EditNeedScreen({
         title={t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
         items={[
           { value: "", label: t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" }) },
-          ...campaigns.map((campaign) => ({ value: campaign.id, label: campaign.title }))
+          ...campaigns.map((campaign) => ({
+            value: campaign.id,
+            label: campaign.title,
+            ...(onOpenCampaign
+              ? {
+                  actionIcon: "eye",
+                  actionAccessibilityLabel: t("openCampaignPublic", { defaultValue: "View campaign" })
+                }
+              : {})
+          }))
         ]}
         selectedValues={[campaignId]}
         multiple={false}
@@ -383,6 +396,7 @@ export function EditNeedScreen({
           setCampaignId(values[0] ?? "");
           setShowCampaignDialog(false);
         }}
+        {...(onOpenCampaign ? { onItemAction: (item: { value: string }) => onOpenCampaign(item.value) } : {})}
         testID="need-campaign-dialog"
       />
 

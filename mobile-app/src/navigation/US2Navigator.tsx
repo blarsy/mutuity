@@ -8,6 +8,7 @@ import type { SearchResourceItem } from "../screens/resources/SearchResourcesScr
 import { SearchNeedsScreen } from "../screens/needs/SearchNeedsScreen";
 import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
 import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
+import { CampaignPublicInfoScreen } from "../screens/campaigns/CampaignPublicInfoScreen";
 import { ErrorState } from "../components/state/ErrorState";
 import { LoadingState } from "../components/state/LoadingState";
 import {
@@ -34,6 +35,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [selectedNeedId, setSelectedNeedId] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [activeConversation, setActiveConversation] = useState<ActiveConversation | null>(null);
   const [openingConversation, setOpeningConversation] = useState(false);
   const [openDetailError, setOpenDetailError] = useState<string | null>(null);
@@ -143,6 +145,16 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
     );
   }
 
+  if (selectedCampaignId) {
+    return (
+      <CampaignPublicInfoScreen
+        campaignId={selectedCampaignId}
+        currentAccountId={currentAccountId}
+        onBack={() => setSelectedCampaignId(null)}
+      />
+    );
+  }
+
   if (selectedResourceId) {
     if (openDetailError) {
       return (
@@ -222,6 +234,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
         currentAccountId={currentAccountId}
         onOpenNeed={(need) => setSelectedNeedId(need.id)}
         onSwitchToResources={() => setActiveSurface("resources")}
+        onOpenCampaign={(campaignId) => setSelectedCampaignId(campaignId)}
       />
     );
   }
@@ -231,6 +244,7 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
       currentAccountId={currentAccountId}
       onOpenResource={handleOpenResource}
       onSwitchToNeeds={() => setActiveSurface("needs")}
+      onOpenCampaign={(campaignId) => setSelectedCampaignId(campaignId)}
     />
   );
 }

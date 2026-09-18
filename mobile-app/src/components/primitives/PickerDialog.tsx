@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Checkbox, Divider, RadioButton, Text } from "react-native-paper";
+import { Button, Checkbox, Divider, IconButton, RadioButton, Text } from "react-native-paper";
 
 import { designTokens } from "../../theme/tokens";
 import { ThemedDialog } from "./ThemedDialog";
@@ -9,6 +9,8 @@ export interface PickerDialogItem<TValue extends string = string> {
   value: TValue;
   label: string;
   disabled?: boolean;
+  actionIcon?: string;
+  actionAccessibilityLabel?: string;
 }
 
 export interface PickerDialogProps<TValue extends string = string> {
@@ -20,6 +22,7 @@ export interface PickerDialogProps<TValue extends string = string> {
   onDismiss: () => void;
   multiple?: boolean;
   testID?: string | undefined;
+  onItemAction?: (item: PickerDialogItem<TValue>) => void;
 }
 
 export function PickerDialog<TValue extends string = string>({
@@ -30,7 +33,8 @@ export function PickerDialog<TValue extends string = string>({
   onConfirm,
   onDismiss,
   multiple = true,
-  testID
+  testID,
+  onItemAction
 }: PickerDialogProps<TValue>): React.JSX.Element {
   const [draftSelectedValues, setDraftSelectedValues] = useState<TValue[]>(selectedValues);
 
@@ -99,6 +103,19 @@ export function PickerDialog<TValue extends string = string>({
                   >
                     {item.label}
                   </Text>
+                  {onItemAction && item.actionIcon ? (
+                    <IconButton
+                      icon={item.actionIcon}
+                      size={20}
+                      {...(item.actionAccessibilityLabel
+                        ? { accessibilityLabel: item.actionAccessibilityLabel }
+                        : {})}
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        onItemAction(item);
+                      }}
+                    />
+                  ) : null}
                 </Pressable>
               </View>
             );

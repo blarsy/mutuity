@@ -7,7 +7,7 @@ import {
   type CampaignPatch,
   type Query
 } from "./generated";
-import { CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "./operations";
+import { CAMPAIGN_BY_ID_QUERY, CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "./operations";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -179,6 +179,18 @@ export async function fetchInspirationCampaigns(): Promise<CampaignItem[]> {
   return (data?.allCampaigns?.nodes ?? [])
     .map((campaign) => normalizeCampaign(campaign))
     .filter((campaign): campaign is CampaignItem => campaign !== null);
+}
+
+export async function fetchCampaignById(campaignId: string): Promise<CampaignItem | null> {
+  const { data } = await apolloClient.query<{
+    campaignById?: Campaign | null;
+  }, { id: string }>({
+    query: CAMPAIGN_BY_ID_QUERY,
+    variables: { id: campaignId },
+    fetchPolicy: "network-only"
+  });
+
+  return data?.campaignById ? normalizeCampaign(data.campaignById) : null;
 }
 
 export async function createCampaignForAccount(

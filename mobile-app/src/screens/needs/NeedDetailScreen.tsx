@@ -243,7 +243,7 @@ export function NeedDetailScreen({
             ) : null}
             {!isViewerOwner && currentAccountId ? (
               <IconButton
-                icon="hand-front-right"
+                icon="hand-wave"
                 size={26}
                 onPress={() => {
                   setClaimMessage(existingClaim?.message ?? "");

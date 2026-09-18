@@ -19,6 +19,8 @@ import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen"
 import { EditNeedScreen } from "../screens/needs/EditNeedScreen";
 import { MyNeedsScreen } from "../screens/needs/MyNeedsScreen";
 import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
+import { CampaignPublicInfoScreen } from "../screens/campaigns/CampaignPublicInfoScreen";
+import type { CampaignItem } from "../services/graphql/campaigns";
 import { ReceivedBidsScreen } from "../screens/bids/ReceivedBidsScreen";
 import { SentBidsScreen } from "../screens/bids/SentBidsScreen";
 import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
@@ -265,6 +267,9 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
   const [editingNeed, setEditingNeed] = useState<NeedItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingNeed, setIsCreatingNeed] = useState(false);
+  const [pendingResourceCampaignId, setPendingResourceCampaignId] = useState<string | null>(null);
+  const [pendingNeedCampaignId, setPendingNeedCampaignId] = useState<string | null>(null);
+  const [openedCampaignId, setOpenedCampaignId] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [needsRefreshToken, setNeedsRefreshToken] = useState(0);
   const [activeDrawerItem, setActiveDrawerItem] = useState<MyHubDrawerItem>("myResources");
@@ -440,20 +445,46 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
     );
   }
 
+  if (openedCampaignId) {
+    return (
+      <CampaignPublicInfoScreen
+        campaignId={openedCampaignId}
+        currentAccountId={accountId}
+        onBack={() => setOpenedCampaignId(null)}
+        onLaunchNewResource={(campaign: CampaignItem) => {
+          setPendingResourceCampaignId(campaign.id);
+          setIsCreating(true);
+          setEditingResource(null);
+          setOpenedCampaignId(null);
+        }}
+        onLaunchNewNeed={(campaign: CampaignItem) => {
+          setPendingNeedCampaignId(campaign.id);
+          setIsCreatingNeed(true);
+          setEditingNeed(null);
+          setOpenedCampaignId(null);
+        }}
+      />
+    );
+  }
+
   if (isCreating || editingResource) {
     return (
       <EditResourceScreen
         creatorAccountId={accountId}
         initialResource={editingResource}
+        initialCampaignId={pendingResourceCampaignId}
         onBack={() => {
           setIsCreating(false);
           setEditingResource(null);
+          setPendingResourceCampaignId(null);
         }}
         onSaved={() => {
           setIsCreating(false);
           setEditingResource(null);
+          setPendingResourceCampaignId(null);
           setRefreshToken((previous) => previous + 1);
         }}
+        onOpenCampaign={(campaignId) => setOpenedCampaignId(campaignId)}
       />
     );
   }
@@ -534,15 +565,19 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       <EditNeedScreen
         creatorAccountId={accountId}
         initialNeed={editingNeed}
+        initialCampaignId={pendingNeedCampaignId}
         onBack={() => {
           setIsCreatingNeed(false);
           setEditingNeed(null);
+          setPendingNeedCampaignId(null);
         }}
         onSaved={() => {
           setIsCreatingNeed(false);
           setEditingNeed(null);
+          setPendingNeedCampaignId(null);
           setNeedsRefreshToken((previous) => previous + 1);
         }}
+        onOpenCampaign={(campaignId) => setOpenedCampaignId(campaignId)}
       />
     );
   }

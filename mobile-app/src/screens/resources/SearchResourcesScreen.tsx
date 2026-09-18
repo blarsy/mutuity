@@ -83,6 +83,7 @@ export interface SearchResourcesScreenProps {
   onOpenResource?: (resource: SearchResourceItem) => void;
   onOpenResourceChat?: (resource: SearchResourceItem) => void;
   currentAccountId?: string | null;
+  onOpenCampaign?: (campaignId: string) => void;
 }
 
 function formatPublishedDate(value: string | null, locale: string): string | null {
@@ -124,7 +125,8 @@ export function SearchResourcesScreen({
   onSwitchToNeeds,
   onOpenResource,
   onOpenResourceChat,
-  currentAccountId = null
+  currentAccountId = null,
+  onOpenCampaign
 }: SearchResourcesScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
   const defaultLocationLabel = t("locationAroundMeLabel", { defaultValue: "Around me" });
@@ -669,13 +671,23 @@ export function SearchResourcesScreen({
       <PickerDialog
         visible={showCampaignsDialog}
         title={t("campaignsLabel", { defaultValue: "Campaigns" })}
-        items={campaignOptions.map((campaign) => ({ value: campaign.id, label: campaign.title }))}
+        items={campaignOptions.map((campaign) => ({
+          value: campaign.id,
+          label: campaign.title,
+          ...(onOpenCampaign
+            ? {
+                actionIcon: "eye",
+                actionAccessibilityLabel: t("openCampaignPublic", { defaultValue: "View campaign" })
+              }
+            : {})
+        }))}
         selectedValues={selectedCampaignIds}
         onDismiss={() => setShowCampaignsDialog(false)}
         onConfirm={(nextSelectedCampaignIds) => {
           setSelectedCampaignIds(nextSelectedCampaignIds);
           setShowCampaignsDialog(false);
         }}
+        {...(onOpenCampaign ? { onItemAction: (item: { value: string }) => onOpenCampaign(item.value) } : {})}
       />
     </ScreenContainer>
   );
