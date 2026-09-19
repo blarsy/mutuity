@@ -193,7 +193,7 @@ export function MyResourcesScreen({
                 </View>
               )}
 
-              <TokenAmount amount={resource.defaultTokenAmount} />
+              <TokenAmount showExplainer={false} amount={resource.defaultTokenAmount} />
 
               <Text variant="titleMedium" numberOfLines={2} style={styles.cardTitle}>
                 {resource.title}

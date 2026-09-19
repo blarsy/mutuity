@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,7 @@ import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { FormTextInput } from "./FormTextInput";
 import { PriceGradientBar } from "./PriceGradientBar";
+import { TokenExplainerDialog } from "../tokenExplainer/TokenExplainerDialog";
 
 export interface PriceSetterProps {
   label: string;
@@ -78,6 +79,8 @@ export function PriceSetter({
   accessibilityLabel
 }: PriceSetterProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us2"]);
+  const [explainerPressed, setExplainerPressed] = useState(false);
+  const [explainerVisible, setExplainerVisible] = useState(false);
   const safeValue = value ?? 0;
 
   return (
@@ -95,7 +98,21 @@ export function PriceSetter({
           keyboardType="number-pad"
           style={styles.input}
         />
-        <Icon source="help-circle" size={20} color={designTokens.colors.primary} />
+        <Pressable
+          accessibilityRole="button"
+          testID="token-amount-explainer-button"
+          onPressIn={() => setExplainerPressed(true)}
+          onPressOut={() => setExplainerPressed(false)}
+          onPress={() => setExplainerVisible(true)}
+          hitSlop={8}
+          style={styles.explainerButton}
+        >
+          <Icon
+            source="help"
+            size={15}
+            color={explainerPressed ? designTokens.colors.primary : "#2F241D"}
+          />
+        </Pressable>
       </View>
 
       <View style={styles.gradientRow}>
@@ -112,6 +129,12 @@ export function PriceSetter({
           })}
         </Text>
       </View>
+
+      <TokenExplainerDialog
+        visible={explainerVisible}
+        onClose={() => setExplainerVisible(false)}
+        testID="token-amount-explainer-dialog"
+      />
     </View>
   );
 }
@@ -137,5 +160,9 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: designTokens.spacing.sm,
     fontFamily: appFontFamilies.general
+  },
+  explainerButton: {
+    alignItems: "flex-start",
+    justifyContent: "center"
   }
 });

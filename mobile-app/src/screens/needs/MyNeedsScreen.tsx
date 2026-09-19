@@ -176,7 +176,7 @@ export function MyNeedsScreen({
                 </View>
               )}
 
-              <TokenAmount amount={need.proposedTokenAmount} />
+              <TokenAmount showExplainer={false} amount={need.proposedTokenAmount} />
 
               <Text variant="titleMedium" numberOfLines={2} style={styles.cardTitle}>
                 {need.title}
