@@ -17,20 +17,16 @@
     "nextButton": "Next",
     "slides": {
       "what": {
-        "title": "Topes track contribution, not price tags",
-        "body": "Topes are used to recognize participation across needs, resources, settlements, gifts, and campaign outcomes."
+        "title": "The Token of Reciprocity",
+        "body": "A Tope is not money or a fixed price—it's a measure of appreciation. Designed to spark sharing, it carries no exact market value, keeping our exchange community human, flexible, and free from conventional currency rules."
       },
       "earn": {
-        "title": "You earn Topes from actions",
-        "body": "Profile completion milestones, resource milestones, claim progress, and campaign events can credit your balance."
+        "title": "The 4 Levels of Appreciation",
+        "body": "Use the scale bar to set your level of appreciation:\n\nQuick Hand (1–50 Topes): Small favors, tool loans, garden surpluses.\n\nSharing (100–500 Topes): One-hour help, specialized gear loans.\n\nCommitment (1,000–3,000 Topes): Skill sharing, long-term vehicle loans.\n\nRare Resource (5,000+ Topes): Workspace access, rare expertise.\n\nTip: Typing an amount or tapping the gradient bar syncs your choice automatically."
       },
       "spend": {
-        "title": "You spend Topes in exchanges",
-        "body": "Bids, claim settlements, and direct gifts can debit your balance, and related refunds or credits are recorded in the ledger."
-      },
-      "tips": {
-        "title": "Use the ledger as your source of truth",
-        "body": "Every movement is timestamped and categorized so you can understand why your balance changed and where it came from."
+        "title": "Seasonal Community Airdrops",
+        "body": "You don't need to hoard Topes. Complete your profile and publish resources to earn initial tokens. During community campaigns, participating active members receive seasonal token drops (3,000 to 8,000 Topes) to keep the reciprocity flowing!"
       }
     }
   },

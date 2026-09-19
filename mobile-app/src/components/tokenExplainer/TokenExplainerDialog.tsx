@@ -81,10 +81,10 @@ function TokenExplainerDialogContent({
       />
 
       <Text variant="titleMedium" style={styles.slideTitle}>
-        {currentSlide.title}
+        {t(currentSlide.title, { ns: "us1", defaultValue: currentSlide.title })}
       </Text>
       <Text variant="bodyMedium" style={styles.slideBody}>
-        {currentSlide.body}
+        {t(currentSlide.body, { ns: "us1", defaultValue: currentSlide.body })}
       </Text>
 
       <View style={styles.actionsRow}>

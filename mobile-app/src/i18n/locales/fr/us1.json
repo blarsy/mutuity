@@ -20,16 +20,16 @@
     "nextButton": "Suivant",
     "slides": {
       "what": {
-        "title": "Les Topes suivent la contribution, pas un prix fixe",
-        "body": "Les Topes servent a reconnaitre la participation dans les besoins, les ressources, les reglements, les dons et les campagnes."
+        "title": "Le jeton de la réciprocité",
+        "body": "Un Tope n'est pas de l'argent ni un prix fixe : c'est une mesure d'appréciation. Conçu pour encourager le partage, il n'a pas de valeur marchande exacte, ce qui permet à notre communauté d'échanges de rester humaine, flexible et libre des règles de la monnaie conventionnelle."
       },
       "earn": {
-        "title": "Vous gagnez des Topes par vos actions",
-        "body": "Les jalons du profil, des ressources, des demandes et des campagnes peuvent crediter votre solde."
+        "title": "Les 4 niveaux d'appréciation",
+        "body": "Utilisez la barre de progression pour définir votre niveau d'appréciation :\n\nMain rapide (1–50 Topes) : Petits services, prêts d'outils, surplus de jardin.\n\nPartage (100–500 Topes) : Aide d'une heure, prêts de matériel spécialisé.\n\nEngagement (1 000–3 000 Topes) : Partage de compétences, prêts de véhicules à long terme.\n\nRessource rare (5 000+ Topes) : Accès à un espace de travail, expertise rare.\n\nAstuce : Saisir un montant ou toucher la barre de dégradé synchronise automatiquement votre choix."
       },
       "spend": {
-        "title": "Vous depensez des Topes dans les echanges",
-        "body": "Les offres, les reglements de demandes et les dons directs peuvent debiter votre solde, avec remboursements et credits traces dans le registre."
+        "title": "Airdrops communautaires saisonniers",
+        "body": "Vous n'avez pas besoin d'accumuler des Topes. Complétez votre profil et publiez des ressources pour gagner des jetons initiaux. Lors des campagnes communautaires, les membres actifs participants reçoivent des distributions saisonnières de jetons (3 000 à 8 000 Topes) pour maintenir la réciprocité !"
       }
     }
   },
