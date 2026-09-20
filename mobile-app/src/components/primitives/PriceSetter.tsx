@@ -96,7 +96,6 @@ export function PriceSetter({
           }}
           {...(onBlur ? { onBlur } : {})}
           keyboardType="number-pad"
-          style={styles.input}
         />
         <Pressable
           accessibilityRole="button"
@@ -147,9 +146,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: designTokens.spacing.xs
-  },
-  input: {
-    flex: 1
   },
   gradientRow: {
     gap: designTokens.spacing.sm,
