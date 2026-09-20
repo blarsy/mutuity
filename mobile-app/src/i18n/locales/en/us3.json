@@ -9,6 +9,7 @@
   "campaignStatusApproved": "Approved",
   "campaignStatusAwaitingAdaptation": "Awaiting Adaptation",
   "campaignDescriptionEmpty": "No description.",
+  "campaignEntryCreatedBy": "by {{creator}}",
   "campaignResourcesCount": "{{count}} resource",
   "campaignResourcesCount_plural": "{{count}} resources",
   "campaignNeedsCount": "{{count}} need",

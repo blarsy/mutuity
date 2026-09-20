@@ -3,6 +3,7 @@ import type { KeyboardEvent, MouseEvent } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Dialog, IconButton } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 type ZoomableImageProps = {
   src: string;
@@ -12,6 +13,7 @@ type ZoomableImageProps = {
 };
 
 export function ZoomableImage({ src, alt, sx, stopPropagation = false }: ZoomableImageProps) {
+  const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
 
   const handleOpen = (event: MouseEvent<HTMLElement>) => {
@@ -65,7 +67,7 @@ export function ZoomableImage({ src, alt, sx, stopPropagation = false }: Zoomabl
           }}
         >
           <IconButton
-            aria-label="Close image viewer"
+            aria-label={t("actions.closeImageViewer", "Close image viewer")}
             onClick={(event) => {
               event.stopPropagation();
               setOpen(false);

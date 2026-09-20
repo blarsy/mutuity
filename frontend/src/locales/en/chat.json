@@ -46,6 +46,7 @@
     "selectFile": "Select a file",
     "dragHint": "or drag images here",
     "cropHint": "Draw a square crop area on the image",
+    "cropAlt": "Crop preview",
     "uploadImage": "Crop and upload",
     "uploadedImages": "Uploaded {{count}} of {{max}} image(s)",
     "removeImage": "Remove image",

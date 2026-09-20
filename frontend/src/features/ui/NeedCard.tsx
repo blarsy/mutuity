@@ -3,6 +3,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Box, ButtonBase, Card, CardContent, IconButton, Stack, Typography } from "@mui/material";
 import type { MouseEvent, ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ListingHeader } from "./ListingHeader";
 
@@ -36,6 +37,7 @@ export function NeedCard({
   onClick,
   onCreatorClick
 }: NeedCardProps) {
+  const { t } = useTranslation("needs");
   const images = (imageUrls ?? []).filter((url): url is string => Boolean(url && url.trim()));
   const [imageIndex, setImageIndex] = useState(0);
   const currentImage = images[imageIndex] ?? null;
@@ -105,7 +107,7 @@ export function NeedCard({
               }}
             />
           ) : (
-            <Typography variant="body2">No image</Typography>
+            <Typography variant="body2">{t("noImage", "No image")}</Typography>
           )}
         </Box>
 

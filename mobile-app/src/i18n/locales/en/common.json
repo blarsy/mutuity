@@ -1,4 +1,5 @@
 {
+  "account": "Account",
   "appName": "Mutuity",
   "mainNavigation": "Main navigation",
   "loading": "Loading...",
@@ -32,9 +33,9 @@
   "noDate": "No date",
   "setDate": "Set date",
   "selectButtonCaption": "Select",
-  "priceLegUp": "Leg up (1 - 50)",
-  "priceFavor": "Favor (100 - 500)",
-  "priceCommitment": "Commitment (1 000 - 3 000)",
+  "priceLegUp": "Leg up (1 - 99)",
+  "priceFavor": "Favor (100 - 999)",
+  "priceCommitment": "Commitment (1 000 - 4999)",
   "pricePrecious": "Rare contribution (5 000+)",
   "saveResource": "Save resource",
   "resourceCategoryRequired": "Select at least one category.",
@@ -53,6 +54,12 @@
   "passwordMismatch": "Passwords do not match.",
   "passwordTooShort": "Password must be at least 8 characters.",
   "ok_caption": "OK",
+  "ok": "OK",
   "cancel_caption": "Cancel",
+  "cancel": "Cancel",
+  "close": "Close",
+  "removeImage": "Remove image",
+  "resourceAuthorUnavailable": "Resource author unavailable",
+  "needAuthorUnavailable": "Need author unavailable",
   "fieldRequired": "This field is required."
 }

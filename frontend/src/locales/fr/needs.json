@@ -33,6 +33,7 @@
     "yourClaim": "votre demande : {{status}}",
     "incomingClaims_one": "{{count}} demande reçue",
     "incomingClaims_other": "{{count}} demandes reçues",
+    "noImage": "Aucune image",
     "tooling": "Outillage",
     "competence": "Compétence",
     "weightedScore": "Score pondéré",

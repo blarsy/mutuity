@@ -1,4 +1,5 @@
 {
+  "account": "Compte",
   "appName": "Mutuity",
   "mainNavigation": "Navigation principale",
   "loading": "Chargement...",
@@ -53,6 +54,12 @@
   "passwordMismatch": "Les mots de passe ne correspondent pas.",
   "passwordTooShort": "Le mot de passe doit comporter au moins 8 caractères.",
   "ok_caption": "OK",
+  "ok": "OK",
   "cancel_caption": "Annuler",
+  "cancel": "Annuler",
+  "close": "Fermer",
+  "removeImage": "Supprimer l'image",
+  "resourceAuthorUnavailable": "Auteur de la ressource indisponible",
+  "needAuthorUnavailable": "Auteur du besoin indisponible",
   "fieldRequired": "Ce champ est obligatoire."
 }

@@ -2,6 +2,7 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { Icon, IconButton, Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { FormFieldLabel } from "./FormFieldLabel";
@@ -23,6 +24,7 @@ export function PicturesField({
   addFromCameraLabel,
   addFromLibraryLabel
 }: PicturesFieldProps): React.JSX.Element {
+  const { t } = useTranslation("common");
   const [busy, setBusy] = useState(false);
 
   const appendUris = (uris: string[]): void => {
@@ -127,7 +129,7 @@ export function PicturesField({
                 iconColor="#fff"
                 containerColor="rgba(0,0,0,0.55)"
                 onPress={() => removeAtIndex(index)}
-                accessibilityLabel="Remove image"
+                accessibilityLabel={t("removeImage", { defaultValue: "Remove image" })}
               />
             </View>
           ))}

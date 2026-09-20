@@ -1,6 +1,7 @@
 import React from "react";
 import { Image, Pressable, StyleSheet, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from "react-native";
 import { Icon, Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 import { AccountAvatar } from "../AccountAvatar";
 import { appFontFamilies } from "../../theme/fonts";
@@ -39,10 +40,6 @@ function formatDeletedAt(value: string | null | undefined): string | null {
   return new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", year: "numeric" }).format(deletedAt);
 }
 
-function getFallbackAuthor(kind: ListingContextKind): string {
-  return kind === "resource" ? "Resource author unavailable" : "Need author unavailable";
-}
-
 export function ListingContextHeader({
   kind,
   title,
@@ -57,8 +54,13 @@ export function ListingContextHeader({
   onPressAuthor,
   containerStyle
 }: ListingContextHeaderProps): React.JSX.Element {
+  const { t } = useTranslation("common");
+  const fallbackAuthor =
+    kind === "resource"
+      ? t("resourceAuthorUnavailable", { defaultValue: "Resource author unavailable" })
+      : t("needAuthorUnavailable", { defaultValue: "Need author unavailable" });
   const hasImage = typeof listingImageUrl === "string" && listingImageUrl.trim().length > 0;
-  const resolvedAuthorName = authorDisplayName?.trim() ? authorDisplayName : getFallbackAuthor(kind);
+  const resolvedAuthorName = authorDisplayName?.trim() ? authorDisplayName : fallbackAuthor;
   const deletedAtLabel = formatDeletedAt(deletedAt);
   const listingPressHandler = onPressListing ?? onPress;
   const authorPressHandler = onPressAuthor ?? onPress;

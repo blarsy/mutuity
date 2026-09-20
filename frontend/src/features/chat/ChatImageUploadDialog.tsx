@@ -272,7 +272,7 @@ export function ChatImageUploadDialog({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   ref={imgRef}
-                  alt="crop"
+                  alt={tChat("imageUpload.cropAlt", "Crop preview")}
                   src={URL.createObjectURL(imageFile)}
                   style={{ maxWidth: "100%" }}
                 />

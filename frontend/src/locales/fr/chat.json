@@ -46,6 +46,7 @@
     "selectFile": "Sélectionner un fichier",
     "dragHint": "ou glissez des images ici",
     "cropHint": "Tracez une zone de recadrage carrée sur l'image",
+    "cropAlt": "Aperçu du recadrage",
     "uploadImage": "Recadrer et télécharger",
     "uploadedImages": "Téléchargé {{count}} sur {{max}} image(s)",
     "removeImage": "Supprimer l'image",

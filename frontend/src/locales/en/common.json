@@ -9,7 +9,19 @@
     "delete": "Delete",
     "edit": "Edit",
     "save": "Save",
-    "close": "Close"
+    "close": "Close",
+    "closeImageViewer": "Close image viewer"
+  },
+  "richText": {
+    "style": "Style",
+    "body": "Body",
+    "heading": "Heading {{level}}",
+    "bold": "Bold",
+    "italic": "Italic",
+    "bulletedList": "Bulleted list",
+    "numberedList": "Numbered list",
+    "link": "Insert or edit link",
+    "emoji": "Insert emoji"
   },
   "placeholder": {
     "reserved": "This page is reserved in the new shared navigation shell and will be filled out in a later slice.",

@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 import { designTokens } from "../../theme/tokens";
 
@@ -14,16 +15,21 @@ export interface SocialAuthButtonsProps {
 const socialProviders: ReadonlyArray<SocialProvider> = ["apple", "google"];
 
 export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAuthButtonsProps): React.JSX.Element {
+  const { t } = useTranslation("us1");
   const hasAtLeastOneProvider = typeof onPress === "function";
 
   return (
     <View style={styles.root}>
       <Text variant="bodyMedium" style={styles.label}>
-        Or continue with
+        {t("socialAuthOrContinueWith", { defaultValue: "Or continue with" })}
       </Text>
 
       {socialProviders.map((provider) => {
         const isLoading = loadingProvider === provider;
+        const providerLabel =
+          provider === "google"
+            ? t("socialAuthContinueWithGoogle", { defaultValue: "Continue with Google" })
+            : t("socialAuthContinueWithApple", { defaultValue: "Continue with Apple" });
 
         return (
           <Button
@@ -36,7 +42,7 @@ export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAut
             loading={isLoading}
             contentStyle={styles.buttonContent}
             style={styles.button}
-            accessibilityLabel={provider === "google" ? "Continue with Google" : "Continue with Apple"}
+            accessibilityLabel={providerLabel}
             onPress={() => {
               if (onPress) {
                 void onPress(provider);
@@ -44,14 +50,14 @@ export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAut
             }}
             testID={`auth-social-${provider}`}
           >
-            {provider === "google" ? "Continue with Google" : "Continue with Apple"}
+            {providerLabel}
           </Button>
         );
       })}
 
       {!hasAtLeastOneProvider ? (
         <Text variant="bodySmall" style={styles.helpText}>
-          Social sign-in is not available on mobile yet.
+          {t("socialAuthUnavailableMessage", { defaultValue: "Social sign-in is not available on mobile yet." })}
         </Text>
       ) : null}
     </View>

@@ -381,7 +381,11 @@ export function CampaignDetailScreen({
                     </Text>
                     <Text variant="bodySmall">{entry.title}</Text>
                     <Text variant="labelSmall" style={styles.entryCreator}>
-                      by {entry.creatorDisplayName ?? "Unknown"}
+                      {t("campaignEntryCreatedBy", {
+                        ns: "us3",
+                        defaultValue: "by {{creator}}",
+                        creator: entry.creatorDisplayName ?? t("unknown", { defaultValue: "Unknown" })
+                      })}
                     </Text>
                   </View>
 

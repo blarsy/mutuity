@@ -22,7 +22,7 @@
       },
       "earn": {
         "title": "Les 4 niveaux d'appréciation",
-        "body": "Utilisez la barre de progression pour définir votre niveau d'appréciation :\n\nMain rapide (1–50 Topes) : Petits services, prêts d'outils, surplus de jardin.\n\nPartage (100–500 Topes) : Aide d'une heure, prêts de matériel spécialisé.\n\nEngagement (1 000–3 000 Topes) : Partage de compétences, prêts de véhicules à long terme.\n\nRessource rare (5 000+ Topes) : Accès à un espace de travail, expertise rare.\n\nAstuce : Saisir un montant ou toucher la barre de dégradé synchronise automatiquement votre choix."
+        "body": "Utilisez la barre de progression pour définir votre niveau d'appréciation :\n\nMain rapide (1–99 Topes) : Petits services, prêts d'outils, surplus de jardin.\n\nPartage (100–999 Topes) : Aide d'une heure, prêts de matériel spécialisé.\n\nEngagement (1 000–4 999 Topes) : Partage de compétences, prêts de véhicules à long terme.\n\nRessource rare (5 000+ Topes) : Accès à un espace de travail, expertise rare.\n\nAstuce : Saisir un montant ou toucher la barre de dégradé synchronise automatiquement votre choix."
       },
       "spend": {
         "title": "Airdrops communautaires saisonniers",

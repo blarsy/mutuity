@@ -33,6 +33,7 @@
     "yourClaim": "your claim: {{status}}",
     "incomingClaims_one": "{{count}} incoming claim",
     "incomingClaims_other": "{{count}} incoming claims",
+    "noImage": "No image",
     "tooling": "Tooling",
     "competence": "Competence",
     "weightedScore": "Weighted score",

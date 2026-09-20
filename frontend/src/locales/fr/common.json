@@ -9,7 +9,19 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "save": "Enregistrer",
-    "close": "Fermer"
+    "close": "Fermer",
+    "closeImageViewer": "Fermer la visionneuse d'images"
+  },
+  "richText": {
+    "style": "Style",
+    "body": "Corps de texte",
+    "heading": "Titre {{level}}",
+    "bold": "Gras",
+    "italic": "Italique",
+    "bulletedList": "Liste à puces",
+    "numberedList": "Liste numérotée",
+    "link": "Insérer ou modifier un lien",
+    "emoji": "Insérer un emoji"
   },
   "placeholder": {
     "reserved": "Cette page est réservée dans la nouvelle architecture de navigation et sera implémentée dans une prochaine tranche.",

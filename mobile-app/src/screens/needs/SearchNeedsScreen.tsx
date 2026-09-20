@@ -318,6 +318,7 @@ export function SearchNeedsScreen({
           <View style={styles.chipsRow}>
             {intensityFilterOptions().map((intensity) => (
               <Chip
+                mode="outlined"
                 key={`intensity-${String(intensity)}`}
                 selected={selectedIntensities.includes(intensity)}
                 onPress={() => toggleIntensity(intensity)}

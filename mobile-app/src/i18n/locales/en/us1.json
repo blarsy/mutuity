@@ -12,6 +12,10 @@
   "myHubDrawerProfile": "Profile",
   "myHubDrawerPreferences": "Preferences",
   "myHubDrawerContribution": "Contribution",
+  "socialAuthOrContinueWith": "Or continue with",
+  "socialAuthContinueWithGoogle": "Continue with Google",
+  "socialAuthContinueWithApple": "Continue with Apple",
+  "socialAuthUnavailableMessage": "Social sign-in is not available on mobile yet.",
   "topesGuide": {
     "title": "Topes guide",
     "stepLabel": "Step {{current}} of {{total}}",

@@ -2,6 +2,7 @@ import React from "react";
 import type { PropsWithChildren } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Icon, Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 import { designTokens } from "../../theme/tokens";
 import { appFontFamilies } from "../../theme/fonts";
@@ -16,6 +17,8 @@ export interface AuthDialogProps extends PropsWithChildren {
 }
 
 export function AuthDialog({ title, subtitle, accessibilityLabel, testID, onDismiss, children }: AuthDialogProps): React.JSX.Element {
+  const { t } = useTranslation("common");
+
   return (
     <ScreenContainer testID={testID} style={styles.root}>
       <ScrollView
@@ -27,7 +30,7 @@ export function AuthDialog({ title, subtitle, accessibilityLabel, testID, onDism
         <View accessibilityLabel={accessibilityLabel ?? title} style={styles.dialog}>
           {onDismiss ? (
             <Pressable
-              accessibilityLabel="Close"
+              accessibilityLabel={t("close", { defaultValue: "Close" })}
               accessibilityRole="button"
               onPress={onDismiss}
               style={styles.dismissButton}

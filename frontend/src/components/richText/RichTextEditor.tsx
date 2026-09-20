@@ -3,6 +3,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Divider,
@@ -48,6 +49,7 @@ export function RichTextEditor({
   helperText,
   minHeight = 180
 }: RichTextEditorProps) {
+  const { t } = useTranslation("common");
   const [emojiAnchorEl, setEmojiAnchorEl] = useState<HTMLElement | null>(null);
 
   const editor = useEditor({
@@ -207,28 +209,28 @@ export function RichTextEditor({
       <Paper sx={{ mb: 1.25, p: 1 }} variant="outlined">
         <Stack alignItems="center" direction="row" spacing={0.5}>
           <FormControl size="small" sx={{ minWidth: 130 }}>
-            <InputLabel id="rte-heading-label">Style</InputLabel>
+            <InputLabel id="rte-heading-label">{t("richText.style", "Style")}</InputLabel>
             <Select
-              label="Style"
+              label={t("richText.style", "Style")}
               labelId="rte-heading-label"
               onChange={event => {
                 handleHeadingChange(event.target.value);
               }}
               value={headingValue}
             >
-              <MenuItem value="paragraph">Body</MenuItem>
-              <MenuItem value="h1">Heading 1</MenuItem>
-              <MenuItem value="h2">Heading 2</MenuItem>
-              <MenuItem value="h3">Heading 3</MenuItem>
-              <MenuItem value="h4">Heading 4</MenuItem>
-              <MenuItem value="h5">Heading 5</MenuItem>
-              <MenuItem value="h6">Heading 6</MenuItem>
+              <MenuItem value="paragraph">{t("richText.body", "Body")}</MenuItem>
+              <MenuItem value="h1">{t("richText.heading", { level: 1, defaultValue: "Heading 1" })}</MenuItem>
+              <MenuItem value="h2">{t("richText.heading", { level: 2, defaultValue: "Heading 2" })}</MenuItem>
+              <MenuItem value="h3">{t("richText.heading", { level: 3, defaultValue: "Heading 3" })}</MenuItem>
+              <MenuItem value="h4">{t("richText.heading", { level: 4, defaultValue: "Heading 4" })}</MenuItem>
+              <MenuItem value="h5">{t("richText.heading", { level: 5, defaultValue: "Heading 5" })}</MenuItem>
+              <MenuItem value="h6">{t("richText.heading", { level: 6, defaultValue: "Heading 6" })}</MenuItem>
             </Select>
           </FormControl>
 
           <Divider flexItem orientation="vertical" sx={{ mx: 1 }} />
 
-          <Tooltip title="Bold">
+          <Tooltip title={t("richText.bold", "Bold")}>
             <IconButton
               color={editor?.isActive("bold") ? "primary" : "default"}
               onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -238,7 +240,7 @@ export function RichTextEditor({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Italic">
+          <Tooltip title={t("richText.italic", "Italic")}>
             <IconButton
               color={editor?.isActive("italic") ? "primary" : "default"}
               onClick={() => editor?.chain().focus().toggleItalic().run()}
@@ -248,7 +250,7 @@ export function RichTextEditor({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Bulleted list">
+          <Tooltip title={t("richText.bulletedList", "Bulleted list")}>
             <IconButton
               color={editor?.isActive("bulletList") ? "primary" : "default"}
               onClick={() => editor?.chain().focus().toggleBulletList().run()}
@@ -258,7 +260,7 @@ export function RichTextEditor({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Numbered list">
+          <Tooltip title={t("richText.numberedList", "Numbered list")}>
             <IconButton
               color={editor?.isActive("orderedList") ? "primary" : "default"}
               onClick={() => editor?.chain().focus().toggleOrderedList().run()}
@@ -268,7 +270,7 @@ export function RichTextEditor({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Insert or edit link">
+          <Tooltip title={t("richText.link", "Insert or edit link")}>
             <IconButton
               color={editor?.isActive("link") ? "primary" : "default"}
               onClick={setLink}
@@ -278,7 +280,7 @@ export function RichTextEditor({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Insert emoji">
+          <Tooltip title={t("richText.emoji", "Insert emoji")}>
             <IconButton
               color={emojiAnchorEl ? "primary" : "default"}
               onClick={event => {

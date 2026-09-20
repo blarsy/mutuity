@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Checkbox, Divider, IconButton, RadioButton, Text } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 import { designTokens } from "../../theme/tokens";
 import { ThemedDialog } from "./ThemedDialog";
@@ -35,8 +36,7 @@ export function PickerDialog<TValue extends string = string>({
   multiple = true,
   testID,
   onItemAction
-}: PickerDialogProps<TValue>): React.JSX.Element {
-  const [draftSelectedValues, setDraftSelectedValues] = useState<TValue[]>(selectedValues);
+}: PickerDialogProps<TValue>): React.JSX.Element {  const { t } = useTranslation("common");  const [draftSelectedValues, setDraftSelectedValues] = useState<TValue[]>(selectedValues);
 
   useEffect(() => {
     if (visible) {
@@ -124,10 +124,10 @@ export function PickerDialog<TValue extends string = string>({
       }
       actions={[
         <Button key="cancel" onPress={onDismiss}>
-          Cancel
+          {t("cancel", { defaultValue: "Cancel" })}
         </Button>,
         <Button key="confirm" mode="contained" onPress={() => onConfirm(draftSelectedValues)}>
-          OK
+          {t("ok", { defaultValue: "OK" })}
         </Button>
       ]}
     />

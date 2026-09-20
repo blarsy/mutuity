@@ -1099,7 +1099,7 @@ function RootNavigator(): React.JSX.Element {
             </Menu>
           ) : (
             <Appbar.Action
-              accessibilityLabel="Account"
+              accessibilityLabel={t("account", { ns: "common", defaultValue: "Account" })}
               icon="account-outline"
               size={24}
               color="#000"
