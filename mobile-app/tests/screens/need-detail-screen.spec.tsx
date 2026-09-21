@@ -30,6 +30,8 @@ const need: NeedDetailItem = {
   location: { label: "Central district" },
   proposedTokenAmount: 120,
   intensity: NeedIntensity.Sharing,
+  distanceKm: 4.2,
+  located: true,
   objectRequired: false,
   competenceRequired: false,
   toolingRequired: false,

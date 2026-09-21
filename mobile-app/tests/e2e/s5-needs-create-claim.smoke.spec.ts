@@ -22,6 +22,8 @@ function NeedsCreateClaimHarness(): React.JSX.Element {
           description: "Need 2 people to help move a couch and table",
           proposedTokenAmount: 150,
           intensity: NeedIntensity.Sharing,
+          distanceKm: 3.0,
+          located: true,
           createdAt: "2026-07-29T10:00:00.000Z",
           creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
           claimCount: 0,

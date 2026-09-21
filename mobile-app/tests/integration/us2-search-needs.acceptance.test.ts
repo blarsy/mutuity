@@ -29,6 +29,8 @@ const injectedNeeds: NeedItem[] = [
     description: "Need a lamp for evening study",
     proposedTokenAmount: 10,
     intensity: NeedIntensity.Sharing,
+    distanceKm: 2.5,
+    located: true,
     campaignId: "campaign-education",
     createdAt: "2026-07-24T12:00:00.000Z",
     creatorAccountId: "00000000-0000-0000-0000-000000000001",
@@ -43,6 +45,8 @@ const injectedNeeds: NeedItem[] = [
     description: "Need today for carpool",
     proposedTokenAmount: 40,
     intensity: NeedIntensity.Commitment,
+    distanceKm: 8.0,
+    located: true,
     campaignId: "campaign-mobility",
     createdAt: "2026-07-25T12:00:00.000Z",
     creatorAccountId: "00000000-0000-0000-0000-000000000001",
@@ -143,5 +147,28 @@ describe("US2 search needs acceptance", () => {
 
     expect(screen.getByTestId("need-card-need-sharing")).toBeTruthy();
     expect(screen.getByTestId("need-card-need-urgent")).toBeTruthy();
+  });
+
+  it("expands the proximity section with distance controls", () => {
+    const screen = render(
+      React.createElement(
+        SafeAreaProvider,
+        null,
+        React.createElement(
+          PaperProvider,
+          null,
+          React.createElement(SearchNeedsScreen, {
+            needs: injectedNeeds,
+            currentAccountId: "123e4567-e89b-12d3-a456-426614174000"
+          })
+        )
+      )
+    );
+
+    expect(screen.queryByText("Exclude unlocated needs")).toBeNull();
+
+    fireEvent.press(screen.getByText("Proximity"));
+
+    expect(screen.getByText("Exclude unlocated needs")).toBeTruthy();
   });
 });

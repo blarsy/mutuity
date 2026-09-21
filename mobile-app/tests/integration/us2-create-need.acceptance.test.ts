@@ -26,6 +26,8 @@ function CreateNeedHarness(): React.JSX.Element {
           description: "Need someone to help before 7pm",
           proposedTokenAmount: 25,
           intensity: NeedIntensity.Commitment,
+          distanceKm: 3.0,
+          located: true,
           createdAt: "2026-07-25T12:00:00.000Z",
           creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
           claimCount: 0,

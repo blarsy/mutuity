@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Slider from "@react-native-community/slider";
 import { Checkbox, Chip, Divider, Icon, IconButton, Snackbar, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +8,8 @@ import {
   AppSegmentedButtons,
   FormTextInput,
   PickerDialog,
+  ProximityLocationEditor,
+  type ProximityLocationValue,
   ScreenContainer
 } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
@@ -21,6 +24,29 @@ import {
 import { NeedIntensity } from "../../services/graphql/generated";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+
+const MAX_DISTANCE_KM = 100;
+
+interface ProximityOptionRowProps {
+  title: string;
+  value: boolean;
+  onChange: (newValue: boolean) => void;
+}
+
+function ProximityOptionRow({ title, value, onChange }: ProximityOptionRowProps): React.JSX.Element {
+  const color = value ? designTokens.colors.primary : "#000";
+
+  return (
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: value }} onPress={() => onChange(!value)}>
+      <View style={styles.optionSelectRow}>
+        <Icon source={value ? "checkbox-marked" : "checkbox-blank-outline"} size={28} color={color} />
+        <Text variant="bodyMedium" style={[styles.optionSelectText, { color }]}>
+          {title}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
 
 export interface SearchNeedsScreenProps {
   needs?: NeedItem[];
@@ -95,12 +121,19 @@ export function SearchNeedsScreen({
   onOpenCampaign
 }: SearchNeedsScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation(["common", "us2"]);
+  const defaultLocationLabel = t("locationDefault", { defaultValue: "Tournai center" });
   const [searchTerm, setSearchTerm] = useState("");
   const [maxTokenAmount, setMaxTokenAmount] = useState("");
   const [selectedIntensities, setSelectedIntensities] = useState<NeedIntensity[]>([]);
   const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
   const [showCampaignsDialog, setShowCampaignsDialog] = useState(false);
   const [hideClaimedNeeds, setHideClaimedNeeds] = useState(false);
+  const [showProximity, setShowProximity] = useState(false);
+  const [distanceFilter, setDistanceFilter] = useState("10");
+  const [excludeUnlocated, setExcludeUnlocated] = useState(false);
+  const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
+    label: defaultLocationLabel
+  });
   const [remoteNeeds, setRemoteNeeds] = useState<NeedItem[]>([]);
   const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>(injectedCampaignOptions ?? []);
   const [remoteLoading, setRemoteLoading] = useState(false);
@@ -114,11 +147,41 @@ export function SearchNeedsScreen({
       maxTokenAmount,
       selectedIntensities,
       selectedCampaignIds,
-      hideClaimedNeeds
+      hideClaimedNeeds,
+      distanceFilter,
+      excludeUnlocated,
+      referenceLocationLabel: referenceLocation?.label ?? null,
+      referenceLatitude: referenceLocation?.latitude,
+      referenceLongitude: referenceLocation?.longitude
     }),
-    [hideClaimedNeeds, maxTokenAmount, searchTerm, selectedCampaignIds, selectedIntensities]
+    [
+      distanceFilter,
+      excludeUnlocated,
+      hideClaimedNeeds,
+      maxTokenAmount,
+      referenceLocation,
+      searchTerm,
+      selectedCampaignIds,
+      selectedIntensities
+    ]
   );
   const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
+
+  const distanceKmValue = useMemo(() => {
+    const parsed = Number.parseFloat(distanceFilter);
+    if (!Number.isFinite(parsed)) {
+      return 10;
+    }
+    return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
+  }, [distanceFilter]);
+  const hasReferenceLocation = referenceLocation !== null;
+  const debouncedDistanceKmValue = useMemo(() => {
+    const parsed = Number.parseFloat(debouncedFilters.distanceFilter);
+    if (!Number.isFinite(parsed)) {
+      return 10;
+    }
+    return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
+  }, [debouncedFilters.distanceFilter]);
 
   const parsedMaxTokenAmount = useMemo(() => {
     const parsed = Number.parseInt(debouncedFilters.maxTokenAmount, 10);
@@ -138,7 +201,16 @@ export function SearchNeedsScreen({
       intensityFilters: debouncedFilters.selectedIntensities,
       maxProposedTokenAmount: parsedMaxTokenAmount,
       hideClaimedNeeds: debouncedFilters.hideClaimedNeeds,
-      currentAccountId
+      currentAccountId,
+      hasReferenceLocation: debouncedFilters.referenceLocationLabel !== null,
+      distanceKm: debouncedDistanceKmValue,
+      referenceLocation:
+        debouncedFilters.referenceLatitude !== undefined && debouncedFilters.referenceLongitude !== undefined
+          ? {
+              latitude: debouncedFilters.referenceLatitude,
+              longitude: debouncedFilters.referenceLongitude
+            }
+          : null
     };
 
     try {
@@ -149,7 +221,7 @@ export function SearchNeedsScreen({
     } finally {
       setRemoteLoading(false);
     }
-  }, [currentAccountId, debouncedFilters, hasInjectedNeeds, parsedMaxTokenAmount, t]);
+  }, [currentAccountId, debouncedDistanceKmValue, debouncedFilters, hasInjectedNeeds, parsedMaxTokenAmount, t]);
 
   useEffect(() => {
     void loadNeeds();
@@ -173,6 +245,9 @@ export function SearchNeedsScreen({
 
   const filteredNeeds = useMemo(() => {
     const normalizedSearch = debouncedFilters.searchTerm.trim().toLowerCase();
+    const maxDistance = Number.parseFloat(debouncedFilters.distanceFilter);
+    const hasDistanceFilter = Number.isFinite(maxDistance);
+    const hasDebouncedReferenceLocation = debouncedFilters.referenceLocationLabel !== null;
 
     return sourceNeeds.filter((need) => {
       const matchesSearch =
@@ -187,8 +262,19 @@ export function SearchNeedsScreen({
           need.campaignId !== undefined &&
           debouncedFilters.selectedCampaignIds.includes(need.campaignId));
       const matchesClaimedVisibility = !debouncedFilters.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
+      const matchesDistance =
+        !hasDebouncedReferenceLocation || !hasDistanceFilter || need.distanceKm <= maxDistance;
+      const matchesUnlocated = !debouncedFilters.excludeUnlocated || need.located;
 
-      return matchesSearch && matchesIntensity && matchesTokenAmount && matchesCampaign && matchesClaimedVisibility;
+      return (
+        matchesSearch &&
+        matchesIntensity &&
+        matchesTokenAmount &&
+        matchesCampaign &&
+        matchesClaimedVisibility &&
+        matchesDistance &&
+        matchesUnlocated
+      );
     });
   }, [debouncedFilters, parsedMaxTokenAmount, sourceNeeds]);
 
@@ -218,6 +304,9 @@ export function SearchNeedsScreen({
     setSelectedIntensities([]);
     setSelectedCampaignIds([]);
     setHideClaimedNeeds(false);
+    setDistanceFilter("10");
+    setExcludeUnlocated(false);
+    setReferenceLocation({ label: defaultLocationLabel });
   };
 
   if (resolvedErrorMessage) {
@@ -344,6 +433,54 @@ export function SearchNeedsScreen({
             <Text>{t("hideClaimedNeeds", { ns: "us2", defaultValue: "Hide claimed needs" })}</Text>
           </View>
         </Pressable>
+
+        <Divider />
+
+        <Pressable accessibilityRole="button" onPress={() => setShowProximity((previous) => !previous)}>
+          <View style={styles.accordionHeader}>
+            <Text variant="titleSmall">{t("proximityTitle", { defaultValue: "Proximity" })}</Text>
+            <IconButton
+              icon={showProximity ? "chevron-up" : "chevron-right"}
+              size={18}
+              onPress={() => setShowProximity((previous) => !previous)}
+            />
+          </View>
+        </Pressable>
+
+        {showProximity ? (
+          <View style={styles.proximitySection}>
+            <ProximityLocationEditor value={referenceLocation} onChange={setReferenceLocation} />
+
+            {hasReferenceLocation ? (
+              <View style={styles.distanceZone}>
+                <Text variant="bodySmall" style={styles.distanceSummaryText}>
+                  {t("maxDistanceLabel", {
+                    defaultValue: "{{distance}} km max",
+                    distance: Math.round(distanceKmValue)
+                  })}
+                </Text>
+
+                <Slider
+                  minimumValue={1}
+                  maximumValue={MAX_DISTANCE_KM}
+                  step={5}
+                  value={distanceKmValue}
+                  minimumTrackTintColor={designTokens.colors.primary}
+                  maximumTrackTintColor={designTokens.colors.primary}
+                  thumbTintColor={designTokens.colors.primary}
+                  style={styles.proximitySlider}
+                  onValueChange={(nextValue) => setDistanceFilter(String(Math.round(nextValue)))}
+                />
+
+                <ProximityOptionRow
+                  title={t("excludeUnlocatedLabel", { defaultValue: "Exclude unlocated needs" })}
+                  value={excludeUnlocated}
+                  onChange={setExcludeUnlocated}
+                />
+              </View>
+            ) : null}
+          </View>
+        ) : null}
 
         {resolvedLoading ? (
           <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />
@@ -477,6 +614,30 @@ const styles = StyleSheet.create({
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center"
+  },
+  proximitySection: {
+    gap: 4
+  },
+  distanceZone: {
+    gap: 2
+  },
+  distanceSummaryText: {
+    textAlign: "center"
+  },
+  proximitySlider: {
+    width: "80%",
+    alignSelf: "center",
+    paddingVertical: 20
+  },
+  optionSelectRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 5,
+    flexShrink: 1
+  },
+  optionSelectText: {
+    flexShrink: 1
   },
   list: {
     gap: designTokens.spacing.sm

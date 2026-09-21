@@ -24,6 +24,8 @@ const EXISTING_NEED: NeedItem = {
   },
   proposedTokenAmount: 30,
   intensity: NeedIntensity.Sharing,
+  distanceKm: 1.8,
+  located: true,
   objectRequired: true,
   competenceRequired: false,
   toolingRequired: true,

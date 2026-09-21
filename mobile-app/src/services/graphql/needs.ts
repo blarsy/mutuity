@@ -33,6 +33,12 @@ export interface SearchNeedsFilters {
   maxProposedTokenAmount: number | null;
   hideClaimedNeeds: boolean;
   currentAccountId?: string | null;
+  hasReferenceLocation: boolean;
+  distanceKm: number;
+  referenceLocation?: {
+    latitude?: number;
+    longitude?: number;
+  } | null;
 }
 
 export interface NeedItem {
@@ -47,6 +53,8 @@ export interface NeedItem {
   } | null;
   proposedTokenAmount: number;
   intensity: NeedIntensity;
+  distanceKm: number;
+  located: boolean;
   objectRequired?: boolean;
   competenceRequired?: boolean;
   toolingRequired?: boolean;
@@ -253,7 +261,33 @@ function toSafeImageUrls(imageUrls: Array<string | null | undefined> | null | un
   return (imageUrls ?? []).filter((value): value is string => typeof value === "string" && value.length > 0);
 }
 
-function normalizeNeed(node: Need, currentAccountId: string | null): NeedItem | null {
+const EARTH_RADIUS_KM = 6371;
+
+function toRadians(value: number): number {
+  return (value * Math.PI) / 180;
+}
+
+export function calculateDistanceKm(
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number }
+): number {
+  const latitudeDelta = toRadians(to.latitude - from.latitude);
+  const longitudeDelta = toRadians(to.longitude - from.longitude);
+  const fromLatitude = toRadians(from.latitude);
+  const toLatitude = toRadians(to.latitude);
+
+  const haversine =
+    Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+    Math.cos(fromLatitude) * Math.cos(toLatitude) * Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2);
+
+  return 2 * EARTH_RADIUS_KM * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function normalizeNeed(
+  node: Need,
+  currentAccountId: string | null,
+  referenceLocation: { latitude?: number; longitude?: number } | null = null
+): NeedItem | null {
   if (!node.id || !node.title) {
     return null;
   }
@@ -261,6 +295,17 @@ function normalizeNeed(node: Need, currentAccountId: string | null): NeedItem | 
   const activeClaims = (node.needClaimsByNeedId?.nodes ?? []).filter(
     (claim) => claim.status === NeedClaimStatus.Open || claim.status === NeedClaimStatus.Settled
   );
+
+  const latitude = parseBigFloat(node.latitude);
+  const longitude = parseBigFloat(node.longitude);
+  const located = latitude !== null && longitude !== null;
+  const distanceKm =
+    located && referenceLocation?.latitude !== undefined && referenceLocation.longitude !== undefined
+      ? calculateDistanceKm(
+          { latitude, longitude },
+          { latitude: referenceLocation.latitude, longitude: referenceLocation.longitude }
+        )
+      : Number.POSITIVE_INFINITY;
 
   return {
     id: String(node.id),
@@ -272,8 +317,6 @@ function normalizeNeed(node: Need, currentAccountId: string | null): NeedItem | 
         return null;
       }
 
-      const latitude = parseBigFloat(node.latitude);
-      const longitude = parseBigFloat(node.longitude);
       const nextLocation: {
         label: string;
         latitude?: number;
@@ -294,6 +337,8 @@ function normalizeNeed(node: Need, currentAccountId: string | null): NeedItem | 
     })(),
     proposedTokenAmount: parseTokenAmount(node.proposedTopesAmount),
     intensity: node.intensity ?? NeedIntensity.Sharing,
+    distanceKm,
+    located,
     objectRequired: node.objectRequired ?? true,
     competenceRequired: node.competenceRequired ?? false,
     toolingRequired: node.toolingRequired ?? false,
@@ -367,7 +412,7 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
     (data?.publicCampaignNeedLinks?.nodes ?? []).map((link) => [String(link.needId), String(link.campaignId)])
   );
   const sourceNeeds = (data?.allNeeds?.nodes ?? [])
-    .map((need) => normalizeNeed(need, filters.currentAccountId ?? null))
+    .map((need) => normalizeNeed(need, filters.currentAccountId ?? null, filters.referenceLocation ?? null))
     .filter((need): need is NeedItem => need !== null);
 
   for (const need of sourceNeeds) {
@@ -383,8 +428,9 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
     const matchesTokenAmount =
       filters.maxProposedTokenAmount === null || need.proposedTokenAmount <= filters.maxProposedTokenAmount;
     const matchesClaimedVisibility = !filters.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
+    const matchesDistance = !filters.hasReferenceLocation || need.distanceKm <= filters.distanceKm;
 
-    return matchesSearch && matchesIntensity && matchesTokenAmount && matchesClaimedVisibility;
+    return matchesSearch && matchesIntensity && matchesTokenAmount && matchesClaimedVisibility && matchesDistance;
   });
 }
 

@@ -146,6 +146,9 @@ export const SEARCH_NEEDS_QUERY = gql`
         title
         description
         imageUrls
+        location
+        latitude
+        longitude
         createdAt
         proposedTopesAmount
         intensity
