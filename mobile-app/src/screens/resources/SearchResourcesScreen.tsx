@@ -129,7 +129,7 @@ export function SearchResourcesScreen({
   onOpenCampaign
 }: SearchResourcesScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
-  const defaultLocationLabel = t("locationAroundMeLabel", { defaultValue: "Around me" });
+  const defaultLocationLabel = t("locationDefault", { defaultValue: "Tournai center" });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [distanceFilter, setDistanceFilter] = useState("10");
