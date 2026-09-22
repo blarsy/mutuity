@@ -29,6 +29,8 @@ import type { ChatConversationItem } from "../screens/chat/ChatListScreen";
 import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
 import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
 import { NotificationsScreen as MobileNotificationsScreen } from "../screens/notifications/NotificationsScreen";
+import type { NotificationFeedItem } from "../screens/notifications/NotificationsScreen";
+import { notificationDestinationForEvent } from "../services/notifications/notificationRouting";
 import { MyProfileScreen } from "../screens/profile/MyProfileScreen";
 import { MyPreferencesScreen } from "../screens/profile/MyPreferencesScreen";
 import { MyEconomicsScreen } from "../screens/economics/MyEconomicsScreen";
@@ -124,6 +126,8 @@ interface MyHubScreenProps extends MainTabScreenProps {
   drawerVisible: boolean;
   onRequestOpenDrawer: () => void;
   onRequestCloseDrawer: () => void;
+  pendingDrawer?: { drawer: MyHubDrawerItem; needId?: string } | null;
+  onConsumePendingDrawer?: () => void;
 }
 
 interface AuthScreenShellProps {
@@ -259,7 +263,7 @@ function MyHubDrawerPlaceholderSurface({ title, body }: { title: string; body: s
   );
 }
 
-function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpenDrawer, onRequestCloseDrawer }: MyHubScreenProps): React.JSX.Element {
+function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpenDrawer, onRequestCloseDrawer, pendingDrawer, onConsumePendingDrawer }: MyHubScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   const { signOut } = useAuth();
@@ -295,6 +299,16 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
     pendingDrawerCloseRef.current = true;
     setActiveDrawerItem(key);
   };
+
+  useEffect(() => {
+    if (pendingDrawer) {
+      setActiveDrawerItem(pendingDrawer.drawer);
+      if (pendingDrawer.needId) {
+        setOpenedClaimNeedId(pendingDrawer.needId);
+      }
+      onConsumePendingDrawer?.();
+    }
+  }, [pendingDrawer, onConsumePendingDrawer]);
 
   const canAccessMyHub = authenticated && Boolean(accountId);
 
@@ -644,7 +658,7 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
 }
 
 
-function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
+function CampaignsScreen({ authenticated, onRequestAuth, pendingCampaignId, onConsumePendingCampaign }: MainTabScreenProps & { pendingCampaignId: string | null; onConsumePendingCampaign: () => void }): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   if (!authenticated) {
@@ -661,7 +675,7 @@ function CampaignsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): 
     return <LoadingScreen />;
   }
 
-  return <US3Navigator currentAccountId={accountId} />;
+  return <US3Navigator currentAccountId={accountId} pendingCampaignId={pendingCampaignId} onConsumePendingCampaign={onConsumePendingCampaign} />;
 }
 
 function ChatScreen({
@@ -769,7 +783,7 @@ function ChatScreen({
   );
 }
 
-function NotificationsScreen({ authenticated, onRequestAuth }: MainTabScreenProps): React.JSX.Element {
+function NotificationsScreen({ authenticated, onRequestAuth, onOpenNotification }: MainTabScreenProps & { onOpenNotification: (notification: NotificationFeedItem) => void }): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
 
@@ -790,7 +804,7 @@ function NotificationsScreen({ authenticated, onRequestAuth }: MainTabScreenProp
   return (
     <MobileNotificationsScreen
       accountId={accountId}
-      onOpenNotification={() => undefined}
+      onOpenNotification={onOpenNotification}
     />
   );
 }
@@ -815,6 +829,8 @@ function RootNavigator(): React.JSX.Element {
   const [incomingChatMessage, setIncomingChatMessage] = useState<ChatConversationItem | null>(null);
   const previousChatConversationsRef = useRef<Map<string, number> | null>(null);
   const navigationRef = useNavigationContainerRef<MainTabParamList>();
+  const [pendingMyHubDrawer, setPendingMyHubDrawer] = useState<{ drawer: MyHubDrawerItem; needId?: string } | null>(null);
+  const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
 
   const versionStatus = useMemo(() => getAppVersionStatus("0.1.0"), []);
 
@@ -876,6 +892,41 @@ function RootNavigator(): React.JSX.Element {
     setActiveChatConversation(conversation);
     setActiveRouteName("Chat");
     navigationRef.current?.navigate("Chat");
+  }, []);
+
+  const handleOpenNotification = useCallback((notification: NotificationFeedItem): void => {
+    const destination = notificationDestinationForEvent(
+      notification.eventType ?? "",
+      notification.payload ?? {}
+    );
+
+    switch (destination.surface) {
+      case "myHub":
+        setPendingMyHubDrawer(destination.needId
+          ? { drawer: destination.drawer, needId: destination.needId }
+          : { drawer: destination.drawer });
+        setMyHubDrawerVisible(false);
+        setActiveRouteName("MyHub");
+        navigationRef.current?.navigate("MyHub");
+        break;
+      case "campaigns":
+        setPendingCampaignId(destination.campaignId ?? null);
+        setActiveRouteName("Campaigns");
+        navigationRef.current?.navigate("Campaigns");
+        break;
+      case "chat":
+        setActiveRouteName("Chat");
+        navigationRef.current?.navigate("Chat");
+        break;
+      case "explore":
+        setActiveRouteName("Explore");
+        navigationRef.current?.navigate("Explore");
+        break;
+      case "notifications":
+      default:
+        // Stay on the notifications surface.
+        break;
+    }
   }, []);
 
   const requestAuth = (screen: AuthEntryScreen, routeName: MainRouteName): void => {
@@ -1210,11 +1261,13 @@ function RootNavigator(): React.JSX.Element {
                       drawerVisible={myHubDrawerVisible}
                       onRequestOpenDrawer={() => setMyHubDrawerVisible(true)}
                       onRequestCloseDrawer={() => setMyHubDrawerVisible(false)}
+                      pendingDrawer={pendingMyHubDrawer}
+                      onConsumePendingDrawer={() => setPendingMyHubDrawer(null)}
                     />
                   )}
                 </Tab.Screen>
                 <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }).toUpperCase() }}>
-                  {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
+                  {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} pendingCampaignId={pendingCampaignId} onConsumePendingCampaign={() => setPendingCampaignId(null)} />}
                 </Tab.Screen>
                 <Tab.Screen
                   name="Chat"
@@ -1239,7 +1292,7 @@ function RootNavigator(): React.JSX.Element {
                   )}
                 </Tab.Screen>
                 <Tab.Screen name="Notifications" options={{ tabBarLabel: t("notificationsLabel", { ns: "us1" }).toUpperCase() }}>
-                  {() => <NotificationsScreen authenticated={authenticated} onRequestAuth={requestAuth} />}
+                  {() => <NotificationsScreen authenticated={authenticated} onRequestAuth={requestAuth} onOpenNotification={handleOpenNotification} />}
                 </Tab.Screen>
               </Tab.Navigator>
             </NavigationContainer>

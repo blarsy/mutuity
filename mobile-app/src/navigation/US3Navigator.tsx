@@ -1,15 +1,18 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { MyCampaignsScreen } from "../screens/campaigns/MyCampaignsScreen";
 import { CampaignDetailScreen } from "../screens/campaigns/CampaignDetailScreen";
 import { CampaignPublicInfoScreen } from "../screens/campaigns/CampaignPublicInfoScreen";
 import { CampaignModerationStatus } from "../services/graphql/generated";
+import { fetchCampaignById } from "../services/graphql/campaigns";
 import type { CampaignItem } from "../services/graphql/campaigns";
 
 type US3Screen = "list" | "detail" | "public";
 
 export interface US3NavigatorProps {
   currentAccountId: string | null;
+  pendingCampaignId?: string | null;
+  onConsumePendingCampaign?: () => void;
 }
 
 function buildDefaultCampaignDates() {
@@ -34,13 +37,33 @@ function buildDefaultCampaignDates() {
   };
 }
 
-export function US3Navigator({ currentAccountId }: US3NavigatorProps): React.JSX.Element {
+export function US3Navigator({ currentAccountId, pendingCampaignId, onConsumePendingCampaign }: US3NavigatorProps): React.JSX.Element {
   const [activeScreen, setActiveScreen] = useState<US3Screen>("list");
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignItem | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [isNewCampaign, setIsNewCampaign] = useState(false);
 
   const defaultCampaignDates = useMemo(() => buildDefaultCampaignDates(), []);
+
+  useEffect(() => {
+    if (!pendingCampaignId) {
+      return;
+    }
+
+    let cancelled = false;
+    void fetchCampaignById(pendingCampaignId).then((campaign) => {
+      if (cancelled || !campaign) {
+        return;
+      }
+      setSelectedCampaign(campaign);
+      setActiveScreen("public");
+      onConsumePendingCampaign?.();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingCampaignId, onConsumePendingCampaign]);
 
   if (activeScreen === "detail" && selectedCampaign) {
     return (

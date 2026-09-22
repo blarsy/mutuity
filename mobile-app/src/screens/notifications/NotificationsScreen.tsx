@@ -27,6 +27,8 @@ export interface NotificationFeedItem {
   description: string;
   createdAt: string | null;
   readAt: string | null;
+  /** Raw backend payload, used to resolve the navigation destination on tap. */
+  payload?: Record<string, unknown> | null;
 }
 
 export interface NotificationsScreenProps {
@@ -35,7 +37,7 @@ export interface NotificationsScreenProps {
   loading?: boolean;
   errorMessage?: string | null;
   onRetry?: () => void;
-  onOpenNotification?: (notificationId: string) => void;
+  onOpenNotification?: (notification: NotificationFeedItem) => void;
   onMarkRead?: (notificationId: string, source: NotificationSource) => void;
   onLoadEarlier?: () => void;
 }
@@ -56,6 +58,9 @@ export function NotificationsScreen({
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [endCursor, setEndCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
+  // IDs optimistically marked as read locally while the fire-and-forget backend
+  // request is in flight (or after it completes), avoiding a full list reload.
+  const [locallyReadIds, setLocallyReadIds] = useState<Set<string>>(new Set());
 
   const hasInjectedNotifications = notifications !== undefined;
 
@@ -83,8 +88,23 @@ export function NotificationsScreen({
   }, [loadNotifications]);
 
   const sortedNotifications = useMemo(() => {
-    return [...(notifications ?? remoteNotifications)].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
-  }, [notifications, remoteNotifications]);
+    return [...(notifications ?? remoteNotifications)]
+      .map((entry) =>
+        locallyReadIds.has(entry.id) ? { ...entry, readAt: entry.readAt ?? new Date().toISOString() } : entry
+      )
+      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+  }, [notifications, remoteNotifications, locallyReadIds]);
+
+  const markReadLocally = useCallback((notificationId: string) => {
+    setLocallyReadIds((previous) => {
+      if (previous.has(notificationId)) {
+        return previous;
+      }
+      const next = new Set(previous);
+      next.add(notificationId);
+      return next;
+    });
+  }, []);
 
   const resolvedLoading = loading || (!hasInjectedNotifications && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedNotifications ? remoteErrorMessage : null);
@@ -133,15 +153,19 @@ export function NotificationsScreen({
               accessibilityRole="button"
               accessibilityLabel={`${entry.headline1}. ${entry.headline2}. ${entry.description}`}
               onPress={() => {
-                if (unread && onMarkRead) {
-                  onMarkRead(entry.id, entry.source);
-                } else if (unread && accountId) {
-                  void markNotificationRead(entry.id, entry.source)
-                    .then(() => loadNotifications("replace"))
-                    .catch(() => setRemoteErrorMessage(t("notificationsReadError", { defaultValue: "We could not update notifications." })));
+                if (unread) {
+                  if (onMarkRead) {
+                    onMarkRead(entry.id, entry.source);
+                  } else if (accountId) {
+                    // Fire-and-forget the backend update, then optimistically mark
+                    // the row read locally for a surgical rerender (no full reload).
+                    markReadLocally(entry.id);
+                    void markNotificationRead(entry.id, entry.source)
+                      .catch(() => setRemoteErrorMessage(t("notificationsReadError", { defaultValue: "We could not update notifications." })));
+                  }
                 }
                 if (onOpenNotification) {
-                  onOpenNotification(entry.id);
+                  onOpenNotification(entry);
                 }
               }}
               style={styles.notificationRow}

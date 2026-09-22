@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { Button, ProgressBar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,9 @@ import { ThemedDialog } from "../primitives";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { buildTokenExplainerSlides } from "../../features/tokenExplainer";
+
+/** Maximum height the dialog content may occupy, as a fraction of the screen height. */
+const MAX_CONTENT_HEIGHT_RATIO = 0.9;
 
 export interface TokenExplainerDialogProps {
   visible: boolean;
@@ -52,11 +55,32 @@ function TokenExplainerDialogContent({
   onClose
 }: TokenExplainerDialogContentProps): React.JSX.Element {
   const { t } = useTranslation();
+  const { height: windowHeight } = useWindowDimensions();
   const [slideIndex, setSlideIndex] = useState(0);
   const totalSlides = slides.length;
-  const currentSlide = slides[Math.min(slideIndex, Math.max(0, totalSlides - 1))];
 
-  if (!currentSlide) {
+  // Measure the height of every slide so the dialog can be sized for the
+  // largest content up front, avoiding abrupt vertical resizing between slides.
+  const [measuredHeights, setMeasuredHeights] = useState<number[]>([]);
+
+  const maxContentHeight = Math.max(0, windowHeight * MAX_CONTENT_HEIGHT_RATIO);
+  const largestSlideHeight = measuredHeights.length === totalSlides
+    ? Math.max(...measuredHeights)
+    : 0;
+  const contentHeight = Math.min(largestSlideHeight, maxContentHeight);
+
+  const handleSlideLayout = (index: number, height: number): void => {
+    setMeasuredHeights((previous) => {
+      if (previous[index] === height) {
+        return previous;
+      }
+      const next = [...previous];
+      next[index] = height;
+      return next;
+    });
+  };
+
+  if (totalSlides === 0) {
     return <View />;
   }
 
@@ -64,7 +88,7 @@ function TokenExplainerDialogContent({
   const isLastSlide = slideIndex === totalSlides - 1;
 
   return (
-    <View style={styles.contentRoot}>
+    <View style={[styles.contentRoot, { height: contentHeight }]}>
       <Text variant="labelSmall" style={styles.stepLabel}>
         {t("topesGuide.stepLabel", {
           ns: "us1",
@@ -80,12 +104,22 @@ function TokenExplainerDialogContent({
         style={styles.progressBar}
       />
 
-      <Text variant="titleMedium" style={styles.slideTitle}>
-        {t(currentSlide.title, { ns: "us1", defaultValue: currentSlide.title })}
-      </Text>
-      <Text variant="bodyMedium" style={styles.slideBody}>
-        {t(currentSlide.body, { ns: "us1", defaultValue: currentSlide.body })}
-      </Text>
+      <ScrollView style={styles.slidesScroll} contentContainerStyle={styles.slidesContent}>
+        {slides.map((slide, index) => (
+          <View
+            key={slide.id}
+            style={index === slideIndex ? styles.slideVisible : styles.slideHidden}
+            onLayout={(event) => handleSlideLayout(index, event.nativeEvent.layout.height)}
+          >
+            <Text variant="titleMedium" style={styles.slideTitle}>
+              {t(slide.title, { ns: "us1", defaultValue: slide.title })}
+            </Text>
+            <Text variant="bodyMedium" style={styles.slideBody}>
+              {t(slide.body, { ns: "us1", defaultValue: slide.body })}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
 
       <View style={styles.actionsRow}>
         <Button onPress={onClose}>{t("topesGuide.closeButton", { ns: "us1", defaultValue: "Close" })}</Button>
@@ -119,6 +153,22 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: designTokens.radius.sm,
     backgroundColor: "#ffffff"
+  },
+  slidesScroll: {
+    flex: 1
+  },
+  slidesContent: {
+    gap: designTokens.spacing.sm
+  },
+  slideVisible: {
+    gap: designTokens.spacing.sm
+  },
+  slideHidden: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    opacity: 0,
+    gap: designTokens.spacing.sm
   },
   slideTitle: {
     fontFamily: appFontFamilies.altGeneral

@@ -218,7 +218,8 @@ function toFeedItem(source: NotificationSource, node: RawNotificationNode): Noti
     headline2: copy.headline2,
     description: copy.description,
     createdAt: node.createdAt,
-    readAt: node.readAt
+    readAt: node.readAt,
+    payload: typeof node.payload === "object" && node.payload !== null ? node.payload as Record<string, unknown> : null
   } satisfies NotificationFeedItem;
 }
 
