@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
-import { Chip, IconButton, Portal, Text } from "react-native-paper";
+import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
+import { Chip, Icon, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
@@ -298,43 +298,61 @@ export function MyCampaignsScreen({
                 renderItem={({ item }) => {
                   const active = isCampaignActive(now, item.startAt, item.endAt);
                   const ended = isCampaignEnded(now, item.endAt);
+                  const statusLabel = active
+                    ? t("statuses.active", { ns: "us3", defaultValue: "Active" })
+                    : ended
+                      ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" })
+                      : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" });
 
                   return (
-                    <View style={styles.inspirationCard}>
-                      <View style={styles.inspirationHeaderRow}>
-                        <Text variant="titleSmall" style={styles.inspirationTitle}>{item.title}</Text>
-                        {onOpenCampaign ? (
-                          <IconButton
-                            icon="eye"
-                            size={20}
-                            accessibilityLabel={t("openCampaignPublic", { ns: "us3", defaultValue: "View campaign" })}
-                            onPress={() => {
-                              setInspirationOpen(false);
-                              onOpenCampaign(item);
-                            }}
-                          />
-                        ) : null}
-                      </View>
-                      <View style={styles.chipRow}>
-                        <Chip
-                          compact
-                          style={{ backgroundColor: active ? "#2e7d32" : ended ? "#9e9e9e" : "#1565c0" }}
-                          textStyle={{ color: "#fff", fontSize: 11 }}
-                        >
-                          {active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}
-                        </Chip>
-                      </View>
-                      {item.theme ? (
-                        <Text variant="bodySmall" numberOfLines={3}>
-                          {item.theme}
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${item.title}. ${statusLabel}.`}
+                      onPress={() => {
+                        if (!onOpenCampaign) {
+                          return;
+                        }
+                        setInspirationOpen(false);
+                        onOpenCampaign(item);
+                      }}
+                      style={styles.inspirationCard}
+                      testID={`inspiration-card-${item.id}`}
+                    >
+                      {item.imageUrl ? (
+                        <Image source={{ uri: item.imageUrl }} style={styles.inspirationCardImage} />
+                      ) : (
+                        <View style={styles.inspirationCardImageFallback}>
+                          <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
+                        </View>
+                      )}
+
+                      <View style={styles.inspirationCardContent}>
+                        <Text variant="labelSmall" style={styles.inspirationCardCreatedAt}>
+                          {`${t("labels.created", { ns: "us3", defaultValue: "Created" })} ${new Date(item.createdAt).toLocaleDateString()}`}
                         </Text>
-                      ) : null}
-                      {item.description ? (
-                        <Text variant="bodySmall" numberOfLines={2}>
-                          {item.description}
-                        </Text>
-                      ) : null}
-                    </View>
+
+                        <View style={styles.inspirationCardBody}>
+                          <Text variant="titleMedium" numberOfLines={2} style={styles.inspirationCardTitle}>
+                            {item.title}
+                          </Text>
+                          {item.description ? (
+                            <Text variant="bodySmall" numberOfLines={1} style={styles.inspirationCardDescription}>
+                              {item.description}
+                            </Text>
+                          ) : null}
+                        </View>
+
+                        <View style={styles.inspirationCardStatusRow}>
+                          <Chip
+                            compact
+                            style={{ backgroundColor: active ? "#2e7d32" : ended ? "#9e9e9e" : "#1565c0" }}
+                            textStyle={{ color: "#fff", fontSize: 11 }}
+                          >
+                            {statusLabel}
+                          </Chip>
+                        </View>
+                      </View>
+                    </Pressable>
                   );
                 }}
                 keyExtractor={(item) => item.id}
@@ -422,19 +440,61 @@ const styles = StyleSheet.create({
     maxHeight: 400
   },
   inspirationCard: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.sm,
-    padding: designTokens.spacing.sm,
-    gap: designTokens.spacing.xs,
+    borderRadius: designTokens.radius.md,
     marginBottom: designTokens.spacing.sm
   },
-  inspirationHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
+  inspirationCardImage: {
+    width: 92,
+    height: 92,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff"
   },
-  inspirationTitle: {
-    flex: 1
+  inspirationCardImageFallback: {
+    width: 92,
+    height: 92,
+    borderRadius: designTokens.radius.md,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  inspirationCardContent: {
+    flex: 1,
+    marginRight: 4,
+    position: "relative"
+  },
+  inspirationCardCreatedAt: {
+    color: designTokens.colors.primary,
+    alignSelf: "flex-end",
+    fontFamily: appFontFamilies.general,
+    fontSize: 10,
+    lineHeight: 12
+  },
+  inspirationCardBody: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 2
+  },
+  inspirationCardTitle: {
+    fontFamily: appFontFamilies.altGeneral,
+    fontSize: 16,
+    lineHeight: 20
+  },
+  inspirationCardDescription: {
+    color: designTokens.colors.primary,
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: appFontFamilies.general
+  },
+  inspirationCardStatusRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 1
   }
 });
 

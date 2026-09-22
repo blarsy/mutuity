@@ -460,8 +460,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontFamily: appFontFamilies.title,
     textTransform: "uppercase",
-    letterSpacing: 0.6,
-    flex: 1
+    letterSpacing: 0.6
   },
   content: {
     gap: designTokens.spacing.sm,
