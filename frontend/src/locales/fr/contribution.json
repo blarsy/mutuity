@@ -43,7 +43,7 @@
       "resourceFirstImage": "Ajouter la premiere image sur une ressource",
       "resourceDefaultTokenAmount": "Definir pour la premiere fois un montant Topes par defaut sur une ressource",
       "resourceAge24h": "Maintenir une ressource active pendant au moins 24 heures",
-      "claimAge24h": "Maintenir une demande active pendant au moins 24 heures",
+      "needAge24h": "Maintenir une demande active pendant au moins 24 heures",
       "campaignAirdrop": "Remplir les criteres de campagne pour les paiements d'airdrop"
     }
   },
@@ -70,7 +70,7 @@
     "resource_first_image_reward": "Première image de ressource ajoutée",
     "resource_first_default_token_amount_reward": "Premier montant de Topes par défaut défini sur une ressource",
     "resource_age_24h_reward": "La ressource a atteint le jalon des 24 heures",
-    "claim_age_24h_reward": "La demande est restée valide pendant 24 heures",
+    "need_age_24h_reward": "La demande est restée active pendant 24 heures",
     "campaign_airdrop_received": "Airdrop de campagne reçu"
   },
   "movementDetails": {

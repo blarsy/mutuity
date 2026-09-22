@@ -31,7 +31,7 @@ export function HowToGetTokensSection({
         </Text>
         <Text variant="bodyMedium" style={styles.subtitle}>
           {t("howToGetTokens.subtitle", {
-            defaultValue: "Use these actions to earn Topes through profile milestones, resource activity, claims, and campaigns."
+            defaultValue: "Use these actions to earn Topes through profile milestones, resource activity, needs, and campaigns."
           })}
         </Text>
 
