@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AccordionItem, AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
@@ -161,18 +161,19 @@ export function MyEconomicsScreen({
           <Text variant="bodyMedium" style={styles.balanceUnit}>
             {t("tokenLabel", { defaultValue: "Tope" })}
           </Text>
-        </View>
-        <PrimaryButton
-          label={t("contributionHowItWorksLabel", { defaultValue: "How it works" })}
-          onPress={() => {
-            if (onLearnMore) {
-              onLearnMore();
-              return;
-            }
+          <Button
+            icon="information"
+            mode="text"
+            onPress={() => {
+              if (onLearnMore) {
+                onLearnMore();
+                return;
+              }
 
-            setIsExplainerOpen(true);
-          }}
-        />
+              setIsExplainerOpen(true);
+            }}
+          >{t("contributionHowItWorksLabel", { defaultValue: "How it works" })}</Button>
+        </View>
 
         <AccordionItem
           testID="history-accordion"
@@ -205,26 +206,28 @@ export function MyEconomicsScreen({
 
                 return (
                   <View key={item.id} style={styles.historyCard} testID={`contribution-history-${item.id}`}>
-                    <Text variant="titleMedium" style={styles.historyTitle}>
+                    <View style={styles.historyHeader}>
+                      <Text variant="titleMedium" style={styles.historyAmount}>
+                        {item.tokenChange >= 0 ? "+" : ""}{item.tokenChange} {t("tokenLabel", { defaultValue: "Tope" })}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.historyMeta}>
+                        {formattedDate}
+                      </Text>
+                    </View>
+                    <Text variant="bodyMedium" style={styles.historyTitle}>
                       {t(`movements.${item.eventType}`, {
                         defaultValue: item.title.replaceAll("_", " ").toLowerCase()
                       })}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.historyMeta}>
-                      {formattedDate}
-                    </Text>
-                    <Text variant="bodyMedium" style={styles.historyAmount}>
-                      {item.tokenChange >= 0 ? "+" : ""}{item.tokenChange} {t("tokenLabel", { defaultValue: "Tope" })}
                     </Text>
                   </View>
                 );
               })}
 
               {resolvedHasNextPage ? (
-                <PrimaryButton
-                  label={resolvedLoadingMore
-                    ? t("historyLoadingMoreLabel", { defaultValue: "Loading more…" })
-                    : t("historyLoadMoreLabel", { defaultValue: "Load more" })}
+                <Button
+                  style={styles.loadMoreButton}
+                  mode="text"
+                  icon="reload"
                   onPress={() => {
                     if (onLoadMore) {
                       onLoadMore();
@@ -235,7 +238,9 @@ export function MyEconomicsScreen({
                   }}
                   loading={resolvedLoadingMore}
                   testID="history-load-more"
-                />
+                >{resolvedLoadingMore
+                    ? t("historyLoadingMoreLabel", { defaultValue: "Loading more…" })
+                    : t("historyLoadMoreLabel", { defaultValue: "Load more" })}</Button>
               ) : null}
             </View>
           )}
@@ -288,9 +293,8 @@ const styles = StyleSheet.create({
   historyCard: {
     borderRadius: designTokens.radius.md,
     backgroundColor: "#fff",
-    padding: designTokens.spacing.md,
-    gap: designTokens.spacing.xs,
-    borderWidth: 1,
+    padding: designTokens.spacing.xs,
+    borderBottomWidth: 1,
     borderColor: designTokens.colors.secondary
   },
   historyTitle: {
@@ -306,5 +310,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: designTokens.spacing.lg,
     opacity: 0.75
+  },
+  historyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  loadMoreButton: {
+    alignSelf: "center"
   }
 });

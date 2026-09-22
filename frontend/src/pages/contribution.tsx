@@ -97,6 +97,8 @@ const TOPES_EARNING_OPPORTUNITIES = [
   { key: "resourceFirstImage", amount: 20, href: "/resources/create" },
   { key: "resourceDefaultTokenAmount", amount: 20, href: "/resources/create" },
   { key: "resourceAge24h", amount: 20, href: "/resources/manage" },
+  { key: "needFirstImage", amount: 10, href: "/needs/manage" },
+  { key: "needDefaultTokenAmount", amount: 10, href: "/needs/manage" },
   { key: "needAge24h", amount: 10, href: "/needs/manage" },
   { key: "campaignAirdrop", amount: null, href: "/campaigns" }
 ] as const;

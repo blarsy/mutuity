@@ -32,7 +32,7 @@ describe("HowToGetTokensSection", () => {
     );
 
     expect(screen.getAllByText("+ 20").length).toBeGreaterThan(0);
-    expect(screen.getByText("+ 10")).toBeTruthy();
+    expect(screen.getAllByText("+ 10").length).toBeGreaterThan(0);
   });
 
   it("shows a variable label for the campaign airdrop", () => {

@@ -55,8 +55,7 @@ export function HowToGetTokensSection({
                     defaultValue: "Go"
                   })}
                   accessibilityRole="button"
-                  icon="arrow-right-circle"
-                  iconColor="#ffffff"
+                  icon="arrow-right"
                   size={30}
                   style={styles.goButton}
                   onPress={() => onGoToOpportunity(opportunity.id)}
@@ -108,10 +107,6 @@ const styles = StyleSheet.create({
     textAlign: "right"
   },
   goButton: {
-    margin: 0,
-    backgroundColor: designTokens.colors.primary,
-    borderRadius: 17,
-    borderWidth: 2,
-    borderColor: "#000000"
+    margin: 0
   }
 });

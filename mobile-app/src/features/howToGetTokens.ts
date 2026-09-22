@@ -12,6 +12,8 @@ export type HowToGetTokensOpportunityId =
   | "resourceFirstImage"
   | "resourceDefaultTokenAmount"
   | "resourceAge24h"
+  | "needFirstImage"
+  | "needDefaultTokenAmount"
   | "needAge24h"
   | "campaignAirdrop";
 
@@ -28,6 +30,8 @@ export const HOW_TO_GET_TOKENS_OPPORTUNITIES: HowToGetTokensOpportunity[] = [
   { id: "resourceFirstImage", amount: 20 },
   { id: "resourceDefaultTokenAmount", amount: 20 },
   { id: "resourceAge24h", amount: 20 },
+  { id: "needFirstImage", amount: 10 },
+  { id: "needDefaultTokenAmount", amount: 10 },
   { id: "needAge24h", amount: 10 },
   { id: "campaignAirdrop", amount: null }
 ];

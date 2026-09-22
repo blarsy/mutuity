@@ -93,7 +93,7 @@
   "confirmPasswordLabel": "Confirmer le nouveau mot de passe",
   "contributionBalanceLabel": "Vous avez",
   "contributionEmpty": "Aucun historique de contribution pour l'instant.",
-  "contributionHowItWorksLabel": "Comment ça marche",
+  "contributionHowItWorksLabel": "Montre-moi comment ça marche",
   "contributionLabel": "Contribution",
   "contributionLoadError": "Impossible de charger les détails de contribution.",
   "contributionLoading": "Chargement des détails de contribution...",
@@ -111,6 +111,8 @@
       "resourceFirstImage": "Ajouter la premiere image sur une ressource",
       "resourceDefaultTokenAmount": "Definir un montant Topes sur une ressource",
       "resourceAge24h": "Créer une ressource (Débloqué après 24 heures)",
+      "needFirstImage": "Ajouter la premiere image sur un besoin",
+      "needDefaultTokenAmount": "Definir un montant Topes sur un besoin",
       "needAge24h": "Créer un besoin (Débloqué après 24 heures)",
       "campaignAirdrop": "Remporter le largage d'une campagne"
     }
@@ -128,6 +130,8 @@
     "resource_first_image_reward": "Image de ressource ajoutée",
     "resource_first_default_token_amount_reward": "Montant de Topes défini sur une ressource",
     "resource_age_24h_reward": "Ressource créée",
+    "need_first_image_reward": "Image de besoin ajoutée",
+    "need_first_default_token_amount_reward": "Montant de Topes défini sur un besoin",
     "need_age_24h_reward": "Besoin créé",
     "campaign_airdrop_received": "Airdrop de campagne reçu"
   },

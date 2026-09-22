@@ -460,7 +460,7 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
           const target: MyHubDrawerItem =
             id === "resourceFirstImage" || id === "resourceDefaultTokenAmount" || id === "resourceAge24h"
               ? "myResources"
-              : id === "needAge24h"
+              : id === "needFirstImage" || id === "needDefaultTokenAmount" || id === "needAge24h"
                 ? "myNeeds"
                 : "profile";
 
