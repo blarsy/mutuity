@@ -104,15 +104,15 @@
     "goButton": "Go",
     "variableAmount": "Variable",
     "items": {
-      "profileAvatar": "Add your first profile avatar",
-      "profileBio": "Add your first profile bio",
-      "profileLocation": "Add your first profile location",
+      "profileAvatar": "Add your profile avatar",
+      "profileBio": "Add your profile bio",
+      "profileLocation": "Add your profile location",
       "profileFirstLink": "Add your first profile link",
       "resourceFirstImage": "Add the first image on a resource",
-      "resourceDefaultTokenAmount": "Set a default Topes amount on a resource for the first time",
-      "resourceAge24h": "Keep a resource active for at least 24 hours",
-      "needAge24h": "Keep a need active for at least 24 hours",
-      "campaignAirdrop": "Meet campaign eligibility for airdrop payouts"
+      "resourceDefaultTokenAmount": "Set a Topes amount on a resource",
+      "resourceAge24h": "Create a resource (unlocked after 24 hours)",
+      "needAge24h": "Create a need (unlocked after 24 hours)",
+      "campaignAirdrop": "Win a campaign airdrop"
     }
   },
   "movements": {
@@ -121,14 +121,14 @@
     "resource_bid_settled": "Bid accepted / Topes settled",
     "claim_settlement_credit": "Claim settled in your favor",
     "claim_settlement_debit": "You settled a claim on your need",
-    "profile_first_avatar_reward": "First profile avatar added",
-    "profile_first_bio_reward": "First profile bio added",
-    "profile_first_location_reward": "First profile location added",
+    "profile_first_avatar_reward": "Profile avatar added",
+    "profile_first_bio_reward": "Profile bio added",
+    "profile_first_location_reward": "Profile location added",
     "profile_first_link_reward": "First profile link added",
     "resource_first_image_reward": "First resource image added",
-    "resource_first_default_token_amount_reward": "First default Topes amount set on a resource",
-    "resource_age_24h_reward": "Resource reached the 24-hour milestone",
-    "need_age_24h_reward": "Need stayed active for 24 hours",
+    "resource_first_default_token_amount_reward": "Topes amount set on a resource",
+    "resource_age_24h_reward": "Resource created",
+    "need_age_24h_reward": "Need created",
     "campaign_airdrop_received": "Campaign airdrop received"
   },
   "currentLocationLabel": "Current location",
