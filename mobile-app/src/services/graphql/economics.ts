@@ -17,7 +17,17 @@ interface TokenHistoryQueryResult {
       eventType: string;
       createdAt: string;
     }>;
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string | null;
+    };
   } | null;
+}
+
+export interface TokenHistoryPage {
+  items: ContributionHistoryItem[];
+  hasNextPage: boolean;
+  endCursor: string | null;
 }
 
 export async function fetchCurrentTokenBalance(): Promise<number> {
@@ -29,10 +39,15 @@ export async function fetchCurrentTokenBalance(): Promise<number> {
   return data?.currentTokenBalance ?? 0;
 }
 
-export async function fetchTokenHistory(accountId: string): Promise<ContributionHistoryItem[]> {
+export async function fetchTokenHistoryPage(
+  accountId: string,
+  first: number,
+  after?: string | null
+): Promise<TokenHistoryPage> {
   const variables: QueryAllTokenMovementsArgs = {
     condition: { accountId },
-    first: DEFAULT_PAGE_SIZE
+    first,
+    ...(after ? { after } : {})
   };
 
   const { data } = await apolloClient.query<TokenHistoryQueryResult, QueryAllTokenMovementsArgs>({
@@ -41,12 +56,25 @@ export async function fetchTokenHistory(accountId: string): Promise<Contribution
     fetchPolicy: "network-only"
   });
 
-  return (data?.allTokenMovements?.nodes ?? [])
-    .map((node) => ({
-      id: node.id,
-      title: node.eventType,
-      tokenChange: node.amountDelta,
-      createdAt: node.createdAt
-    }))
-    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  const nodes = data?.allTokenMovements?.nodes ?? [];
+  const pageInfo = data?.allTokenMovements?.pageInfo;
+
+  return {
+    items: nodes
+      .map((node) => ({
+        id: node.id,
+        title: node.eventType,
+        eventType: node.eventType,
+        tokenChange: node.amountDelta,
+        createdAt: node.createdAt
+      }))
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+    hasNextPage: pageInfo?.hasNextPage ?? false,
+    endCursor: pageInfo?.endCursor ?? null
+  };
+}
+
+export async function fetchTokenHistory(accountId: string): Promise<ContributionHistoryItem[]> {
+  const page = await fetchTokenHistoryPage(accountId, DEFAULT_PAGE_SIZE);
+  return page.items;
 }

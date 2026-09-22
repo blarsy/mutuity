@@ -128,6 +128,7 @@ interface MyHubScreenProps extends MainTabScreenProps {
   onRequestCloseDrawer: () => void;
   pendingDrawer?: { drawer: MyHubDrawerItem; needId?: string } | null;
   onConsumePendingDrawer?: () => void;
+  onOpenCampaigns?: () => void;
 }
 
 interface AuthScreenShellProps {
@@ -263,7 +264,7 @@ function MyHubDrawerPlaceholderSurface({ title, body }: { title: string; body: s
   );
 }
 
-function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpenDrawer, onRequestCloseDrawer, pendingDrawer, onConsumePendingDrawer }: MyHubScreenProps): React.JSX.Element {
+function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpenDrawer, onRequestCloseDrawer, pendingDrawer, onConsumePendingDrawer, onOpenCampaigns }: MyHubScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   const { signOut } = useAuth();
@@ -446,7 +447,27 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       return <MyPreferencesScreen accountId={accountId} onOpenDrawer={onRequestOpenDrawer} />;
     }
 
-    return <MyEconomicsScreen accountId={accountId} onOpenDrawer={onRequestOpenDrawer} />;
+    return (
+      <MyEconomicsScreen
+        accountId={accountId}
+        onOpenDrawer={onRequestOpenDrawer}
+        onGoToOpportunity={(id) => {
+          if (id === "campaignAirdrop") {
+            onOpenCampaigns?.();
+            return;
+          }
+
+          const target: MyHubDrawerItem =
+            id === "resourceFirstImage" || id === "resourceDefaultTokenAmount" || id === "resourceAge24h"
+              ? "myResources"
+              : id === "claimAge24h"
+                ? "myNeeds"
+                : "profile";
+
+          selectDrawerItem(target);
+        }}
+      />
+    );
   };
 
   if (!canAccessMyHub) {
@@ -1263,6 +1284,10 @@ function RootNavigator(): React.JSX.Element {
                       onRequestCloseDrawer={() => setMyHubDrawerVisible(false)}
                       pendingDrawer={pendingMyHubDrawer}
                       onConsumePendingDrawer={() => setPendingMyHubDrawer(null)}
+                      onOpenCampaigns={() => {
+                        setActiveRouteName("Campaigns");
+                        navigationRef.current?.navigate("Campaigns");
+                      }}
                     />
                   )}
                 </Tab.Screen>

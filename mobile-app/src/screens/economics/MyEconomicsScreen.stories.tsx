@@ -7,25 +7,29 @@ import { MyEconomicsScreen, type ContributionHistoryItem } from "./MyEconomicsSc
 const SAMPLE_HISTORY: ContributionHistoryItem[] = [
   {
     id: "hist-001",
-    title: "Cargo bike rental",
+    title: "resource_bid_settled",
+    eventType: "resource_bid_settled",
     tokenChange: 45,
     createdAt: "2026-07-28T14:00:00.000Z"
   },
   {
     id: "hist-002",
-    title: "English tutoring session",
+    title: "resource_bid_reserved",
+    eventType: "resource_bid_reserved",
     tokenChange: -30,
     createdAt: "2026-07-27T09:30:00.000Z"
   },
   {
     id: "hist-003",
-    title: "Moving help",
+    title: "claim_settlement_credit",
+    eventType: "claim_settlement_credit",
     tokenChange: 100,
     createdAt: "2026-07-20T16:00:00.000Z"
   },
   {
     id: "hist-004",
-    title: "Campaign airdrop",
+    title: "campaign_airdrop_received",
+    eventType: "campaign_airdrop_received",
     tokenChange: 3000,
     createdAt: "2026-07-15T00:00:00.000Z"
   }
@@ -37,9 +41,12 @@ const meta = {
   args: {
     currentTokenBalance: 3115,
     history: SAMPLE_HISTORY,
+    hasNextPage: true,
+    onLoadMore: () => undefined,
     onRetry: () => undefined,
     onBack: () => undefined,
-    onLearnMore: () => undefined
+    onLearnMore: () => undefined,
+    onGoToOpportunity: () => undefined
   }
 } satisfies Meta<typeof MyEconomicsScreen>;
 
