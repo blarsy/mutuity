@@ -103,6 +103,8 @@
     "subtitle": "Utilisez ces actions pour gagner des Topes via les jalons de profil, les ressources, les demandes et les campagnes.",
     "goButton": "Ouvrir",
     "variableAmount": "Montant variable",
+    "rewardsRemaining": "{{count}} récompense à gagner",
+    "rewardsRemaining_plural": "{{count}} récompenses à gagner",
     "items": {
       "profileAvatar": "Ajouter votre avatar de profil",
       "profileBio": "Ajouter votre bio de profil",

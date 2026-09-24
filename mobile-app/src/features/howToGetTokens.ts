@@ -35,3 +35,42 @@ export const HOW_TO_GET_TOKENS_OPPORTUNITIES: HowToGetTokensOpportunity[] = [
   { id: "needAge24h", amount: 10 },
   { id: "campaignAirdrop", amount: null }
 ];
+
+/**
+ * One-time profile-filling rewards. These are collected once and can be shown
+ * as "done" (visually checked) once the account has completed the milestone.
+ */
+export const PROFILE_OPPORTUNITY_IDS: readonly HowToGetTokensOpportunityId[] = [
+  "profileAvatar",
+  "profileBio",
+  "profileLocation",
+  "profileFirstLink"
+];
+
+/**
+ * Recurring rewards whose "remaining" count advertises how many resources or
+ * needs still lack a required image or Topes amount.
+ */
+export const REMAINING_OPPORTUNITY_IDS: readonly HowToGetTokensOpportunityId[] = [
+  "resourceFirstImage",
+  "resourceDefaultTokenAmount",
+  "needFirstImage",
+  "needDefaultTokenAmount"
+];
+
+/**
+ * Snapshot of how far the account has progressed through the earning
+ * opportunities, used to render collected rewards as done and to advertise the
+ * number of rewards that can still be reaped.
+ */
+export interface HowToGetTokensProgress {
+  /** Opportunity ids the account has already collected (one-time profile rewards). */
+  completed: HowToGetTokensOpportunityId[];
+  /** Remaining collectible count per recurring opportunity. */
+  remaining: Partial<Record<HowToGetTokensOpportunityId, number>>;
+}
+
+export const EMPTY_HOW_TO_GET_TOKENS_PROGRESS: HowToGetTokensProgress = {
+  completed: [],
+  remaining: {}
+};

@@ -6,11 +6,12 @@ import { useTranslation } from "react-i18next";
 import { AccordionItem, AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
 import { HowToGetTokensSection } from "../../components/howToGetTokens/HowToGetTokensSection";
-import type { HowToGetTokensOpportunityId } from "../../features/howToGetTokens";
+import { type HowToGetTokensOpportunityId, type HowToGetTokensProgress } from "../../features/howToGetTokens";
 import { TokenExplainerDialog } from "../../components/tokenExplainer/TokenExplainerDialog";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { fetchCurrentTokenBalance, fetchTokenHistoryPage } from "../../services/graphql/economics";
+import { fetchHowToGetTokensProgress } from "../../services/graphql/howToGetTokens";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -35,6 +36,8 @@ export interface MyEconomicsScreenProps {
   onLearnMore?: () => void;
   onOpenDrawer?: () => void;
   onGoToOpportunity?: (id: HowToGetTokensOpportunityId) => void;
+  /** Injected progress for tests/storybook; when omitted it is fetched remotely. */
+  progress?: HowToGetTokensProgress;
 }
 
 const HISTORY_PAGE_SIZE = 10;
@@ -51,7 +54,8 @@ export function MyEconomicsScreen({
   onBack,
   onLearnMore,
   onOpenDrawer,
-  onGoToOpportunity
+  onGoToOpportunity,
+  progress
 }: MyEconomicsScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [historyScope, setHistoryScope] = useState<"all" | "earnings" | "spend">("all");
@@ -63,6 +67,7 @@ export function MyEconomicsScreen({
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteLoadingMore, setRemoteLoadingMore] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [remoteProgress, setRemoteProgress] = useState<HowToGetTokensProgress | null>(null);
 
   const hasInjectedData = history !== undefined;
 
@@ -88,6 +93,25 @@ export function MyEconomicsScreen({
       setRemoteLoading(false);
     }
   }, [accountId, hasInjectedData, t]);
+
+  useEffect(() => {
+    if (progress !== undefined || !accountId) {
+      return;
+    }
+
+    let isMounted = true;
+    void fetchHowToGetTokensProgress(accountId).then((nextProgress) => {
+      if (isMounted) {
+        setRemoteProgress(nextProgress);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accountId, progress]);
+
+  const resolvedProgress = progress ?? remoteProgress ?? undefined;
 
   useEffect(() => {
     void loadEconomics();
@@ -247,7 +271,11 @@ export function MyEconomicsScreen({
         </AccordionItem>
 
         {onGoToOpportunity ? (
-          <HowToGetTokensSection onGoToOpportunity={onGoToOpportunity} testID="how-to-get-tokens-section" />
+          <HowToGetTokensSection
+            onGoToOpportunity={onGoToOpportunity}
+            {...(resolvedProgress ? { progress: resolvedProgress } : {})}
+            testID="how-to-get-tokens-section"
+          />
         ) : null}
       </ScrollView>
 

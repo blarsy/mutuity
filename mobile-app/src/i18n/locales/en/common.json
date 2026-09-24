@@ -103,6 +103,8 @@
     "subtitle": "Use these actions to earn Topes through profile milestones, resource activity, needs, and campaigns.",
     "goButton": "Go",
     "variableAmount": "Variable",
+    "rewardsRemaining": "{{count}} reward to reap",
+    "rewardsRemaining_plural": "{{count}} rewards to reap",
     "items": {
       "profileAvatar": "Add your profile avatar",
       "profileBio": "Add your profile bio",
