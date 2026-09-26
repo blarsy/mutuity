@@ -1,6 +1,6 @@
 import Constants from "expo-constants";
 
-type TargetEnv = "local" | "test" | "prod";
+type TargetEnv = "local" | "test" | "review" | "prod";
 
 export interface AppSettings {
   targetEnv: TargetEnv;
@@ -27,11 +27,11 @@ function assertBoolean(value: unknown, key: keyof AppSettings): boolean {
 }
 
 function assertTargetEnv(value: unknown): TargetEnv {
-  if (value === "local" || value === "test" || value === "prod") {
+  if (value === "local" || value === "test" || value === "review" || value === "prod") {
     return value;
   }
 
-  throw new Error("Invalid app settings: targetEnv must be one of local, test, prod.");
+  throw new Error("Invalid app settings: targetEnv must be one of local, test, review, prod.");
 }
 
 export function getAppSettings(): AppSettings {

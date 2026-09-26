@@ -34,6 +34,7 @@ import {
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
+import { getAppVersionFloor, isVersionBelowFloor, type AppPlatform } from "./version.js";
 
 const app = express();
 // PgPubSub is published as CJS and can appear as default.default under ESM interop.
@@ -126,6 +127,7 @@ const PRESERVE_ERROR_CODES = new Set([
   "PASSWORD_RESET_REQUIRED",
   "RATE_LIMITED",
   "GRAPHQL_AUTH_ERROR",
+  "APP_UPDATE_REQUIRED",
 ]);
 const SAFE_GRAPHQL_ERROR_PATTERNS: Array<{
   pattern: RegExp;
@@ -973,10 +975,48 @@ app.post("/auth/social/complete-registration", express.json(), async (req, res) 
   }
 });
 
+// App version gate: enforces the server-side minimum version for mobile
+// clients that report their version. Requests without an `x-app-version`
+// header (web, internal tooling) are never blocked. The mobile app fetches the
+// floor via the `/health` REST endpoint (below) rather than GraphQL, so a too-old
+// client always learns the required version and can show a graceful
+// update-required screen. This gate is a backstop for clients that skip that
+// check and still issue GraphQL operations.
+app.use("/graphql", async (req, res, next) => {
+  const version = req.headers["x-app-version"];
+  const platformRaw = req.headers["x-app-platform"];
+
+  if (typeof version !== "string" || version.length === 0) {
+    next();
+    return;
+  }
+
+  const platform: AppPlatform | null =
+    platformRaw === "ios" || platformRaw === "android" ? (platformRaw as AppPlatform) : null;
+
+  const floor = await getAppVersionFloor(pool);
+
+  if (!isVersionBelowFloor(version, platform, floor)) {
+    next();
+    return;
+  }
+
+  const minimumVersion = platform === "android" ? floor.minAndroidSemver : floor.minIosSemver;
+  res.status(200).json({
+    errors: [
+      {
+        message: "A newer version of the app is required to continue.",
+        extensions: { code: "APP_UPDATE_REQUIRED", minimumVersion }
+      }
+    ]
+  });
+});
+
 app.use(postgraphileMiddleware);
 
-app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
+app.get("/health", async (_req, res) => {
+  const floor = await getAppVersionFloor(pool);
+  res.status(200).json({ status: "ok", appVersionPolicy: floor });
 });
 
 // Upgrade the HTTP server to handle WebSocket connections for GraphQL subscriptions.

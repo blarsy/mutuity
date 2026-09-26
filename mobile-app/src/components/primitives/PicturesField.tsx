@@ -1,8 +1,10 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
-import { Icon, IconButton, Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import CameraIcon from "../../assets/img/CAMERA.svg";
+import PhotosIcon from "../../assets/img/PHOTOS.svg";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { FormFieldLabel } from "./FormFieldLabel";
@@ -101,9 +103,16 @@ export function PicturesField({
           onPress={() => void handleTakePicture()}
           disabled={busy}
         >
-          <Icon source="camera" size={22} color={designTokens.colors.primary} />
-          <Text style={styles.actionText}>{addFromCameraLabel}</Text>
+          <View style={styles.actionContent}>
+            <CameraIcon width={64} height={64} fill="#fff" />
+            <Text style={styles.actionText}>
+              <Text style={styles.actionPlus}>+ </Text>
+              {addFromCameraLabel}
+            </Text>
+          </View>
         </Pressable>
+
+        <View style={styles.divider} />
 
         <Pressable
           accessibilityRole="button"
@@ -112,8 +121,13 @@ export function PicturesField({
           onPress={() => void handlePickFromLibrary()}
           disabled={busy}
         >
-          <Icon source="image-multiple" size={22} color={designTokens.colors.primary} />
-          <Text style={styles.actionText}>{addFromLibraryLabel}</Text>
+          <View style={styles.actionContent}>
+            <PhotosIcon width={64} height={64} fill="#fff" />
+            <Text style={styles.actionText}>
+              <Text style={styles.actionPlus}>+ </Text>
+              {addFromLibraryLabel}
+            </Text>
+          </View>
         </Pressable>
       </View>
 
@@ -145,25 +159,37 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: "row",
-    gap: designTokens.spacing.xs
+    alignItems: "stretch",
+    justifyContent: "space-around",
+    backgroundColor: designTokens.colors.primaryContainer,
+    borderRadius: 25,
+    padding: designTokens.spacing.md
   },
   actionButton: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: designTokens.spacing.xs,
-    borderWidth: 1,
-    borderColor: designTokens.colors.primary,
-    borderRadius: designTokens.radius.md,
-    paddingVertical: designTokens.spacing.sm,
-    paddingHorizontal: designTokens.spacing.sm,
-    backgroundColor: designTokens.colors.primaryContainer
+    justifyContent: "center"
+  },
+  actionContent: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  divider: {
+    width: 5,
+    backgroundColor: "#fff",
+    borderRadius: 3
   },
   actionText: {
     color: designTokens.colors.primary,
     fontFamily: appFontFamilies.general,
-    fontSize: 12
+    fontSize: 14,
+    marginTop: designTokens.spacing.xs
+  },
+  actionPlus: {
+    color: designTokens.colors.primary,
+    fontFamily: appFontFamilies.general,
+    fontSize: 14
   },
   grid: {
     flexDirection: "row",

@@ -9,6 +9,7 @@ import { tap } from "rxjs";
 
 import { appSettings } from "../../config/appSettings";
 import { getPersistedAccountId, getPersistedToken } from "../auth/session";
+import { getCurrentAppPlatform, getCurrentAppVersion } from "../app/versionGate";
 import { logAppEvent } from "../monitoring/logger";
 
 export type TokenProvider = () => Promise<string | null>;
@@ -91,6 +92,8 @@ function createAuthLink(getToken?: TokenProvider): ApolloLink {
 
     const authHeaders: Record<string, string> = {
       authorization: token ? `Bearer ${token}` : "",
+      "x-app-version": getCurrentAppVersion(),
+      "x-app-platform": getCurrentAppPlatform(),
       ...(shouldSendDevAuthHeaders
         ? {
           "x-account-id": accountId as string,

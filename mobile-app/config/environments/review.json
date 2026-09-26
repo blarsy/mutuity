@@ -1,0 +1,7 @@
+{
+  "targetEnv": "review",
+  "apiUrl": "https://review.tope-la.com",
+  "graphQlApiUrl": "https://review.tope-la.com/graphql",
+  "subscriptionsUrl": "wss://review.tope-la.com/graphql",
+  "diagnostic": true
+}

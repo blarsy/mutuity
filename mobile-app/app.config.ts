@@ -3,7 +3,7 @@ import path from "node:path";
 
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-type TargetEnv = "local" | "test" | "prod";
+type TargetEnv = "local" | "test" | "review" | "prod";
 
 interface ExternalAppSettings {
   targetEnv: TargetEnv;
@@ -20,7 +20,7 @@ function resolveTargetEnv(value: string | undefined): TargetEnv {
   const normalized = value?.toLowerCase();
 
   if (!normalized) {
-    throw new Error("Missing TARGET_ENV. Expected one of: local, test, prod.");
+    throw new Error("Missing TARGET_ENV. Expected one of: local, test, review, prod.");
   }
 
   if (normalized === "local") {
@@ -31,11 +31,15 @@ function resolveTargetEnv(value: string | undefined): TargetEnv {
     return "test";
   }
 
+  if (normalized === "review") {
+    return "review";
+  }
+
   if (normalized === "prod") {
     return "prod";
   }
 
-  throw new Error(`Invalid TARGET_ENV value: ${value}. Expected one of: local, test, prod.`);
+  throw new Error(`Invalid TARGET_ENV value: ${value}. Expected one of: local, test, review, prod.`);
 }
 
 function assertValidAppSettings(value: unknown, filePath: string): asserts value is ExternalAppSettings {
@@ -61,7 +65,12 @@ function assertValidAppSettings(value: unknown, filePath: string): asserts value
     throw new Error(`Invalid app settings in ${filePath}: missing or invalid ${missingKeys.join(", ")}.`);
   }
 
-  if (config.targetEnv !== "local" && config.targetEnv !== "test" && config.targetEnv !== "prod") {
+  if (
+    config.targetEnv !== "local" &&
+    config.targetEnv !== "test" &&
+    config.targetEnv !== "review" &&
+    config.targetEnv !== "prod"
+  ) {
     throw new Error(`Invalid app settings in ${filePath}: unsupported targetEnv value \"${String(config.targetEnv)}\".`);
   }
 }

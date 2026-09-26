@@ -1416,6 +1416,34 @@ type AdminResendMailPayload {
   query: Query
 }
 
+"""A connection to a list of `AppVersionPolicyRecord` values."""
+type AppVersionPolicyConnection {
+  """
+  A list of edges which contains the `AppVersionPolicyRecord` and cursor to aid in pagination.
+  """
+  edges: [AppVersionPolicyEdge!]!
+  """A list of `AppVersionPolicyRecord` objects."""
+  nodes: [AppVersionPolicyRecord!]!
+  """
+  The count of *all* `AppVersionPolicyRecord` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `AppVersionPolicyRecord` edge in the connection."""
+type AppVersionPolicyEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AppVersionPolicyRecord` at the end of the edge."""
+  node: AppVersionPolicyRecord!
+}
+
+"""The return type of our `appVersionPolicy` query."""
+type AppVersionPolicyRecord {
+  minAndroidSemver: String
+  minIosSemver: String
+}
+
 """All input for the `approveCampaign` mutation."""
 input ApproveCampaignInput {
   campaignId: UUID
@@ -9978,6 +10006,21 @@ type Query implements Node {
     """The method to use when ordering `TokenMovement`."""
     orderBy: [TokenMovementsOrderBy!] = [PRIMARY_KEY_ASC]
   ): TokenMovementsConnection
+  appVersionPolicy(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): AppVersionPolicyConnection
   authSession: AuthSessionPayload!
   """Reads a single `Campaign` using its globally unique `ID`."""
   campaign(

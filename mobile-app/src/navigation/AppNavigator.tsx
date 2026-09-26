@@ -42,7 +42,13 @@ import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import type { SocialProvider } from "../screens/auth/SocialAuthButtons";
 import type { MyResourceItem } from "../services/graphql/resources";
 import type { NeedItem } from "../services/graphql/needs";
-import { getAppVersionStatus } from "../services/app/version";
+import { getAppVersionStatus, MINIMUM_SUPPORTED_APP_VERSION } from "../services/app/version";
+import {
+  fetchAppVersionFloor,
+  getCurrentAppVersion,
+  minimumVersionForPlatform
+} from "../services/app/versionGate";
+import { fetchAppVersionPolicyViaGraphql } from "../services/graphql/appVersionPolicy";
 import {
   fetchChatConversations,
   fetchUnreadChatConversationCount
@@ -852,8 +858,29 @@ function RootNavigator(): React.JSX.Element {
   const navigationRef = useNavigationContainerRef<MainTabParamList>();
   const [pendingMyHubDrawer, setPendingMyHubDrawer] = useState<{ drawer: MyHubDrawerItem; needId?: string } | null>(null);
   const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
+  const [minimumVersion, setMinimumVersion] = useState<string>(MINIMUM_SUPPORTED_APP_VERSION);
 
-  const versionStatus = useMemo(() => getAppVersionStatus("0.1.0"), []);
+  const versionStatus = useMemo(
+    () => getAppVersionStatus(getCurrentAppVersion(), minimumVersion),
+    [minimumVersion]
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      // Primary source: the ungated REST /health endpoint. This always works
+      // for a too-old client (the GraphQL gate would block a stale version).
+      const floor = (await fetchAppVersionFloor()) ?? (await fetchAppVersionPolicyViaGraphql());
+      if (active && floor) {
+        setMinimumVersion(minimumVersionForPlatform(floor));
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const refreshChatState = useCallback(async (showIncomingAlert: boolean): Promise<void> => {
     if (!authenticated || !accountId) {

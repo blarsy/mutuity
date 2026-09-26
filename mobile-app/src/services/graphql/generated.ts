@@ -1103,6 +1103,33 @@ export type AdminResendMailPayload = {
   query: Maybe<Query>;
 };
 
+/** A connection to a list of `AppVersionPolicyRecord` values. */
+export type AppVersionPolicyConnection = {
+  __typename: 'AppVersionPolicyConnection';
+  /** A list of edges which contains the `AppVersionPolicyRecord` and cursor to aid in pagination. */
+  edges: Array<AppVersionPolicyEdge>;
+  /** A list of `AppVersionPolicyRecord` objects. */
+  nodes: Array<AppVersionPolicyRecord>;
+  /** The count of *all* `AppVersionPolicyRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `AppVersionPolicyRecord` edge in the connection. */
+export type AppVersionPolicyEdge = {
+  __typename: 'AppVersionPolicyEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AppVersionPolicyRecord` at the end of the edge. */
+  node: AppVersionPolicyRecord;
+};
+
+/** The return type of our `appVersionPolicy` query. */
+export type AppVersionPolicyRecord = {
+  __typename: 'AppVersionPolicyRecord';
+  minAndroidSemver: Maybe<Scalars['String']['output']>;
+  minIosSemver: Maybe<Scalars['String']['output']>;
+};
+
 /** All input for the `approveCampaign` mutation. */
 export type ApproveCampaignInput = {
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
@@ -8623,6 +8650,7 @@ export type Query = Node & {
   allSystemSettings: Maybe<SystemSettingsConnection>;
   /** Reads and enables pagination through a set of `TokenMovement`. */
   allTokenMovements: Maybe<TokenMovementsConnection>;
+  appVersionPolicy: Maybe<AppVersionPolicyConnection>;
   authSession: AuthSessionPayload;
   /** Reads a single `Campaign` using its globally unique `ID`. */
   campaign: Maybe<Campaign>;
@@ -9281,6 +9309,16 @@ export type QueryAllTokenMovementsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAppVersionPolicyArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
