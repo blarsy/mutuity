@@ -15,6 +15,7 @@ import {
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import {
   fetchSearchNeeds,
@@ -371,7 +372,13 @@ export function SearchNeedsScreen({
         >
           <View style={styles.accordionHeader}>
             <View>
-              <Text variant="titleSmall">{t("campaignsLabel", { defaultValue: "Campaigns" })}</Text>
+              <View style={styles.accordionTitleRow}>
+                <Text variant="titleSmall">{t("campaignsLabel", { defaultValue: "Campaigns" })}</Text>
+                <CampaignExplainerButton
+                  accessibilityLabel={t("campaignsExplainLabel", { defaultValue: "What is a campaign?" })}
+                  testID="campaign-explainer-button"
+                />
+              </View>
               <Text variant="bodySmall" style={styles.accordionSubtitle}>
                 {selectedCampaignIds.length === 0
                   ? t("allCampaignsLabel", { defaultValue: "All campaigns" })
@@ -597,6 +604,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between"
+  },
+  accordionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
   },
   accordionSubtitle: {
     opacity: 0.75

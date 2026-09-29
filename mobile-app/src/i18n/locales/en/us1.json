@@ -63,5 +63,34 @@
         "body": "You don't need to hoard Topes. Complete your profile and publish resources to earn initial tokens. During community campaigns, participating active members receive seasonal token drops (3,000 to 8,000 Topes) to keep the reciprocity flowing!"
       }
     }
+  },
+  "campaignsGuide": {
+    "title": "Campaigns guide",
+    "stepLabel": "Step {{current}} of {{total}}",
+    "closeButton": "Close",
+    "previousButton": "Previous",
+    "nextButton": "Next",
+    "slides": {
+      "what": {
+        "title": "What is a campaign?",
+        "body": "Campaign slide 1 body placeholder."
+      },
+      "create": {
+        "title": "Creating a campaign",
+        "body": "Campaign slide 2 body placeholder."
+      },
+      "join": {
+        "title": "Joining a campaign",
+        "body": "Campaign slide 3 body placeholder."
+      },
+      "contribute": {
+        "title": "Contributing",
+        "body": "Campaign slide 4 body placeholder."
+      },
+      "settle": {
+        "title": "Settlement",
+        "body": "Campaign slide 5 body placeholder."
+      }
+    }
   }
 }

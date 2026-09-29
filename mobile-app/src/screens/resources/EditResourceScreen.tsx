@@ -25,6 +25,7 @@ import {
   updateResourceById
 } from "../../services/graphql/resources";
 import { useNetworkStatus } from "../../services/network/useNetworkStatus";
+import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -309,9 +310,15 @@ export function EditResourceScreen({
         <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
           <View style={styles.categoryHeader}>
             <View>
-              <FormFieldLabel>
-                {t("campaignLabel", { defaultValue: "Campaign (optional)" })}
-              </FormFieldLabel>
+              <View style={styles.categoryTitleRow}>
+                <FormFieldLabel>
+                  {t("campaignLabel", { defaultValue: "Campaign (optional)" })}
+                </FormFieldLabel>
+                <CampaignExplainerButton
+                  accessibilityLabel={t("campaignsExplainLabel", { defaultValue: "What is a campaign?" })}
+                  testID="campaign-explainer-button"
+                />
+              </View>
               <Text variant="bodySmall" style={styles.categorySubtitle}>
                 {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
                   t("noCampaignLabel", { defaultValue: "No campaign" })}
@@ -515,6 +522,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between"
+  },
+  categoryTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
   },
   categorySubtitle: {
     opacity: 0.75

@@ -21,6 +21,7 @@ import {
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import {
   fetchResourceCategories,
@@ -424,7 +425,13 @@ export function SearchResourcesScreen({
           <Pressable accessibilityRole="button" onPress={() => setShowCampaignsDialog(true)}>
             <View style={styles.accordionHeader}>
               <View>
-                <Text variant="titleSmall">{t("campaignsLabel", { defaultValue: "Campaigns" })}</Text>
+                <View style={styles.accordionTitleRow}>
+                  <Text variant="titleSmall">{t("campaignsLabel", { defaultValue: "Campaigns" })}</Text>
+                  <CampaignExplainerButton
+                    accessibilityLabel={t("campaignsExplainLabel", { defaultValue: "What is a campaign?" })}
+                    testID="campaign-explainer-button"
+                  />
+                </View>
                 <Text variant="bodySmall" style={styles.accordionSubtitle}>
                   {selectedCampaignIds.length === 0
                     ? t("allCampaignsLabel", { defaultValue: "All campaigns" })
@@ -586,7 +593,7 @@ export function SearchResourcesScreen({
           ) : filteredResources.length === 0 ? (
             <EmptyState
               message={t("searchResourcesEmpty", {
-                defaultValue: "No resources found. Try changing category, distance, or campaign filters."
+                defaultValue: "No resources found. Try changing your filters."
               })}
               actionLabel={t("clearFiltersLabel", { defaultValue: "Clear filters" })}
               onActionPress={clearFilters}
@@ -723,6 +730,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between"
+  },
+  accordionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
   },
   accordionSubtitle: {
     opacity: 0.75

@@ -17,7 +17,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function Frame({ children }: { children: React.ReactNode }): React.JSX.Element {
-  return <View style={{ minHeight: 320 }}>{children}</View>;
+  return <View style={{ flex: 1 }}>{children}</View>;
 }
 
 export const Default: Story = {

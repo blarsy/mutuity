@@ -20,7 +20,7 @@
 - Trigger: Resources query resolves successfully with zero results for current search/filter context.
 - Copy (en/fr):
 	- en: No resources found.
-	- en supporting: Try changing category, distance, or campaign filters.
+	- en supporting: Try changing your filters.
 	- fr: Aucune ressource trouvee.
 	- fr supporting: Essayez de modifier la categorie, la distance ou les filtres de campagne.
 - CTA:

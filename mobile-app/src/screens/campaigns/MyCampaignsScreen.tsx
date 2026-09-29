@@ -7,6 +7,7 @@ import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/p
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { CampaignExplainerDialog } from "../../components/campaignExplainer/CampaignExplainerDialog";
 import { fetchInspirationCampaigns, fetchMyCampaigns, type CampaignItem } from "../../services/graphql/campaigns";
 import { CampaignModerationStatus } from "../../services/graphql/generated";
 import { appFontFamilies } from "../../theme/fonts";
@@ -65,6 +66,7 @@ export function MyCampaignsScreen({
   const [inspirationOpen, setInspirationOpen] = useState(false);
   const [inspirationCampaigns, setInspirationCampaigns] = useState<CampaignItem[]>([]);
   const [inspirationLoading, setInspirationLoading] = useState(false);
+  const [explainerOpen, setExplainerOpen] = useState(false);
 
   const hasInjectedState =
     injectedCampaigns !== undefined || injectedLoading !== undefined || injectedErrorMessage !== undefined;
@@ -253,6 +255,11 @@ export function MyCampaignsScreen({
           {t("seeInspiration", { ns: "us3", defaultValue: "See inspiration" })}
         </Text>
       </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => setExplainerOpen(true)}>
+          <Text variant="labelSmall" style={styles.inspirationLinkText}>
+            {t("campaignsWhatIsIt", { ns: "us3", defaultValue: "What is it?" })}
+          </Text>
+        </Pressable>
       </View>
 
       {resolvedCampaigns.length === 0 ? (
@@ -361,6 +368,12 @@ export function MyCampaignsScreen({
             )
         } />
       </Portal>
+
+      <CampaignExplainerDialog
+        visible={explainerOpen}
+        onClose={() => setExplainerOpen(false)}
+        testID="campaign-explainer-dialog"
+      />
     </ScreenContainer>
   );
 }

@@ -63,5 +63,34 @@
         "body": "Vous n'avez pas besoin d'accumuler des Topes. Complétez votre profil et publiez des ressources pour gagner des jetons initiaux. Lors des campagnes communautaires, les membres actifs participants reçoivent des distributions saisonnières de jetons (3 000 à 8 000 Topes) pour maintenir la réciprocité !"
       }
     }
+  },
+  "campaignsGuide": {
+    "title": "Guide des campagnes",
+    "stepLabel": "Etape {{current}} sur {{total}}",
+    "closeButton": "Fermer",
+    "previousButton": "Precedent",
+    "nextButton": "Suivant",
+    "slides": {
+      "what": {
+        "title": "Qu'est-ce qu'une campagne ?",
+        "body": "Corps de la diapositive 1 de campagne (texte provisoire)."
+      },
+      "create": {
+        "title": "Créer une campagne",
+        "body": "Corps de la diapositive 2 de campagne (texte provisoire)."
+      },
+      "join": {
+        "title": "Rejoindre une campagne",
+        "body": "Corps de la diapositive 3 de campagne (texte provisoire)."
+      },
+      "contribute": {
+        "title": "Contribuer",
+        "body": "Corps de la diapositive 4 de campagne (texte provisoire)."
+      },
+      "settle": {
+        "title": "Règlement",
+        "body": "Corps de la diapositive 5 de campagne (texte provisoire)."
+      }
+    }
   }
 }

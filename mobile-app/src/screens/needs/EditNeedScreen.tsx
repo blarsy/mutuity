@@ -23,6 +23,7 @@ import {
 } from "../../services/graphql/needs";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 
 export interface EditNeedScreenProps {
@@ -342,9 +343,15 @@ export function EditNeedScreen({
         <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
           <View style={styles.campaignRow}>
             <View>
-              <FormFieldLabel>
-                {t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
-              </FormFieldLabel>
+              <View style={styles.campaignTitleRow}>
+                <FormFieldLabel>
+                  {t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
+                </FormFieldLabel>
+                <CampaignExplainerButton
+                  accessibilityLabel={t("campaignsExplainLabel", { defaultValue: "What is a campaign?" })}
+                  testID="campaign-explainer-button"
+                />
+              </View>
               <Text variant="bodySmall">
                 {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
                   t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" })}
@@ -443,6 +450,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between"
+  },
+  campaignTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.xs
   },
   warningText: {
     color: designTokens.colors.primary,

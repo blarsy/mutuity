@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Card, Icon, IconButton, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,7 @@ import {
   type HowToGetTokensOpportunityId,
   type HowToGetTokensProgress
 } from "../../features/howToGetTokens";
+import { CampaignExplainerDialog } from "../campaignExplainer/CampaignExplainerDialog";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -29,6 +30,7 @@ export function HowToGetTokensSection({
   testID
 }: HowToGetTokensSectionProps): React.JSX.Element {
   const { t } = useTranslation();
+  const [campaignExplainerOpen, setCampaignExplainerOpen] = useState(false);
 
   const optionalProps = {
     ...(testID !== undefined ? { testID } : {})
@@ -57,6 +59,13 @@ export function HowToGetTokensSection({
                 defaultValue_plural: "{{count}} rewards to reap"
               })}
             </Text>
+          ) : null}
+          {opportunity.id === "campaignAirdrop" ? (
+            <Pressable accessibilityRole="button" onPress={() => setCampaignExplainerOpen(true)}>
+              <Text variant="labelSmall" style={styles.whatIsItText}>
+                {t("howToGetTokens.whatIsIt", { defaultValue: "What is it?" })}
+              </Text>
+            </Pressable>
           ) : null}
         </View>
 
@@ -105,6 +114,12 @@ export function HowToGetTokensSection({
           {HOW_TO_GET_TOKENS_OPPORTUNITIES.map(renderOpportunity)}
         </View>
       </Card.Content>
+
+      <CampaignExplainerDialog
+        visible={campaignExplainerOpen}
+        onClose={() => setCampaignExplainerOpen(false)}
+        testID="campaign-explainer-dialog"
+      />
     </Card>
   );
 }
@@ -144,6 +159,11 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.altGeneral,
     color: designTokens.colors.primary,
     fontStyle: "italic"
+  },
+  whatIsItText: {
+    fontFamily: appFontFamilies.general,
+    color: designTokens.colors.primary,
+    textDecorationLine: "underline"
   },
   rowAction: {
     flexDirection: "row",

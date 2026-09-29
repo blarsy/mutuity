@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import React from 'react';
 import { LiteUI } from '@storybook/react-native-ui-lite';
 
+import '../src/i18n';
 import { view } from './storybook.requires';
 import { appFontAssets } from '../src/theme/fonts';
 
