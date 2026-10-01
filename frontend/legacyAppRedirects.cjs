@@ -1,4 +1,5 @@
 module.exports = [
+  { source: "/search", destination: "/app/search", permanent: false },
   { source: "/needs/:path*", destination: "/app/needs/:path*", permanent: false },
   { source: "/resources/:path*", destination: "/app/resources/:path*", permanent: false },
   { source: "/campaigns/:path*", destination: "/app/campaigns/:path*", permanent: false },

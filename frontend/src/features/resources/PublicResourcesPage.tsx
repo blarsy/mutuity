@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
@@ -110,7 +110,7 @@ function buildResourceTags(resource: PublicResourceCard, t: (key: string) => str
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
-export default function PublicResourcesPage() {
+export default function PublicResourcesPage({ modeToggle }: { modeToggle?: ReactNode } = {}) {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t, i18n } = useTranslation("resources");
@@ -269,6 +269,7 @@ export default function PublicResourcesPage() {
             <Typography component="h1" gutterBottom variant="h4">
               {t("browse.title")}
             </Typography>
+            {modeToggle}
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>

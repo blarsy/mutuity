@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
@@ -132,7 +132,7 @@ function formatClaimStatus(status: string) {
   return status.replaceAll("_", " ").toLowerCase();
 }
 
-export default function PublicNeedsPage() {
+export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode } = {}) {
   const router = useRouter();
   const { session, status } = useAuth();
   const { t } = useTranslation("needs");
@@ -310,6 +310,7 @@ export default function PublicNeedsPage() {
             <Typography component="h1" gutterBottom variant="h4">
               {t("browse.title")}
             </Typography>
+            {modeToggle}
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>

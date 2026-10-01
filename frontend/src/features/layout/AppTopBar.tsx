@@ -21,15 +21,13 @@ import type { AppColorMode } from "../../theme";
 import type { ListChatConversationsQuery } from "../../graphql/generated";
 
 const signedOutLinks = [
-  { labelKey: "nav.search", href: "/app/resources" },
-  { labelKey: "nav.contribute", href: "/app/needs" }
+  { labelKey: "nav.search", href: "/app/search" }
 ];
 
 const LANGUAGE_STORAGE_KEY = "mutuity-language";
 const AVAILABLE_LANGUAGES = ["fr", "en"] as const;
 const signedInLinks = [
-  { labelKey: "nav.search", href: "/app/resources" },
-  { labelKey: "nav.contribute", href: "/app/needs" },
+  { labelKey: "nav.search", href: "/app/search" },
   { labelKey: "nav.resources", href: "/app/resources/manage" },
   { labelKey: "nav.bids", href: "/app/bids" },
   { labelKey: "nav.needs", href: "/app/needs/manage" },
@@ -155,7 +153,7 @@ export function AppTopBar({
   const handleLogOut = async () => {
     setMenuAnchor(null);
     await signOut();
-    await router.push("/app/resources");
+    await router.push("/app/search");
   };
 
   const currentLanguage = i18n.language.toLowerCase().startsWith("en") ? "en" : "fr";

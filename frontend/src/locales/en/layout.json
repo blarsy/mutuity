@@ -10,6 +10,11 @@
     "chat": "Chat",
     "notifications": "Notifications"
   },
+  "search": {
+    "modeLabel": "Search mode",
+    "resourcesMode": "Resources",
+    "needsMode": "Needs"
+  },
   "topbar": {
     "tokenBalance": "{{count}} Topes",
     "switchToDark": "Switch to dark mode",
