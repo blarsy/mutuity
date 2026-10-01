@@ -1,8 +1,8 @@
 {
   "page": {
     "title": "Campaigns",
-    "backHome": "Back home",
     "launchCampaign": "Launch campaign",
+    "whatAreCampaigns": "What are campaigns",
     "openPublicCampaign": "Open public campaign page",
     "seeInspiration": "See others for inspiration",
     "signInHint": "Sign in to see your campaigns and launch new ones.",

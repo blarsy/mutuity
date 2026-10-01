@@ -32,7 +32,7 @@ export default function SearchPage() {
       color="primary"
       exclusive
       onChange={handleModeChange}
-      size="small"
+      size="large"
       sx={{ mt: 1 }}
       value={mode}
     >
