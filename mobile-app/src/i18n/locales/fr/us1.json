@@ -72,24 +72,24 @@
     "nextButton": "Suivant",
     "slides": {
       "what": {
-        "title": "Qu'est-ce qu'une campagne ?",
-        "body": "Corps de la diapositive 1 de campagne (texte provisoire)."
+        "title": "C'est quoi une campagne ?",
+        "body": "C'est une période choisie par un membre de Tope-là pour concentrer les efforts de la communauté sur un besoin bien précis. Un surplus à écouler, retaper une grange, organiser une fête de quartier, ... Un coup de projecteur sur un projet, pour que tout le monde s'y mette en même temps."
       },
       "create": {
-        "title": "Créer une campagne",
-        "body": "Corps de la diapositive 2 de campagne (texte provisoire)."
+        "title": "Pourquoi participer ?",
+        "body": "Pour faire le plein de Topes super rapidement. Quand tu proposes un coup de main ou du matériel dans une campagne active, tes récompenses sont multipliés par 5 ou 10. Tu peux empocher entre 3 000 et 8 000 Topes d'un coup avec le largage. Tu donnes un coup de pouce à un projet concret, et tu fais le plein de Topes pour tes futurs besoins."
       },
       "join": {
-        "title": "Rejoindre une campagne",
-        "body": "Corps de la diapositive 3 de campagne (texte provisoire)."
+        "title": "Comment ça marche ?",
+        "body": "Choisis une campagne en cours qui t'intéresse.\nPropose au moins 2 besoins ou ressources en rapport avec la campagne.\nDès que tes ressources ou besoins sont validées, elles rejoignent la campagne et tes Topes arrivent rapidement sur ton compte, suivant le délai de récompense, et la date de largage de la campagne."
       },
       "contribute": {
-        "title": "Contribuer",
-        "body": "Corps de la diapositive 4 de campagne (texte provisoire)."
+        "title": "On fait quoi avec ces Topes ?",
+        "body": "Ces Topes ne sont pas faits pour dormir sur ton compte !\nUtilise-les immédiatement pour solliciter les autres membres du réseau."
       },
       "settle": {
-        "title": "Règlement",
-        "body": "Corps de la diapositive 5 de campagne (texte provisoire)."
+        "title": "À toi de jouer !",
+        "body": "Tu as un peu de temps, ou du matériel qui prend la poussière ?\nParcoure les campagnes actives autour de chez toi et propose tes ressources et tes besoins.\nEt si c'est toi qui as une idée à concrétiser, lance ta propre campagne et invite la communauté à concentrer ses forces avec toi !"
       }
     }
   }
