@@ -49,7 +49,7 @@ type CampaignNeedNode = {
 type CampaignNeedTriageData = {
   allCampaignNeeds: {
     nodes: CampaignNeedNode[];
-  };
+  } | null;
 };
 
 type CampaignNeedTriageVariables = {
@@ -122,7 +122,7 @@ export default function CampaignNeedTriagePage() {
   const acceptErrorMessage = getUserFacingGraphQLErrorMessage(acceptError);
   const rejectErrorMessage = getUserFacingGraphQLErrorMessage(rejectError);
 
-  const nodes = useMemo(() => data?.allCampaignNeeds.nodes ?? [], [data?.allCampaignNeeds.nodes]);
+  const nodes = useMemo(() => data?.allCampaignNeeds?.nodes ?? [], [data?.allCampaignNeeds?.nodes]);
 
   const pendingCount = useMemo(() => {
     return nodes.filter(node => (optimisticStatuses[nodeKey(node)] ?? node.status) === "PENDING").length;

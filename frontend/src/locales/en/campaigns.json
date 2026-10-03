@@ -46,14 +46,6 @@
             "rejected": "Current moderation state: rejected until a new moderation submission.",
             "unknown": "Current moderation state: visibility depends on moderation workflow."
           }
-        },
-        "onboarding": {
-          "title": "Join and start participating",
-          "body": "Sign in or create your account to contribute to campaign needs and resources. You can also install the app on mobile.",
-          "login": "Sign in",
-          "register": "Create account",
-          "android": "Android app",
-          "ios": "iOS app"
         }
       }
     },

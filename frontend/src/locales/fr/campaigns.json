@@ -46,14 +46,6 @@
             "rejected": "Etat de moderation actuel : rejetee jusqu'a une nouvelle soumission.",
             "unknown": "Etat de moderation actuel : la visibilite depend du workflow de moderation."
           }
-        },
-        "onboarding": {
-          "title": "Rejoindre et participer",
-          "body": "Connectez-vous ou creez votre compte pour contribuer aux besoins et ressources de campagne. Vous pouvez aussi installer l'application mobile.",
-          "login": "Se connecter",
-          "register": "Creer un compte",
-          "android": "Application Android",
-          "ios": "Application iOS"
         }
       }
     },

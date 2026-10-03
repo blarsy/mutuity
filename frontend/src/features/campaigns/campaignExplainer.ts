@@ -64,31 +64,5 @@ export function buildCampaignExplainerSlides(
       ]
     }
   ];
-
-  if (options.isAuthenticated) {
-    return baseSlides;
-  }
-
-  return [
-    ...baseSlides,
-    {
-      id: "onboarding",
-      title: t("public.explainer.slides.onboarding.title"),
-      body: t("public.explainer.slides.onboarding.body"),
-      ctas: [
-        { label: t("public.explainer.slides.onboarding.login"), href: options.loginHref },
-        { label: t("public.explainer.slides.onboarding.register"), href: options.registerHref },
-        {
-          label: t("public.explainer.slides.onboarding.android"),
-          href: options.androidUrl,
-          external: true
-        },
-        {
-          label: t("public.explainer.slides.onboarding.ios"),
-          href: options.iosUrl,
-          external: true
-        }
-      ]
-    }
-  ];
+  return baseSlides;
 }
