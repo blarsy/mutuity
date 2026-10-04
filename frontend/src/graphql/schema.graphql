@@ -5721,6 +5721,40 @@ type LinkAccountExternalIdentityPayload {
   string: String
 }
 
+"""All input for the `linkCampaignResource` mutation."""
+input LinkCampaignResourceInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pCampaignId: UUID
+  pResourceId: UUID
+}
+
+"""The output of our `linkCampaignResource` mutation."""
+type LinkCampaignResourcePayload {
+  """Reads a single `Account` that is related to this `CampaignResource`."""
+  accountByActedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `CampaignResource`."""
+  campaignByCampaignId: Campaign
+  campaignResource: CampaignResource
+  """An edge for our `CampaignResource`. May be used by Relay 1."""
+  campaignResourceEdge(
+    """The method to use when ordering `CampaignResource`."""
+    orderBy: [CampaignResourcesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignResourcesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+  """Reads a single `Resource` that is related to this `CampaignResource`."""
+  resourceByResourceId: Resource
+}
+
 """A `ListChatConversationsRecord` edge in the connection."""
 type ListChatConversationEdge {
   """A cursor for use in pagination."""
@@ -6536,6 +6570,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: LinkAccountExternalIdentityInput!
   ): LinkAccountExternalIdentityPayload
+  linkCampaignResource(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: LinkCampaignResourceInput!
+  ): LinkCampaignResourcePayload
   markAccountNotificationRead(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: MarkAccountNotificationReadInput!
@@ -6650,6 +6688,10 @@ type Mutation {
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
     input: SubmitResourceBidInput!
   ): SubmitResourceBidPayload
+  unlinkCampaignResource(
+    """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
+    input: UnlinkCampaignResourceInput!
+  ): UnlinkCampaignResourcePayload
   """Updates a single `Account` using its globally unique id and a patch."""
   updateAccount(
     """The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields."""
@@ -10847,6 +10889,29 @@ enum TriStateFilter {
 
 """A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122)."""
 scalar UUID
+
+"""All input for the `unlinkCampaignResource` mutation."""
+input UnlinkCampaignResourceInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pCampaignId: UUID
+  pResourceId: UUID
+}
+
+"""The output of our `unlinkCampaignResource` mutation."""
+type UnlinkCampaignResourcePayload {
+  boolean: Boolean
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Our root query field type. Allows us to run any query from our mutation payload."""
+  query: Query
+}
 
 """All input for the `updateAccountByExternalSubject` mutation."""
 input UpdateAccountByExternalSubjectInput {

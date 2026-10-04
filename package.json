@@ -16,7 +16,7 @@
     "docker:migrate": "docker compose run --rm migrate",
     "guard:sql-boundary": "node ./scripts/check-sql-boundary.mjs",
     "guard:admin-boundaries": "node ./scripts/check-admin-boundaries.mjs",
-    "test:security-boundaries": "npm run guard:admin-boundaries && npm --workspace backend test -- --runInBand tests/integration/authorization-boundary-verification.spec.ts tests/integration/admin-scoped-user-access.spec.ts tests/integration/claim-chat-write-boundaries.spec.ts",
+    "test:security-boundaries": "npm run guard:admin-boundaries && npm --workspace backend test -- --runInBand tests/integration/authorization-boundary-verification.spec.ts tests/integration/admin-scoped-user-access.spec.ts tests/integration/claim-chat-write-boundaries.spec.ts tests/integration/campaign-link-email-access.spec.ts",
     "guard:sql-plpgsql": "bash ./scripts/check-plpgsql-quality.sh",
     "e2e:seed": "node ./e2e/scripts/seed-smoke-users.mjs",
     "test:e2e": "playwright test",

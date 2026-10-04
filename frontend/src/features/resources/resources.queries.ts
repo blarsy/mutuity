@@ -237,7 +237,7 @@ export const LINKABLE_RESOURCE_CAMPAIGN_OPTIONS_QUERY = gql`
 
 export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
   mutation CreateCampaignResourceLink($campaignId: UUID!, $resourceId: UUID!) {
-    createCampaignResource(input: { campaignResource: { campaignId: $campaignId, resourceId: $resourceId } }) {
+    linkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
       campaignResource {
         campaignId
         resourceId
@@ -248,8 +248,8 @@ export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
 
 export const DELETE_CAMPAIGN_RESOURCE_MUTATION = gql`
   mutation DeleteCampaignResourceLink($campaignId: UUID!, $resourceId: UUID!) {
-    deleteCampaignResourceByCampaignIdAndResourceId(input: { campaignId: $campaignId, resourceId: $resourceId }) {
-      deletedCampaignResourceId
+    unlinkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
+      boolean
     }
   }
 `;

@@ -228,11 +228,11 @@ describe("admin scoped ordinary-user access", () => {
     }
     await denied("update app_public.claim_message set body = 'Not allowed' where id = $1", [ids.claim_message[0]]);
     await denied("update app_public.need_claim set status = 'settled' where id = $1", [ids.need_claim[0]]);
-    // Existing campaign_resource DELETE is deliberately unchanged by this patch.
+    await denied("delete from app_public.campaign_resource where resource_id=$1", [ids.campaign_resource[0]]);
     await denied("delete from app_public.account_delivery_preference where account_id = $1", [adminId]);
   });
 
-  it("shows why full inheritance still requires campaign-resource write hardening", async () => {
+  it("keeps campaign-resource triage protected even under hypothetical inheritance", async () => {
     await client.query("reset role");
     await client.query("grant identified_account to admin with inherit true, set false");
     await client.query("set local role admin");
@@ -244,22 +244,19 @@ describe("admin scoped ordinary-user access", () => {
     expect(bids.rows.map(row => row.id).sort()).toEqual(ids.resource_bid.slice(0, 2).sort());
     await denied("update app_public.claim_message set body='Forged' where id=$1", [ids.claim_message[0]]);
 
-    // The admin owns the second campaign, not its resource. Function triage
-    // validates pending -> accepted and records actor/time. Inherited raw UPDATE
-    // can skip that validation and reverse a decision while retaining old audit
-    // metadata. This is not an unrelated-row RLS leak, but a workflow bypass.
+    // The formerly reproduced decision-reversal bypass must now be denied.
     const link = await client.query(
       "select campaign_id from app_public.campaign_resource where resource_id=$1", [ids.campaign_resource[1]]
     );
     await client.query("select app_public.accept_campaign_resource($1, $2)",
       [link.rows[0].campaign_id, ids.campaign_resource[1]]);
-    const changed = await client.query(
+    await denied(
       `update app_public.campaign_resource set status='rejected'
-       where campaign_id=$1 and resource_id=$2 returning status, acted_at, acted_by_account_id`,
+       where campaign_id=$1 and resource_id=$2`,
       [link.rows[0].campaign_id, ids.campaign_resource[1]]
     );
-    expect(changed.rows[0].status).toBe('rejected');
-    expect(changed.rows[0].acted_at).not.toBeNull();
-    expect(changed.rows[0].acted_by_account_id).toBe(adminId);
+    const state = await client.query("select status,acted_by_account_id from app_public.campaign_resource where resource_id=$1",
+      [ids.campaign_resource[1]]);
+    expect(state.rows[0]).toEqual({ status: 'accepted', acted_by_account_id: adminId });
   });
 });

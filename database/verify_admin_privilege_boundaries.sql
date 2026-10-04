@@ -13,8 +13,7 @@ scoped_tables(table_name, admin_privileges) as (values
   ('claim_message_image', array['SELECT']),
   ('need_claim_settlement_event', array['SELECT']),
   ('resource_bid', array['SELECT']),
-  -- DELETE predates these fixes (migration 139); explicitly preserve it.
-  ('campaign_resource', array['SELECT', 'DELETE']),
+  ('campaign_resource', array['SELECT']),
   ('token_movement', array['SELECT']),
   ('account_delivery_preference', array['SELECT', 'INSERT', 'UPDATE']),
   ('need_claim_notification', array['SELECT', 'UPDATE']),
@@ -27,7 +26,8 @@ scoped_tables(table_name, admin_privileges) as (values
 ),
 function_only_tables(table_name) as (values
   ('need_claim'), ('claim_conversation'), ('claim_message'), ('claim_message_image'),
-  ('resource_conversation'), ('resource_message'), ('resource_message_image'), ('chat_typing_presence')
+  ('resource_conversation'), ('resource_message'), ('resource_message_image'), ('chat_typing_presence'),
+  ('campaign_resource')
 ),
 admin_functions(signature) as (values
   ('app_public.admin_list_accounts(text,integer,integer)'),
@@ -45,6 +45,12 @@ admin_functions(signature) as (values
   ('app_public.campaign_moderation_events(uuid)')
 ),
 user_functions(signature, expected_definer) as (values
+  ('app_public.link_campaign_resource(uuid,uuid)', true),
+  ('app_public.unlink_campaign_resource(uuid,uuid)', true),
+  ('app_public.accept_campaign_resource(uuid,uuid)', true),
+  ('app_public.reject_campaign_resource(uuid,uuid)', true),
+  ('app_public.request_account_email_change(text,bigint,bigint)', true),
+  ('app_public.confirm_account_email_change(text)', true),
   ('app_public.claim_need(uuid,text)', true),
   ('app_public.settle_need_claim(uuid)', true),
   ('app_public.cancel_need_claim(uuid)', true),
@@ -108,8 +114,6 @@ violations(category, object_name, detail) as (
   select 'role_policy_bypass', p.tablename, p.policyname
   from pg_policies p join scoped_tables t on t.table_name = p.tablename
   where p.schemaname = 'app_public'
-    -- Preserve the explicit pre-existing administrative unlink capability.
-    and not (p.tablename = 'campaign_resource' and p.cmd = 'DELETE')
     and (coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')) ~* 'is_admin|is_manager|current_role'
   union all
   select 'required_function', f.signature, f.role_name || ': missing EXECUTE or wrong security mode'

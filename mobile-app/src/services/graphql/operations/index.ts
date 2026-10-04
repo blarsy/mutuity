@@ -506,7 +506,7 @@ export const DELETE_CAMPAIGN_NEED_MUTATION = gql`
 
 export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
   mutation CreateCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-    createCampaignResource(input: { campaignResource: { campaignId: $campaignId, resourceId: $resourceId } }) {
+    linkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
       campaignResource {
         campaignId
         resourceId
@@ -517,8 +517,8 @@ export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
 
 export const DELETE_CAMPAIGN_RESOURCE_MUTATION = gql`
   mutation DeleteCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-    deleteCampaignResourceByCampaignIdAndResourceId(input: { campaignId: $campaignId, resourceId: $resourceId }) {
-      deletedCampaignResourceId
+    unlinkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
+      boolean
     }
   }
 `;

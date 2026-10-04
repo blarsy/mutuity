@@ -86,11 +86,26 @@ decision metadata; it is outside the approved function-based write boundary.
 Inheritance would also automatically pick up every future regular-user grant.
 
 **Decision: retain explicit scoped grants for now; no persistent role membership
-is deployed.** Before full capability parity, move campaign-resource link writes
-behind validated functions and migrate its web/mobile raw-create callers, or
-deliberately validate and accept those direct grants. Add separately reviewed
-admin email-change EXECUTE grants if that user feature is needed. These are
-remaining feature gaps, not evidence of full user/admin capability parity.
+is deployed.** The remaining gaps described above are resolved by migration
+158_campaign_resource_functions_and_admin_email.sql: web/mobile callers now use
+link/unlink functions, direct link DML and policies are removed, and admin receives
+explicit email-change EXECUTE grants. Effective application table/function grants
+now cover those of identified_account without automatic future inheritance.
 The membership-separation assertion is intentional until that follow-up work is
 approved. Hypothetical inheritance tests require PostgreSQL 16+ and a test
 superuser/role-administration connection; all grants and fixtures roll back.
+
+`campaign_resource/link_resource.sql` is the canonical link-function source.
+Joining requires resource ownership and an active approved campaign/resource;
+retries preserve existing triage status. Unlink allows either creator or the
+pre-existing explicit admin override, now inside a function. Triage continues
+through pending-only accept/reject functions. Resource locking serializes link
+retries. Email request is session-scoped; confirmation is token-authorized and
+does not accept a target account ID.
+
+Production must deploy these link functions additively before releasing updated
+web/mobile clients, then apply the DML revocations once old clients are gated or
+retired. Old raw link/unlink mutations cease working after this migration (the
+same staged compatibility requirement as migration 156). No role inheritance is
+needed or enabled. Security tests now also exercise admin/regular linking,
+unlinking, triage preservation and one-use self-email confirmation with rollback.

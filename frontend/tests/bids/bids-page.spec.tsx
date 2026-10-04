@@ -48,6 +48,7 @@ const RECEIVED_QUERY_DOC = { kind: "Document", name: "received" };
 const mockUseQuery = jest.fn();
 const mockUseMutation = jest.fn(() => [jest.fn()]);
 const mockUseSubscription = jest.fn();
+let mockRole = "identified_account";
 
 let sentQueryResult: {
   data?: { sentResourceBids: { nodes: BidNode[]; pageInfo: { hasNextPage: boolean; endCursor: string | null }; totalCount: number } };
@@ -83,7 +84,7 @@ jest.mock("../../src/features/resources/resources.queries", () => ({
 }));
 
 jest.mock("../../src/features/auth/AuthProvider", () => ({
-  useAuth: () => ({ session: { account: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" } } })
+  useAuth: () => ({ session: { role: mockRole, account: { id: "acct-me", displayName: "Me", externalSubject: "me-sub" } } })
 }));
 
 jest.mock("../../src/features/auth/requireAuth", () => ({
@@ -147,6 +148,8 @@ jest.mock("react-i18next", () => ({
 
 describe("BidsPage", () => {
   beforeEach(() => {
+    mockRole = "identified_account";
+    mockUseQuery.mockClear();
     mockUseMutation.mockReturnValue([jest.fn()]);
     sentQueryResult = {
       loading: false,
@@ -176,6 +179,17 @@ describe("BidsPage", () => {
       if (query === RECEIVED_QUERY_DOC) return receivedQueryResult;
       throw new Error("Unexpected query document");
     });
+  });
+
+  it("lets admins use the ordinary bid workspace and both scoped queries", () => {
+    mockRole = "admin";
+    const Page = require("../../src/pages/bids").default;
+    const html = renderToStaticMarkup(createElement(Page));
+    expect(html).toContain("Sent section");
+    expect(html).toContain("Received section");
+    expect(html).not.toContain("only available for regular accounts");
+    expect(mockUseQuery).toHaveBeenCalledWith(SENT_QUERY_DOC, expect.objectContaining({ skip: false }));
+    expect(mockUseQuery).toHaveBeenCalledWith(RECEIVED_QUERY_DOC, expect.objectContaining({ skip: false }));
   });
 
   it("renders both sections with filters and preserves query-provided status ordering", () => {

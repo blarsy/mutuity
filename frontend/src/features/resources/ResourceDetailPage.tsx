@@ -60,9 +60,10 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   });
   const resource = data?.resourceById ?? null;
   const isCreatorEarly = resource?.creatorAccountId === currentAccountId;
-  const isAdmin = session.authenticated && session.role === "admin";
-  const { data: bidsData } = useQuery<ResourceBidsForResourceQuery>(RESOURCE_BIDS_FOR_RESOURCE_QUERY, {
-    skip: !resource || !currentAccountId || isAdmin,
+  const { data: bidsData, refetch: refetchBids } = useQuery<ResourceBidsForResourceQuery>(RESOURCE_BIDS_FOR_RESOURCE_QUERY, {
+    // This is a readiness guard, not authorization. PostgreSQL RLS scopes bids
+    // to the bidder/resource owner for both regular accounts and admins.
+    skip: !resource || !session.authenticated || !currentAccountId,
     variables: { resourceId }
   });
   const { data: categoryData } = useQuery<ResourceCategoryOptionsQuery>(RESOURCE_CATEGORY_OPTIONS_QUERY);
@@ -188,6 +189,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 resourceTitle={resource.title}
                 onSubmitted={() => {
                   void refetch();
+                  void refetchBids();
                 }}
               />
             </Stack>

@@ -5853,6 +5853,44 @@ export type LinkAccountExternalIdentityPayload = {
   string: Maybe<Scalars['String']['output']>;
 };
 
+/** All input for the `linkCampaignResource` mutation. */
+export type LinkCampaignResourceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pResourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `linkCampaignResource` mutation. */
+export type LinkCampaignResourcePayload = {
+  __typename: 'LinkCampaignResourcePayload';
+  /** Reads a single `Account` that is related to this `CampaignResource`. */
+  accountByActedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignResource`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  campaignResource: Maybe<CampaignResource>;
+  /** An edge for our `CampaignResource`. May be used by Relay 1. */
+  campaignResourceEdge: Maybe<CampaignResourcesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `CampaignResource`. */
+  resourceByResourceId: Maybe<Resource>;
+};
+
+
+/** The output of our `linkCampaignResource` mutation. */
+export type LinkCampaignResourcePayloadCampaignResourceEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
+};
+
 /** A `ListChatConversationsRecord` edge in the connection. */
 export type ListChatConversationEdge = {
   __typename: 'ListChatConversationEdge';
@@ -6307,6 +6345,7 @@ export type Mutation = {
   getAccountDeliveryPreferences: Maybe<GetAccountDeliveryPreferencesPayload>;
   giftTokens: Maybe<GiftTokensPayload>;
   linkAccountExternalIdentity: Maybe<LinkAccountExternalIdentityPayload>;
+  linkCampaignResource: Maybe<LinkCampaignResourcePayload>;
   markAccountNotificationRead: Maybe<MarkAccountNotificationReadPayload>;
   markAllNotificationsRead: Maybe<MarkAllNotificationsReadPayload>;
   markClaimMessagesRead: Maybe<MarkClaimMessagesReadPayload>;
@@ -6337,6 +6376,7 @@ export type Mutation = {
   setGrantTargetEmails: Maybe<SetGrantTargetEmailsPayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
+  unlinkCampaignResource: Maybe<UnlinkCampaignResourcePayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
   updateAccount: Maybe<UpdateAccountPayload>;
   /** Updates a single `Account` using a unique key and a patch. */
@@ -7250,6 +7290,12 @@ export type MutationLinkAccountExternalIdentityArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationLinkCampaignResourceArgs = {
+  input: LinkCampaignResourceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationMarkAccountNotificationReadArgs = {
   input: MarkAccountNotificationReadInput;
 };
@@ -7414,6 +7460,12 @@ export type MutationSettleNeedClaimArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSubmitResourceBidArgs = {
   input: SubmitResourceBidInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUnlinkCampaignResourceArgs = {
+  input: UnlinkCampaignResourceInput;
 };
 
 
@@ -11789,6 +11841,30 @@ export enum TriStateFilter {
   Unset = 'UNSET'
 }
 
+/** All input for the `unlinkCampaignResource` mutation. */
+export type UnlinkCampaignResourceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pResourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `unlinkCampaignResource` mutation. */
+export type UnlinkCampaignResourcePayload = {
+  __typename: 'UnlinkCampaignResourcePayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** All input for the `updateAccountByExternalSubject` mutation. */
 export type UpdateAccountByExternalSubjectInput = {
   /** An object where the defined keys will be set on the `Account` being updated. */
@@ -14494,7 +14570,7 @@ export type CreateCampaignResourceLinkMutationVariables = Exact<{
 }>;
 
 
-export type CreateCampaignResourceLinkMutation = { __typename: 'Mutation', createCampaignResource: { __typename: 'CreateCampaignResourcePayload', campaignResource: { __typename: 'CampaignResource', campaignId: any, resourceId: any } | null } | null };
+export type CreateCampaignResourceLinkMutation = { __typename: 'Mutation', linkCampaignResource: { __typename: 'LinkCampaignResourcePayload', campaignResource: { __typename: 'CampaignResource', campaignId: any, resourceId: any } | null } | null };
 
 export type DeleteCampaignResourceLinkMutationVariables = Exact<{
   campaignId: Scalars['UUID']['input'];
@@ -14502,7 +14578,7 @@ export type DeleteCampaignResourceLinkMutationVariables = Exact<{
 }>;
 
 
-export type DeleteCampaignResourceLinkMutation = { __typename: 'Mutation', deleteCampaignResourceByCampaignIdAndResourceId: { __typename: 'DeleteCampaignResourcePayload', deletedCampaignResourceId: string | null } | null };
+export type DeleteCampaignResourceLinkMutation = { __typename: 'Mutation', unlinkCampaignResource: { __typename: 'UnlinkCampaignResourcePayload', boolean: boolean | null } | null };
 
 export type ResourceBidsForResourceQueryVariables = Exact<{
   resourceId: Scalars['UUID']['input'];
@@ -14754,8 +14830,8 @@ export const PublicResourcesDocument = {"kind":"Document","definitions":[{"kind"
 export const ResourceDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ResourceDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"latitude"}},{"kind":"Field","name":{"kind":"Name","value":"longitude"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"defaultTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrls"}},{"kind":"Field","name":{"kind":"Name","value":"categoryLabels"}},{"kind":"Field","name":{"kind":"Name","value":"isProduct"}},{"kind":"Field","name":{"kind":"Name","value":"isService"}},{"kind":"Field","name":{"kind":"Name","value":"canBeGiven"}},{"kind":"Field","name":{"kind":"Name","value":"canBeExchanged"}},{"kind":"Field","name":{"kind":"Name","value":"canBeTakenAway"}},{"kind":"Field","name":{"kind":"Name","value":"canBeDelivered"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"accountByCreatorAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}}]}}]}}]}}]} as unknown as DocumentNode<ResourceDetailQuery, ResourceDetailQueryVariables>;
 export const ResourceEditDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ResourceEditDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"latitude"}},{"kind":"Field","name":{"kind":"Name","value":"longitude"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"defaultTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrls"}},{"kind":"Field","name":{"kind":"Name","value":"categoryLabels"}},{"kind":"Field","name":{"kind":"Name","value":"isProduct"}},{"kind":"Field","name":{"kind":"Name","value":"isService"}},{"kind":"Field","name":{"kind":"Name","value":"canBeGiven"}},{"kind":"Field","name":{"kind":"Name","value":"canBeExchanged"}},{"kind":"Field","name":{"kind":"Name","value":"canBeTakenAway"}},{"kind":"Field","name":{"kind":"Name","value":"canBeDelivered"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"resourceCategoryAssignmentsByResourceId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"CATEGORY_CODE_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"categoryCode"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"campaignResourcesByResourceId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"PRIMARY_KEY_DESC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}}]}}]}}]}}]}}]} as unknown as DocumentNode<ResourceEditDetailQuery, ResourceEditDetailQueryVariables>;
 export const LinkableResourceCampaignOptionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"LinkableResourceCampaignOptions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allCampaigns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"moderationStatus"},"value":{"kind":"EnumValue","value":"APPROVED"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"START_AT_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}}]}}]}}]}}]} as unknown as DocumentNode<LinkableResourceCampaignOptionsQuery, LinkableResourceCampaignOptionsQueryVariables>;
-export const CreateCampaignResourceLinkDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCampaignResourceLink"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCampaignResource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignResource"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignResource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"resourceId"}}]}}]}}]}}]} as unknown as DocumentNode<CreateCampaignResourceLinkMutation, CreateCampaignResourceLinkMutationVariables>;
-export const DeleteCampaignResourceLinkDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteCampaignResourceLink"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteCampaignResourceByCampaignIdAndResourceId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"campaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deletedCampaignResourceId"}}]}}]}}]} as unknown as DocumentNode<DeleteCampaignResourceLinkMutation, DeleteCampaignResourceLinkMutationVariables>;
+export const CreateCampaignResourceLinkDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCampaignResourceLink"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"linkCampaignResource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pCampaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pResourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignResource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"campaignId"}},{"kind":"Field","name":{"kind":"Name","value":"resourceId"}}]}}]}}]}}]} as unknown as DocumentNode<CreateCampaignResourceLinkMutation, CreateCampaignResourceLinkMutationVariables>;
+export const DeleteCampaignResourceLinkDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteCampaignResourceLink"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unlinkCampaignResource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"pCampaignId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"campaignId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"pResourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"boolean"}}]}}]}}]} as unknown as DocumentNode<DeleteCampaignResourceLinkMutation, DeleteCampaignResourceLinkMutationVariables>;
 export const ResourceBidsForResourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ResourceBidsForResource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"resourceBidsByResourceId"},"name":{"kind":"Name","value":"allResourceBids"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"resourceId"}},{"kind":"Field","name":{"kind":"Name","value":"bidderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"respondedAt"}},{"kind":"Field","name":{"kind":"Name","value":"respondedByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"accountByBidderAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}}]}}]}}]}}]} as unknown as DocumentNode<ResourceBidsForResourceQuery, ResourceBidsForResourceQueryVariables>;
 export const SoftDeleteResourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SoftDeleteResource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateResourceById"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"resourcePatch"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"isActive"},"value":{"kind":"BooleanValue","value":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]}}]} as unknown as DocumentNode<SoftDeleteResourceMutation, SoftDeleteResourceMutationVariables>;
 export const ResourceOpenBidCountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ResourceOpenBidCount"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allResourceBids"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"OPEN"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]} as unknown as DocumentNode<ResourceOpenBidCountQuery, ResourceOpenBidCountQueryVariables>;

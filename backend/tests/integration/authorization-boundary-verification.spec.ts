@@ -58,10 +58,7 @@ describe("authorization boundary verifier", () => {
         and has_table_privilege('identified_account',c.oid,v.privilege)
         and not has_table_privilege('admin',c.oid,v.privilege)
       order by c.relname, v.privilege`;
-    expect((await client.query(tableDifference)).rows).toEqual([
-      { table_name: 'campaign_resource', privilege: 'INSERT' },
-      { table_name: 'campaign_resource', privilege: 'UPDATE' }
-    ]);
+    expect((await client.query(tableDifference)).rows).toEqual([]);
     const functions = await client.query(`
       select p.oid::regprocedure::text as signature
       from pg_proc p join pg_namespace n on n.oid=p.pronamespace
@@ -69,20 +66,33 @@ describe("authorization boundary verifier", () => {
         and has_function_privilege('identified_account',p.oid,'EXECUTE')
         and not has_function_privilege('admin',p.oid,'EXECUTE')
       order by signature`);
-    expect(functions.rows).toEqual([
-      { signature: 'app_public.confirm_account_email_change(text)' },
-      { signature: 'app_public.request_account_email_change(text,bigint,bigint)' }
-    ]);
+    expect(functions.rows).toEqual([]);
 
     // PostgreSQL role membership changes are transactional. Never persist this
     // hypothetical membership: afterEach rolls it back even on assertion failure.
     await client.query("grant identified_account to admin with inherit true, set false");
     expect((await client.query(tableDifference)).rows).toEqual([]);
     expect((await client.query(sql)).rows).toEqual([
-      { category: 'admin_table_privilege', object_name: 'app_public.campaign_resource', detail: 'INSERT' },
-      { category: 'admin_table_privilege', object_name: 'app_public.campaign_resource', detail: 'UPDATE' },
       { category: 'unexpected_membership', object_name: 'admin/identified_account', detail: 'roles must remain separate' }
     ]);
     expect((await client.query("select pg_has_role('identified_account','admin','MEMBER') as reverse")).rows[0].reverse).toBe(false);
+  });
+
+  it("detects membership even when inheritance adds no current application privileges", async () => {
+    const difference = await client.query(`
+      select c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace
+      cross join (values ('SELECT'),('INSERT'),('UPDATE'),('DELETE'),('TRUNCATE'),('REFERENCES'),('TRIGGER')) v(p)
+      where n.nspname='app_public' and c.relkind in ('r','v','p','m')
+        and has_table_privilege('identified_account',c.oid,v.p)
+        and not has_table_privilege('admin',c.oid,v.p)`);
+    expect(difference.rows).toEqual([]);
+    expect((await client.query(`select p.oid from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+      where n.nspname in ('app_public','app_private','audit')
+        and has_function_privilege('identified_account',p.oid,'EXECUTE')
+        and not has_function_privilege('admin',p.oid,'EXECUTE')`)).rows).toEqual([]);
+    await client.query("grant identified_account to admin with inherit true, set false");
+    expect((await client.query(sql)).rows).toEqual([
+      { category: 'unexpected_membership', object_name: 'admin/identified_account', detail: 'roles must remain separate' }
+    ]);
   });
 });

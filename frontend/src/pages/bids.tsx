@@ -255,7 +255,6 @@ export default function BidsPage() {
   const { session } = useAuth();
   const { t } = useTranslation("bids");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const isAdmin = isAuthenticated && session.role === "admin";
 
   const [sentActiveOnly, setSentActiveOnly] = useState(false);
   const [receivedActiveOnly, setReceivedActiveOnly] = useState(false);
@@ -274,7 +273,7 @@ export default function BidsPage() {
   } = useQuery<{ sentResourceBids: BidQueryData }>(SENT_BIDS_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
-    skip: !isAuthenticated || isAdmin,
+    skip: !isAuthenticated,
     variables: { activeOnly: sentActiveOnly, first: PAGE_SIZE, after: null }
   });
 
@@ -287,7 +286,7 @@ export default function BidsPage() {
   } = useQuery<{ receivedResourceBids: BidQueryData }>(RECEIVED_BIDS_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
-    skip: !isAuthenticated || isAdmin,
+    skip: !isAuthenticated,
     variables: { activeOnly: receivedActiveOnly, first: PAGE_SIZE, after: null }
   });
 
@@ -310,7 +309,7 @@ export default function BidsPage() {
     void refetchReceivedBids({ activeOnly: receivedActiveOnly, first: PAGE_SIZE, after: null });
   }, [receivedActiveOnly, refetchReceivedBids, refetchSentBids, sentActiveOnly]);
 
-  useAccountEventSignal(handleBidWorkspaceSignal, isAuthenticated && !isAdmin);
+  useAccountEventSignal(handleBidWorkspaceSignal, isAuthenticated);
 
   const sentBids = sentData?.sentResourceBids.nodes ?? [];
   const receivedBids = receivedData?.receivedResourceBids.nodes ?? [];
@@ -470,24 +469,6 @@ export default function BidsPage() {
   };
 
   if (isChecking || isRedirecting) return null;
-
-  if (isAdmin) {
-    return (
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        <Stack spacing={2}>
-          <Typography variant="h4">{t("workspaceTitle")}</Typography>
-          <Alert severity="info">
-            This workspace is only available for regular accounts. Admin actions are available from the admin console.
-          </Alert>
-          <Box>
-            <Button component={NextLink} href="/app/admin" variant="contained">
-              Open admin console
-            </Button>
-          </Box>
-        </Stack>
-      </Container>
-    );
-  }
 
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>

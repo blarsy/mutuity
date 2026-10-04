@@ -5847,6 +5847,44 @@ export type LinkAccountExternalIdentityPayload = {
   string: Maybe<Scalars['String']['output']>;
 };
 
+/** All input for the `linkCampaignResource` mutation. */
+export type LinkCampaignResourceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pResourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `linkCampaignResource` mutation. */
+export type LinkCampaignResourcePayload = {
+  __typename: 'LinkCampaignResourcePayload';
+  /** Reads a single `Account` that is related to this `CampaignResource`. */
+  accountByActedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignResource`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  campaignResource: Maybe<CampaignResource>;
+  /** An edge for our `CampaignResource`. May be used by Relay 1. */
+  campaignResourceEdge: Maybe<CampaignResourcesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `CampaignResource`. */
+  resourceByResourceId: Maybe<Resource>;
+};
+
+
+/** The output of our `linkCampaignResource` mutation. */
+export type LinkCampaignResourcePayloadCampaignResourceEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignResourcesOrderBy>>;
+};
+
 /** A `ListChatConversationsRecord` edge in the connection. */
 export type ListChatConversationEdge = {
   __typename: 'ListChatConversationEdge';
@@ -6301,6 +6339,7 @@ export type Mutation = {
   getAccountDeliveryPreferences: Maybe<GetAccountDeliveryPreferencesPayload>;
   giftTokens: Maybe<GiftTokensPayload>;
   linkAccountExternalIdentity: Maybe<LinkAccountExternalIdentityPayload>;
+  linkCampaignResource: Maybe<LinkCampaignResourcePayload>;
   markAccountNotificationRead: Maybe<MarkAccountNotificationReadPayload>;
   markAllNotificationsRead: Maybe<MarkAllNotificationsReadPayload>;
   markClaimMessagesRead: Maybe<MarkClaimMessagesReadPayload>;
@@ -6331,6 +6370,7 @@ export type Mutation = {
   setGrantTargetEmails: Maybe<SetGrantTargetEmailsPayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
+  unlinkCampaignResource: Maybe<UnlinkCampaignResourcePayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
   updateAccount: Maybe<UpdateAccountPayload>;
   /** Updates a single `Account` using a unique key and a patch. */
@@ -7244,6 +7284,12 @@ export type MutationLinkAccountExternalIdentityArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationLinkCampaignResourceArgs = {
+  input: LinkCampaignResourceInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationMarkAccountNotificationReadArgs = {
   input: MarkAccountNotificationReadInput;
 };
@@ -7408,6 +7454,12 @@ export type MutationSettleNeedClaimArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSubmitResourceBidArgs = {
   input: SubmitResourceBidInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUnlinkCampaignResourceArgs = {
+  input: UnlinkCampaignResourceInput;
 };
 
 
@@ -11782,6 +11834,30 @@ export enum TriStateFilter {
   Set = 'SET',
   Unset = 'UNSET'
 }
+
+/** All input for the `unlinkCampaignResource` mutation. */
+export type UnlinkCampaignResourceInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pResourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `unlinkCampaignResource` mutation. */
+export type UnlinkCampaignResourcePayload = {
+  __typename: 'UnlinkCampaignResourcePayload';
+  boolean: Maybe<Scalars['Boolean']['output']>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
 
 /** All input for the `updateAccountByExternalSubject` mutation. */
 export type UpdateAccountByExternalSubjectInput = {
