@@ -11,6 +11,7 @@ import {
   Chip,
   Container,
   Grid,
+  Link,
   Stack,
   Typography
 } from "@mui/material";
@@ -244,7 +245,9 @@ export default function CampaignResourceTriagePage() {
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                       <Box>
                         <Typography variant="h6">
-                          {node.resourceByResourceId?.title ?? t("resourceTriage.resourceFallback", { resourceId: node.resourceId })}
+                          <Link href={`/resources/${node.resourceId}`} target="_blank" rel="noopener noreferrer" color="inherit" underline="hover">
+                            {node.resourceByResourceId?.title ?? t("resourceTriage.resourceFallback", { resourceId: node.resourceId })}
+                          </Link>
                         </Typography>
                         <Typography color="text.secondary">
                           {t("resourceTriage.campaignLabel")}: {node.campaignByCampaignId?.title ?? node.campaignId}

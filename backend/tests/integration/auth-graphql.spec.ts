@@ -151,7 +151,88 @@ async function readRequirePasswordResetOnNextLogin(identifier: string) {
   });
 }
 
+async function setCredentialRole(accountId: string, role: string) {
+  await withDbClient(async client => {
+    await client.query(
+      `update app_private.account_credential set role_name = $2 where account_id = $1`,
+      [accountId, role]
+    );
+  });
+}
+
 describe("auth graphql operations", () => {
+  it("uses the account role for social-only sessions and revokes sessions when the role changes", async () => {
+    const identifier = `social-admin-role-${Date.now()}@example.com`;
+    const tokenHash = createHash("sha256").update(`session-${identifier}`).digest("hex");
+    const accountId = await withDbClient(async client => {
+      const account = await client.query<{ id: string }>(
+        `insert into app_public.account (external_subject, display_name, role_name)
+         values ($1, 'Social Admin', 'admin')
+         returning id`,
+        [identifier]
+      );
+      const id = account.rows[0].id;
+
+      await client.query(
+        `insert into app_private.account_identity (
+           account_id, provider, provider_subject, provider_email,
+           provider_email_normalized, provider_email_verified
+         ) values ($1, 'google', $2, $3, lower($3), true)`,
+        [id, `google-sub-${Date.now()}`, identifier]
+      );
+
+      // OAuth callbacks pass the ordinary role today; session creation must
+      // persist the account's manually assigned authorization role instead.
+      await client.query(
+        `select app_private.create_account_session(
+           $1, 'identified_account', $2, now() + interval '1 day'
+         )`,
+        [id, tokenHash]
+      );
+      return id;
+    });
+
+    const session = await withDbClient(client => client.query<{ role_name: string }>(
+      `select role_name from app_private.find_account_session($1)`,
+      [tokenHash]
+    ));
+    expect(session.rows[0]?.role_name).toBe("admin");
+
+    await withDbClient(client => client.query(
+      `update app_public.account set role_name = 'identified_account' where id = $1`,
+      [accountId]
+    ));
+
+    const revokedSession = await withDbClient(client => client.query<{ session_id: string }>(
+      `select session_id from app_private.find_account_session($1)`,
+      [tokenHash]
+    ));
+    expect(revokedSession.rows).toHaveLength(0);
+
+    const passwordAccount = await seedDemoAccount({
+      identifier: `account-role-login-${Date.now()}@example.com`,
+      role: "admin"
+    });
+    await setCredentialRole(passwordAccount.accountId, "identified_account");
+
+    const passwordLogin = await graphQLRequest<{
+      authLogin: { authSession: { authenticated: boolean; role: string } };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          authSession { authenticated role }
+        }
+      }`,
+      { identifier: passwordAccount.identifier, password: passwordAccount.password }
+    );
+
+    expect(passwordLogin.payload.errors).toBeUndefined();
+    expect(passwordLogin.payload.data?.authLogin.authSession).toEqual({
+      authenticated: true,
+      role: "admin"
+    });
+  });
+
   it("supports authSession, authLogin, and authLogout with cookie-backed session state", async () => {
     const account = await seedDemoAccount({
       identifier: `graphql-auth-${Date.now()}@example.com`

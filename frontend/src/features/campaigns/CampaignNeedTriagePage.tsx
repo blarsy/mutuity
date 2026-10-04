@@ -11,6 +11,7 @@ import {
   Chip,
   Container,
   Grid,
+  Link,
   Stack,
   Typography
 } from "@mui/material";
@@ -245,7 +246,11 @@ export default function CampaignNeedTriagePage() {
                   <CardContent>
                     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
                       <Box>
-                        <Typography variant="h6">{node.needByNeedId?.title ?? t("triage.needFallback", { needId: node.needId })}</Typography>
+                        <Typography variant="h6">
+                          <Link href={`/needs/${node.needId}`} target="_blank" rel="noopener noreferrer" color="inherit" underline="hover">
+                            {node.needByNeedId?.title ?? t("triage.needFallback", { needId: node.needId })}
+                          </Link>
+                        </Typography>
                         <Typography color="text.secondary">
                           {t("triage.campaignLabel")}: {node.campaignByCampaignId?.title ?? node.campaignId}
                         </Typography>

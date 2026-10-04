@@ -57,6 +57,11 @@ export async function seedDemoAccount(overrides?: Partial<Omit<SeededAccount, "a
 
     const accountId = accountResult.rows[0].id;
 
+    await client.query(
+      "update app_public.account set role_name = $2 where id = $1",
+      [accountId, role]
+    );
+
     await client.query(UPSERT_ACCOUNT_CREDENTIAL_SQL, [accountId, identifier, passwordHash, role]);
 
     await client.query(DELETE_ACCOUNT_SESSIONS_SQL, [accountId]);

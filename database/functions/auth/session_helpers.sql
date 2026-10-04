@@ -21,7 +21,7 @@ as $$
     a.external_subject,
     a.avatar_url,
     c.password_hash,
-    c.role_name,
+    a.role_name,
     c.email_verified_at,
     a.preferred_language
   from app_private.account_credential c
@@ -97,12 +97,13 @@ as $$
     session_token_hash,
     expires_at
   )
-  values (
-    p_account_id,
-    p_role_name,
+  select
+    a.id,
+    a.role_name,
     p_session_token_hash,
     p_expires_at
-  )
+  from app_public.account a
+  where a.id = p_account_id
   returning id
 $$;
 
@@ -115,8 +116,27 @@ as $$
   where session_token_hash = p_session_token_hash
 $$;
 
+create or replace function app_private.revoke_account_sessions_on_role_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = app_public, app_private, public
+as $$
+begin
+  if old.role_name is distinct from new.role_name then
+    update app_private.account_session
+    set revoked_at = coalesce(revoked_at, now())
+    where account_id = new.id
+      and revoked_at is null;
+  end if;
+
+  return new;
+end;
+$$;
+
 revoke all on function app_private.find_login_candidate(text) from public;
 revoke all on function app_private.find_account_session(text) from public;
 revoke all on function app_private.touch_account_session(text) from public;
 revoke all on function app_private.create_account_session(uuid, text, text, timestamptz) from public;
 revoke all on function app_private.revoke_account_session(text) from public;
+revoke all on function app_private.revoke_account_sessions_on_role_change() from public;

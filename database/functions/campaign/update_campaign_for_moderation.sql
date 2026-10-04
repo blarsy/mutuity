@@ -88,10 +88,10 @@ begin
 
   if v_previous_status = 'awaiting_adaptation' then
     for v_admin in
-      select ac.account_id
-      from app_private.account_credential ac
-      where ac.role_name = 'admin'
-        and ac.account_id <> v_account_id
+      select a.id as account_id
+      from app_public.account a
+      where a.role_name = 'admin'
+        and a.id <> v_account_id
     loop
       perform app_private.create_account_notification(
         v_admin.account_id,
