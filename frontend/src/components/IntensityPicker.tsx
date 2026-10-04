@@ -48,7 +48,7 @@ const ZONE_ORDER: IntensityZone[] = [
 
 // Midpoint used when a zone is selected via the bar
 const MIDPOINT: Record<IntensityZone, number> = {
-  leg_up: 54,
+  leg_up: 50,
   sharing: 549,
   commitment: 2999,
   rare_contribution: 5000,
@@ -56,7 +56,7 @@ const MIDPOINT: Record<IntensityZone, number> = {
 
 // Token range boundaries (inclusive min, exclusive max for last zone)
 const ZONE_MIN: Record<IntensityZone, number> = {
-  leg_up: 10,
+  leg_up: 1,
   sharing: 100,
   commitment: 1000,
   rare_contribution: 5000,
@@ -236,7 +236,7 @@ export function IntensityPicker({
 
   const rangeLabel =
     zone === "leg_up"
-      ? "10 – 99"
+      ? "1 – 99"
       : zone === "sharing"
       ? "100 – 999"
       : zone === "commitment"

@@ -35,8 +35,8 @@ begin
     raise exception using message = 'Topes amount must be greater than zero';
   end if;
 
-  if p_intensity = 'leg_up' and not (p_topes between 10 and 99) then
-    raise exception using message = 'Topes for leg_up must be between 10 and 99';
+  if p_intensity = 'leg_up' and not (p_topes between 1 and 99) then
+    raise exception using message = 'Topes for leg_up must be between 1 and 99';
   end if;
 
   if p_intensity = 'sharing' and not (p_topes between 100 and 999) then

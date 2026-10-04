@@ -725,6 +725,10 @@ type Account implements Node {
     """The method to use when ordering `Resource`."""
     orderBy: [ResourcesOrderBy!] = [PRIMARY_KEY_ASC]
   ): ResourcesConnection!
+  """
+  Account authorization role. Change manually in the database; changing the role revokes active sessions.
+  """
+  roleName: String!
   """Reads and enables pagination through a set of `TokenMovement`."""
   tokenMovementsByAccountId(
     """Read all values in the set after (below) this cursor."""
@@ -913,6 +917,10 @@ input AccountInput {
   preferredLanguage: String
   profileLinks: JSON
   requirePasswordResetOnNextLogin: Boolean
+  """
+  Account authorization role. Change manually in the database; changing the role revokes active sessions.
+  """
+  roleName: String
   updatedAt: Datetime
 }
 
@@ -1028,6 +1036,10 @@ input AccountPatch {
   preferredLanguage: String
   profileLinks: JSON
   requirePasswordResetOnNextLogin: Boolean
+  """
+  Account authorization role. Change manually in the database; changing the role revokes active sessions.
+  """
+  roleName: String
   updatedAt: Datetime
 }
 
@@ -7640,6 +7652,12 @@ type Mutation {
     """
     input: SearchOperationalLogsInput!
   ): SearchOperationalLogsPayload
+  sendClaimConversationMessage(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SendClaimConversationMessageInput!
+  ): SendClaimConversationMessagePayload
   sendClaimMessage(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -7652,6 +7670,12 @@ type Mutation {
     """
     input: SendNeedMessageInput!
   ): SendNeedMessagePayload
+  sendResourceConversationMessage(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SendResourceConversationMessageInput!
+  ): SendResourceConversationMessagePayload
   sendResourceMessage(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -11939,6 +11963,43 @@ type SearchResourcesRecord {
   updatedAt: Datetime
 }
 
+"""All input for the `sendClaimConversationMessage` mutation."""
+input SendClaimConversationMessageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pBody: String
+  pConversationId: UUID
+  pImageUrls: [String]
+}
+
+"""The output of our `sendClaimConversationMessage` mutation."""
+type SendClaimConversationMessagePayload {
+  """Reads a single `Account` that is related to this `ClaimMessage`."""
+  accountBySenderAccountId: Account
+  """
+  Reads a single `ClaimConversation` that is related to this `ClaimMessage`.
+  """
+  claimConversationByConversationId: ClaimConversation
+  claimMessage: ClaimMessage
+  """An edge for our `ClaimMessage`. May be used by Relay 1."""
+  claimMessageEdge(
+    """The method to use when ordering `ClaimMessage`."""
+    orderBy: [ClaimMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ClaimMessagesEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `sendClaimMessage` mutation."""
 input SendClaimMessageInput {
   body: String
@@ -12011,6 +12072,43 @@ type SendNeedMessagePayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+}
+
+"""All input for the `sendResourceConversationMessage` mutation."""
+input SendResourceConversationMessageInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pBody: String
+  pConversationId: UUID
+  pImageUrls: [String]
+}
+
+"""The output of our `sendResourceConversationMessage` mutation."""
+type SendResourceConversationMessagePayload {
+  """Reads a single `Account` that is related to this `ResourceMessage`."""
+  accountBySenderAccountId: Account
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  """
+  Reads a single `ResourceConversation` that is related to this `ResourceMessage`.
+  """
+  resourceConversationByConversationId: ResourceConversation
+  resourceMessage: ResourceMessage
+  """An edge for our `ResourceMessage`. May be used by Relay 1."""
+  resourceMessageEdge(
+    """The method to use when ordering `ResourceMessage`."""
+    orderBy: [ResourceMessagesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ResourceMessagesEdge
 }
 
 """All input for the `sendResourceMessageDirect` mutation."""

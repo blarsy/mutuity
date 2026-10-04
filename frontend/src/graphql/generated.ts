@@ -184,6 +184,8 @@ export type Account = Node & {
   resourceMessagesBySenderAccountId: ResourceMessagesConnection;
   /** Reads and enables pagination through a set of `Resource`. */
   resourcesByCreatorAccountId: ResourcesConnection;
+  /** Account authorization role. Change manually in the database; changing the role revokes active sessions. */
+  roleName: Scalars['String']['output'];
   /** Reads and enables pagination through a set of `TokenMovement`. */
   tokenMovementsByAccountId: TokenMovementsConnection;
   /** Reads and enables pagination through a set of `TokenMovement`. */
@@ -631,6 +633,8 @@ export type AccountInput = {
   preferredLanguage?: InputMaybe<Scalars['String']['input']>;
   profileLinks?: InputMaybe<Scalars['JSON']['input']>;
   requirePasswordResetOnNextLogin?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Account authorization role. Change manually in the database; changing the role revokes active sessions. */
+  roleName?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
@@ -733,6 +737,8 @@ export type AccountPatch = {
   preferredLanguage?: InputMaybe<Scalars['String']['input']>;
   profileLinks?: InputMaybe<Scalars['JSON']['input']>;
   requirePasswordResetOnNextLogin?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Account authorization role. Change manually in the database; changing the role revokes active sessions. */
+  roleName?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
@@ -1107,6 +1113,33 @@ export type AdminResendMailPayload = {
   clientMutationId: Maybe<Scalars['String']['output']>;
   /** Our root query field type. Allows us to run any query from our mutation payload. */
   query: Maybe<Query>;
+};
+
+/** A connection to a list of `AppVersionPolicyRecord` values. */
+export type AppVersionPolicyConnection = {
+  __typename: 'AppVersionPolicyConnection';
+  /** A list of edges which contains the `AppVersionPolicyRecord` and cursor to aid in pagination. */
+  edges: Array<AppVersionPolicyEdge>;
+  /** A list of `AppVersionPolicyRecord` objects. */
+  nodes: Array<AppVersionPolicyRecord>;
+  /** The count of *all* `AppVersionPolicyRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `AppVersionPolicyRecord` edge in the connection. */
+export type AppVersionPolicyEdge = {
+  __typename: 'AppVersionPolicyEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AppVersionPolicyRecord` at the end of the edge. */
+  node: AppVersionPolicyRecord;
+};
+
+/** The return type of our `appVersionPolicy` query. */
+export type AppVersionPolicyRecord = {
+  __typename: 'AppVersionPolicyRecord';
+  minAndroidSemver: Maybe<Scalars['String']['output']>;
+  minIosSemver: Maybe<Scalars['String']['output']>;
 };
 
 /** All input for the `approveCampaign` mutation. */
@@ -6291,8 +6324,10 @@ export type Mutation = {
   requestPasswordReset: Maybe<RequestPasswordResetPayload>;
   respondToResourceBid: Maybe<RespondToResourceBidPayload>;
   searchOperationalLogs: Maybe<SearchOperationalLogsPayload>;
+  sendClaimConversationMessage: Maybe<SendClaimConversationMessagePayload>;
   sendClaimMessage: Maybe<SendClaimMessagePayload>;
   sendNeedMessage: Maybe<SendNeedMessagePayload>;
+  sendResourceConversationMessage: Maybe<SendResourceConversationMessagePayload>;
   sendResourceMessage: Maybe<SendResourceMessagePayload>;
   sendResourceMessageDirect: Maybe<SendResourceMessageDirectPayload>;
   setAccountDeliveryPreference: Maybe<SetAccountDeliveryPreferencePayload>;
@@ -7317,6 +7352,12 @@ export type MutationSearchOperationalLogsArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationSendClaimConversationMessageArgs = {
+  input: SendClaimConversationMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationSendClaimMessageArgs = {
   input: SendClaimMessageInput;
 };
@@ -7325,6 +7366,12 @@ export type MutationSendClaimMessageArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSendNeedMessageArgs = {
   input: SendNeedMessageInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSendResourceConversationMessageArgs = {
+  input: SendResourceConversationMessageInput;
 };
 
 
@@ -8629,6 +8676,7 @@ export type Query = Node & {
   allSystemSettings: Maybe<SystemSettingsConnection>;
   /** Reads and enables pagination through a set of `TokenMovement`. */
   allTokenMovements: Maybe<TokenMovementsConnection>;
+  appVersionPolicy: Maybe<AppVersionPolicyConnection>;
   authSession: AuthSessionPayload;
   /** Reads a single `Campaign` using its globally unique `ID`. */
   campaign: Maybe<Campaign>;
@@ -9287,6 +9335,16 @@ export type QueryAllTokenMovementsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<TokenMovementsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAppVersionPolicyArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -11143,6 +11201,43 @@ export type SearchResourcesRecord = {
   updatedAt: Maybe<Scalars['Datetime']['output']>;
 };
 
+/** All input for the `sendClaimConversationMessage` mutation. */
+export type SendClaimConversationMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pBody?: InputMaybe<Scalars['String']['input']>;
+  pConversationId?: InputMaybe<Scalars['UUID']['input']>;
+  pImageUrls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+/** The output of our `sendClaimConversationMessage` mutation. */
+export type SendClaimConversationMessagePayload = {
+  __typename: 'SendClaimConversationMessagePayload';
+  /** Reads a single `Account` that is related to this `ClaimMessage`. */
+  accountBySenderAccountId: Maybe<Account>;
+  /** Reads a single `ClaimConversation` that is related to this `ClaimMessage`. */
+  claimConversationByConversationId: Maybe<ClaimConversation>;
+  claimMessage: Maybe<ClaimMessage>;
+  /** An edge for our `ClaimMessage`. May be used by Relay 1. */
+  claimMessageEdge: Maybe<ClaimMessagesEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `sendClaimConversationMessage` mutation. */
+export type SendClaimConversationMessagePayloadClaimMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
+};
+
 /** All input for the `sendClaimMessage` mutation. */
 export type SendClaimMessageInput = {
   body?: InputMaybe<Scalars['String']['input']>;
@@ -11215,6 +11310,43 @@ export type SendNeedMessagePayload = {
 /** The output of our `sendNeedMessage` mutation. */
 export type SendNeedMessagePayloadClaimMessageEdgeArgs = {
   orderBy?: InputMaybe<Array<ClaimMessagesOrderBy>>;
+};
+
+/** All input for the `sendResourceConversationMessage` mutation. */
+export type SendResourceConversationMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pBody?: InputMaybe<Scalars['String']['input']>;
+  pConversationId?: InputMaybe<Scalars['UUID']['input']>;
+  pImageUrls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+/** The output of our `sendResourceConversationMessage` mutation. */
+export type SendResourceConversationMessagePayload = {
+  __typename: 'SendResourceConversationMessagePayload';
+  /** Reads a single `Account` that is related to this `ResourceMessage`. */
+  accountBySenderAccountId: Maybe<Account>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `ResourceConversation` that is related to this `ResourceMessage`. */
+  resourceConversationByConversationId: Maybe<ResourceConversation>;
+  resourceMessage: Maybe<ResourceMessage>;
+  /** An edge for our `ResourceMessage`. May be used by Relay 1. */
+  resourceMessageEdge: Maybe<ResourceMessagesEdge>;
+};
+
+
+/** The output of our `sendResourceConversationMessage` mutation. */
+export type SendResourceConversationMessagePayloadResourceMessageEdgeArgs = {
+  orderBy?: InputMaybe<Array<ResourceMessagesOrderBy>>;
 };
 
 /** All input for the `sendResourceMessageDirect` mutation. */

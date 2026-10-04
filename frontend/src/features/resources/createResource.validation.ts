@@ -52,7 +52,7 @@ export function isTokenAmountWithinIntensityRange(
 
   switch (intensity) {
     case "leg_up":
-      return tokenAmount >= 10 && tokenAmount <= 99;
+      return tokenAmount >= 1 && tokenAmount <= 99;
     case "sharing":
       return tokenAmount >= 100 && tokenAmount <= 999;
     case "commitment":
@@ -67,7 +67,7 @@ export function isTokenAmountWithinIntensityRange(
 export function getTokenRangeLabel(intensity: ResourceIntensity) {
   switch (intensity) {
     case "leg_up":
-      return "10–99";
+      return "1–99";
     case "sharing":
       return "100–999";
     case "commitment":

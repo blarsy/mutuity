@@ -1,120 +1,120 @@
--- verify_admin_privilege_boundaries.sql
---
--- Asserts that:
---   1. The `admin` role has NO direct table privileges on shared and personal-sensitive tables
---   2. The `admin` role has expected direct privileges on self-scoped notification tables
---   3. The `admin` role retains EXECUTE rights on all required admin functions
---
--- Run as a superuser or the migration role.
--- Each query should return 0 rows on a correctly configured database.
--- A non-empty result set means a boundary violation.
-
--- ─────────────────────────────────────────────────────────────────────────────
--- SECTION 1 — Tables that admin must NOT have direct privileges on
--- ─────────────────────────────────────────────────────────────────────────────
-
-\echo ''
-\echo '=== Section 1: admin must have NO direct table privileges on these tables ==='
-\echo '    (expect 0 rows; any row is a violation)'
-\echo ''
-
-SELECT
-    table_schema,
-    table_name,
-    privilege_type,
-    grantee
-FROM information_schema.role_table_grants
-WHERE grantee = 'admin'
-  AND table_schema = 'app_public'
-  AND table_name IN (
-      -- shared / bilateral domain
-      'need_claim',
-      'claim_conversation',
-      'claim_message',
-      'claim_message_image',
-      'need_claim_settlement_event',
-      'resource_bid',
-      'campaign_resource',
-      -- personal / sensitive
-      'token_movement',
-      'account_delivery_preference'
-  )
-ORDER BY table_name, privilege_type;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- SECTION 2 — Notification tables that admin MUST have self-scoped grants on
--- ─────────────────────────────────────────────────────────────────────────────
-
-\echo ''
-\echo '=== Section 2: admin must have expected grants on self-scoped notification tables ==='
-\echo '    (expect 0 rows; any row means a grant is missing or extra)'
-\echo ''
-
-WITH expected (table_name, privilege_type) AS (
-    VALUES
-        ('need_claim_notification', 'SELECT'),
-        ('need_claim_notification', 'UPDATE'),
-        ('resource_bid_notification', 'SELECT'),
-        ('resource_bid_notification', 'UPDATE'),
-        ('account_notification', 'SELECT'),
-        ('account_notification', 'UPDATE')
+-- Read-only security contract after migrations 155-157: zero rows means PASS.
+-- Use npm run guard:admin-boundaries for a nonzero exit on ANY violation.
+-- This query is also executed by rollback-isolated regression tests. Catalog
+-- checks complement, not replace, behavioral owner/participant isolation tests.
+with
+app_roles(role_name) as (values ('admin'), ('identified_account'), ('anonymous')),
+privileges(privilege) as (values ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE'),
+  ('TRUNCATE'), ('REFERENCES'), ('TRIGGER')),
+scoped_tables(table_name, admin_privileges) as (values
+  ('need_claim', array['SELECT']),
+  ('claim_conversation', array['SELECT']),
+  ('claim_message', array['SELECT']),
+  ('claim_message_image', array['SELECT']),
+  ('need_claim_settlement_event', array['SELECT']),
+  ('resource_bid', array['SELECT']),
+  -- DELETE predates these fixes (migration 139); explicitly preserve it.
+  ('campaign_resource', array['SELECT', 'DELETE']),
+  ('token_movement', array['SELECT']),
+  ('account_delivery_preference', array['SELECT', 'INSERT', 'UPDATE']),
+  ('need_claim_notification', array['SELECT', 'UPDATE']),
+  ('resource_bid_notification', array['SELECT', 'UPDATE']),
+  ('account_notification', array['SELECT', 'UPDATE']),
+  ('resource_conversation', array['SELECT']),
+  ('resource_message', array['SELECT']),
+  ('resource_message_image', array['SELECT']),
+  ('chat_typing_presence', array['SELECT'])
 ),
-actual AS (
-    SELECT table_name, privilege_type
-    FROM information_schema.role_table_grants
-    WHERE grantee = 'admin'
-      AND table_schema = 'app_public'
-      AND table_name IN (
-          'need_claim_notification',
-          'resource_bid_notification',
-          'account_notification'
-      )
-)
-SELECT 'missing' AS issue, e.table_name, e.privilege_type
-FROM expected e
-LEFT JOIN actual a USING (table_name, privilege_type)
-WHERE a.table_name IS NULL
-UNION ALL
-SELECT 'unexpected' AS issue, a.table_name, a.privilege_type
-FROM actual a
-LEFT JOIN expected e USING (table_name, privilege_type)
-WHERE e.table_name IS NULL
-ORDER BY 1, 2, 3;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- SECTION 3 — Admin functions that must have EXECUTE granted to `admin`
--- ─────────────────────────────────────────────────────────────────────────────
-
-\echo ''
-\echo '=== Section 3: admin must have EXECUTE on all required admin functions ==='
-\echo '    (expect 0 rows; any row means the grant is MISSING)'
-\echo ''
-
-WITH required_functions (routine_name) AS (
-    VALUES
-        ('admin_list_accounts'),
-        ('admin_list_bids'),
-        ('admin_list_resources'),
-        ('admin_list_notifications'),
-        ('admin_list_mails'),
-        ('admin_list_campaigns'),
-        ('admin_list_grants'),
-        ('admin_list_logs'),
-        ('admin_get_mail_content'),
-        ('admin_resend_mail'),
-        ('add_campaign_moderation_note'),
-        ('approve_campaign'),
-        ('campaign_moderation_events')
+function_only_tables(table_name) as (values
+  ('need_claim'), ('claim_conversation'), ('claim_message'), ('claim_message_image'),
+  ('resource_conversation'), ('resource_message'), ('resource_message_image'), ('chat_typing_presence')
 ),
-granted AS (
-    SELECT routine_name
-    FROM information_schema.role_routine_grants
-    WHERE grantee       = 'admin'
-      AND routine_schema = 'app_public'
-      AND privilege_type = 'EXECUTE'
+admin_functions(signature) as (values
+  ('app_public.admin_list_accounts(text,integer,integer)'),
+  ('app_public.admin_list_bids(text,integer,integer)'),
+  ('app_public.admin_list_resources(text,integer,integer)'),
+  ('app_public.admin_list_notifications(text,integer,integer)'),
+  ('app_public.admin_list_mails(text,integer,integer)'),
+  ('app_public.admin_list_campaigns(text,app_public.campaign_moderation_status,integer,integer)'),
+  ('app_public.admin_list_grants(text,integer,integer)'),
+  ('app_public.admin_list_logs(text,integer,integer)'),
+  ('app_public.admin_get_mail_content(uuid)'),
+  ('app_public.admin_resend_mail(uuid)'),
+  ('app_public.add_campaign_moderation_note(uuid,text)'),
+  ('app_public.approve_campaign(uuid)'),
+  ('app_public.campaign_moderation_events(uuid)')
+),
+user_functions(signature, expected_definer) as (values
+  ('app_public.claim_need(uuid,text)', true),
+  ('app_public.settle_need_claim(uuid)', true),
+  ('app_public.cancel_need_claim(uuid)', true),
+  ('app_public.decline_need_claim(uuid)', true),
+  ('app_public.send_claim_message(uuid,text,text[])', true),
+  ('app_public.send_need_message(uuid,text,text[])', true),
+  ('app_public.send_resource_message(uuid,text,text[])', true),
+  ('app_public.send_resource_message_direct(uuid,uuid,text,text[])', true),
+  ('app_public.send_claim_conversation_message(uuid,text,text[])', true),
+  ('app_public.send_resource_conversation_message(uuid,text,text[])', true),
+  ('app_public.mark_claim_messages_read(uuid)', true),
+  ('app_public.mark_resource_messages_read(uuid)', true),
+  ('app_public.upsert_chat_typing_presence(app_public.chat_context_kind,uuid)', true),
+  ('app_public.list_chat_conversations(text,integer,integer)', true),
+  ('app_public.count_chat_conversations(text)', true),
+  ('app_public.count_unread_chat_conversations()', true)
+),
+required_functions(role_name, signature, expected_definer) as (
+  select 'admin', signature, true from admin_functions
+  union all
+  select r.role_name, f.signature, f.expected_definer
+  from user_functions f cross join (values ('admin'), ('identified_account')) r(role_name)
+),
+violations(category, object_name, detail) as (
+  select 'admin_table_privilege', 'app_public.' || t.table_name, p.privilege
+  from scoped_tables t cross join privileges p
+  where has_table_privilege('admin', 'app_public.' || t.table_name, p.privilege)
+    <> (p.privilege = any(t.admin_privileges))
+  union all
+  select 'unsafe_role', r.rolname, 'SUPERUSER or BYPASSRLS'
+  from pg_roles r join app_roles a on a.role_name = r.rolname
+  where r.rolsuper or r.rolbypassrls
+  union all
+  select 'unexpected_membership', 'admin/identified_account', 'roles must remain separate'
+  where pg_has_role('admin', 'identified_account', 'MEMBER')
+     or pg_has_role('identified_account', 'admin', 'MEMBER')
+  union all
+  select 'unsafe_table_rls', 'app_public.' || t.table_name, 'RLS disabled or missing table'
+  from scoped_tables t left join pg_class c on c.oid = to_regclass('app_public.' || t.table_name)
+  where c.oid is null or not c.relrowsecurity
+  union all
+  select 'table_owner_bypass', 'app_public.' || t.table_name, r.role_name
+  from scoped_tables t join pg_class c on c.oid = to_regclass('app_public.' || t.table_name)
+  cross join app_roles r where pg_has_role(r.role_name, c.relowner, 'USAGE')
+  union all
+  select 'raw_business_write', 'app_public.' || t.table_name, r.role_name || ':' || p.privilege
+  from function_only_tables t cross join app_roles r cross join privileges p
+  where p.privilege <> 'SELECT'
+    and has_table_privilege(r.role_name, 'app_public.' || t.table_name, p.privilege)
+  union all
+  select 'summary_view_access', 'app_public.chat_conversation_summary', r.role_name || ':' || p.privilege
+  from app_roles r cross join privileges p
+  where has_table_privilege(r.role_name, 'app_public.chat_conversation_summary', p.privilege)
+  union all
+  select 'raw_write_policy', p.tablename, p.policyname
+  from pg_policies p join function_only_tables t on t.table_name = p.tablename
+  where p.schemaname = 'app_public' and p.cmd <> 'SELECT'
+  union all
+  -- This lexical check catches known bypass patterns; behavioral tests prove
+  -- isolation and must still run if helper implementations or policies change.
+  select 'role_policy_bypass', p.tablename, p.policyname
+  from pg_policies p join scoped_tables t on t.table_name = p.tablename
+  where p.schemaname = 'app_public'
+    -- Preserve the explicit pre-existing administrative unlink capability.
+    and not (p.tablename = 'campaign_resource' and p.cmd = 'DELETE')
+    and (coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')) ~* 'is_admin|is_manager|current_role'
+  union all
+  select 'required_function', f.signature, f.role_name || ': missing EXECUTE or wrong security mode'
+  from required_functions f left join pg_proc p on p.oid = to_regprocedure(f.signature)
+  where p.oid is null or not has_function_privilege(f.role_name, p.oid, 'EXECUTE')
+    or p.prosecdef <> f.expected_definer
 )
-SELECT rf.routine_name AS missing_execute_grant
-FROM required_functions rf
-LEFT JOIN granted g USING (routine_name)
-WHERE g.routine_name IS NULL
-ORDER BY rf.routine_name;
+select category, object_name, detail from violations order by category, object_name, detail;

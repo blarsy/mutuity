@@ -933,9 +933,9 @@ export const CLAIM_MESSAGES_QUERY = gql`
   }
 `;
 
-export const CREATE_RESOURCE_MESSAGE_MUTATION = gql`
-  mutation CreateResourceMessage($input: CreateResourceMessageInput!) {
-    createResourceMessage(input: $input) {
+export const SEND_RESOURCE_CONVERSATION_MESSAGE_MUTATION = gql`
+  mutation SendResourceConversationMessage($input: SendResourceConversationMessageInput!) {
+    sendResourceConversationMessage(input: $input) {
       resourceMessage {
         id
         body
@@ -946,36 +946,14 @@ export const CREATE_RESOURCE_MESSAGE_MUTATION = gql`
   }
 `;
 
-export const CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION = gql`
-  mutation CreateResourceMessageImage($input: CreateResourceMessageImageInput!) {
-    createResourceMessageImage(input: $input) {
-      resourceMessageImage {
-        id
-        imageUrl
-      }
-    }
-  }
-`;
-
-export const CREATE_CLAIM_MESSAGE_MUTATION = gql`
-  mutation CreateClaimMessage($input: CreateClaimMessageInput!) {
-    createClaimMessage(input: $input) {
+export const SEND_CLAIM_CONVERSATION_MESSAGE_MUTATION = gql`
+  mutation SendClaimConversationMessage($input: SendClaimConversationMessageInput!) {
+    sendClaimConversationMessage(input: $input) {
       claimMessage {
         id
         body
         createdAt
         senderAccountId
-      }
-    }
-  }
-`;
-
-export const CREATE_CLAIM_MESSAGE_IMAGE_MUTATION = gql`
-  mutation CreateClaimMessageImage($input: CreateClaimMessageImageInput!) {
-    createClaimMessageImage(input: $input) {
-      claimMessageImage {
-        id
-        imageUrl
       }
     }
   }

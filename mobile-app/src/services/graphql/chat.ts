@@ -1,7 +1,5 @@
 import { apolloClient } from "./client";
 import {
-  type CreateResourceMessageImageInput,
-  type CreateResourceMessageInput,
   type Mutation,
   type QueryListChatConversationsArgs,
   type QueryResourceConversationByIdArgs
@@ -12,10 +10,8 @@ import {
   CLAIM_MESSAGES_QUERY,
   CHAT_CONVERSATIONS_QUERY,
   COUNT_UNREAD_CHAT_CONVERSATIONS_QUERY,
-  CREATE_CLAIM_MESSAGE_IMAGE_MUTATION,
-  CREATE_CLAIM_MESSAGE_MUTATION,
-  CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION,
-  CREATE_RESOURCE_MESSAGE_MUTATION,
+  SEND_CLAIM_CONVERSATION_MESSAGE_MUTATION,
+  SEND_RESOURCE_CONVERSATION_MESSAGE_MUTATION,
   MARK_CLAIM_MESSAGES_READ_MUTATION,
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
   RESOURCE_CONVERSATION_LOOKUP_QUERY,
@@ -91,14 +87,6 @@ interface ClaimMessagesQueryResult {
       claimMessageImagesByMessageId: { nodes: Array<{ imageUrl: string }> } | null;
     }>;
   } | null;
-}
-
-interface CreateResourceMessageMutationResult {
-  createResourceMessage: Pick<Mutation, "createResourceMessage">["createResourceMessage"];
-}
-
-interface CreateResourceMessageImageMutationResult {
-  createResourceMessageImage: Pick<Mutation, "createResourceMessageImage">["createResourceMessageImage"];
 }
 
 interface MarkResourceMessagesReadMutationResult {
@@ -321,86 +309,63 @@ export async function fetchChatConversationDetail(
 
 export async function sendResourceMessage(
   conversationId: string,
-  senderAccountId: string,
+  _senderAccountId: string,
   messageText: string,
   imageUrl?: string | null
 ): Promise<ChatMessageItem> {
-  const variables: { input: CreateResourceMessageInput } = {
-    input: {
-      resourceMessage: {
-        conversationId,
-        senderAccountId,
-        body: messageText.trim()
+  const result = await apolloClient.mutate<{
+    sendResourceConversationMessage: { resourceMessage: { id: string; body: string; createdAt: string } | null } | null;
+  }>({
+    mutation: SEND_RESOURCE_CONVERSATION_MESSAGE_MUTATION,
+    variables: {
+      input: {
+        pConversationId: conversationId,
+        pBody: messageText.trim(),
+        pImageUrls: imageUrl ? [imageUrl] : []
       }
     }
-  };
-
-  const result = await apolloClient.mutate<CreateResourceMessageMutationResult, { input: CreateResourceMessageInput }>({
-    mutation: CREATE_RESOURCE_MESSAGE_MUTATION,
-    variables
   });
 
-  const createdMessage = result.data?.createResourceMessage?.resourceMessage;
+  const createdMessage = result.data?.sendResourceConversationMessage?.resourceMessage;
   if (!createdMessage) {
     throw new Error("Missing created message");
   }
 
-  const messageId = createdMessage.id as string;
-  if (imageUrl) {
-    await apolloClient.mutate<CreateResourceMessageImageMutationResult, { input: CreateResourceMessageImageInput }>({
-      mutation: CREATE_RESOURCE_MESSAGE_IMAGE_MUTATION,
-      variables: {
-        input: {
-          resourceMessageImage: {
-            messageId,
-            imageUrl
-          }
-        }
-      }
-    });
-  }
-
   return {
-    id: messageId,
+    id: createdMessage.id,
     direction: "outgoing",
     body: createdMessage.body,
-    createdAt: createdMessage.createdAt as string,
+    createdAt: createdMessage.createdAt,
     imageUrls: imageUrl ? [imageUrl] : []
   };
 }
 
 export async function sendClaimMessage(
   conversationId: string,
-  senderAccountId: string,
+  _senderAccountId: string,
   messageText: string,
   imageUrl?: string | null
 ): Promise<ChatMessageItem> {
   const result = await apolloClient.mutate<{
-    createClaimMessage: { claimMessage: { id: string; body: string; createdAt: string } | null } | null;
+    sendClaimConversationMessage: { claimMessage: { id: string; body: string; createdAt: string } | null } | null;
   }>({
-    mutation: CREATE_CLAIM_MESSAGE_MUTATION,
+    mutation: SEND_CLAIM_CONVERSATION_MESSAGE_MUTATION,
     variables: {
       input: {
-        claimMessage: { conversationId, senderAccountId, body: messageText.trim() }
+        pConversationId: conversationId,
+        pBody: messageText.trim(),
+        pImageUrls: imageUrl ? [imageUrl] : []
       }
     }
   });
 
-  const createdMessage = result.data?.createClaimMessage?.claimMessage;
+  const createdMessage = result.data?.sendClaimConversationMessage?.claimMessage;
   if (!createdMessage) {
     throw new Error("Missing created message");
   }
 
-  const messageId = createdMessage.id;
-  if (imageUrl) {
-    await apolloClient.mutate({
-      mutation: CREATE_CLAIM_MESSAGE_IMAGE_MUTATION,
-      variables: { input: { claimMessageImage: { messageId, imageUrl } } }
-    });
-  }
-
   return {
-    id: messageId,
+    id: createdMessage.id,
     direction: "outgoing",
     body: createdMessage.body,
     createdAt: createdMessage.createdAt,

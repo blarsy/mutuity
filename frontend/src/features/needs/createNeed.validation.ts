@@ -45,7 +45,7 @@ export const createNeedInitialValues: CreateNeedValues = {
 
 function isWithinTopesRange(intensity: NeedIntensityValue, value: number) {
   if (intensity === "LEG_UP") {
-    return value >= 10 && value <= 99;
+    return value >= 1 && value <= 99;
   }
 
   if (intensity === "SHARING") {

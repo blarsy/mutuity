@@ -51,7 +51,7 @@ export const RESOURCE_INTENSITY_OPTIONS: Array<{
   label: string;
   tokenRange: string;
 }> = [
-  { value: "leg_up", label: "Leg up", tokenRange: "10–99" },
+  { value: "leg_up", label: "Leg up", tokenRange: "1–99" },
   { value: "sharing", label: "Sharing", tokenRange: "100–999" },
   { value: "commitment", label: "Commitment", tokenRange: "1000–4999" },
   { value: "rare_contribution", label: "Rare contribution", tokenRange: "5000+" }

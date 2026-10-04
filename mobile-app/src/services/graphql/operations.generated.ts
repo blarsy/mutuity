@@ -67,6 +67,8 @@ export type AccountPatch = {
   preferredLanguage?: string | null | undefined;
   profileLinks?: unknown;
   requirePasswordResetOnNextLogin?: boolean | null | undefined;
+  /** Account authorization role. Change manually in the database; changing the role revokes active sessions. */
+  roleName?: string | null | undefined;
   updatedAt?: unknown;
 };
 
@@ -130,25 +132,6 @@ export type ChatContextKind =
   | 'NEED'
   | 'RESOURCE';
 
-/** An input for mutations affecting `ClaimMessageImage` */
-export type ClaimMessageImageInput = {
-  createdAt?: unknown;
-  id?: unknown;
-  imageUrl: string;
-  messageId: unknown;
-  sortOrder?: number | null | undefined;
-};
-
-/** An input for mutations affecting `ClaimMessage` */
-export type ClaimMessageInput = {
-  body: string;
-  conversationId: unknown;
-  createdAt?: unknown;
-  id?: unknown;
-  readAt?: unknown;
-  senderAccountId: unknown;
-};
-
 /** All input for the `claimNeed` mutation. */
 export type ClaimNeedInput = {
   /**
@@ -190,28 +173,6 @@ export type CreateCampaignInput = {
   title?: string | null | undefined;
 };
 
-/** All input for the create `ClaimMessageImage` mutation. */
-export type CreateClaimMessageImageInput = {
-  /** The `ClaimMessageImage` to be created by this mutation. */
-  claimMessageImage: ClaimMessageImageInput;
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: string | null | undefined;
-};
-
-/** All input for the create `ClaimMessage` mutation. */
-export type CreateClaimMessageInput = {
-  /** The `ClaimMessage` to be created by this mutation. */
-  claimMessage: ClaimMessageInput;
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: string | null | undefined;
-};
-
 /** All input for the `createNeed` mutation. */
 export type CreateNeedInput = {
   campaignId?: unknown;
@@ -247,28 +208,6 @@ export type CreateResourceInput = {
   clientMutationId?: string | null | undefined;
   /** The `Resource` to be created by this mutation. */
   resource: ResourceInput;
-};
-
-/** All input for the create `ResourceMessageImage` mutation. */
-export type CreateResourceMessageImageInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: string | null | undefined;
-  /** The `ResourceMessageImage` to be created by this mutation. */
-  resourceMessageImage: ResourceMessageImageInput;
-};
-
-/** All input for the create `ResourceMessage` mutation. */
-export type CreateResourceMessageInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: string | null | undefined;
-  /** The `ResourceMessage` to be created by this mutation. */
-  resourceMessage: ResourceMessageInput;
 };
 
 /** All input for the `declineNeedClaim` mutation. */
@@ -442,25 +381,6 @@ export type ResourceInput = {
   updatedAt?: unknown;
 };
 
-/** An input for mutations affecting `ResourceMessageImage` */
-export type ResourceMessageImageInput = {
-  createdAt?: unknown;
-  id?: unknown;
-  imageUrl: string;
-  messageId: unknown;
-  sortOrder?: number | null | undefined;
-};
-
-/** An input for mutations affecting `ResourceMessage` */
-export type ResourceMessageInput = {
-  body: string;
-  conversationId: unknown;
-  createdAt?: unknown;
-  id?: unknown;
-  readAt?: unknown;
-  senderAccountId: unknown;
-};
-
 /** Represents an update to a `Resource`. Fields that are set will be updated. */
 export type ResourcePatch = {
   canBeDelivered?: boolean | null | undefined;
@@ -496,6 +416,18 @@ export type RespondToResourceBidInput = {
   status?: ResourceBidStatus | null | undefined;
 };
 
+/** All input for the `sendClaimConversationMessage` mutation. */
+export type SendClaimConversationMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: string | null | undefined;
+  pBody?: string | null | undefined;
+  pConversationId?: unknown;
+  pImageUrls?: Array<string | null | undefined> | null | undefined;
+};
+
 /** All input for the `sendNeedMessage` mutation. */
 export type SendNeedMessageInput = {
   /**
@@ -506,6 +438,18 @@ export type SendNeedMessageInput = {
   pBody?: string | null | undefined;
   pImageUrls?: Array<string | null | undefined> | null | undefined;
   pNeedId?: unknown;
+};
+
+/** All input for the `sendResourceConversationMessage` mutation. */
+export type SendResourceConversationMessageInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: string | null | undefined;
+  pBody?: string | null | undefined;
+  pConversationId?: unknown;
+  pImageUrls?: Array<string | null | undefined> | null | undefined;
 };
 
 /** All input for the `sendResourceMessageDirect` mutation. */
@@ -944,33 +888,19 @@ export type ClaimMessagesQueryVariables = Exact<{
 
 export type ClaimMessagesQuery = { __typename: 'Query', allClaimMessages: { __typename: 'ClaimMessagesConnection', nodes: Array<{ __typename: 'ClaimMessage', id: unknown, body: string, createdAt: unknown, senderAccountId: unknown, claimMessageImagesByMessageId: { __typename: 'ClaimMessageImagesConnection', nodes: Array<{ __typename: 'ClaimMessageImage', imageUrl: string }> } }>, pageInfo: { __typename: 'PageInfo', hasNextPage: boolean, endCursor: unknown } } | null };
 
-export type CreateResourceMessageMutationVariables = Exact<{
-  input: CreateResourceMessageInput;
+export type SendResourceConversationMessageMutationVariables = Exact<{
+  input: SendResourceConversationMessageInput;
 }>;
 
 
-export type CreateResourceMessageMutation = { __typename: 'Mutation', createResourceMessage: { __typename: 'CreateResourceMessagePayload', resourceMessage: { __typename: 'ResourceMessage', id: unknown, body: string, createdAt: unknown, senderAccountId: unknown } | null } | null };
+export type SendResourceConversationMessageMutation = { __typename: 'Mutation', sendResourceConversationMessage: { __typename: 'SendResourceConversationMessagePayload', resourceMessage: { __typename: 'ResourceMessage', id: unknown, body: string, createdAt: unknown, senderAccountId: unknown } | null } | null };
 
-export type CreateResourceMessageImageMutationVariables = Exact<{
-  input: CreateResourceMessageImageInput;
+export type SendClaimConversationMessageMutationVariables = Exact<{
+  input: SendClaimConversationMessageInput;
 }>;
 
 
-export type CreateResourceMessageImageMutation = { __typename: 'Mutation', createResourceMessageImage: { __typename: 'CreateResourceMessageImagePayload', resourceMessageImage: { __typename: 'ResourceMessageImage', id: unknown, imageUrl: string } | null } | null };
-
-export type CreateClaimMessageMutationVariables = Exact<{
-  input: CreateClaimMessageInput;
-}>;
-
-
-export type CreateClaimMessageMutation = { __typename: 'Mutation', createClaimMessage: { __typename: 'CreateClaimMessagePayload', claimMessage: { __typename: 'ClaimMessage', id: unknown, body: string, createdAt: unknown, senderAccountId: unknown } | null } | null };
-
-export type CreateClaimMessageImageMutationVariables = Exact<{
-  input: CreateClaimMessageImageInput;
-}>;
-
-
-export type CreateClaimMessageImageMutation = { __typename: 'Mutation', createClaimMessageImage: { __typename: 'CreateClaimMessageImagePayload', claimMessageImage: { __typename: 'ClaimMessageImage', id: unknown, imageUrl: string } | null } | null };
+export type SendClaimConversationMessageMutation = { __typename: 'Mutation', sendClaimConversationMessage: { __typename: 'SendClaimConversationMessagePayload', claimMessage: { __typename: 'ClaimMessage', id: unknown, body: string, createdAt: unknown, senderAccountId: unknown } | null } | null };
 
 export type SendResourceMessageDirectMutationVariables = Exact<{
   input: SendResourceMessageDirectInput;
@@ -1186,10 +1116,8 @@ export const ClaimConversationLookupDocument = {"kind":"Document","definitions":
 export const ResourceConversationLookupDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ResourceConversationLookup"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ownerAccountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"bidderAccountId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"ownerAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ownerAccountId"}}},{"kind":"Argument","name":{"kind":"Name","value":"bidderAccountId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"bidderAccountId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<ResourceConversationLookupQuery, ResourceConversationLookupQueryVariables>;
 export const ResourceMessagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ResourceMessages"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Cursor"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allResourceMessages"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"conversationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"ID_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"resourceMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}}]} as unknown as DocumentNode<ResourceMessagesQuery, ResourceMessagesQueryVariables>;
 export const ClaimMessagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ClaimMessages"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Cursor"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allClaimMessages"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"conversationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"conversationId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"ID_ASC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"claimMessageImagesByMessageId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}}]} as unknown as DocumentNode<ClaimMessagesQuery, ClaimMessagesQueryVariables>;
-export const CreateResourceMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateResourceMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateResourceMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createResourceMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}}]}}]}}]}}]} as unknown as DocumentNode<CreateResourceMessageMutation, CreateResourceMessageMutationVariables>;
-export const CreateResourceMessageImageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateResourceMessageImage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateResourceMessageImageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createResourceMessageImage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceMessageImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}}]}}]}}]}}]} as unknown as DocumentNode<CreateResourceMessageImageMutation, CreateResourceMessageImageMutationVariables>;
-export const CreateClaimMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateClaimMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateClaimMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createClaimMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}}]}}]}}]}}]} as unknown as DocumentNode<CreateClaimMessageMutation, CreateClaimMessageMutationVariables>;
-export const CreateClaimMessageImageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateClaimMessageImage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateClaimMessageImageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createClaimMessageImage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessageImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}}]}}]}}]}}]} as unknown as DocumentNode<CreateClaimMessageImageMutation, CreateClaimMessageImageMutationVariables>;
+export const SendResourceConversationMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendResourceConversationMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendResourceConversationMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendResourceConversationMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}}]}}]}}]}}]} as unknown as DocumentNode<SendResourceConversationMessageMutation, SendResourceConversationMessageMutationVariables>;
+export const SendClaimConversationMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendClaimConversationMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendClaimConversationMessageInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendClaimConversationMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claimMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"senderAccountId"}}]}}]}}]}}]} as unknown as DocumentNode<SendClaimConversationMessageMutation, SendClaimConversationMessageMutationVariables>;
 export const SendResourceMessageDirectDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SendResourceMessageDirect"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SendResourceMessageDirectInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sendResourceMessageDirect"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceMessage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversationId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"resourceConversationByConversationId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<SendResourceMessageDirectMutation, SendResourceMessageDirectMutationVariables>;
 export const SubmitResourceBidDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitResourceBid"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SubmitResourceBidInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitResourceBid"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceBid"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<SubmitResourceBidMutation, SubmitResourceBidMutationVariables>;
 export const CancelResourceBidDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CancelResourceBid"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CancelResourceBidInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelResourceBid"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceBid"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<CancelResourceBidMutation, CancelResourceBidMutationVariables>;

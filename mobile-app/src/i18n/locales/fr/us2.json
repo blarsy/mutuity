@@ -67,7 +67,7 @@
   "needTokenAmount": "{{amount}} Topes",
   "needTokenAmountLabel": "Montant en Topes",
   "needTokenAmountRangeError": "Le montant en Topes est hors plage pour cette intensite.",
-  "needTokenAmountRangeHint": "LEG_UP: 10-99, SHARING: 100-999, COMMITMENT: 1000-4999, RARE_CONTRIBUTION: 5000+",
+  "needTokenAmountRangeHint": "LEG_UP: 1-99, SHARING: 100-999, COMMITMENT: 1000-4999, RARE_CONTRIBUTION: 5000+",
   "needToolingRequiredLabel": "Outillage requis",
   "needsLoadError": "Impossible de charger les besoins.",
   "noCampaignLabel": "Aucune campagne",

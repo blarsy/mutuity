@@ -111,7 +111,7 @@ export function EditNeedScreen({
   }, [requiredPeopleCountText]);
 
   const isTokenAmountInRange = useMemo(() => {
-    return parsedTokenAmount >= 10;
+    return parsedTokenAmount >= 1;
   }, [parsedTokenAmount]);
 
   const validationError = useMemo(() => {
