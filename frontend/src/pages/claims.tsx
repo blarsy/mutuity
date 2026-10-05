@@ -350,7 +350,11 @@ export default function ClaimsPage() {
                           />
                         </>
                       }
-                      creatorName={need.creatorAccountId === currentAccountId ? t("you") : t("needOwner")}
+                      creatorName={need.creatorAccountId === currentAccountId
+                        ? t("you")
+                        : need.accountByCreatorAccountId?.displayName?.trim()
+                          || need.accountByCreatorAccountId?.externalSubject
+                          || t("needOwner")}
                       description={
                         claim.message?.trim()
                           ? t("yourNote", { message: claim.message })

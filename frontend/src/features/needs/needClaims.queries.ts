@@ -36,6 +36,10 @@ export const VIEWER_SENT_CLAIMS_QUERY = gql`
           id
           title
           creatorAccountId
+          accountByCreatorAccountId {
+            displayName
+            externalSubject
+          }
           proposedTopesAmount
           imageUrls
         }
@@ -79,6 +83,10 @@ export const VIEWER_RECEIVED_CLAIMS_QUERY = gql`
           id
           title
           creatorAccountId
+          accountByCreatorAccountId {
+            displayName
+            externalSubject
+          }
           proposedTopesAmount
           imageUrls
         }
@@ -122,6 +130,10 @@ export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
           id
           title
           creatorAccountId
+          accountByCreatorAccountId {
+            displayName
+            externalSubject
+          }
           proposedTopesAmount
           imageUrls
         }
@@ -158,6 +170,10 @@ export const VIEWER_CLAIM_OVERVIEW_QUERY = gql`
           id
           title
           creatorAccountId
+          accountByCreatorAccountId {
+            displayName
+            externalSubject
+          }
           proposedTopesAmount
           imageUrls
         }

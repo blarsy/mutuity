@@ -15,6 +15,7 @@ type ClaimNode = {
     id: string;
     title: string;
     creatorAccountId: string;
+    accountByCreatorAccountId?: { displayName: string | null; externalSubject: string } | null;
     proposedTopesAmount: number | null;
   };
   accountByClaimerAccountId: {
@@ -29,6 +30,9 @@ type ClaimNode = {
 
 const CLAIM_OVERVIEW_QUERY_DOC = { kind: "Document", name: "claims-overview" };
 const mockUseQuery = jest.fn();
+
+// This suite renders workspace cards, not the separate management/detail page.
+jest.mock("../../src/features/needs/NeedClaimManagementPage", () => ({ NeedClaimManagementPage: () => null }));
 
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -199,6 +203,22 @@ function makeQueryResult(claims: ClaimNode[], balance: number | null = 100) {
 import ClaimsPage from "../../src/pages/claims";
 
 describe("ClaimsPage rendering and filters", () => {
+  it("shows the actual need creator name in sent claim headers", () => {
+    const sent = buildClaim({ id: "named", needId: "need", claimerAccountId: "acct-me", creatorAccountId: "acct-owner" });
+    sent.needByNeedId.accountByCreatorAccountId = { displayName: "Alice Dupont", externalSubject: "alice-sub" };
+    mockUseQuery.mockReturnValue(makeQueryResult([sent]));
+    const html = renderToStaticMarkup(createElement(ClaimsPage));
+    expect(html).toContain("Alice Dupont");
+    expect(html).not.toContain(">Need owner<");
+  });
+
+  it("uses the creator identifier when no display name is available", () => {
+    const sent = buildClaim({ id: "unnamed", needId: "need", claimerAccountId: "acct-me", creatorAccountId: "acct-owner" });
+    sent.needByNeedId.accountByCreatorAccountId = { displayName: " ", externalSubject: "creator-sub" };
+    mockUseQuery.mockReturnValue(makeQueryResult([sent]));
+    expect(renderToStaticMarkup(createElement(ClaimsPage))).toContain("creator-sub");
+  });
+
   it("shows empty state when no claims at all", () => {
     mockUseQuery.mockReturnValue(makeQueryResult([]));
     const html = renderToStaticMarkup(createElement(ClaimsPage));
