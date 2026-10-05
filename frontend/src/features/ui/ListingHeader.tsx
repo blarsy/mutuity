@@ -1,4 +1,5 @@
 import { Box, ButtonBase, Chip, Stack, Typography } from "@mui/material";
+import type { MouseEvent } from "react";
 
 import { AvatarIconButton } from "./AvatarIconButton";
 
@@ -14,7 +15,7 @@ type ListingHeaderProps = {
   noImageLabel?: string;
   showCreatorAvatar?: boolean;
   onCreatorClick?: () => void;
-  onThumbnailClick?: () => void;
+  onListingClick?: () => void;
 };
 
 function formatExpiry(value: string | null | undefined, noDateLabel: string) {
@@ -37,29 +38,27 @@ export function ListingHeader({
   noImageLabel,
   showCreatorAvatar = true,
   onCreatorClick,
-  onThumbnailClick
+  onListingClick
 }: ListingHeaderProps) {
   return (
     <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={1} sx={{ px: 2, pt: 2 }}>
       <Stack alignItems="center" direction="row" spacing={1} sx={{ minWidth: 0 }}>
         <Box
-          onClick={event => {
-            if (!onThumbnailClick) {
-              return;
-            }
-
-            event.stopPropagation();
-            onThumbnailClick();
-          }}
           sx={{
-            cursor: onThumbnailClick ? "pointer" : "default",
             flexShrink: 0,
             height: { xs: 44, sm: 48 },
             position: "relative",
             width: { xs: 44, sm: 48 }
           }}
         >
-          <Box
+          <ButtonBase
+            component={onListingClick ? "button" : "div"}
+            disabled={!onListingClick}
+            aria-label={onListingClick ? listingTitle : undefined}
+            onClick={onListingClick ? (event: MouseEvent<HTMLElement>) => {
+              event.stopPropagation();
+              onListingClick();
+            } : undefined}
             sx={{
               alignItems: "center",
               bgcolor: theme => theme.palette.mode === "dark" ? "grey.900" : "grey.100",
@@ -67,6 +66,7 @@ export function ListingHeader({
               borderRadius: 1.5,
               boxShadow: theme => theme.shadows[1],
               color: "text.secondary",
+              cursor: onListingClick ? "pointer" : "default",
               display: "flex",
               height: { xs: 34, sm: 38 },
               justifyContent: "center",
@@ -89,7 +89,7 @@ export function ListingHeader({
                 {noImageLabel ?? "No image"}
               </Typography>
             )}
-          </Box>
+          </ButtonBase>
           {showCreatorAvatar ? (
             <AvatarIconButton
               displayName={creatorName}
@@ -124,9 +124,25 @@ export function ListingHeader({
               {creatorName}
             </Typography>
           </ButtonBase>
-          <Typography noWrap sx={{ fontWeight: 600, maxWidth: 240 }} variant="subtitle2">
-            {listingTitle}
-          </Typography>
+          <ButtonBase
+            component={onListingClick ? "button" : "div"}
+            disabled={!onListingClick}
+            onClick={onListingClick ? (event: MouseEvent<HTMLElement>) => {
+              event.stopPropagation();
+              onListingClick();
+            } : undefined}
+            sx={{
+              borderRadius: 1,
+              cursor: onListingClick ? "pointer" : "default",
+              justifyContent: "flex-start",
+              maxWidth: 240,
+              textAlign: "left"
+            }}
+          >
+            <Typography noWrap sx={{ fontWeight: 600, maxWidth: 240 }} variant="subtitle2">
+              {listingTitle}
+            </Typography>
+          </ButtonBase>
         </Stack>
       </Stack>
 

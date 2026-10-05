@@ -21,6 +21,7 @@ type NeedCardProps = {
   footer?: ReactNode;
   actions?: ReactNode;
   onClick?: () => void;
+  onListingClick?: () => void;
   onCreatorClick?: () => void;
 };
 
@@ -35,6 +36,7 @@ export function NeedCard({
   footer,
   actions,
   onClick,
+  onListingClick,
   onCreatorClick
 }: NeedCardProps) {
   const { t } = useTranslation("needs");
@@ -63,6 +65,7 @@ export function NeedCard({
         noDateLabel="No expiry set"
         noImageLabel="No image"
         onCreatorClick={onCreatorClick}
+        onListingClick={onListingClick ?? onClick}
         thumbnailAlt={title}
         thumbnailUrl={images[0] ?? null}
       />

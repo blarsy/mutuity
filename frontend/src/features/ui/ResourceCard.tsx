@@ -24,6 +24,7 @@ type ResourceCardProps = {
   showListingHeader?: boolean;
   showCreatorAvatarInHeader?: boolean;
   onClick?: () => void;
+  onListingClick?: () => void;
   onCreatorClick?: () => void;
 };
 
@@ -41,6 +42,7 @@ export function ResourceCard({
   showListingHeader = true,
   showCreatorAvatarInHeader = true,
   onClick,
+  onListingClick,
   onCreatorClick,
 }: ResourceCardProps) {
   const { t } = useTranslation("resources");
@@ -82,6 +84,7 @@ export function ResourceCard({
           noDateLabel={t("card.permanent")}
           noImageLabel={t("card.noImageYet")}
           onCreatorClick={onCreatorClick}
+          onListingClick={onListingClick ?? onClick}
           showCreatorAvatar={showCreatorAvatarInHeader}
           thumbnailAlt={title}
           thumbnailUrl={images[0] ?? null}

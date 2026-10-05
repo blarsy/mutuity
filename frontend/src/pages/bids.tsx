@@ -126,6 +126,7 @@ function BidCard({
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
   const resource = bid.resourceByResourceId;
+  const router = useRouter();
   const tokenAmount = bid.proposedTokenAmount ?? resource.defaultTokenAmount;
 
   return (
@@ -149,7 +150,8 @@ function BidCard({
         listingTitle={resource.title}
         noDateLabel="No date"
         noImageLabel="No image"
-        onCreatorClick={undefined}
+        onCreatorClick={() => void router.push(counterpartyHref)}
+        onListingClick={() => void router.push(`/resources/${resource.id}`)}
         thumbnailAlt={resource.title}
         thumbnailUrl={resource.imageUrls?.[0] ?? null}
       />

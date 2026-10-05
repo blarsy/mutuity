@@ -289,6 +289,7 @@ export default function AccountDetailsPage({
                     key={resource.id}
                     title={resource.title}
                     creatorName={displayName}
+                    onCreatorClick={() => void router.push(`/accounts/${accountId}`)}
                     creatorImageUrl={account?.avatarUrl}
                     description={resource.description}
                     expiresAt={resource.expiresAt}

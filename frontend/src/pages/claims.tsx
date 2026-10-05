@@ -380,6 +380,7 @@ export default function ClaimsPage() {
                       onClick={() => {
                         selectClaim(claim.id);
                       }}
+                      onListingClick={() => void router.push(`/needs/${need.id}`)}
                       onCreatorClick={() => {
                         void router.push(`/accounts/${need.creatorAccountId}`);
                       }}
@@ -526,6 +527,7 @@ export default function ClaimsPage() {
                       onClick={() => {
                         selectClaim(claim.id);
                       }}
+                      onListingClick={() => void router.push(`/needs/${need.id}`)}
                       onCreatorClick={() => {
                         void router.push(`/accounts/${claim.claimerAccountId}`);
                       }}

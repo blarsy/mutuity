@@ -1,5 +1,6 @@
-import { createElement, type ReactNode } from "react";
+import { createElement, type ComponentProps, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { ListingHeader } from "../../src/features/ui/ListingHeader";
 
 type BidNode = {
   id: string;
@@ -47,6 +48,14 @@ const RECEIVED_QUERY_DOC = { kind: "Document", name: "received" };
 
 const mockUseQuery = jest.fn();
 const mockUseMutation = jest.fn(() => [jest.fn()]);
+const mockPush = jest.fn();
+
+jest.mock("../../src/features/ui/ListingHeader", () => ({
+  ListingHeader: jest.fn((props: ComponentProps<typeof ListingHeader>) => {
+    const { ListingHeader: ActualListingHeader } = jest.requireActual("../../src/features/ui/ListingHeader");
+    return createElement(ActualListingHeader, props);
+  })
+}));
 
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -79,7 +88,7 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({
 }));
 
 jest.mock("next/router", () => ({
-  useRouter: () => ({ query: {} })
+  useRouter: () => ({ query: {}, push: mockPush })
 }));
 
 jest.mock("react-i18next", () => ({
@@ -175,6 +184,7 @@ function makeResource(creatorAccountId: string) {
 
 describe("BidsPage navigation links", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     mockUseMutation.mockReturnValue([jest.fn()]);
   });
 
@@ -206,6 +216,15 @@ describe("BidsPage navigation links", () => {
     expect(markup).toContain(`href="/accounts/${CREATOR_ACCOUNT_ID}"`);
     expect(markup).toContain(`href="/chat?kind=resource&amp;id=${CONVERSATION_ID}"`);
     expect(markup).toContain("Chat");
+    const headerProps = jest.mocked(ListingHeader).mock.calls[0][0];
+    expect(headerProps.onCreatorClick).toEqual(expect.any(Function));
+    headerProps.onCreatorClick?.();
+    expect(mockPush).toHaveBeenCalledWith(`/accounts/${CREATOR_ACCOUNT_ID}`);
+    mockPush.mockClear();
+    expect(headerProps.onListingClick).toEqual(expect.any(Function));
+    headerProps.onListingClick?.();
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith(`/resources/${RESOURCE_ID}`);
   });
 
   it("sent bid card omits chat button when no conversation exists", () => {
@@ -263,6 +282,15 @@ describe("BidsPage navigation links", () => {
     expect(markup).toContain(`href="/accounts/${BIDDER_ACCOUNT_ID}"`);
     expect(markup).toContain(`href="/chat?kind=resource&amp;id=${CONVERSATION_ID}"`);
     expect(markup).toContain("Chat");
+    const headerProps = jest.mocked(ListingHeader).mock.calls[0][0];
+    expect(headerProps.onCreatorClick).toEqual(expect.any(Function));
+    headerProps.onCreatorClick?.();
+    expect(mockPush).toHaveBeenCalledWith(`/accounts/${BIDDER_ACCOUNT_ID}`);
+    mockPush.mockClear();
+    expect(headerProps.onListingClick).toEqual(expect.any(Function));
+    headerProps.onListingClick?.();
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith(`/resources/${RESOURCE_ID}`);
   });
 
   it("received bid card omits chat button when no conversation exists", () => {

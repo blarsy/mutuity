@@ -16,6 +16,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/router";
 
 import { useAuth } from "../auth/AuthProvider";
 import {
@@ -32,6 +33,7 @@ import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { ZoomableImage } from "../../components/ZoomableImage";
 import { ListingHeader } from "../ui/ListingHeader";
+import { conversationContextUrl } from "./chatRouting";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -157,6 +159,7 @@ export function ConversationThread({
   onBack?: () => void;
 }) {
   const { t } = useTranslation("chat");
+  const router = useRouter();
   const { session } = useAuth();
   const myAccountId = session?.account?.id ?? null;
 
@@ -364,6 +367,14 @@ export function ConversationThread({
         thumbnailUrl={listingThumbnailUrl}
         thumbnailAlt={contextTitle ?? undefined}
         noImageLabel={t("common.noimage")}
+        onCreatorClick={() => {
+          if (otherAccountId) {
+            void router.push(`/accounts/${otherAccountId}`);
+          }
+        }}
+        onListingClick={contextId ? () => {
+          void router.push(conversationContextUrl(kind, contextId));
+        } : undefined}
       />
       <Divider />
 

@@ -1,6 +1,7 @@
 import Head from "next/head";
 import type { GetServerSideProps } from "next";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import {
@@ -297,6 +298,7 @@ export default function PublicCampaignDetailPage({
 }: PublicCampaignDetailPageProps) {
   const { session } = useAuth();
   const { t } = useTranslation("campaigns");
+  const router = useRouter();
   const campaign = initialCampaign;
   const availabilityState = resolveCampaignAvailabilityState(campaign);
   const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
@@ -833,6 +835,7 @@ export default function PublicCampaignDetailPage({
 
                             return (
                               <ResourceCard
+                                onClick={() => void router.push(`/resources/${resource.id}`)}
                                 actions={
                                   <Stack alignItems={{ xs: "stretch", sm: "center" }} direction={{ xs: "column", sm: "row" }} spacing={1}>
                                     <FormControlLabel
@@ -866,6 +869,7 @@ export default function PublicCampaignDetailPage({
                                   </>
                                 }
                                 creatorName={creatorLabel}
+                                onCreatorClick={() => void router.push(`/accounts/${resource.creatorAccountId}`)}
                                 description={resource.description}
                                 expiresAt={resource.expiresAt}
                                 footer={
@@ -946,6 +950,7 @@ export default function PublicCampaignDetailPage({
 
                         return (
                           <NeedCard
+                            onClick={() => void router.push(`/needs/${need.id}`)}
                             actions={
                               <Stack alignItems={{ xs: "stretch", sm: "center" }} direction={{ xs: "column", sm: "row" }} spacing={1}>
                                 <FormControlLabel
@@ -977,6 +982,7 @@ export default function PublicCampaignDetailPage({
                               </>
                             }
                             creatorName={creatorLabel}
+                            onCreatorClick={() => void router.push(`/accounts/${need.creatorAccountId}`)}
                             description={need.description}
                             expiresAt={need.expiresAt}
                             footer={
