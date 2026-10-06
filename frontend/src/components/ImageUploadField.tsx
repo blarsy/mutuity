@@ -23,7 +23,13 @@ type Props = {
   showExistingImages?: boolean;
 };
 
-async function cropAndUpload(image: HTMLImageElement, crop: Crop): Promise<string> {
+export const ACCEPTED_IMAGE_TYPES = "image/gif,image/png,image/jpeg,image/webp";
+
+export function isSupportedImageFile(file: File): boolean {
+  return /^image\/(gif|png|jpg|jpeg|webp)$/.test(file.type);
+}
+
+export async function cropAndUpload(image: HTMLImageElement, crop: Crop): Promise<string> {
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
   const pixelRatio = window.devicePixelRatio;
@@ -76,7 +82,7 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, show
   const [fileFormatError, setFileFormatError] = useState(false);
 
   const handleFileSelected = (file: File) => {
-    if (file.type.match(/^image\/(gif|png|jpg|jpeg|webp)$/)) {
+    if (isSupportedImageFile(file)) {
       setImageFile(file);
       setCrop(undefined);
       setCompleteCrop(undefined);
@@ -178,7 +184,7 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, show
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/gif,image/png,image/jpeg,image/webp"
+            accept={ACCEPTED_IMAGE_TYPES}
             style={{ display: "none" }}
             onChange={(e) => {
               if (e.target.files?.[0]) handleFileSelected(e.target.files[0]);

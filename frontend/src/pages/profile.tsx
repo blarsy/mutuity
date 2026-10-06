@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/router";
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Card,
@@ -34,8 +33,7 @@ import {
 } from "../features/profile/profile.queries";
 import { normalizeCoordinate } from "../features/profile/profileCoordinates";
 import { LocationPicker } from "../components/LocationPicker";
-import { ImageUploadField } from "../components/ImageUploadField";
-import { ZoomableImage } from "../components/ZoomableImage";
+import { SingleImageUploadField } from "../components/SingleImageUploadField";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 type ProfileLinkType = "website" | "facebook" | "instagram" | "x";
@@ -251,27 +249,13 @@ export default function ProfilePage() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            {avatarUrl ? (
-              <ZoomableImage
-                alt={displayName || session.account?.displayName || "Profile avatar"}
-                src={avatarUrl}
-                sx={{
-                  borderRadius: "50%",
-                  height: 300,
-                  maxHeight: "min(300px, 75vw)",
-                  maxWidth: "min(300px, 75vw)",
-                  objectFit: "cover",
-                  width: 300
-                }}
-              />
-            ) : (
-              <Avatar
-                alt={displayName || session.account?.displayName || "Profile avatar"}
-                sx={{ height: 300, width: 300 }}
-              />
-            )}
-          </Box>
+          <SingleImageUploadField
+            alt={displayName || session.account?.displayName || "Profile avatar"}
+            circular
+            imageUrl={avatarUrl || null}
+            onImageChanged={setAvatarUrl}
+            onImageRemoved={() => setAvatarUrl("")}
+          />
 
           {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
@@ -333,17 +317,6 @@ export default function ProfilePage() {
                   <MenuItem value="fr">{t("languages.fr")}</MenuItem>
                   <MenuItem value="en">{t("languages.en")}</MenuItem>
                 </TextField>
-
-                <ImageUploadField
-                  imageUrls={avatarUrl ? [avatarUrl] : []}
-                  showExistingImages={false}
-                  onImageAdded={(url) => {
-                    setAvatarUrl(url);
-                  }}
-                  onImageRemoved={() => {
-                    setAvatarUrl("");
-                  }}
-                />
 
                 <Stack spacing={1.5}>
                   <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>

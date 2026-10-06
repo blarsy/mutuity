@@ -87,6 +87,9 @@
     "imageAlt": "Image {{index}}",
     "previewAlt": "Preview",
     "removeImage": "Remove image",
+    "chooseImage": "Choose an image",
+    "changeImage": "Change image",
+    "dragOnImageHint": "or drag an image onto it",
     "fileFormatError": "File not recognised as an image. Use PNG, JPEG, GIF or WebP.",
     "uploadError": "Upload failed. Please try again."
   },

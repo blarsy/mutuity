@@ -86,6 +86,9 @@
     "imageAlt": "Image {{index}}",
     "previewAlt": "Aperçu",
     "removeImage": "Supprimer l'image",
+    "chooseImage": "Choisir une image",
+    "changeImage": "Changer l'image",
+    "dragOnImageHint": "ou déposer une image dessus",
     "fileFormatError": "Fichier non reconnu comme image. Utilisez PNG, JPEG, GIF ou WebP.",
     "uploadError": "L'envoi a échoué. Veuillez réessayer."
   },  "manage": {
