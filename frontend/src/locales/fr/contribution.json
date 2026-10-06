@@ -52,14 +52,19 @@
   "giftSent": "Don envoyé.",
   "giftForm": {
     "title": "Envoyer un don",
-    "subtitle": "Transférez des Topes vers un autre compte. Pour l'instant, saisissez directement l'identifiant du compte destinataire.",
-    "recipientLabel": "Identifiant du compte destinataire",
+    "subtitle": "Envoyez des Topes à ce compte.",
+    "recipient": "Envoyez des Topes à {{name}}.",
+    "closeButton": "Fermer",
     "amountLabel": "Montant",
     "messageLabel": "Message optionnel",
     "sendButton": "Envoyer le don",
     "sendingButton": "Envoi…"
   },
   "movements": {
+    "title": "Historique",
+    "subtitle": "Consultez l'historique de vos mouvements de Topes.",
+    "gift_tokens_sent": "Don envoyé",
+    "gift_tokens_received": "Don reçu",
     "resource_bid_reserved": "Offre créée / Topes réservés",
     "resource_bid_refunded": "Offre remboursée",
     "resource_bid_settled": "Offre acceptée / Topes réglés",
@@ -78,6 +83,9 @@
     "campaign_airdrop_received": "Airdrop de campagne reçu"
   },
   "movementDetails": {
+    "giftSent": "Envoyé à {{name}}",
+    "giftReceived": "Reçu de {{name}}",
+    "unknownAccount": "un autre compte",
     "resourceBidSettled": {
       "accepted": "Le createur de la ressource a accepte cette offre et les Topes reserves lui ont ete transferes."
     },

@@ -20,7 +20,5 @@
     "3": "Tous les 3 jours",
     "7": "Hebdomadaire",
     "30": "Mensuel"
-  },
-  "inAppNote": "Les alertes dans l'application sont toujours actives et ne sont pas affectées par ces paramètres.",
-  "activityNote": "La livraison hors application est suspendue lorsque vous avez une session navigateur ou mobile active."
+  }
 }

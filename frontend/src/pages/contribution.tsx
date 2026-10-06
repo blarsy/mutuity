@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useQuery } from "@apollo/client/react";
 import NextLink from "next/link";
 import {
   Alert,
@@ -16,7 +16,6 @@ import {
   LinearProgress,
   useMediaQuery,
   Stack,
-  TextField,
   Typography
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -24,7 +23,7 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
-import { CONTRIBUTION_OVERVIEW_QUERY, GIFT_TOKENS_MUTATION } from "../features/contribution/contribution.queries";
+import { CONTRIBUTION_OVERVIEW_QUERY } from "../features/contribution/contribution.queries";
 import { buildTokenExplainerSlides, resolveTokenExplainerDialogLayout } from "../features/contribution/tokenExplainer";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
@@ -63,6 +62,14 @@ function asText(value: unknown) {
 }
 
 function movementDetailTranslationKey(movement: ContributionOverviewData["allTokenMovements"]["edges"][number]["node"]) {
+  if (movement.eventType === "gift_tokens_sent") {
+    return "movementDetails.giftSent";
+  }
+
+  if (movement.eventType === "gift_tokens_received") {
+    return "movementDetails.giftReceived";
+  }
+
   if (movement.eventType === "resource_bid_settled") {
     return "movementDetails.resourceBidSettled.accepted";
   }
@@ -118,11 +125,6 @@ export default function ContributionPage() {
   });
 
   useAccountEventSignal(() => { void refetch(); }, isAuthenticated);
-  const [giftTokens, { loading: gifting, error: giftError }] = useMutation(GIFT_TOKENS_MUTATION);
-  const [recipientAccountId, setRecipientAccountId] = useState("");
-  const [giftAmount, setGiftAmount] = useState("");
-  const [giftMessage, setGiftMessage] = useState("");
-  const [giftSuccess, setGiftSuccess] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isTokenExplainerOpen, setTokenExplainerOpen] = useState(false);
   const [tokenExplainerSlideIndex, setTokenExplainerSlideIndex] = useState(0);
@@ -130,7 +132,7 @@ export default function ContributionPage() {
   const tokenExplainerSlides = useMemo(() => buildTokenExplainerSlides(t), [t]);
   const tokenExplainerDialogLayout = useMemo(() => resolveTokenExplainerDialogLayout(isMobile), [isMobile]);
 
-  const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(giftError);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const movementEdges = data?.allTokenMovements.edges ?? [];
   const movements = movementEdges.map(edge => edge.node);
   const hasMoreMovements = Boolean(data?.allTokenMovements.pageInfo.hasNextPage);
@@ -155,30 +157,6 @@ export default function ContributionPage() {
 
   const goToNextTokenExplainerSlide = () => {
     setTokenExplainerSlideIndex(current => Math.min(tokenExplainerSlides.length - 1, current + 1));
-  };
-
-  const handleGift = async () => {
-    setGiftSuccess(null);
-
-    const parsedAmount = Number.parseInt(giftAmount, 10);
-    if (!recipientAccountId.trim() || !Number.isInteger(parsedAmount) || parsedAmount <= 0) {
-      return;
-    }
-
-    await giftTokens({
-      variables: {
-        input: {
-          recipientAccountId: recipientAccountId.trim(),
-          amount: parsedAmount,
-          message: giftMessage.trim() || null
-        }
-      }
-    });
-
-    setGiftAmount("");
-    setGiftMessage("");
-    setGiftSuccess(t("giftSent"));
-    await refetch({ first: PAGE_SIZE, after: null });
   };
 
   const handleLoadMoreMovements = async () => {
@@ -228,7 +206,7 @@ export default function ContributionPage() {
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Chip color={balance >= 0 ? "success" : "error"} label={t("topesAmount", { amount: balance })} />
-            <Chip label={t("ledgerEntriesCount", { count: movements.length })} variant="outlined" />
+            <Chip label={t("ledgerEntriesCount", { count: data?.allTokenMovements.totalCount ?? 0 })} variant="outlined" />
             <Button onClick={openTokenExplainer} size="small" variant="outlined">
               {t("topesGuide.openButton")}
             </Button>
@@ -279,48 +257,6 @@ export default function ContributionPage() {
                   ))}
                 </Stack>
 
-                <Box>
-                  <Typography variant="h6">{t("giftForm.title")}</Typography>
-                  <Typography color="text.secondary" variant="body2">
-                    {t("giftForm.subtitle")}
-                  </Typography>
-                </Box>
-
-                {giftSuccess ? <Alert severity="success">{giftSuccess}</Alert> : null}
-
-                <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                  <TextField
-                    fullWidth
-                    label={t("giftForm.recipientLabel")}
-                    onChange={event => setRecipientAccountId(event.target.value)}
-                    value={recipientAccountId}
-                  />
-                  <TextField
-                    label={t("giftForm.amountLabel")}
-                    onChange={event => setGiftAmount(event.target.value)}
-                    type="number"
-                    value={giftAmount}
-                  />
-                </Stack>
-
-                <TextField
-                  fullWidth
-                  label={t("giftForm.messageLabel")}
-                  minRows={2}
-                  multiline
-                  onChange={event => setGiftMessage(event.target.value)}
-                  value={giftMessage}
-                />
-
-                <Stack direction="row" justifyContent="flex-end">
-                  <Button
-                    disabled={gifting || !recipientAccountId.trim() || !giftAmount.trim()}
-                    onClick={() => void handleGift()}
-                    variant="contained"
-                  >
-                    {gifting ? t("giftForm.sendingButton") : t("giftForm.sendButton")}
-                  </Button>
-                </Stack>
               </Stack>
             </CardContent>
           </Card>
@@ -328,54 +264,70 @@ export default function ContributionPage() {
           {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
-          {movements.length === 0 ? (
-            <Alert severity="info">{t("empty")}</Alert>
-          ) : (
-            <Stack spacing={1.5}>
-              {movements.map(movement => (
-                <Card key={movement.id} variant="outlined">
-                  <CardContent>
-                    {(() => {
-                      const movementDetailKey = movementDetailTranslationKey(movement);
+        <Stack spacing={2}>
+          <Box>
+            <Typography variant="h6">{t("movements.title")}</Typography>
+            <Typography color="text.secondary" variant="body2">
+              {t("movements.subtitle")}
+            </Typography>
+          </Box>
 
-                      return (
-                    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
-                      <Stack spacing={0.5}>
-                        <Typography variant="body1">{t(`movements.${movement.eventType}`, { defaultValue: movement.eventType.replaceAll("_", " ").toLowerCase() })}</Typography>
-                        {movementDetailKey ? (
-                          <Typography color="text.secondary" variant="body2">
-                            {t(movementDetailKey)}
+          <Stack spacing={1}></Stack>
+            {movements.length === 0 ? (
+              <Alert severity="info">{t("empty")}</Alert>
+            ) : (
+              <Stack>
+                {movements.map(movement => (
+                  <Card key={movement.id} variant="outlined">
+                    <CardContent>
+                      {(() => {
+                        const movementDetailKey = movementDetailTranslationKey(movement);
+                        const isGift = movement.eventType === "gift_tokens_sent" || movement.eventType === "gift_tokens_received";
+                        const counterpartyName = asText(movement.payload?.[
+                          movement.eventType === "gift_tokens_sent" ? "recipientName" : "senderName"
+                        ]) || t("movementDetails.unknownAccount");
+                        const giftMessage = isGift ? asText(movement.payload?.message) : null;
+
+                        return (
+                      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
+                        <Stack spacing={0.5}>
+                          <Typography variant="body1">{t(`movements.${movement.eventType}`, { defaultValue: movement.eventType.replaceAll("_", " ").toLowerCase() })}</Typography>
+                          {movementDetailKey ? (
+                            <Typography color="text.secondary" variant="body2">
+                              {t(movementDetailKey, { name: counterpartyName })}
+                            </Typography>
+                          ) : null}
+                          {giftMessage ? <Typography variant="body2">{giftMessage}</Typography> : null}
+                          <Typography color="text.secondary" variant="caption">
+                            {new Date(movement.createdAt).toLocaleString()}
+                            {movement.referenceType && movement.referenceId
+                              ? ` • ${movement.referenceType} ${movement.referenceId}`
+                              : ""}
                           </Typography>
-                        ) : null}
-                        <Typography color="text.secondary" variant="caption">
-                          {new Date(movement.createdAt).toLocaleString()}
-                          {movement.referenceType && movement.referenceId
-                            ? ` • ${movement.referenceType} ${movement.referenceId}`
-                            : ""}
-                        </Typography>
+                        </Stack>
+
+                        <Chip
+                          color={movement.amountDelta >= 0 ? "success" : "error"}
+                          label={t("topesAmount", { amount: formatSignedAmount(movement.amountDelta) })}
+                          size="small"
+                        />
                       </Stack>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                ))}
 
-                      <Chip
-                        color={movement.amountDelta >= 0 ? "success" : "error"}
-                        label={t("topesAmount", { amount: formatSignedAmount(movement.amountDelta) })}
-                        size="small"
-                      />
-                    </Stack>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              ))}
-
-              {hasMoreMovements ? (
-                <Stack direction="row" justifyContent="center">
-                  <Button disabled={isLoadingMore} onClick={() => void handleLoadMoreMovements()} variant="outlined">
-                    {isLoadingMore ? t("loadingMore") : t("loadMore")}
-                  </Button>
-                </Stack>
-              ) : null}
-            </Stack>
-          )}
+                {hasMoreMovements ? (
+                  <Stack direction="row" justifyContent="center">
+                    <Button disabled={isLoadingMore} onClick={() => void handleLoadMoreMovements()} variant="outlined">
+                      {isLoadingMore ? t("loadingMore") : t("loadMore")}
+                    </Button>
+                  </Stack>
+                ) : null}
+              </Stack>
+            )}
+          </Stack>
         </Stack>
       </Box>
 

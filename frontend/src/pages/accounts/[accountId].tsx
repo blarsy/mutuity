@@ -19,6 +19,7 @@ import {
 import { fetchServerGraphql, getLanguageFromHeaders } from "../../features/shared/serverGraphql";
 import { ResourceCard } from "../../features/ui/ResourceCard";
 import { listingCardGridSx } from "../../features/ui/listingCardGrid";
+import { GiftTokensButton } from "../../features/contribution/GiftTokensButton";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -199,7 +200,8 @@ export default function AccountDetailsPage({
                     <Avatar alt={displayName} src={account.avatarUrl || undefined}>
                       {initials}
                     </Avatar>
-                    <Typography variant="h6">{displayName}</Typography>
+                    <Typography sx={{ flex: 1, minWidth: 0 }} variant="h6">{displayName}</Typography>
+                    <GiftTokensButton key={account.id} recipientAccountId={account.id} recipientDisplayName={displayName} />
                   </Stack>
 
                   {account.bio ? (

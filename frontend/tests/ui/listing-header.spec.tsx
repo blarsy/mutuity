@@ -23,6 +23,25 @@ function findElements(node: ReactNode, type: unknown): ReactElement<ElementProps
 }
 
 describe("ListingHeader", () => {
+  it("replaces expiration info with a contextual action when requested", () => {
+    const html = renderToStaticMarkup(
+      createElement(ListingHeader, {
+        creatorName: "Alice",
+        listingTitle: "Resource title",
+        expiresLabel: "Expires",
+        noDateLabel: "No expiry set",
+        showExpiry: false,
+        endAdornment: createElement("button", { "aria-label": "Send a gift" }, "Gift")
+      })
+    );
+
+    expect(html).toContain('aria-label="Send a gift"');
+    expect(html).not.toContain("Expires:");
+    expect(html).not.toContain("No expiry set");
+    expect(html).toContain("Alice");
+    expect(html).toContain("Resource title");
+  });
+
   it("renders creator and expiry info", () => {
     const html = renderToStaticMarkup(
       createElement(ListingHeader, {

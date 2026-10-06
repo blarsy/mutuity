@@ -34,6 +34,7 @@ import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMe
 import { ZoomableImage } from "../../components/ZoomableImage";
 import { ListingHeader } from "../ui/ListingHeader";
 import { conversationContextUrl } from "./chatRouting";
+import { GiftTokensButton } from "../contribution/GiftTokensButton";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -362,7 +363,14 @@ export function ConversationThread({
         creatorImageUrl={otherAccountAvatarUrl}
         expiresLabel={t("thread.listing")}
         noDateLabel={t("common.nolimit")}
-        expiresAt={undefined}
+        showExpiry={false}
+        endAdornment={otherAccountId ? (
+          <GiftTokensButton
+            key={otherAccountId}
+            recipientAccountId={otherAccountId}
+            recipientDisplayName={otherAccountDisplayName}
+          />
+        ) : null}
         listingTitle={contextTitle ?? "Listing"}
         thumbnailUrl={listingThumbnailUrl}
         thumbnailAlt={contextTitle ?? undefined}

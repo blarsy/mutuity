@@ -20,7 +20,5 @@
     "3": "Every 3 days",
     "7": "Weekly",
     "30": "Monthly"
-  },
-  "inAppNote": "In-app alerts are always active and are not affected by these settings.",
-  "activityNote": "Out-of-app delivery is paused while you have an active browser or mobile session."
+  }
 }

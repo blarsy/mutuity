@@ -10808,6 +10808,8 @@ input TokenMovementCondition {
   accountId: UUID
   """Checks for equality with the object’s `counterpartyAccountId` field."""
   counterpartyAccountId: UUID
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
   """Checks for equality with the object’s `id` field."""
   id: UUID
   """Checks for equality with the object’s `idempotencyKey` field."""
@@ -10870,6 +10872,8 @@ enum TokenMovementsOrderBy {
   ACCOUNT_ID_DESC
   COUNTERPARTY_ACCOUNT_ID_ASC
   COUNTERPARTY_ACCOUNT_ID_DESC
+  CREATED_AT_ASC
+  CREATED_AT_DESC
   IDEMPOTENCY_KEY_ASC
   IDEMPOTENCY_KEY_DESC
   ID_ASC

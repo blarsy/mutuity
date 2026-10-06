@@ -150,14 +150,6 @@ export default function PreferencesPage() {
 
         {loading && <LinearProgress />}
 
-        <Alert severity="info" sx={{ fontSize: "0.85rem" }}>
-          {t("inAppNote")}
-        </Alert>
-
-        <Alert severity="info" sx={{ fontSize: "0.85rem" }}>
-          {t("activityNote")}
-        </Alert>
-
         {MANAGED_CATEGORIES.map((category, index) => {
           const pref = preferences[category];
           const isEmailSummary = pref.deliveryStrategy === "email_summary";

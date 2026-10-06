@@ -1,5 +1,5 @@
 import { Box, ButtonBase, Chip, Stack, Typography } from "@mui/material";
-import type { MouseEvent } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
 import { AvatarIconButton } from "./AvatarIconButton";
 
@@ -10,6 +10,8 @@ type ListingHeaderProps = {
   expiresLabel: string;
   noDateLabel: string;
   expiresAt?: string | null;
+  showExpiry?: boolean;
+  endAdornment?: ReactNode;
   thumbnailUrl?: string | null;
   thumbnailAlt?: string;
   noImageLabel?: string;
@@ -33,6 +35,8 @@ export function ListingHeader({
   expiresLabel,
   noDateLabel,
   expiresAt,
+  showExpiry = true,
+  endAdornment,
   thumbnailUrl,
   thumbnailAlt,
   noImageLabel,
@@ -146,7 +150,8 @@ export function ListingHeader({
         </Stack>
       </Stack>
 
-      <Chip label={`${expiresLabel}: ${formatExpiry(expiresAt, noDateLabel)}`} size="small" variant="outlined" />
+      {endAdornment}
+      {showExpiry ? <Chip label={`${expiresLabel}: ${formatExpiry(expiresAt, noDateLabel)}`} size="small" variant="outlined" /> : null}
     </Stack>
   );
 }

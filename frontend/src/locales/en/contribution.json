@@ -52,14 +52,19 @@
   "giftSent": "Gift sent.",
   "giftForm": {
     "title": "Send a gift",
-    "subtitle": "Transfer Topes to another account. For now, enter the recipient account id directly.",
-    "recipientLabel": "Recipient account id",
+    "subtitle": "Send Topes to this account.",
+    "recipient": "Send Topes to {{name}}.",
+    "closeButton": "Close",
     "amountLabel": "Amount",
     "messageLabel": "Optional message",
     "sendButton": "Send gift",
     "sendingButton": "Sending…"
   },
   "movements": {
+    "title": "History",
+    "subtitle": "View the history of your Topes movements.",
+    "gift_tokens_sent": "Gift sent",
+    "gift_tokens_received": "Gift received",
     "resource_bid_reserved": "Bid created / Topes reserved",
     "resource_bid_refunded": "Bid refunded",
     "resource_bid_settled": "Bid accepted / Topes settled",
@@ -78,6 +83,9 @@
     "campaign_airdrop_received": "Campaign airdrop received"
   },
   "movementDetails": {
+    "giftSent": "Sent to {{name}}",
+    "giftReceived": "Received from {{name}}",
+    "unknownAccount": "another account",
     "resourceBidSettled": {
       "accepted": "The resource creator accepted this bid and the reserved Topes were transferred to them."
     },
