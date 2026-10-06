@@ -58,9 +58,9 @@ describe("public page seo helpers", () => {
     });
 
     expect(needMeta.title).toBe("Need");
-    expect(needMeta.description).toBe("Need details on Mutuity");
+    expect(needMeta.description).toBe("Need details on Tope-là");
     expect(accountMeta.title).toBe("Account");
-    expect(accountMeta.description).toBe("Account on Mutuity");
+    expect(accountMeta.description).toBe("Account on Tope-là");
   });
 
   it("resolves availability states for need, campaign, and account", () => {

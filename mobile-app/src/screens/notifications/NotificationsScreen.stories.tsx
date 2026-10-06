@@ -134,7 +134,7 @@ const ALL_EVENT_TYPES: NotificationFeedItem[] = [
     id: "event-welcome_profile_reward",
     source: "account",
     eventType: "welcome_profile_reward",
-    headline1: "Welcome to Mutuity!",
+    headline1: "Welcome to Tope-là!",
     headline2: "Complete your profile",
     description: "Earn Topes for a polished profile.",
     createdAt: "2026-09-05T05:00:00.000Z",

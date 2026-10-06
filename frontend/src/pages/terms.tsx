@@ -1,7 +1,7 @@
 import { Box, Container, List, ListItem, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME || "Mutuity";
+const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME || "Tope-là";
 
 export default function TermsPage() {
   const { t } = useTranslation("legal");

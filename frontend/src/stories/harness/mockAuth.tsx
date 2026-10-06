@@ -28,7 +28,7 @@ export const ADMIN_SESSION: AuthSession = {
   ...AUTHENTICATED_SESSION,
   account: {
     ...AUTHENTICATED_SESSION.account!,
-    displayName: "Admin Mutuity",
+    displayName: "Admin Tope-là",
     externalSubject: "admin@example.org"
   },
   role: "admin"

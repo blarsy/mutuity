@@ -16,7 +16,7 @@ const preview: Preview = {
   },
   globalTypes: {
     colorMode: {
-      description: "Mutuity theme color mode",
+      description: "Tope-là theme color mode",
       toolbar: {
         icon: "paintbrush",
         items: [

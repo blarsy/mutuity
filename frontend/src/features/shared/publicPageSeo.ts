@@ -125,7 +125,7 @@ export function buildNeedPageMeta(input: {
 }): PageMeta {
   return {
     title: plainText(input.needTitle, "Need"),
-    description: plainText(input.needDescription, "Need details on Mutuity"),
+    description: plainText(input.needDescription, "Need details on Tope-là"),
     canonicalUrl: canonicalUrlForPath(`/needs/${input.needId}`)
   };
 }
@@ -138,7 +138,7 @@ export function buildCampaignPageMeta(input: {
 }): PageMeta {
   return {
     title: plainText(input.campaignTitle, "Campaign"),
-    description: plainText(input.campaignDescription, "Campaign details on Mutuity"),
+    description: plainText(input.campaignDescription, "Campaign details on Tope-là"),
     canonicalUrl: canonicalUrlForPath(`/campaigns/${input.campaignId}`),
     ogImageUrl: buildCampaignOgImageUrl(input.campaignImageUrl)
   };
@@ -150,7 +150,7 @@ export function buildAccountPageMeta(input: {
   accountId: string;
 }): PageMeta {
   const title = plainText(input.displayName, "Account");
-  const description = plainText(input.bio, `${title} on Mutuity`);
+  const description = plainText(input.bio, `${title} on Tope-là`);
 
   return {
     title,

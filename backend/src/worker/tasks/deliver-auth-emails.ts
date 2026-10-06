@@ -108,11 +108,11 @@ const MARK_DIGEST_ITEMS_BROADCASTED_SQL =
   "select app_private.mark_delivery_digest_items_broadcasted($1::uuid[], $2::uuid);";
 
 function getFromAddress() {
-  return process.env.MAIL_FROM_ADDRESS ?? "Mutuity <noreply@mutuity.local>";
+  return process.env.MAIL_FROM_ADDRESS ?? "Tope-là <noreply@topela.local>";
 }
 
 function getProductName() {
-  return process.env.MAIL_PRODUCT_NAME ?? "Mutuity";
+  return process.env.MAIL_PRODUCT_NAME ?? "Tope-là";
 }
 
 function getWebAppBaseUrl() {

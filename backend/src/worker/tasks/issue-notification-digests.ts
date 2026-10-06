@@ -95,9 +95,9 @@ function buildDigestContent(locale: string, items: PendingDigestItem[]) {
   }
 
   const intro = locale === "fr"
-    ? "Voici votre résumé Mutuity des nouvelles informations en attente."
-    : "Here is your Mutuity summary of pending new information.";
-  const subject = locale === "fr" ? "Votre résumé Mutuity" : "Your Mutuity summary";
+    ? "Voici votre résumé Tope-là des nouvelles informations en attente."
+    : "Here is your Tope-là summary of pending new information.";
+  const subject = locale === "fr" ? "Votre résumé Tope-là" : "Your Tope-là summary";
   const textLines = [subject, "", intro, ""];
   const htmlSections = [`<p>${intro}</p>`];
 

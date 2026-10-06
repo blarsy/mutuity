@@ -226,7 +226,7 @@ export function AppTopBar({
                   }}
                   variant="h6"
                 >
-                  Mutuity
+                  Tope-là
                 </Typography>
               </Box>
 
@@ -266,7 +266,7 @@ export function AppTopBar({
             <>
               <Stack alignItems={{ xs: "flex-start", md: "center" }} direction={{ xs: "column", md: "row" }} spacing={2} sx={{ flex: 1 }}>
                 <Typography component={NextLink} href="/" sx={{ color: "inherit", fontWeight: 700, textDecoration: "none" }} variant="h6">
-                  Mutuity
+                  Tope-là
                 </Typography>
 
                 <Stack direction="row" flexWrap="wrap" gap={1}>
@@ -341,7 +341,7 @@ export function AppTopBar({
       >
         <Box sx={{ minWidth: 280, p: 1.5 }}>
           <Typography sx={{ px: 1.5, py: 1 }} variant="subtitle2">
-            Mutuity
+            Tope-là
           </Typography>
           <List sx={{ pt: 0 }}>
             {links.map(link => (

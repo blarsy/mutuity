@@ -126,7 +126,7 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
       });
     case "welcome_profile_reward":
       return translateEvent("welcomeProfileReward", {}, {
-        headline1: "Welcome to Mutuity!",
+        headline1: "Welcome to Tope-là!",
         headline2: "Complete your profile",
         description: "Earn Topes for a polished profile."
       });

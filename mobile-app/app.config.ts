@@ -114,9 +114,9 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
         NSPhotoLibraryUsageDescription:
-          "Mutuity would like to access your photos so you can choose images for your needs and resources.",
+          "Tope-là would like to access your photos so you can choose images for your needs and resources.",
         NSCameraUsageDescription:
-          "Mutuity would like to access your camera so you can take photos for your needs and resources.",
+          "Tope-là would like to access your camera so you can take photos for your needs and resources.",
         GMSApiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY ?? ""
       },
       config: {
@@ -142,7 +142,7 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
         "expo-location",
         {
           locationWhenInUsePermission:
-            "Mutuity would like to access your location to position resources and calculate proximity."
+            "Tope-là would like to access your location to position resources and calculate proximity."
         }
       ]
     ],
