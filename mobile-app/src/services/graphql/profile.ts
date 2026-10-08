@@ -40,6 +40,8 @@ interface AccountProfileQueryResult {
       id?: string | null;
       title?: string | null;
       description?: string | null;
+      imageUrls?: Array<string | null> | null;
+      createdAt?: string | null;
       proposedTopesAmount?: number | null;
       intensity?: NeedIntensity | null;
     }> | null;
@@ -129,7 +131,7 @@ function normalizePublicNeeds(value: unknown): PublicProfileNeed[] {
   }
 
   return value
-    .map((need) => {
+    .map((need): PublicProfileNeed | null => {
       if (!need || typeof need !== "object") {
         return null;
       }
@@ -138,6 +140,8 @@ function normalizePublicNeeds(value: unknown): PublicProfileNeed[] {
         id?: unknown;
         title?: unknown;
         description?: unknown;
+        imageUrls?: unknown;
+        createdAt?: unknown;
         proposedTopesAmount?: unknown;
         intensity?: unknown;
       };
@@ -152,6 +156,10 @@ function normalizePublicNeeds(value: unknown): PublicProfileNeed[] {
         id,
         title,
         description: typeof candidate.description === "string" ? candidate.description : "",
+        imageUrls: Array.isArray(candidate.imageUrls)
+          ? candidate.imageUrls.filter((item): item is string => typeof item === "string")
+          : [],
+        createdAt: typeof candidate.createdAt === "string" ? candidate.createdAt : null,
         proposedTokenAmount:
           typeof candidate.proposedTopesAmount === "number" && Number.isFinite(candidate.proposedTopesAmount)
             ? candidate.proposedTopesAmount

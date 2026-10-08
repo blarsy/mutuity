@@ -42,6 +42,8 @@ export interface PublicProfileNeed {
   id: string;
   title: string;
   description: string;
+  imageUrls?: string[];
+  createdAt?: string | null;
   proposedTokenAmount: number;
   intensity: NeedIntensity;
 }

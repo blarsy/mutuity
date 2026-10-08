@@ -1143,6 +1143,8 @@ export const ACCOUNT_PROFILE_QUERY = gql`
         id
         title
         description
+        imageUrls
+        createdAt
         proposedTopesAmount
         intensity
       }

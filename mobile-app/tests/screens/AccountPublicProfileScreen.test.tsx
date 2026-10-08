@@ -1,6 +1,6 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
-import { Linking } from "react-native";
+import { fireEvent, render, within } from "@testing-library/react-native";
+import { Image, Linking } from "react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { AccountPublicProfileScreen } from "../../src/screens/profile/AccountPublicProfileScreen";
@@ -19,7 +19,8 @@ jest.mock("../../src/services/graphql/contribution", () => ({
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
-    t: (_key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? _key,
+    t: (_key: string, options?: { defaultValue?: string; amount?: number }) =>
+      (options?.defaultValue ?? _key).replace("{{amount}}", String(options?.amount ?? "")),
     i18n: { language: "en" }
   })
 }));
@@ -62,6 +63,8 @@ const profile: MyProfileRecord = {
       id: "22222222-2222-2222-2222-222222222222",
       title: "Help planting seedlings",
       description: "Looking for an extra pair of hands in the community garden.",
+      imageUrls: ["https://example.com/seedlings.jpg"],
+      createdAt: "2026-06-02T10:00:00.000Z",
       proposedTokenAmount: 12,
       intensity: NeedIntensity.Sharing
     }
@@ -94,6 +97,35 @@ describe("AccountPublicProfileScreen", () => {
     expect(screen.getByText("Bike repair support")).toBeTruthy();
     expect(screen.getByText("Available needs")).toBeTruthy();
     expect(screen.getByText("Help planting seedlings")).toBeTruthy();
+  });
+
+  it("matches resource card layout and typography while retaining need metadata", () => {
+    const screen = render(<AccountPublicProfileScreen accountId={profile.accountId} profile={profile} />);
+    const resourceCard = screen.getByTestId(`resource-card-${profile.resources![0]!.id}`);
+    const needCard = screen.getByTestId(`need-card-${profile.needs![0]!.id}`);
+    const needContent = within(needCard);
+
+    expect(needCard.props.style).toEqual(resourceCard.props.style);
+    expect(needContent.getByText("Help planting seedlings").props.style).toEqual(
+      within(resourceCard).getByText("Bike repair support").props.style
+    );
+    expect(needContent.getByText("Help planting seedlings").props.numberOfLines).toBe(2);
+    expect(needContent.getByText("Published 06/02/2026")).toBeTruthy();
+    expect(needContent.getByText("Brought by Nora Ibrahim")).toBeTruthy();
+    expect(needContent.getByText("Sharing")).toBeTruthy();
+    expect(needContent.getByText("12 Topes")).toBeTruthy();
+    expect(needCard.findByType(Image).props.source).toEqual({ uri: "https://example.com/seedlings.jpg" });
+    expect(needCard.findByType(Image).props.style).toMatchObject({ width: 92, height: 92 });
+  });
+
+  it("uses the resource-style image fallback and handles missing publication dates", () => {
+    const need = { ...profile.needs![0]!, imageUrls: [], createdAt: null };
+    const screen = render(
+      <AccountPublicProfileScreen accountId={profile.accountId} profile={{ ...profile, needs: [need] }} />
+    );
+
+    expect(screen.getByTestId(`need-card-image-fallback-${need.id}`).props.style).toMatchObject({ width: 92, height: 92 });
+    expect(within(screen.getByTestId(`need-card-${need.id}`)).getByText("Published -")).toBeTruthy();
   });
 
   it("does not show a bio section when the profile has no bio", () => {

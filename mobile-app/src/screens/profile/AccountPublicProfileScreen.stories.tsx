@@ -7,6 +7,7 @@ import {
 } from "./AccountPublicProfileScreen";
 import type { MyProfileRecord } from "./MyProfileScreen";
 import { AuthContext, type AuthContextValue } from "../../services/auth/AuthProvider";
+import { NeedIntensity } from "../../services/graphql/generated";
 
 // Inject a session without bootstrapping auth or making any network requests.
 const storyAuth: AuthContextValue = {
@@ -40,6 +41,28 @@ const SAMPLE_PROFILE: MyProfileRecord = {
       type: "website",
       label: "Website",
       url: "https://example.com"
+    }
+  ],
+  resources: [
+    {
+      id: "sample-resource",
+      title: "Bike repair support",
+      description: "I can help tune and fix bikes.",
+      imageUrls: [],
+      createdAt: "2026-06-01T10:00:00.000Z",
+      canBeExchanged: true,
+      canBeGifted: false
+    }
+  ],
+  needs: [
+    {
+      id: "sample-need",
+      title: "Help planting seedlings",
+      description: "Looking for an extra pair of hands in the community garden.",
+      imageUrls: [],
+      createdAt: "2026-06-02T10:00:00.000Z",
+      proposedTokenAmount: 12,
+      intensity: NeedIntensity.LegUp
     }
   ]
 };

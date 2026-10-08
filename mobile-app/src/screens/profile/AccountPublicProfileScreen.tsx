@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
+import { Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as ExpoLocation from "expo-location";
 import { useTranslation } from "react-i18next";
@@ -318,15 +318,33 @@ export function AccountPublicProfileScreen({
               {needs.map((need) => {
                 const intensity = intensityLabelMeta(need.intensity);
                 return (
-                  <View key={need.id} style={styles.needCard} testID={`need-card-${need.id}`}>
-                    <View style={styles.needCardHeader}>
-                      <Text variant="titleMedium" style={styles.needTitle}>{need.title}</Text>
-                      <Chip compact>{t(intensity.key, { defaultValue: intensity.defaultValue })}</Chip>
+                  <View key={need.id} style={styles.resourceCard} testID={`need-card-${need.id}`}>
+                    {need.imageUrls?.[0] ? (
+                      <Image source={{ uri: need.imageUrls[0] }} style={styles.resourceCardImage} />
+                    ) : (
+                      <View style={styles.resourceCardImageFallback} testID={`need-card-image-fallback-${need.id}`}>
+                        <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
+                      </View>
+                    )}
+                    <View style={styles.resourceCardContent}>
+                      <Text variant="labelSmall" style={styles.resourceCardPublishedAt}>
+                        {`${t("publishedAtLabel", { defaultValue: "Published" })} ${formatPublishedDate(need.createdAt ?? null, i18n.language) ?? "-"}`}
+                      </Text>
+                      <View style={styles.resourceCardBody}>
+                        <Text variant="titleMedium" numberOfLines={2} style={styles.resourceTitle}>{need.title}</Text>
+                        <Text variant="labelSmall" style={styles.resourceCardAuthor}>
+                          {`${t("broughtByLabel", { defaultValue: "Brought by" })} ${resolvedProfile.displayName || t("anonymousLabel", { defaultValue: "Anonymous" })}`}
+                        </Text>
+                        <View style={styles.resourceCardFlagsRow}>
+                          <Text variant="labelSmall" style={styles.resourceCardFlagText}>
+                            {t(intensity.key, { defaultValue: intensity.defaultValue })}
+                          </Text>
+                          <Text variant="labelSmall" style={styles.needTokenLine}>
+                            {t("needTokenAmount", { defaultValue: "{{amount}} Topes", amount: need.proposedTokenAmount })}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
-                    <Text variant="bodySmall" numberOfLines={2}>{need.description || t("needDescriptionEmpty", { defaultValue: "No description yet." })}</Text>
-                    <Text variant="labelSmall" style={styles.needTokenLine}>
-                      {t("needTokenAmount", { defaultValue: "{{amount}} Topes", amount: need.proposedTokenAmount })}
-                    </Text>
                   </View>
                 );
               })}
@@ -494,6 +512,7 @@ const styles = StyleSheet.create({
   },
   resourceCardFlagsRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginTop: 1
   },
@@ -504,24 +523,10 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.altGeneral,
     letterSpacing: 0.35
   },
-  needCard: {
-    backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.md,
-    padding: designTokens.spacing.sm,
-    gap: designTokens.spacing.xs
-  },
-  needCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: designTokens.spacing.sm
-  },
-  needTitle: {
-    fontFamily: appFontFamilies.altGeneral,
-    flex: 1
-  },
   needTokenLine: {
     color: designTokens.colors.primary,
-    fontFamily: appFontFamilies.general
+    fontFamily: appFontFamilies.general,
+    fontSize: 10,
+    lineHeight: 12
   }
 });
