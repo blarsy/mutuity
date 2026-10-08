@@ -12,6 +12,11 @@ export function notificationUrlForEvent(eventType: string, payload: Notification
   switch (eventType) {
     case "claim_created":
     case "claim_settled":
+    case "claim_declined":
+    case "claim_withdrawn":
+    case "claim_expired":
+    case "claim_need_deactivated":
+    case "need_expired_claims_declined":
       return needClaimId ? `/claims?claimId=${encodeURIComponent(needClaimId)}` : "/claims";
     case "resource_bid_created":
     case "resource_bid_expiring_soon":

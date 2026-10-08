@@ -12,7 +12,7 @@ export const MOCK_NEED_CLAIM_ID = "33333333-3333-4333-8333-333333333333";
 export const MOCK_RESOURCE_BID_ID = "44444444-4444-4444-8444-444444444444";
 
 /**
- * Every event type handled by `notificationMessage` in the notifications page,
+ * Every event type handled by `notificationCopy` in the notifications page,
  * plus one unmapped type that exercises the fallback rendering.
  */
 export const NOTIFICATION_FIXTURES: NotificationFixture[] = [
@@ -25,6 +25,31 @@ export const NOTIFICATION_FIXTURES: NotificationFixture[] = [
     eventType: "claim_settled",
     source: "need-claim",
     payload: { needName: "Déménagement de la ressourcerie", needClaimId: MOCK_NEED_CLAIM_ID }
+  },
+  {
+    eventType: "claim_declined",
+    source: "need-claim",
+    payload: { needId: "need-declined" }
+  },
+  {
+    eventType: "claim_withdrawn",
+    source: "need-claim",
+    payload: { needId: "need-withdrawn", claimerAccountId: "claimer" }
+  },
+  {
+    eventType: "claim_expired",
+    source: "need-claim",
+    payload: { needId: "need-expired", reason: "need_expired" }
+  },
+  {
+    eventType: "claim_need_deactivated",
+    source: "need-claim",
+    payload: { needId: "need-deactivated", reason: "need_deactivated" }
+  },
+  {
+    eventType: "need_expired_claims_declined",
+    source: "need-claim",
+    payload: { needId: "need-expired", declinedCount: 3 }
   },
   {
     eventType: "resource_bid_created",

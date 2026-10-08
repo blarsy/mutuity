@@ -32,23 +32,33 @@ export function notificationDestinationForEvent(
   payload: Record<string, unknown>
 ): NotificationDestination {
   const campaignId = asText(payload.campaignId);
-  const needClaimId = asText(payload.needClaimId);
+  const needId = asText(payload.needId);
 
   switch (eventType) {
     case "claim_created":
-    case "claim_settled":
-      // Web: /claims?claimId=... -> My Hub received claims, opening the need.
-      return needClaimId
-        ? { surface: "myHub", drawer: "receivedClaims", needId: needClaimId }
+    case "claim_withdrawn":
+    case "need_expired_claims_declined":
+      // These events notify the need creator. Detail screens require a need ID, not a claim ID.
+      return needId
+        ? { surface: "myHub", drawer: "receivedClaims", needId }
         : { surface: "myHub", drawer: "receivedClaims" };
+    case "claim_settled":
+    case "claim_declined":
+    case "claim_expired":
+    case "claim_need_deactivated":
+      // These events notify the claimer about an offer they sent.
+      return needId
+        ? { surface: "myHub", drawer: "sentClaims", needId }
+        : { surface: "myHub", drawer: "sentClaims" };
     case "resource_bid_created":
     case "resource_bid_expiring_soon":
+      return { surface: "myHub", drawer: "receivedBids" };
     case "resource_bid_accepted":
     case "resource_bid_declined":
     case "resource_bid_cancelled":
     case "resource_bid_expired":
-      // Web: /bids -> My Hub received bids.
-      return { surface: "myHub", drawer: "receivedBids" };
+      // Responses and closure events notify the bidder, not the resource owner.
+      return { surface: "myHub", drawer: "sentBids" };
     case "campaign_airdrop_done":
     case "gift_tokens_received":
       // Web: /contribution -> My Hub contribution.

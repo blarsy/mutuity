@@ -5,7 +5,7 @@
     "resources": "Ressources",
     "bids": "Offres",
     "needs": "Besoins",
-    "claims": "Demandes",
+    "claims": "Propositions d'aide",
     "campaigns": "Campagnes",
     "chat": "Discussion",
     "notifications": "Notifications"
@@ -37,5 +37,5 @@
     "resendButton": "Renvoyer le mail d'activation",
     "resendSuccess": "Si un compte existe pour cet email, les instructions de vérification ont été envoyées."
   },
-  "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, demandes, discussions et à votre espace de gestion."
+  "loginDialogSubtitle": "Connectez-vous pour accéder aux offres, propositions d'aide, discussions et à votre espace de gestion."
 }

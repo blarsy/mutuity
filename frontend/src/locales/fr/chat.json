@@ -7,7 +7,7 @@
   },
   "empty": {
     "noConversations": "Aucune conversation pour l'instant.",
-    "noConversationsHint": "Les conversations démarrent lorsque vous répondez à une demande ou échangez des messages sur une offre de ressource.",
+    "noConversationsHint": "Les conversations démarrent lorsque vous répondez à une proposition d'aide ou échangez des messages sur une offre de ressource.",
     "noResults": "Aucune conversation ne correspond à votre recherche."
   },
   "list": {

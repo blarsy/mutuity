@@ -246,7 +246,7 @@ const ALL_EVENT_TYPES: NotificationFeedItem[] = [
     eventType: "claim_declined",
     headline1: "Claim declined",
     headline2: "",
-    description: "",
+    description: "Bike repair workshop",
     createdAt: "2026-09-04T17:15:00.000Z",
     readAt: null
   },
@@ -261,10 +261,54 @@ const ALL_EVENT_TYPES: NotificationFeedItem[] = [
     readAt: null
   },
   {
+    id: "event-claim_withdrawn",
+    source: "need-claim",
+    eventType: "claim_withdrawn",
+    headline1: "Claim withdrawn",
+    headline2: "The claimer withdrew their offer to help",
+    description: "Bike repair workshop",
+    payload: { needId: "need-123" },
+    createdAt: "2026-09-04T17:09:00.000Z",
+    readAt: null
+  },
+  {
+    id: "event-claim_expired",
+    source: "need-claim",
+    eventType: "claim_expired",
+    headline1: "Claim expired",
+    headline2: "The need has expired",
+    description: "Bike repair workshop",
+    payload: { needId: "need-123", reason: "need_expired" },
+    createdAt: "2026-09-04T17:08:00.000Z",
+    readAt: null
+  },
+  {
+    id: "event-claim_need_deactivated",
+    source: "need-claim",
+    eventType: "claim_need_deactivated",
+    headline1: "Claim closed",
+    headline2: "The need was deactivated",
+    description: "Bike repair workshop",
+    payload: { needId: "need-123", reason: "need_deactivated" },
+    createdAt: "2026-09-04T17:07:00.000Z",
+    readAt: null
+  },
+  {
+    id: "event-need_expired_claims_declined",
+    source: "need-claim",
+    eventType: "need_expired_claims_declined",
+    headline1: "Your need has expired",
+    headline2: "",
+    description: "3 open claims were closed",
+    payload: { needId: "need-123", declinedCount: 3 },
+    createdAt: "2026-09-04T17:06:00.000Z",
+    readAt: null
+  },
+  {
     id: "event-unknown",
     source: "account",
     eventType: "some_future_event_type",
-    headline1: "some_future_event_type",
+    headline1: "Notification",
     headline2: "",
     description: "Fallback bell icon for any event type without a dedicated match.",
     createdAt: "2026-09-04T17:00:00.000Z",

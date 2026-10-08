@@ -49,19 +49,25 @@
       "campaignApproved": { "headline1": "Campagne approuvée", "headline2": "{{campaignName}}", "description": "Votre campagne est maintenant en ligne." },
       "campaignModerationNoteReceived": { "headline1": "Note de modération", "headline2": "{{campaignName}}", "description": "{{noteBody}}" },
       "campaignCreatorAdaptationSubmitted": { "headline1": "Campagne mise à jour", "headline2": "{{creatorName}}", "description": "{{campaignName}}" },
-      "claimCreated": { "headline1": "Nouvelle proposition", "headline2": "{{claimerName}}", "description": "{{needName}}" },
-      "claimSettled": { "headline1": "Proposition réglée", "headline2": "", "description": "{{needName}}" },
-      "claimDeclined": { "headline1": "Proposition refusée", "headline2": "", "description": "" },
+      "claimCreated": { "headline1": "Nouvelle proposition d'aide", "headline2": "{{claimerName}}", "description": "{{needName}}" },
+      "claimSettled": { "headline1": "Proposition d'aide clôturée", "headline2": "", "description": "{{needName}}" },
+      "claimDeclined": { "headline1": "Proposition refusée", "headline2": "", "description": "{{needName}}" },
+      "claimWithdrawn": { "headline1": "Proposition d'aide retirée", "headline2": "La personne a retiré sa proposition d'aide", "description": "{{needName}}" },
+      "claimExpired": { "headline1": "Proposition d'aide expirée", "headline2": "Le besoin a expiré", "description": "{{needName}}" },
+      "claimNeedDeactivated": { "headline1": "Proposition d'aide clôturée", "headline2": "Le besoin a été désactivé", "description": "{{needName}}" },
+      "needExpiredClaimsDeclined": { "headline1": "Votre besoin a expiré", "headline2": "", "description_one": "{{count}} proposition d'aide en cours a été clôturée", "description_other": "{{count}} propositions d'aide en cours ont été clôturées" },
       "resourceBidCreated": { "headline1": "Nouvelle offre", "headline2": "{{bidderName}}", "description": "{{resourceName}}" },
       "resourceBidAccepted": { "headline1": "Offre acceptée", "headline2": "{{responderName}}", "description": "{{resourceName}}" },
       "resourceBidDeclined": { "headline1": "Offre refusée", "headline2": "{{responderName}}", "description": "{{resourceName}}" },
       "resourceBidExpired": { "headline1": "Offre expirée", "headline2": "", "description": "{{resourceName}}" },
       "resourceBidCancelled": { "headline1": "Offre annulée", "headline2": "", "description": "{{resourceName}}" },
-      "resourceBidExpiringSoon": { "headline1": "Offre bientôt expirée", "headline2": "", "description": "{{resourceName}}" }
+      "resourceBidExpiringSoon": { "headline1": "Offre bientôt expirée", "headline2": "", "description": "{{resourceName}}" },
+      "fallback": { "headline1": "Notification", "headline2": "", "description": "{{eventType}}" }
     },
     "fallback": { "headline1": "{{eventType}}", "headline2": "", "description": "" },
     "someone": "Quelqu'un",
     "unknownNeed": "votre besoin",
+    "unknownCampaign": "votre campagne",
     "unknownResource": "votre ressource"
   }
 }

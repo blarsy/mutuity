@@ -19,7 +19,7 @@
   },
   "events": {
     "claimCreated": {
-      "headline1": "Nouvelle demande",
+      "headline1": "Nouvelle proposition d'aide",
       "headline2": "de {{claimerName}}",
       "description": "{{needName}}"
     },
@@ -54,9 +54,35 @@
       "description": "{{amount}} Topes"
     },
     "claimSettled": {
-      "headline1": "Demande réglée",
+      "headline1": "Proposition d'aide clôturée",
       "headline2": "",
       "description": "{{needName}}"
+    },
+    "claimDeclined": {
+      "headline1": "Proposition d'aide refusée",
+      "headline2": "",
+      "description": "{{needName}}"
+    },
+    "claimWithdrawn": {
+      "headline1": "Proposition d'aide retirée",
+      "headline2": "La personne a retiré sa proposition d'aide",
+      "description": "{{needName}}"
+    },
+    "claimExpired": {
+      "headline1": "Proposition d'aide expirée",
+      "headline2": "Le besoin a expiré",
+      "description": "{{needName}}"
+    },
+    "claimNeedDeactivated": {
+      "headline1": "Proposition d'aide clôturée",
+      "headline2": "Le besoin a été désactivé",
+      "description": "{{needName}}"
+    },
+    "needExpiredClaimsDeclined": {
+      "headline1": "Votre besoin a expiré",
+      "headline2": "",
+      "description_one": "{{count}} proposition d'aide en cours a été clôturée",
+      "description_other": "{{count}} propositions d'aide en cours ont été clôturées"
     },
     "resourceBidAccepted": {
       "headline1": "Offre acceptée",

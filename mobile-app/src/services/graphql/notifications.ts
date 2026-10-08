@@ -82,7 +82,11 @@ function formatDate(value: unknown): string {
   if (!text) {
     return "";
   }
-  return new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(text));
+  const date = new Date(text);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 interface NotificationCopy {
@@ -98,6 +102,8 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
   const someone = i18n.t("notifications.someone", { ns: "us4", defaultValue: "Someone" });
   const unknownNeed = i18n.t("notifications.unknownNeed", { ns: "us4", defaultValue: "your need" });
   const unknownResource = i18n.t("notifications.unknownResource", { ns: "us4", defaultValue: "your resource" });
+  const unknownCampaign = i18n.t("notifications.unknownCampaign", { ns: "us4", defaultValue: "your campaign" });
+  const needName = asText(p.needName, asText(p.needTitle, unknownNeed));
 
   const translateEvent = (key: string, vars: Record<string, unknown>, defaults: NotificationCopy): NotificationCopy => ({
     headline1: i18n.t(`notifications.events.${key}.headline1`, { ns: "us4", defaultValue: defaults.headline1, ...vars }),
@@ -113,7 +119,7 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
         description: `${asNumber(p.amountReceived)} Topes sent your way`
       });
     case "campaign_airdrop_coming_soon":
-      return translateEvent("campaignAirdropComingSoon", { campaignName: asText(p.campaignName, unknownNeed), date: formatDate(p.airdropAt) }, {
+      return translateEvent("campaignAirdropComingSoon", { campaignName: asText(p.campaignName, unknownCampaign), date: formatDate(p.airdropAt) }, {
         headline1: "Airdrop coming soon",
         headline2: asText(p.campaignName, ""),
         description: `Lands on ${formatDate(p.airdropAt)}`
@@ -161,7 +167,33 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
         description: asText(p.needName, unknownNeed)
       });
     case "claim_declined":
-      return translateEvent("claimDeclined", {}, { headline1: "Claim declined", headline2: "", description: "" });
+      return translateEvent("claimDeclined", { needName }, { headline1: "Claim declined", headline2: "", description: needName });
+    case "claim_withdrawn":
+      return translateEvent("claimWithdrawn", { needName }, {
+        headline1: "Claim withdrawn",
+        headline2: "The claimer withdrew their offer to help",
+        description: needName
+      });
+    case "claim_expired":
+      return translateEvent("claimExpired", { needName }, {
+        headline1: "Claim expired",
+        headline2: "The need has expired",
+        description: needName
+      });
+    case "claim_need_deactivated":
+      return translateEvent("claimNeedDeactivated", { needName }, {
+        headline1: "Claim closed",
+        headline2: "The need was deactivated",
+        description: needName
+      });
+    case "need_expired_claims_declined": {
+      const count = asNumber(p.declinedCount);
+      return translateEvent("needExpiredClaimsDeclined", { count }, {
+        headline1: "Your need has expired",
+        headline2: "",
+        description: `${count} open ${count === 1 ? "claim was" : "claims were"} closed`
+      });
+    }
     case "resource_bid_created":
       return translateEvent("resourceBidCreated", { bidderName: asText(p.bidderDisplayName, someone), resourceName: asText(p.resourceName, unknownResource) }, {
         headline1: "New bid",
@@ -199,10 +231,10 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
         description: asText(p.resourceName, unknownResource)
       });
     default:
-      return translateEvent("fallback", { eventType }, {
-        headline1: asText(p.title, eventType),
+      return translateEvent("fallback", { eventType: eventType.replaceAll("_", " ") }, {
+        headline1: "Notification",
         headline2: "",
-        description: asText(p.body, "")
+        description: eventType.replaceAll("_", " ")
       });
   }
 }

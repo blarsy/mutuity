@@ -1,7 +1,13 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { NotificationsScreen } from "../../src/screens/notifications/NotificationsScreen";
+
+// Expo's Jest asset loader returns SVG objects rather than renderable components.
+// The actual event-to-artwork mapping is covered separately by notification-icons.test.ts.
+jest.mock("../../src/screens/notifications/notificationIcons", () => ({
+  getNotificationIcon: () => () => null
+}));
 
 describe("US4 notifications continuity acceptance", () => {
   const mockNotifications = [
@@ -72,6 +78,30 @@ describe("US4 notifications continuity acceptance", () => {
     await waitFor(() => {
       expect(screen.getByText("No notifications yet.")).toBeTruthy();
     });
+  });
+
+  it.each([
+    "claim_declined", "claim_withdrawn", "claim_expired", "claim_need_deactivated", "need_expired_claims_declined"
+  ])("preserves the %s source and payload when marking read and navigating", eventType => {
+    const notification = {
+      id: "lifecycle-notification",
+      source: "need-claim" as const,
+      eventType,
+      headline1: "Claim update",
+      headline2: "",
+      description: "Community garden",
+      payload: { needId: "need-123", declinedCount: 3 },
+      createdAt: "2026-10-07T12:00:00Z",
+      readAt: null
+    };
+    const onMarkRead = jest.fn();
+    const onOpenNotification = jest.fn();
+    const screen = render(React.createElement(NotificationsScreen, {
+      notifications: [notification], onMarkRead, onOpenNotification
+    }));
+    fireEvent.press(screen.getByTestId("notification-row-lifecycle-notification"));
+    expect(onMarkRead).toHaveBeenCalledWith(notification.id, "need-claim");
+    expect(onOpenNotification).toHaveBeenCalledWith(notification);
   });
 
   it("shows loading state while fetching notifications", async () => {

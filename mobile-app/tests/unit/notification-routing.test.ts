@@ -1,25 +1,36 @@
 import { notificationDestinationForEvent } from "../../src/services/notifications/notificationRouting";
 
 describe("mobile notification routing", () => {
-  it("routes claim notifications to My Hub received claims, opening the need", () => {
-    expect(
-      notificationDestinationForEvent("claim_created", { needClaimId: "claim-123" })
-    ).toEqual({ surface: "myHub", drawer: "receivedClaims", needId: "claim-123" });
+  it.each(["claim_created", "claim_withdrawn", "need_expired_claims_declined"])(
+    "routes %s to received claims using the need ID, not the claim ID",
+    eventType => {
+      expect(notificationDestinationForEvent(eventType, { needId: "need-123", needClaimId: "claim-456" }))
+        .toEqual({ surface: "myHub", drawer: "receivedClaims", needId: "need-123" });
+      expect(notificationDestinationForEvent(eventType, { needClaimId: "claim-456" }))
+        .toEqual({ surface: "myHub", drawer: "receivedClaims" });
+    }
+  );
 
-    expect(
-      notificationDestinationForEvent("claim_settled", { needClaimId: "claim-123" })
-    ).toEqual({ surface: "myHub", drawer: "receivedClaims", needId: "claim-123" });
+  it.each(["claim_settled", "claim_declined", "claim_expired", "claim_need_deactivated"])(
+    "routes %s to the claimer's sent claims",
+    eventType => {
+      expect(notificationDestinationForEvent(eventType, { needId: "need-123", needClaimId: "claim-456" }))
+        .toEqual({ surface: "myHub", drawer: "sentClaims", needId: "need-123" });
+      expect(notificationDestinationForEvent(eventType, {}))
+        .toEqual({ surface: "myHub", drawer: "sentClaims" });
+    }
+  );
 
-    expect(notificationDestinationForEvent("claim_created", {})).toEqual({
-      surface: "myHub",
-      drawer: "receivedClaims"
-    });
-  });
+  it.each(["resource_bid_created", "resource_bid_expiring_soon"])(
+    "routes %s to received bids",
+    eventType => {
+      expect(notificationDestinationForEvent(eventType, {}))
+        .toEqual({ surface: "myHub", drawer: "receivedBids" });
+    }
+  );
 
-  it("routes resource bid notifications to My Hub received bids", () => {
+  it("routes bid responses and closures to the bidder's sent bids", () => {
     for (const eventType of [
-      "resource_bid_created",
-      "resource_bid_expiring_soon",
       "resource_bid_accepted",
       "resource_bid_declined",
       "resource_bid_cancelled",
@@ -27,7 +38,7 @@ describe("mobile notification routing", () => {
     ]) {
       expect(notificationDestinationForEvent(eventType, {})).toEqual({
         surface: "myHub",
-        drawer: "receivedBids"
+        drawer: "sentBids"
       });
     }
   });

@@ -58,6 +58,32 @@
       "headline2": "",
       "description": "{{needName}}"
     },
+    "claimDeclined": {
+      "headline1": "Claim declined",
+      "headline2": "",
+      "description": "{{needName}}"
+    },
+    "claimWithdrawn": {
+      "headline1": "Claim withdrawn",
+      "headline2": "The claimer withdrew their offer to help",
+      "description": "{{needName}}"
+    },
+    "claimExpired": {
+      "headline1": "Claim expired",
+      "headline2": "The need has expired",
+      "description": "{{needName}}"
+    },
+    "claimNeedDeactivated": {
+      "headline1": "Claim closed",
+      "headline2": "The need was deactivated",
+      "description": "{{needName}}"
+    },
+    "needExpiredClaimsDeclined": {
+      "headline1": "Your need has expired",
+      "headline2": "",
+      "description_one": "{{count}} open claim was closed",
+      "description_other": "{{count}} open claims were closed"
+    },
     "resourceBidAccepted": {
       "headline1": "Bid accepted",
       "headline2": "by {{responderName}}",

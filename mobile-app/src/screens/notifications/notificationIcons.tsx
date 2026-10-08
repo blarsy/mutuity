@@ -18,7 +18,7 @@ import TimeUp from "../../assets/img/time-up.svg";
 
 type NotificationIcon = React.ComponentType<SvgProps>;
 
-// Maps account_notification event types (see database/functions/notification) to their Tope-là equivalent artwork.
+// Maps inbox events from all three notification sources to their Tope-là equivalent artwork.
 const EXACT_EVENT_TYPE_ICONS: Record<string, NotificationIcon> = {
   gift_tokens_received: MoneyIn,
   gift_tokens_sent: GiftSent,
@@ -36,7 +36,11 @@ const EXACT_EVENT_TYPE_ICONS: Record<string, NotificationIcon> = {
   resource_bid_cancelled: TimeUp,
   claim_created: Claim,
   claim_settled: BidReceived,
-  claim_declined: Denied
+  claim_declined: Denied,
+  claim_withdrawn: Gone,
+  claim_expired: TimeUp,
+  claim_need_deactivated: Gone,
+  need_expired_claims_declined: TimeUp
 };
 
 const PREFIX_EVENT_TYPE_ICONS: Array<[prefix: string, icon: NotificationIcon]> = [

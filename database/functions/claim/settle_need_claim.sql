@@ -155,7 +155,7 @@ begin
     nc.claimer_account_id,
     nc.id,
     'claim_declined',
-    jsonb_build_object('needId', nc.need_id, 'settledClaimId', v_current_claim.id)
+    jsonb_build_object('needId', nc.need_id, 'needName', v_need_context.need_title, 'settledClaimId', v_current_claim.id)
   from app_public.need_claim nc
   where nc.need_id = v_current_claim.need_id
     and nc.id <> v_current_claim.id

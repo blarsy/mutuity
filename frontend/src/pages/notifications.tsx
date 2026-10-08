@@ -115,7 +115,11 @@ const EXACT_EVENT_TYPE_ICONS: Record<string, string> = {
   resource_bid_cancelled: "time-up.svg",
   claim_created: "claim.svg",
   claim_settled: "bid-received.svg",
-  claim_declined: "denied.svg"
+  claim_declined: "denied.svg",
+  claim_withdrawn: "gone.svg",
+  claim_expired: "time-up.svg",
+  claim_need_deactivated: "gone.svg",
+  need_expired_claims_declined: "time-up.svg"
 };
 
 const PREFIX_EVENT_TYPE_ICONS: Array<[prefix: string, icon: string]> = [
@@ -170,6 +174,18 @@ function notificationCopy(notification: UnifiedNotification, t: TranslateFn) {
       return build("giftTokensReceived", { senderName: senderName ?? someone, amount: amount ?? 0 });
     case "claim_settled":
       return build("claimSettled", { needName: needName ?? unknownNeed });
+    case "claim_declined":
+      return build("claimDeclined", { needName: needName ?? unknownNeed });
+    case "claim_withdrawn":
+      return build("claimWithdrawn", { needName: needName ?? unknownNeed });
+    case "claim_expired":
+      return build("claimExpired", { needName: needName ?? unknownNeed });
+    case "claim_need_deactivated":
+      return build("claimNeedDeactivated", { needName: needName ?? unknownNeed });
+    case "need_expired_claims_declined":
+      return build("needExpiredClaimsDeclined", {
+        count: asNumber(notification.payload.declinedCount) ?? 0
+      });
     case "resource_bid_accepted":
       return build("resourceBidAccepted", { responderName: responderName ?? someone, resourceName: resourceName ?? unknownResource });
     case "resource_bid_declined":
