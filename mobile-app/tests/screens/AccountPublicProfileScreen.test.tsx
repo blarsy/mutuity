@@ -1,9 +1,21 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { Linking } from "react-native";
+import { PaperProvider } from "react-native-paper";
 
 import { AccountPublicProfileScreen } from "../../src/screens/profile/AccountPublicProfileScreen";
+import type { MyProfileRecord } from "../../src/screens/profile/MyProfileScreen";
 import { NeedIntensity } from "../../src/services/graphql/generated";
+import { useCurrentAccount } from "../../src/services/auth/useCurrentAccount";
+
+jest.mock("../../src/services/auth/useCurrentAccount", () => ({
+  useCurrentAccount: jest.fn()
+}));
+
+jest.mock("../../src/services/graphql/contribution", () => ({
+  giftTokens: jest.fn(),
+  getGiftErrorMessage: jest.fn()
+}));
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -16,9 +28,10 @@ jest.mock("../../src/services/graphql/profile", () => ({
   fetchMyProfile: jest.fn()
 }));
 
-const profile = {
+const profile: MyProfileRecord = {
   accountId: "00000000-0000-0000-0000-000000000111",
   displayName: "Nora Ibrahim",
+  email: "",
   avatarUrl: null,
   location: {
     label: "Lyon, France",
@@ -58,6 +71,7 @@ const profile = {
 describe("AccountPublicProfileScreen", () => {
   beforeEach(() => {
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    (useCurrentAccount as jest.Mock).mockReturnValue({ authenticated: true, accountId: "sender-account" });
   });
 
   afterEach(() => {
@@ -108,5 +122,26 @@ describe("AccountPublicProfileScreen", () => {
     fireEvent.press(screen.getByRole("link", { name: "Website" }));
 
     expect(Linking.openURL).toHaveBeenCalledWith("https://example.com");
+  });
+
+  it("opens the gifting dialog from the public account identity row", () => {
+    const screen = render(
+      <PaperProvider>
+        <AccountPublicProfileScreen accountId={profile.accountId} profile={profile} />
+      </PaperProvider>
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: "giftForm.title" }));
+    expect(screen.getByLabelText("giftForm.amountLabel")).toBeTruthy();
+    expect(screen.getByLabelText("giftForm.messageLabel")).toBeTruthy();
+  });
+
+  it.each([
+    { authenticated: false, accountId: null },
+    { authenticated: true, accountId: profile.accountId }
+  ])("hides gifting for signed-out users and the account owner: %j", (session) => {
+    (useCurrentAccount as jest.Mock).mockReturnValue(session);
+    const screen = render(<AccountPublicProfileScreen accountId={profile.accountId} profile={profile} />);
+    expect(screen.queryByRole("button", { name: "giftForm.title" })).toBeNull();
   });
 });

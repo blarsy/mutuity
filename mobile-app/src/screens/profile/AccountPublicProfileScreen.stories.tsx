@@ -6,6 +6,23 @@ import {
   AccountPublicProfileScreen
 } from "./AccountPublicProfileScreen";
 import type { MyProfileRecord } from "./MyProfileScreen";
+import { AuthContext, type AuthContextValue } from "../../services/auth/AuthProvider";
+
+// Inject a session without bootstrapping auth or making any network requests.
+const storyAuth: AuthContextValue = {
+  session: {
+    token: null,
+    accountId: "00000000-0000-0000-0000-000000000222",
+    account: null,
+    authenticated: true,
+    loading: false
+  },
+  signIn: async () => undefined,
+  signOut: async () => undefined,
+  invalidateSession: async () => undefined,
+  changeLanguage: async () => undefined,
+  refreshSession: async () => undefined
+};
 
 const SAMPLE_PROFILE: MyProfileRecord = {
   accountId: "00000000-0000-0000-0000-000000000111",
@@ -30,6 +47,7 @@ const SAMPLE_PROFILE: MyProfileRecord = {
 const meta = {
   title: "Screens/AccountPublicProfileScreen",
   component: AccountPublicProfileScreen,
+  decorators: [(Story) => <AuthContext.Provider value={storyAuth}><Story /></AuthContext.Provider>],
   args: {
     accountId: SAMPLE_PROFILE.accountId,
     profile: SAMPLE_PROFILE,

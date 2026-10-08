@@ -4,7 +4,7 @@
     "editTitle": "Edit resource"
   },
   "browse": {
-    "title": "Discover available resources",
+    "title": "Search",
     "subtitle": "Search by text, refine with category and modality filters, and browse what people have to offer nearby.",
     "sortDescription": "Current ranking mixes closeness (50%), freshness (30%), and sooner expiry (20%).",
     "searchLabel": "Search resources",

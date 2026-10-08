@@ -1196,13 +1196,28 @@ export const CURRENT_TOKEN_BALANCE_QUERY = gql`
   }
 `;
 
+export const GIFT_TOKENS_MUTATION = gql`
+  mutation GiftTokens($input: GiftTokensInput!) {
+    giftTokens(input: $input) {
+      tokenMovement {
+        id
+        eventType
+        amountDelta
+        referenceType
+        referenceId
+        createdAt
+      }
+    }
+  }
+`;
+
 export const TOKEN_HISTORY_QUERY = gql`
   query TokenHistory($condition: TokenMovementCondition, $first: Int, $after: Cursor) {
     allTokenMovements(
       condition: $condition
       first: $first
       after: $after
-      orderBy: PRIMARY_KEY_DESC
+      orderBy: [CREATED_AT_DESC, ID_DESC]
     ) {
       nodes {
         id

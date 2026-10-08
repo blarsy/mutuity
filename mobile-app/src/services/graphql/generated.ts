@@ -11754,6 +11754,8 @@ export type TokenMovementCondition = {
   accountId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `counterpartyAccountId` field. */
   counterpartyAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `idempotencyKey` field. */
@@ -11818,6 +11820,8 @@ export enum TokenMovementsOrderBy {
   AccountIdDesc = 'ACCOUNT_ID_DESC',
   CounterpartyAccountIdAsc = 'COUNTERPARTY_ACCOUNT_ID_ASC',
   CounterpartyAccountIdDesc = 'COUNTERPARTY_ACCOUNT_ID_DESC',
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
   IdempotencyKeyAsc = 'IDEMPOTENCY_KEY_ASC',
   IdempotencyKeyDesc = 'IDEMPOTENCY_KEY_DESC',
   IdAsc = 'ID_ASC',

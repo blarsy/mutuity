@@ -1,4 +1,17 @@
 {
+  "giftSent": "Gift sent.",
+  "giftForm": {
+    "title": "Send a gift",
+    "subtitle": "Send Topes to this account.",
+    "recipient": "Send Topes to {{name}}.",
+    "closeButton": "Close",
+    "amountLabel": "Amount",
+    "messageLabel": "Optional message",
+    "sendButton": "Send gift",
+    "sendingButton": "Sending…",
+    "error": "We could not send your gift. Please try again.",
+    "signInRequired": "You must sign in to continue."
+  },
   "languageLabel": "Language",
   "languageSwitchLabel": "Switch language",
   "languageEnglish": "English",

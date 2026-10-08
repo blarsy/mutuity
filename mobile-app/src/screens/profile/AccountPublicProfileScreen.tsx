@@ -6,6 +6,7 @@ import * as ExpoLocation from "expo-location";
 import { useTranslation } from "react-i18next";
 
 import { AccountAvatar } from "../../components/AccountAvatar";
+import { GiftTokensButton } from "../../components/contribution/GiftTokensButton";
 import { NavigationBackHeader, PrimaryButton, ScreenContainer } from "../../components/primitives";
 import { fetchMyProfile } from "../../services/graphql/profile";
 import { NeedIntensity } from "../../services/graphql/generated";
@@ -207,6 +208,11 @@ export function AccountPublicProfileScreen({
               <Text variant="bodyMedium" style={styles.secondaryText}>{resolvedProfile.location.label}</Text>
             ) : null}
           </View>
+          <GiftTokensButton
+            key={accountId}
+            recipientAccountId={accountId}
+            recipientDisplayName={resolvedProfile.displayName}
+          />
         </View>
 
         <Pressable accessibilityRole="button" onPress={() => setShowMoreInfo((current) => !current)} style={styles.moreInfoButton}>

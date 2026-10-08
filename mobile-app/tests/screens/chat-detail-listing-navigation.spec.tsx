@@ -43,6 +43,12 @@ function renderChat(
 }
 
 describe("ChatDetailScreen listing navigation", () => {
+  it.each(["resource", "need"] as const)("does not offer gifting in a %s conversation", (kind) => {
+    const screen = renderChat(kind, jest.fn(), jest.fn());
+    expect(screen.queryByRole("button", { name: "Send a gift" })).toBeNull();
+    expect(screen.queryByLabelText("Optional message")).toBeNull();
+  });
+
   it("opens a resource from both its image and title", () => {
     const onOpenLinkedResource = jest.fn();
     const screen = renderChat("resource", onOpenLinkedResource, jest.fn());

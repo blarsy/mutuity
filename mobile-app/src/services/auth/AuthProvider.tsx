@@ -76,7 +76,7 @@ function resolveAccountIdFromToken(token: string | null): string | null {
   return typeof accountId === "string" ? accountId : null;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export interface AuthProviderProps {
   children: React.ReactNode;

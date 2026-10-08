@@ -1,4 +1,17 @@
 {
+  "giftSent": "Don envoyé.",
+  "giftForm": {
+    "title": "Envoyer un don",
+    "subtitle": "Envoyez des Topes à ce compte.",
+    "recipient": "Envoyez des Topes à {{name}}.",
+    "closeButton": "Fermer",
+    "amountLabel": "Montant",
+    "messageLabel": "Message optionnel",
+    "sendButton": "Envoyer le don",
+    "sendingButton": "Envoi…",
+    "error": "Nous n'avons pas pu envoyer votre don. Veuillez réessayer.",
+    "signInRequired": "Vous devez vous connecter pour continuer."
+  },
   "languageLabel": "Langue",
   "languageSwitchLabel": "Changer de langue",
   "languageEnglish": "English",

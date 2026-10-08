@@ -4,7 +4,7 @@
     "editTitle": "Modifier la ressource"
   },
   "browse": {
-    "title": "Découvrir les ressources disponibles",
+    "title": "Recherche",
     "subtitle": "Recherchez par texte, affinez avec des filtres de catégorie et de modalité, et explorez ce que les gens ont à offrir à proximité.",
     "sortDescription": "Le classement actuel mélange la proximité (50 %), la fraîcheur (30 %) et l’expiration la plus proche (20 %).",
     "searchLabel": "Rechercher des ressources",
