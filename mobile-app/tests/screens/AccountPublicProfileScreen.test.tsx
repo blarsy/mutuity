@@ -1,12 +1,24 @@
 import React from "react";
 import { fireEvent, render, within } from "@testing-library/react-native";
-import { Image, Linking } from "react-native";
+import { Image, Linking, Pressable, Text, View } from "react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { AccountPublicProfileScreen } from "../../src/screens/profile/AccountPublicProfileScreen";
 import type { MyProfileRecord } from "../../src/screens/profile/MyProfileScreen";
 import { NeedIntensity } from "../../src/services/graphql/generated";
 import { useCurrentAccount } from "../../src/services/auth/useCurrentAccount";
+import { AccountPublicProfileNavigator } from "../../src/navigation/AccountPublicProfileNavigator";
+
+jest.mock("../../src/screens/resources/ResourceDetailScreen", () => ({
+  ResourceDetailScreen: jest.fn()
+}));
+
+jest.mock("../../src/screens/needs/NeedDetailScreen", () => ({
+  NeedDetailScreen: jest.fn()
+}));
+
+import { ResourceDetailScreen } from "../../src/screens/resources/ResourceDetailScreen";
+import { NeedDetailScreen } from "../../src/screens/needs/NeedDetailScreen";
 
 jest.mock("../../src/services/auth/useCurrentAccount", () => ({
   useCurrentAccount: jest.fn()
@@ -126,6 +138,65 @@ describe("AccountPublicProfileScreen", () => {
 
     expect(screen.getByTestId(`need-card-image-fallback-${need.id}`).props.style).toMatchObject({ width: 92, height: 92 });
     expect(within(screen.getByTestId(`need-card-${need.id}`)).getByText("Published -")).toBeTruthy();
+  });
+
+  it("opens the selected resource or need when its card is pressed", () => {
+    const onOpenResource = jest.fn();
+    const onOpenNeed = jest.fn();
+    const screen = render(
+      <AccountPublicProfileScreen
+        accountId={profile.accountId}
+        profile={profile}
+        onOpenResource={onOpenResource}
+        onOpenNeed={onOpenNeed}
+      />
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: "Bike repair support" }));
+    fireEvent.press(screen.getByRole("button", { name: "Help planting seedlings" }));
+
+    expect(onOpenResource).toHaveBeenCalledWith(profile.resources![0]!.id);
+    expect(onOpenNeed).toHaveBeenCalledWith(profile.needs![0]!.id);
+  });
+
+  it.each([
+    { kind: "resource", title: "Bike repair support", id: profile.resources![0]!.id },
+    { kind: "need", title: "Help planting seedlings", id: profile.needs![0]!.id }
+  ])("navigates from the profile to $kind details and back without leaving the profile", ({ kind, title, id }) => {
+    const detailScreen = kind === "resource" ? ResourceDetailScreen : NeedDetailScreen;
+    (detailScreen as jest.Mock).mockImplementation((props: {
+      resourceId?: string;
+      needId?: string;
+      currentAccountId: string | null;
+      onBack: () => void;
+    }) => (
+      <View>
+        <Text>{`${kind} details ${props.resourceId ?? props.needId}`}</Text>
+        <Text>{props.currentAccountId}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Return to profile" onPress={props.onBack} />
+      </View>
+    ));
+    const onBack = jest.fn();
+    const screen = render(
+      <AccountPublicProfileNavigator
+        accountId={profile.accountId}
+        currentAccountId="sender-account"
+        profile={profile}
+        onBack={onBack}
+      />
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: title }));
+    expect(screen.getByText(`${kind} details ${id}`)).toBeTruthy();
+    expect(screen.getByText("sender-account")).toBeTruthy();
+    expect(screen.queryByTestId("account-public-profile-screen")).toBeNull();
+
+    fireEvent.press(screen.getByRole("button", { name: "Return to profile" }));
+    expect(screen.getByTestId("account-public-profile-screen")).toBeTruthy();
+    expect(onBack).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole("button", { name: "Back" }));
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 
   it("does not show a bio section when the profile has no bio", () => {

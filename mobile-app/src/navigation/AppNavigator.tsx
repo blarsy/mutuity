@@ -27,7 +27,7 @@ import { MyClaimsScreen } from "../screens/claims/MyClaimsScreen";
 import { ChatListScreen } from "../screens/chat/ChatListScreen";
 import type { ChatConversationItem } from "../screens/chat/ChatListScreen";
 import { ChatDetailScreen } from "../screens/chat/ChatDetailScreen";
-import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
+import { AccountPublicProfileNavigator } from "./AccountPublicProfileNavigator";
 import { NotificationsScreen as MobileNotificationsScreen } from "../screens/notifications/NotificationsScreen";
 import type { NotificationFeedItem } from "../screens/notifications/NotificationsScreen";
 import { notificationDestinationForEvent } from "../services/notifications/notificationRouting";
@@ -532,8 +532,10 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
 
   if (openedBidAccountId) {
     return (
-      <AccountPublicProfileScreen
+      <AccountPublicProfileNavigator
+        key={openedBidAccountId}
         accountId={openedBidAccountId}
+        currentAccountId={accountId}
         onBack={() => {
           setOpenedBidAccountId(null);
         }}
@@ -543,8 +545,10 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
 
   if (openedClaimAccountId) {
     return (
-      <AccountPublicProfileScreen
+      <AccountPublicProfileNavigator
+        key={openedClaimAccountId}
         accountId={openedClaimAccountId}
+        currentAccountId={accountId}
         onBack={() => {
           setOpenedClaimAccountId(null);
         }}
@@ -752,8 +756,10 @@ function ChatScreen({
 
   if (openedAccountId) {
     return (
-      <AccountPublicProfileScreen
+      <AccountPublicProfileNavigator
+        key={openedAccountId}
         accountId={openedAccountId}
+        currentAccountId={accountId}
         onBack={() => setOpenedAccountId(null)}
       />
     );

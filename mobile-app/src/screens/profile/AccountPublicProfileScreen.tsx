@@ -21,6 +21,8 @@ export interface AccountPublicProfileScreenProps {
   errorMessage?: string | null;
   onRetry?: () => void;
   onBack?: () => void;
+  onOpenResource?: (resourceId: string) => void;
+  onOpenNeed?: (needId: string) => void;
 }
 
 function formatPublishedDate(value: string | null, locale: string): string | null {
@@ -42,7 +44,9 @@ export function AccountPublicProfileScreen({
   loading = false,
   errorMessage = null,
   onRetry,
-  onBack
+  onBack,
+  onOpenResource,
+  onOpenNeed
 }: AccountPublicProfileScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
@@ -282,7 +286,15 @@ export function AccountPublicProfileScreen({
             <Text variant="labelLarge" style={styles.sectionTitle}>{t("availableResourcesLabel", { defaultValue: "Available resources" })}</Text>
             <View style={styles.resourceList}>
               {resources.map((resource) => (
-                <View key={resource.id} style={styles.resourceCard} testID={`resource-card-${resource.id}`}>
+                <Pressable
+                  key={resource.id}
+                  style={styles.resourceCard}
+                  testID={`resource-card-${resource.id}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={resource.title}
+                  disabled={!onOpenResource}
+                  onPress={() => onOpenResource?.(resource.id)}
+                >
                   {resource.imageUrls[0] ? (
                     <Image source={{ uri: resource.imageUrls[0] }} style={styles.resourceCardImage} />
                   ) : (
@@ -305,7 +317,7 @@ export function AccountPublicProfileScreen({
                       </View>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </View>
           </View>
@@ -318,7 +330,15 @@ export function AccountPublicProfileScreen({
               {needs.map((need) => {
                 const intensity = intensityLabelMeta(need.intensity);
                 return (
-                  <View key={need.id} style={styles.resourceCard} testID={`need-card-${need.id}`}>
+                  <Pressable
+                    key={need.id}
+                    style={styles.resourceCard}
+                    testID={`need-card-${need.id}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={need.title}
+                    disabled={!onOpenNeed}
+                    onPress={() => onOpenNeed?.(need.id)}
+                  >
                     {need.imageUrls?.[0] ? (
                       <Image source={{ uri: need.imageUrls[0] }} style={styles.resourceCardImage} />
                     ) : (
@@ -345,7 +365,7 @@ export function AccountPublicProfileScreen({
                         </View>
                       </View>
                     </View>
-                  </View>
+                  </Pressable>
                 );
               })}
             </View>

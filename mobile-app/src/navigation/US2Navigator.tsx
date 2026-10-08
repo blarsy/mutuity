@@ -7,7 +7,7 @@ import { SearchResourcesScreen } from "../screens/resources/SearchResourcesScree
 import type { SearchResourceItem } from "../screens/resources/SearchResourcesScreen";
 import { SearchNeedsScreen } from "../screens/needs/SearchNeedsScreen";
 import { NeedDetailScreen } from "../screens/needs/NeedDetailScreen";
-import { AccountPublicProfileScreen } from "../screens/profile/AccountPublicProfileScreen";
+import { AccountPublicProfileNavigator } from "./AccountPublicProfileNavigator";
 import { CampaignPublicInfoScreen } from "../screens/campaigns/CampaignPublicInfoScreen";
 import { ErrorState } from "../components/state/ErrorState";
 import { LoadingState } from "../components/state/LoadingState";
@@ -138,8 +138,10 @@ export function US2ExploreScreen({ currentAccountId }: US2ExploreScreenProps): R
 
   if (selectedAccountId) {
     return (
-      <AccountPublicProfileScreen
+      <AccountPublicProfileNavigator
+        key={selectedAccountId}
         accountId={selectedAccountId}
+        currentAccountId={currentAccountId}
         onBack={() => setSelectedAccountId(null)}
       />
     );

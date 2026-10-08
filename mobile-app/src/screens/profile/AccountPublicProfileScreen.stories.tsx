@@ -77,7 +77,9 @@ const meta = {
     loading: false,
     errorMessage: null,
     onBack: () => undefined,
-    onRetry: () => undefined
+    onRetry: () => undefined,
+    onOpenResource: () => undefined,
+    onOpenNeed: () => undefined
   }
 } satisfies Meta<typeof AccountPublicProfileScreen>;
 
