@@ -30,6 +30,9 @@ jest.mock("next/router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock("../../src/features/auth/requireAuth", () => ({
   useRequireAuth: () => ({ isAuthenticated: true })
 }));
+jest.mock("../../src/features/auth/AuthProvider", () => ({
+  useAuth: () => ({ session: { authenticated: true, account: { id: "viewer" } } })
+}));
 jest.mock("../../src/services/graphql/accountEvents", () => ({ useAccountEventSignal: jest.fn() }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: mockI18n.t.bind(mockI18n) })

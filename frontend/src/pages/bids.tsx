@@ -307,8 +307,10 @@ export default function BidsPage() {
   });
 
   const handleBidWorkspaceSignal = useCallback(() => {
-    void refetchSentBids({ activeOnly: sentActiveOnly, first: PAGE_SIZE, after: null });
-    void refetchReceivedBids({ activeOnly: receivedActiveOnly, first: PAGE_SIZE, after: null });
+    return Promise.all([
+      refetchSentBids({ activeOnly: sentActiveOnly, first: PAGE_SIZE, after: null }),
+      refetchReceivedBids({ activeOnly: receivedActiveOnly, first: PAGE_SIZE, after: null })
+    ]);
   }, [receivedActiveOnly, refetchReceivedBids, refetchSentBids, sentActiveOnly]);
 
   useAccountEventSignal(handleBidWorkspaceSignal, isAuthenticated);

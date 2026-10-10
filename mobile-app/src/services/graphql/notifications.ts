@@ -1,5 +1,6 @@
 import i18n from "../../i18n";
 import { apolloClient } from "./client";
+import { signalAccountRefresh } from "../realtime/accountEvents";
 import {
   type MarkAccountNotificationReadInput,
   type MarkAllNotificationsReadInput,
@@ -10,6 +11,7 @@ import {
 } from "./generated";
 import {
   ACCOUNT_NOTIFICATIONS_QUERY,
+  COUNT_UNREAD_NOTIFICATIONS_QUERY,
   MARK_ACCOUNT_NOTIFICATION_READ_MUTATION,
   MARK_ALL_NOTIFICATIONS_READ_MUTATION,
   MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION,
@@ -46,11 +48,11 @@ interface AccountNotificationsQueryResult {
 }
 
 interface NeedClaimNotificationsQueryResult {
-  allNeedClaimNotifications: { nodes: RawNotificationNode[] } | null;
+  allNeedClaimNotifications: { nodes: RawNotificationNode[]; pageInfo?: { hasNextPage: boolean } } | null;
 }
 
 interface ResourceBidNotificationsQueryResult {
-  allResourceBidNotifications: { nodes: RawNotificationNode[] } | null;
+  allResourceBidNotifications: { nodes: RawNotificationNode[]; pageInfo?: { hasNextPage: boolean } } | null;
 }
 
 interface MarkAccountNotificationReadMutationResult {
@@ -302,6 +304,43 @@ export async function fetchNotifications(accountId: string, after?: string | nul
   };
 }
 
+export async function fetchUnreadNotificationsCount(): Promise<number> {
+  const { data } = await apolloClient.query<{ countUnreadNotifications: number | null }>({
+    query: COUNT_UNREAD_NOTIFICATIONS_QUERY, fetchPolicy: "network-only"
+  });
+  if (typeof data?.countUnreadNotifications !== "number") throw new Error("Unread count unavailable");
+  return data.countUnreadNotifications;
+}
+
+/** Re-fetch an expanded, chronological window in every source; preserve it on realtime updates. */
+export async function fetchNotificationWindow(accountId: string, first = DEFAULT_PAGE_SIZE): Promise<NotificationPage> {
+  const [account, claims, bids] = await Promise.all([
+    apolloClient.query<AccountNotificationsQueryResult>({ query: ACCOUNT_NOTIFICATIONS_QUERY,
+      variables: { condition: { recipientAccountId: accountId }, first }, fetchPolicy: "network-only" }),
+    apolloClient.query<NeedClaimNotificationsQueryResult>({ query: NEED_CLAIM_NOTIFICATIONS_QUERY,
+      variables: { first, condition: { recipientAccountId: accountId } }, fetchPolicy: "network-only" }),
+    apolloClient.query<ResourceBidNotificationsQueryResult>({ query: RESOURCE_BID_NOTIFICATIONS_QUERY,
+      variables: { first, condition: { recipientAccountId: accountId } }, fetchPolicy: "network-only" })
+  ]);
+  if (!account.data?.allAccountNotifications || !claims.data?.allNeedClaimNotifications || !bids.data?.allResourceBidNotifications) {
+    throw new Error("Notification feed unavailable");
+  }
+  const unique = new Map<string, NotificationFeedItem>();
+  for (const [source, nodes] of [
+    ["account", account.data.allAccountNotifications.nodes],
+    ["need-claim", claims.data.allNeedClaimNotifications.nodes],
+    ["resource-bid", bids.data.allResourceBidNotifications.nodes]
+  ] as const) {
+    for (const node of nodes) unique.set(`${source}:${node.id}`, toFeedItem(source, node));
+  }
+  return {
+    items: [...unique.values()].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? "") || b.id.localeCompare(a.id)),
+    endCursor: account.data.allAccountNotifications.pageInfo.endCursor,
+    hasNextPage: Boolean(account.data.allAccountNotifications.pageInfo.hasNextPage
+      || claims.data.allNeedClaimNotifications.pageInfo?.hasNextPage || bids.data.allResourceBidNotifications.pageInfo?.hasNextPage)
+  };
+}
+
 export async function markNotificationRead(notificationId: string, source: NotificationSource): Promise<void> {
   if (source === "need-claim") {
     const variables: { input: MarkNeedClaimNotificationReadInput } = { input: { notificationId } };
@@ -309,6 +348,7 @@ export async function markNotificationRead(notificationId: string, source: Notif
       mutation: MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION,
       variables
     });
+    signalAccountRefresh();
     return;
   }
 
@@ -318,6 +358,7 @@ export async function markNotificationRead(notificationId: string, source: Notif
       mutation: MARK_RESOURCE_BID_NOTIFICATION_READ_MUTATION,
       variables
     });
+    signalAccountRefresh();
     return;
   }
 
@@ -331,6 +372,7 @@ export async function markNotificationRead(notificationId: string, source: Notif
     mutation: MARK_ACCOUNT_NOTIFICATION_READ_MUTATION,
     variables
   });
+  signalAccountRefresh();
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
@@ -342,4 +384,5 @@ export async function markAllNotificationsRead(): Promise<void> {
     mutation: MARK_ALL_NOTIFICATIONS_READ_MUTATION,
     variables
   });
+  signalAccountRefresh();
 }

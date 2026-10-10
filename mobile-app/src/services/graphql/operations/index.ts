@@ -1026,7 +1026,7 @@ export const ACCOUNT_NOTIFICATIONS_QUERY = gql`
       condition: $condition
       first: $first
       after: $after
-      orderBy: CREATED_AT_DESC
+      orderBy: [CREATED_AT_DESC, ID_DESC]
     ) {
       nodes {
         id
@@ -1063,8 +1063,8 @@ export const MARK_ALL_NOTIFICATIONS_READ_MUTATION = gql`
 `;
 
 export const NEED_CLAIM_NOTIFICATIONS_QUERY = gql`
-  query NeedClaimNotifications($first: Int) {
-    allNeedClaimNotifications(first: $first) {
+  query NeedClaimNotifications($first: Int, $condition: NeedClaimNotificationCondition) {
+    allNeedClaimNotifications(first: $first, condition: $condition, orderBy: [CREATED_AT_DESC, ID_DESC]) {
       nodes {
         id
         needClaimId
@@ -1073,13 +1073,14 @@ export const NEED_CLAIM_NOTIFICATIONS_QUERY = gql`
         createdAt
         readAt
       }
+      pageInfo { hasNextPage endCursor }
     }
   }
 `;
 
 export const RESOURCE_BID_NOTIFICATIONS_QUERY = gql`
-  query ResourceBidNotifications($first: Int) {
-    allResourceBidNotifications(first: $first) {
+  query ResourceBidNotifications($first: Int, $condition: ResourceBidNotificationCondition) {
+    allResourceBidNotifications(first: $first, condition: $condition, orderBy: [CREATED_AT_DESC, ID_DESC]) {
       nodes {
         id
         resourceBidId
@@ -1088,8 +1089,13 @@ export const RESOURCE_BID_NOTIFICATIONS_QUERY = gql`
         createdAt
         readAt
       }
+      pageInfo { hasNextPage endCursor }
     }
   }
+`;
+
+export const COUNT_UNREAD_NOTIFICATIONS_QUERY = gql`
+  query CountUnreadNotifications { countUnreadNotifications }
 `;
 
 export const MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION = gql`

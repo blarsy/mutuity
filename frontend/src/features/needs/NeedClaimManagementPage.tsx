@@ -35,9 +35,7 @@ export function NeedClaimManagementPage({
   const canSettle = isCreator && claim?.status === "OPEN";
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(settleError);
 
-  useAccountEventSignal(() => {
-    void refetch();
-  }, Boolean(currentAccountId));
+  useAccountEventSignal(() => refetch(), Boolean(currentAccountId));
 
   const handleSettle = async () => {
     if (!claim) {

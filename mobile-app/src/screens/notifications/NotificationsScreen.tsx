@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Icon, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -8,10 +8,11 @@ import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import {
-  fetchNotifications,
+  fetchNotificationWindow,
   markAllNotificationsRead,
   markNotificationRead
 } from "../../services/graphql/notifications";
+import { useAccountEventSignal } from "../../services/realtime/accountEvents";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { getNotificationIcon } from "./notificationIcons";
@@ -38,9 +39,12 @@ export interface NotificationsScreenProps {
   errorMessage?: string | null;
   onRetry?: () => void;
   onOpenNotification?: (notification: NotificationFeedItem) => void;
-  onMarkRead?: (notificationId: string, source: NotificationSource) => void;
+  onMarkRead?: (notificationId: string, source: NotificationSource) => void | Promise<unknown>;
   onLoadEarlier?: () => void;
 }
+
+const FEED_PAGE_SIZE = 20;
+const notificationKey = (entry: NotificationFeedItem): string => `${entry.source}:${entry.id}`;
 
 export function NotificationsScreen({
   accountId = null,
@@ -54,70 +58,125 @@ export function NotificationsScreen({
 }: NotificationsScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [remoteNotifications, setRemoteNotifications] = useState<NotificationFeedItem[]>([]);
-  const [remoteLoading, setRemoteLoading] = useState(false);
+  const [loadedAccount, setLoadedAccount] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
-  const [endCursor, setEndCursor] = useState<string | null>(null);
+  const [readErrorMessage, setReadErrorMessage] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
-  // IDs optimistically marked as read locally while the fire-and-forget backend
-  // request is in flight (or after it completes), avoiding a full list reload.
+  const requestId = useRef(0);
+  const feedWindow = useRef(FEED_PAGE_SIZE);
+  const scope = useRef(0);
+  const readOperation = useRef(0);
+  const readVersions = useRef(new Map<string, number>());
+  const confirmedReadKeys = useRef(new Set<string>());
+  // Source-qualified keys: notification UUIDs are not unique across tables.
   const [locallyReadIds, setLocallyReadIds] = useState<Set<string>>(new Set());
 
   const hasInjectedNotifications = notifications !== undefined;
 
-  const loadNotifications = useCallback(async (mode: "replace" | "append" = "replace"): Promise<void> => {
+  const loadNotifications = useCallback(async (expand = false): Promise<void> => {
     if (hasInjectedNotifications || !accountId) {
       return;
     }
 
-    setRemoteLoading(true);
+    if (expand) feedWindow.current += FEED_PAGE_SIZE;
+    const request = ++requestId.current;
+    setLoadingMore(expand);
     setRemoteErrorMessage(null);
     try {
-      const page = await fetchNotifications(accountId, mode === "append" ? endCursor : null);
-      setRemoteNotifications((previous) => (mode === "append" ? [...previous, ...page.items] : page.items));
-      setEndCursor(page.endCursor);
+      const page: { items: NotificationFeedItem[]; hasNextPage: boolean } = await fetchNotificationWindow(accountId, feedWindow.current);
+      if (request !== requestId.current) return;
+      const unique = new Map<string, NotificationFeedItem>();
+      page.items.forEach((entry) => {
+        if (!unique.has(notificationKey(entry))) unique.set(notificationKey(entry), entry);
+      });
+      setRemoteNotifications([...unique.values()]);
       setHasNextPage(page.hasNextPage);
+      setLoadedAccount(accountId);
     } catch {
+      if (request !== requestId.current) return;
       setRemoteErrorMessage(t("notificationsLoadError", { defaultValue: "We could not load notifications." }));
     } finally {
-      setRemoteLoading(false);
+      if (request === requestId.current) setLoadingMore(false);
     }
-  }, [accountId, endCursor, hasInjectedNotifications, t]);
+  }, [accountId, hasInjectedNotifications, t]);
+
+  useAccountEventSignal(loadNotifications, !hasInjectedNotifications && Boolean(accountId));
 
   useEffect(() => {
-    void loadNotifications("replace");
+    feedWindow.current = FEED_PAGE_SIZE;
+    scope.current += 1;
+    readVersions.current.clear();
+    confirmedReadKeys.current.clear();
+    setLocallyReadIds(new Set());
+    setRemoteNotifications([]);
+    setLoadedAccount(null);
+    setHasNextPage(false);
+    setRemoteErrorMessage(null);
+    setReadErrorMessage(null);
+    void loadNotifications();
+    return () => {
+      requestId.current += 1;
+      scope.current += 1;
+    };
   }, [loadNotifications]);
 
   const sortedNotifications = useMemo(() => {
-    return [...(notifications ?? remoteNotifications)]
+    return [...(notifications ?? (loadedAccount === accountId ? remoteNotifications : []))]
       .map((entry) =>
-        locallyReadIds.has(entry.id) ? { ...entry, readAt: entry.readAt ?? new Date().toISOString() } : entry
+        locallyReadIds.has(notificationKey(entry)) ? { ...entry, readAt: entry.readAt ?? new Date().toISOString() } : entry
       )
-      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
-  }, [notifications, remoteNotifications, locallyReadIds]);
+      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? "") || b.id.localeCompare(a.id) || a.source.localeCompare(b.source));
+  }, [notifications, remoteNotifications, locallyReadIds, loadedAccount, accountId]);
 
-  const markReadLocally = useCallback((notificationId: string) => {
-    setLocallyReadIds((previous) => {
-      if (previous.has(notificationId)) {
-        return previous;
-      }
-      const next = new Set(previous);
-      next.add(notificationId);
-      return next;
+  const updateRead = (entries: NotificationFeedItem[], mutate: () => void | Promise<unknown>): void => {
+    const operation = ++readOperation.current;
+    const currentScope = scope.current;
+    const keys = entries.filter((entry) => !entry.readAt).map(notificationKey);
+    keys.forEach((key) => readVersions.current.set(key, operation));
+    setLocallyReadIds((previous) => new Set([...previous, ...keys]));
+    setReadErrorMessage(null);
+    const confirm = (): void => {
+      if (scope.current !== currentScope) return;
+      keys.forEach((key) => confirmedReadKeys.current.add(key));
+      setLocallyReadIds((previous) => {
+        if (keys.every((key) => previous.has(key))) return previous;
+        return new Set([...previous, ...keys]);
+      });
+    };
+    const perform = async (): Promise<void> => {
+      const result = mutate();
+      if (result) await result;
+      confirm();
+    };
+    void perform().catch(() => {
+      if (scope.current !== currentScope) return;
+      setLocallyReadIds((previous) => {
+        const next = new Set(previous);
+        keys.forEach((key) => {
+          if (readVersions.current.get(key) === operation && !confirmedReadKeys.current.has(key)) {
+            next.delete(key);
+            readVersions.current.delete(key);
+          }
+        });
+        return next;
+      });
+      setReadErrorMessage(t("notificationsReadError", { defaultValue: "We could not update notifications." }));
     });
-  }, []);
+  };
 
-  const resolvedLoading = loading || (!hasInjectedNotifications && remoteLoading);
+  const resolvedLoading = loading || (!errorMessage && !hasInjectedNotifications && Boolean(accountId) && loadedAccount !== accountId && !remoteErrorMessage);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedNotifications ? remoteErrorMessage : null);
 
   if (resolvedLoading) {
     return <LoadingState label={t("notificationsLoading", { defaultValue: "Loading notifications..." })} />;
   }
 
-  if (resolvedErrorMessage) {
+  if (resolvedErrorMessage && (hasInjectedNotifications || loadedAccount !== accountId)) {
     return (
       <ErrorState
         message={resolvedErrorMessage}
-        {...(onRetry ? { onRetry } : { onRetry: () => void loadNotifications("replace") })}
+        {...(onRetry ? { onRetry } : { onRetry: () => void loadNotifications() })}
       />
     );
   }
@@ -127,13 +186,16 @@ export function NotificationsScreen({
       <EmptyState
         message={t("notificationsEmpty", { defaultValue: "No notifications yet." })}
         actionLabel={t("refreshLabel", { defaultValue: "Refresh" })}
-        {...(onRetry ? { onActionPress: onRetry } : {})}
+        onActionPress={onRetry ?? (() => void loadNotifications())}
       />
     );
   }
 
   return (
     <ScreenContainer testID="notifications-screen" style={styles.root}>
+      {resolvedErrorMessage || readErrorMessage ? (
+        <Text accessibilityRole="alert">{readErrorMessage ?? resolvedErrorMessage}</Text>
+      ) : null}
       <ScrollView contentContainerStyle={styles.listContent}>
         {sortedNotifications.map((entry) => {
           const unread = !entry.readAt;
@@ -149,19 +211,15 @@ export function NotificationsScreen({
 
           return (
             <Pressable
-              key={entry.id}
+              key={notificationKey(entry)}
               accessibilityRole="button"
               accessibilityLabel={`${entry.headline1}. ${entry.headline2}. ${entry.description}`}
               onPress={() => {
                 if (unread) {
                   if (onMarkRead) {
-                    onMarkRead(entry.id, entry.source);
+                    updateRead([entry], () => onMarkRead(entry.id, entry.source));
                   } else if (accountId) {
-                    // Fire-and-forget the backend update, then optimistically mark
-                    // the row read locally for a surgical rerender (no full reload).
-                    markReadLocally(entry.id);
-                    void markNotificationRead(entry.id, entry.source)
-                      .catch(() => setRemoteErrorMessage(t("notificationsReadError", { defaultValue: "We could not update notifications." })));
+                    updateRead([entry], () => markNotificationRead(entry.id, entry.source));
                   }
                 }
                 if (onOpenNotification) {
@@ -221,15 +279,18 @@ export function NotificationsScreen({
       ) : !hasInjectedNotifications && hasNextPage ? (
         <PrimaryButton
           label={t("notificationsLoadEarlier", { defaultValue: "Load earlier notifications" })}
-          onPress={() => void loadNotifications("append")}
+          onPress={() => { if (!loadingMore) void loadNotifications(true); }}
+          loading={loadingMore}
+          disabled={loadingMore}
         />
-      ) : !hasInjectedNotifications && sortedNotifications.length > 0 ? (
+      ) : null}
+      {!hasInjectedNotifications && accountId && sortedNotifications.length > 0 ? (
         <PrimaryButton
           label={t("markAllReadLabel", { defaultValue: "Mark all as read" })}
           onPress={() => {
-            void markAllNotificationsRead()
-              .then(() => loadNotifications("replace"))
-              .catch(() => setRemoteErrorMessage(t("notificationsReadError", { defaultValue: "We could not update notifications." })));
+            updateRead(remoteNotifications, async () => {
+              await markAllNotificationsRead();
+            });
           }}
         />
       ) : null}

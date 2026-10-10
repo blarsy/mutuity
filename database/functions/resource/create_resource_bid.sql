@@ -1,3 +1,5 @@
+-- Realtime is emitted by the table trigger in notification/realtime.sql,
+-- including raw/internal inserts; do not emit a duplicate signal here.
 create or replace function app_private.create_resource_bid_notification(
   p_recipient_account_id uuid,
   p_resource_bid_id uuid,

@@ -42,6 +42,7 @@ const meta = {
     loading: false,
     errorMessage: null,
     currentAccountId: "00000000-0000-0000-0000-000000000099",
+    tokenBalance: 150,
     onBack: () => undefined,
     onOpenCreatorAccount: () => undefined,
     onOpenResourceChat: () => undefined,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -10,7 +10,9 @@ import { type HowToGetTokensOpportunityId, type HowToGetTokensProgress } from ".
 import { TokenExplainerDialog } from "../../components/tokenExplainer/TokenExplainerDialog";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
-import { fetchCurrentTokenBalance, fetchTokenHistoryPage } from "../../services/graphql/economics";
+import { fetchTokenHistoryPage } from "../../services/graphql/economics";
+import { useAccountEventSignal } from "../../services/realtime/accountEvents";
+import { AccountTokenBalance } from "../../components/contribution/AccountTokenBalance";
 import { fetchHowToGetTokensProgress } from "../../services/graphql/howToGetTokens";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -25,7 +27,7 @@ export interface ContributionHistoryItem {
 
 export interface MyEconomicsScreenProps {
   accountId?: string | null;
-  currentTokenBalance?: number;
+  currentTokenBalance?: number | null;
   history?: ContributionHistoryItem[];
   hasNextPage?: boolean;
   onLoadMore?: () => void;
@@ -44,7 +46,7 @@ const HISTORY_PAGE_SIZE = 10;
 
 export function MyEconomicsScreen({
   accountId = null,
-  currentTokenBalance = 0,
+  currentTokenBalance,
   history,
   hasNextPage,
   onLoadMore,
@@ -60,42 +62,53 @@ export function MyEconomicsScreen({
   const { t } = useTranslation();
   const [historyScope, setHistoryScope] = useState<"all" | "earnings" | "spend">("all");
   const [isExplainerOpen, setIsExplainerOpen] = useState(false);
-  const [remoteBalance, setRemoteBalance] = useState(0);
   const [remoteHistory, setRemoteHistory] = useState<ContributionHistoryItem[]>([]);
   const [remoteHasNextPage, setRemoteHasNextPage] = useState(false);
-  const [remoteEndCursor, setRemoteEndCursor] = useState<string | null>(null);
-  const [remoteLoading, setRemoteLoading] = useState(false);
+  const [loadedAccount, setLoadedAccount] = useState<string | null>(null);
+  const requestId = useRef(0);
+  const historyWindow = useRef(HISTORY_PAGE_SIZE);
   const [remoteLoadingMore, setRemoteLoadingMore] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [remoteProgress, setRemoteProgress] = useState<HowToGetTokensProgress | null>(null);
 
   const hasInjectedData = history !== undefined;
 
-  const loadEconomics = useCallback(async (): Promise<void> => {
+  const loadEconomics = useCallback(async (expand = false): Promise<void> => {
     if (hasInjectedData || !accountId) {
       return;
     }
 
-    setRemoteLoading(true);
+    // Fetch the whole retained window. A newer refresh/pagination request wins,
+    // never appending a stale cursor page over a more recent event response.
+    if (expand) historyWindow.current += HISTORY_PAGE_SIZE;
+    const request = ++requestId.current;
+    setRemoteLoadingMore(expand);
     setRemoteErrorMessage(null);
     try {
-      const [nextBalance, nextHistoryPage] = await Promise.all([
-        fetchCurrentTokenBalance(),
-        fetchTokenHistoryPage(accountId, HISTORY_PAGE_SIZE)
-      ]);
-      setRemoteBalance(nextBalance);
-      setRemoteHistory(nextHistoryPage.items);
+      const nextHistoryPage = await fetchTokenHistoryPage(accountId, historyWindow.current);
+      if (request !== requestId.current) return;
+      const unique = new Map<string, ContributionHistoryItem>();
+      nextHistoryPage.items.forEach((item) => {
+        if (!unique.has(item.id)) unique.set(item.id, item);
+      });
+      setRemoteHistory([...unique.values()].sort((a, b) =>
+        (b.createdAt ?? "").localeCompare(a.createdAt ?? "") || b.id.localeCompare(a.id)
+      ));
       setRemoteHasNextPage(nextHistoryPage.hasNextPage);
-      setRemoteEndCursor(nextHistoryPage.endCursor);
+      setLoadedAccount(accountId);
     } catch {
+      if (request !== requestId.current) return;
       setRemoteErrorMessage(t("contributionLoadError", { defaultValue: "We could not load contribution details." }));
     } finally {
-      setRemoteLoading(false);
+      if (request === requestId.current) setRemoteLoadingMore(false);
     }
   }, [accountId, hasInjectedData, t]);
 
+  useAccountEventSignal(loadEconomics, !hasInjectedData && Boolean(accountId));
+
   useEffect(() => {
-    if (progress !== undefined || !accountId) {
+    setRemoteProgress(null);
+    if (hasInjectedData || progress !== undefined || !accountId) {
       return;
     }
 
@@ -104,41 +117,38 @@ export function MyEconomicsScreen({
       if (isMounted) {
         setRemoteProgress(nextProgress);
       }
+    }).catch(() => {
+      // Optional opportunity progress must not cause an unhandled rejection
+      // offline or during an account reset. Balance/history remain usable.
     });
 
     return () => {
       isMounted = false;
     };
-  }, [accountId, progress]);
+  }, [accountId, progress, hasInjectedData]);
 
   const resolvedProgress = progress ?? remoteProgress ?? undefined;
 
   useEffect(() => {
+    historyWindow.current = HISTORY_PAGE_SIZE;
+    setRemoteHistory([]);
+    setRemoteHasNextPage(false);
+    setLoadedAccount(null);
+    setRemoteErrorMessage(null);
     void loadEconomics();
+    return () => { requestId.current += 1; };
   }, [loadEconomics]);
 
   const loadMoreHistory = useCallback(async (): Promise<void> => {
-    if (!accountId || remoteLoadingMore || !remoteHasNextPage || !remoteEndCursor) {
+    if (!accountId || remoteLoadingMore || !remoteHasNextPage) {
       return;
     }
+    await loadEconomics(true);
+  }, [accountId, remoteLoadingMore, remoteHasNextPage, loadEconomics]);
 
-    setRemoteLoadingMore(true);
-    try {
-      const nextPage = await fetchTokenHistoryPage(accountId, HISTORY_PAGE_SIZE, remoteEndCursor);
-      setRemoteHistory((previous) => [...previous, ...nextPage.items]);
-      setRemoteHasNextPage(nextPage.hasNextPage);
-      setRemoteEndCursor(nextPage.endCursor);
-    } catch {
-      setRemoteErrorMessage(t("contributionLoadError", { defaultValue: "We could not load contribution details." }));
-    } finally {
-      setRemoteLoadingMore(false);
-    }
-  }, [accountId, remoteLoadingMore, remoteHasNextPage, remoteEndCursor, t]);
-
-  const resolvedBalance = hasInjectedData ? currentTokenBalance : remoteBalance;
-  const resolvedHistory = history ?? remoteHistory;
+  const resolvedHistory = history ?? (loadedAccount === accountId ? remoteHistory : []);
   const resolvedHasNextPage = hasInjectedData ? (hasNextPage ?? false) : remoteHasNextPage;
-  const resolvedLoading = loading || (!hasInjectedData && remoteLoading);
+  const resolvedLoading = loading || (!errorMessage && !hasInjectedData && Boolean(accountId) && loadedAccount !== accountId && !remoteErrorMessage);
   const resolvedLoadingMore = !hasInjectedData && remoteLoadingMore;
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedData ? remoteErrorMessage : null);
 
@@ -162,7 +172,7 @@ export function MyEconomicsScreen({
     return <LoadingState label={t("contributionLoading", { defaultValue: "Loading contribution details..." })} />;
   }
 
-  if (resolvedErrorMessage) {
+  if (resolvedErrorMessage && (hasInjectedData || loadedAccount !== accountId)) {
     return <ErrorState message={resolvedErrorMessage} {...(onRetry ? { onRetry } : { onRetry: () => void loadEconomics() })} />;
   }
 
@@ -175,13 +185,17 @@ export function MyEconomicsScreen({
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {resolvedErrorMessage ? <Text accessibilityRole="alert">{resolvedErrorMessage}</Text> : null}
         <View style={styles.balanceCard}>
           <Text variant="labelSmall" style={styles.balanceLabel}>
             {t("contributionBalanceLabel", { defaultValue: "You have" })}
           </Text>
-          <Text variant="headlineMedium" style={styles.balanceValue}>
-            {resolvedBalance}
-          </Text>
+          <AccountTokenBalance
+            accountId={accountId}
+            enabled={!hasInjectedData}
+            {...(currentTokenBalance !== undefined ? { balance: currentTokenBalance } : hasInjectedData ? { balance: null } : {})}
+            style={styles.balanceValue}
+          />
           <Text variant="bodyMedium" style={styles.balanceUnit}>
             {t("tokenLabel", { defaultValue: "Tope" })}
           </Text>

@@ -2,6 +2,7 @@ import { CombinedGraphQLErrors } from "@apollo/client/errors";
 
 import { apolloClient } from "./client";
 import { GiftTokensDocument } from "./operations.generated";
+import { signalAccountRefresh } from "../realtime/accountEvents";
 
 export async function giftTokens(recipientAccountId: string, amount: number, message: string): Promise<void> {
   await apolloClient.mutate({
@@ -18,6 +19,7 @@ export async function giftTokens(recipientAccountId: string, amount: number, mes
       cache.evict({ id: "ROOT_QUERY", fieldName: "allTokenMovements" });
     }
   });
+  signalAccountRefresh();
 }
 
 export function getGiftErrorMessage(error: unknown, fallback: string, unauthenticated: string): string {

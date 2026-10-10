@@ -27,6 +27,9 @@ import { CONTRIBUTION_OVERVIEW_QUERY } from "../features/contribution/contributi
 import { buildTokenExplainerSlides, resolveTokenExplainerDialogLayout } from "../features/contribution/tokenExplainer";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
+import { useTokenBalance } from "../features/contribution/useTokenBalance";
+import { TokenBalanceDisplay } from "../features/contribution/TokenBalanceDisplay";
+import { reportRealtimeError } from "../services/graphql/realtime";
 
 type ContributionOverviewData = {
   currentTokenBalance: number;
@@ -116,15 +119,18 @@ export default function ContributionPage() {
   const { t } = useTranslation("contribution");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { data, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
+  const { data: currentData, previousData, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
     notifyOnNetworkStatusChange: true,
     variables: { first: PAGE_SIZE, viewerId: session.account?.id ?? "" }
   });
+  const data = currentData ?? previousData;
 
-  useAccountEventSignal(() => { void refetch(); }, isAuthenticated);
+  useAccountEventSignal(() => refetch(), isAuthenticated);
+  // Observe the shared scalar without duplicating the combined history request.
+  const { balance } = useTokenBalance({ cacheOnly: true });
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isTokenExplainerOpen, setTokenExplainerOpen] = useState(false);
   const [tokenExplainerSlideIndex, setTokenExplainerSlideIndex] = useState(0);
@@ -137,7 +143,6 @@ export default function ContributionPage() {
   const movements = movementEdges.map(edge => edge.node);
   const hasMoreMovements = Boolean(data?.allTokenMovements.pageInfo.hasNextPage);
   const lastMovementCursor = data?.allTokenMovements.pageInfo.endCursor ?? null;
-  const balance = data?.currentTokenBalance ?? 0;
   const currentTokenExplainerSlide = tokenExplainerSlides[
     Math.min(tokenExplainerSlideIndex, Math.max(0, tokenExplainerSlides.length - 1))
   ];
@@ -171,6 +176,8 @@ export default function ContributionPage() {
         first: movements.length + PAGE_SIZE,
         after: null
       });
+    } catch (error) {
+      reportRealtimeError(error);
     } finally {
       setIsLoadingMore(false);
     }
@@ -205,7 +212,7 @@ export default function ContributionPage() {
           </Box>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-            <Chip color={balance >= 0 ? "success" : "error"} label={t("topesAmount", { amount: balance })} />
+            <Chip color={balance === null ? "default" : balance >= 0 ? "success" : "error"} label={<TokenBalanceDisplay balance={balance} format={amount => t("topesAmount", { amount })} />} />
             <Chip label={t("ledgerEntriesCount", { count: data?.allTokenMovements.totalCount ?? 0 })} variant="outlined" />
             <Button onClick={openTokenExplainer} size="small" variant="outlined">
               {t("topesGuide.openButton")}
@@ -261,7 +268,7 @@ export default function ContributionPage() {
             </CardContent>
           </Card>
 
-          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
+          {loading && !data ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
         <Stack spacing={2}>
@@ -273,7 +280,7 @@ export default function ContributionPage() {
           </Box>
 
           <Stack spacing={1}></Stack>
-            {movements.length === 0 ? (
+            {movements.length === 0 && !loading && !error ? (
               <Alert severity="info">{t("empty")}</Alert>
             ) : (
               <Stack>

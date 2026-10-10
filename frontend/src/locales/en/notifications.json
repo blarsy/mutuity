@@ -1,5 +1,6 @@
 {
   "title": "Notifications",
+  "loadMore": "Load more",
   "subtitle": "Events requiring your attention across needs, resources, campaigns, profile completion, and Topes transfers.",
   "unreadCount": "{{count}} unread",
   "markAllAsRead": "Set all as read",

@@ -1,3 +1,5 @@
+-- Realtime is emitted by the table trigger in notification/realtime.sql,
+-- including raw/internal inserts; do not emit a duplicate signal here.
 create or replace function app_private.create_need_claim_notification(
   p_recipient_account_id uuid,
   p_need_claim_id uuid,

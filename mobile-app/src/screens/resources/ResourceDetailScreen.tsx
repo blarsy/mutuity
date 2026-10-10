@@ -20,7 +20,7 @@ import ChatIcon from "../../assets/img/CHAT.svg";
 import { NavigationBackHeader, FormTextInput, ThemedDialog } from "../../components/primitives";
 import { TokenAmount } from "../../components/TokenAmount";
 import { submitResourceBid } from "../../services/graphql/bids";
-import { fetchCurrentTokenBalance } from "../../services/graphql/economics";
+import { useTokenBalance } from "../../services/realtime/useTokenBalance";
 import { fetchResourceById, type ResourceDetailItem } from "../../services/graphql/resources";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -35,6 +35,8 @@ interface ResourceDetailScreenProps {
   loading?: boolean;
   errorMessage?: string | null;
   currentAccountId?: string | null;
+  /** Optional balance for isolated stories/tests; null means unknown. */
+  tokenBalance?: number | null;
   onBack?: () => void;
   onOpenCreatorAccount?: (accountId: string) => void;
   onOpenResourceChat?: (resource: ResourceDetailItem) => void;
@@ -152,6 +154,7 @@ export function ResourceDetailScreen({
   loading = false,
   errorMessage = null,
   currentAccountId = null,
+  tokenBalance,
   onBack,
   onOpenCreatorAccount,
   onOpenResourceChat,
@@ -171,8 +174,9 @@ export function ResourceDetailScreen({
   const [bidErrorMessage, setBidErrorMessage] = useState<string | null>(null);
   const [bidSubmitting, setBidSubmitting] = useState(false);
   const [bidSuccessVisible, setBidSuccessVisible] = useState(false);
-  const [currentTokenBalance, setCurrentTokenBalance] = useState<number | null>(null);
-  const [loadingTokenBalance, setLoadingTokenBalance] = useState(false);
+  const balanceState = useTokenBalance(currentAccountId, bidDialogVisible && tokenBalance === undefined && Boolean(currentAccountId));
+  const currentTokenBalance = tokenBalance !== undefined ? tokenBalance : balanceState.balance;
+  const loadingTokenBalance = tokenBalance === undefined && balanceState.loading;
 
   const hasInjectedResource = resource !== undefined;
 
@@ -242,18 +246,6 @@ export function ResourceDetailScreen({
     setBidMessageValue("");
     setBidErrorMessage(null);
     setBidDialogVisible(true);
-    setLoadingTokenBalance(true);
-
-    void fetchCurrentTokenBalance()
-      .then((balance) => {
-        setCurrentTokenBalance(balance);
-      })
-      .catch(() => {
-        setCurrentTokenBalance(null);
-      })
-      .finally(() => {
-        setLoadingTokenBalance(false);
-      });
   };
 
   const closeBidDialog = (): void => {
@@ -681,12 +673,16 @@ export function ResourceDetailScreen({
               </Text>
             ) : null}
 
-            {typeof currentTokenBalance === "number" ? (
+            <Text variant="bodySmall" style={styles.bidDialogHintText} testID="bid-token-balance">
+              {t("tokenBalanceAvailableLabel", {
+                defaultValue: "Available balance: {{balance}}",
+                balance: typeof currentTokenBalance === "number" ? currentTokenBalance : "—"
+              })}
+            </Text>
+
+            {tokenBalance === undefined && balanceState.error ? (
               <Text variant="bodySmall" style={styles.bidDialogHintText}>
-                {t("tokenBalanceAvailableLabel", {
-                  defaultValue: "Available balance: {{balance}}",
-                  balance: currentTokenBalance
-                })}
+                {t("contributionLoadError", { defaultValue: "We could not load contribution details." })}
               </Text>
             ) : null}
 

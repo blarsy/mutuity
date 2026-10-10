@@ -248,11 +248,10 @@ export function ConversationThread({
 
   useAccountEventSignal(() => {
     if (isResource) {
-      void resourceRefetch();
-      return;
+      return resourceRefetch();
     }
 
-    void claimRefetch();
+    return claimRefetch();
   }, Boolean(conversationId) && Boolean(myAccountId));
 
   // ─── Scroll management ─────────────────────────────────────────────────────

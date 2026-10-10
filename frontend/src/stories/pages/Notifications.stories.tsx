@@ -27,7 +27,8 @@ function storyForFixtures(fixtures: NotificationFixture[]): Story {
     parameters: {
       apollo: {
         operations: withAppShellOperations({
-          NotificationsOverview: buildNotificationsOverviewData(fixtures)
+          NotificationsOverview: buildNotificationsOverviewData(fixtures),
+          CountUnreadNotifications: { countUnreadNotifications: fixtures.filter(fixture => !fixture.read).length }
         })
       }
     }

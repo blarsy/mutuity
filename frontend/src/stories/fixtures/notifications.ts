@@ -145,8 +145,8 @@ export function buildNotificationsOverviewData(fixtures: NotificationFixture[] =
       }));
 
   return {
-    allNeedClaimNotifications: { nodes: nodesFor("need-claim") },
-    allResourceBidNotifications: { nodes: nodesFor("resource-bid") },
-    allAccountNotifications: { nodes: nodesFor("account") }
+    allNeedClaimNotifications: { nodes: nodesFor("need-claim"), pageInfo: { hasNextPage: false } },
+    allResourceBidNotifications: { nodes: nodesFor("resource-bid"), pageInfo: { hasNextPage: false } },
+    allAccountNotifications: { nodes: nodesFor("account"), pageInfo: { hasNextPage: false } }
   };
 }

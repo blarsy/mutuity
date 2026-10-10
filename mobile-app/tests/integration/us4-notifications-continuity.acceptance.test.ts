@@ -3,6 +3,15 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { NotificationsScreen } from "../../src/screens/notifications/NotificationsScreen";
 
+// These acceptance cases inject their feed; shared realtime is covered by the
+// focused screen tests, not by opening a real account subscription here.
+jest.mock("../../src/services/realtime/accountEvents", () => ({ useAccountEventSignal: jest.fn() }));
+jest.mock("../../src/services/graphql/notifications", () => ({
+  fetchNotificationWindow: jest.fn(() => new Promise(() => {})),
+  markNotificationRead: jest.fn().mockResolvedValue(undefined),
+  markAllNotificationsRead: jest.fn().mockResolvedValue(undefined)
+}));
+
 // Expo's Jest asset loader returns SVG objects rather than renderable components.
 // The actual event-to-artwork mapping is covered separately by notification-icons.test.ts.
 jest.mock("../../src/screens/notifications/notificationIcons", () => ({

@@ -8118,6 +8118,8 @@ export type NeedClaimNotification = Node & {
  * are tested for equality and combined with a logical ‘and.’
  */
 export type NeedClaimNotificationCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `needClaimId` field. */
@@ -8172,6 +8174,8 @@ export type NeedClaimNotificationsEdge = {
 
 /** Methods to use when ordering `NeedClaimNotification`. */
 export enum NeedClaimNotificationsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
@@ -10384,6 +10388,8 @@ export type ResourceBidNotification = Node & {
  * fields are tested for equality and combined with a logical ‘and.’
  */
 export type ResourceBidNotificationCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `recipientAccountId` field. */
@@ -10438,6 +10444,8 @@ export type ResourceBidNotificationsEdge = {
 
 /** Methods to use when ordering `ResourceBidNotification`. */
 export enum ResourceBidNotificationsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',

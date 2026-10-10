@@ -18,6 +18,9 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { useRequireAuth } from "../features/auth/requireAuth";
+import { useAuth } from "../features/auth/AuthProvider";
+import { useUnreadNotifications } from "../features/notifications/useUnreadNotifications";
+import { reportRealtimeError } from "../services/graphql/realtime";
 import {
   MARK_ACCOUNT_NOTIFICATION_READ_MUTATION,
   MARK_ALL_NOTIFICATIONS_READ_MUTATION,
@@ -57,12 +60,15 @@ type AccountNotificationNode = {
 
 type NotificationsOverviewData = {
   allNeedClaimNotifications: {
+    pageInfo: { hasNextPage: boolean };
     nodes: NeedClaimNotificationNode[];
   };
   allResourceBidNotifications: {
+    pageInfo: { hasNextPage: boolean };
     nodes: ResourceBidNotificationNode[];
   };
   allAccountNotifications: {
+    pageInfo: { hasNextPage: boolean };
     nodes: AccountNotificationNode[];
   };
 };
@@ -216,15 +222,24 @@ export default function NotificationsPage() {
   const router = useRouter();
   const { t } = useTranslation("notifications");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const { session } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const { data, loading, error, refetch } = useQuery<NotificationsOverviewData>(NOTIFICATIONS_OVERVIEW_QUERY, {
+  const [loadedWindow, setLoadedWindow] = useState(25);
+  const [actionError, setActionError] = useState<Parameters<typeof getUserFacingGraphQLErrorMessage>[0]>(null);
+  const { count: unreadCount, refetch: refetchUnreadCount, error: countError } = useUnreadNotifications();
+  const { data: currentData, previousData, loading, error, refetch } = useQuery<NotificationsOverviewData>(NOTIFICATIONS_OVERVIEW_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     skip: !isAuthenticated,
-    variables: { first: 200 }
+    notifyOnNetworkStatusChange: true,
+    variables: { first: loadedWindow, viewerId: session.account?.id ?? "" }
   });
+  const data = currentData ?? previousData;
+  const hasMore = Boolean(data?.allNeedClaimNotifications.pageInfo?.hasNextPage ||
+    data?.allResourceBidNotifications.pageInfo?.hasNextPage || data?.allAccountNotifications.pageInfo?.hasNextPage);
 
-  useAccountEventSignal(() => { void refetch(); }, isAuthenticated);
+  // refetch retains the expanded window rather than collapsing back to page one.
+  useAccountEventSignal(() => refetch(), isAuthenticated);
 
   const [markNeedClaimRead, { loading: markNeedClaimLoading }] = useMutation(
     MARK_NEED_CLAIM_NOTIFICATION_READ_MUTATION
@@ -314,7 +329,8 @@ export default function NotificationsPage() {
     });
 
     return [...needItems, ...resourceItems, ...accountItems].sort(
-      (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime() ||
+        right.id.localeCompare(left.id) || left.source.localeCompare(right.source)
     );
   }, [
     data?.allNeedClaimNotifications.nodes,
@@ -323,9 +339,29 @@ export default function NotificationsPage() {
     t
   ]);
 
-  const unreadCount = items.filter(item => !item.readAt).length;
   const busy = markNeedClaimLoading || markResourceBidLoading || markAccountLoading || markAllLoading;
-  const errorMessage = getUserFacingGraphQLErrorMessage(error);
+  const errorMessage = getUserFacingGraphQLErrorMessage(actionError) ??
+    getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(countError);
+
+  const handleAction = (action: () => Promise<unknown>) => {
+    setActionError(null);
+    void action().catch(error => {
+      reportRealtimeError(error);
+      setActionError(error instanceof Error ? error : { message: String(error) });
+    });
+  };
+
+  const refreshAfterRead = async () => {
+    // Independent requests: a failed feed refresh must not prevent the badge
+    // from becoming authoritative (nor rely on a websocket mutation echo).
+    const results = await Promise.allSettled([refetchUnreadCount(), refetch()]);
+    for (const result of results) {
+      if (result.status === "rejected") {
+        reportRealtimeError(result.reason);
+        setActionError(result.reason instanceof Error ? result.reason : { message: String(result.reason) });
+      }
+    }
+  };
 
   const markSingleRead = async (item: UnifiedNotification) => {
     if (item.readAt) {
@@ -340,7 +376,7 @@ export default function NotificationsPage() {
       await markAccountRead({ variables: { input: { notificationId: item.id } } });
     }
 
-    await refetch();
+    await refreshAfterRead();
   };
 
   const navigateFromNotification = async (item: UnifiedNotification) => {
@@ -350,7 +386,7 @@ export default function NotificationsPage() {
 
   const markAllUnreadAsRead = async () => {
     await markAllRead({ variables: { input: {} } });
-    await refetch();
+    await refreshAfterRead();
     setConfirmOpen(false);
   };
 
@@ -384,9 +420,9 @@ export default function NotificationsPage() {
             </Box>
 
             <Stack direction="row" spacing={1}>
-              <Chip color={unreadCount > 0 ? "warning" : "success"} label={t("unreadCount", { count: unreadCount })} />
+              <Chip color={unreadCount === null ? "default" : unreadCount > 0 ? "warning" : "success"} label={unreadCount === null ? "—" : t("unreadCount", { count: unreadCount })} />
               <Button
-                disabled={busy || unreadCount === 0}
+                disabled={busy || unreadCount === null || unreadCount === 0}
                 onClick={() => setConfirmOpen(true)}
                 variant="outlined"
               >
@@ -395,10 +431,10 @@ export default function NotificationsPage() {
             </Stack>
           </Stack>
 
-          {loading ? <Alert severity="info">{t("loading")}</Alert> : null}
+          {loading && !data ? <Alert severity="info">{t("loading")}</Alert> : null}
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
-          {items.length === 0 ? (
+          {items.length === 0 && !loading && !error ? (
             <Alert severity="info">{t("empty")}</Alert>
           ) : (
             <Stack divider={<Divider />} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
@@ -409,7 +445,7 @@ export default function NotificationsPage() {
                   <Box
                     key={`${item.source}-${item.id}`}
                     onClick={() => {
-                      void navigateFromNotification(item);
+                      handleAction(() => navigateFromNotification(item));
                     }}
                     sx={{
                       alignItems: "center",
@@ -454,6 +490,11 @@ export default function NotificationsPage() {
               })}
             </Stack>
           )}
+          {hasMore ? (
+            <Button disabled={loading} onClick={() => setLoadedWindow(current => current + 25)} variant="outlined">
+              {loading ? t("loading") : t("loadMore")}
+            </Button>
+          ) : null}
         </Stack>
       </Box>
 
@@ -468,7 +509,7 @@ export default function NotificationsPage() {
           <Button disabled={markAllLoading} onClick={() => setConfirmOpen(false)}>
             {t("actions.cancel", { ns: "common" })}
           </Button>
-          <Button disabled={markAllLoading} onClick={() => void markAllUnreadAsRead()} variant="contained">
+          <Button disabled={markAllLoading} onClick={() => handleAction(markAllUnreadAsRead)} variant="contained">
             {t("confirmDialog.confirm")}
           </Button>
         </DialogActions>

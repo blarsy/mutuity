@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersistedLanguage, setPersistedToken } from "./session";
 import { fetchAccountSnapshotById, type AuthAccountSnapshot } from "../graphql/auth";
+import { resetAccountGraphqlState } from "../graphql/client";
+import { logAppEvent } from "../monitoring/logger";
 
 export interface AuthSession {
   token: string | null;
@@ -85,6 +87,30 @@ export interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element {
   const [session, setSession] = useState<AuthSession>(initialSession);
   const { i18n } = useTranslation();
+  const sessionRef = useRef(session);
+  const generation = useRef(0);
+  const hydrationGeneration = useRef(0);
+  const mounted = useRef(true);
+  // Serialize writes: an older SecureStore write must never finish after logout
+  // or a newer sign-in and restore the previous account's credentials.
+  const persistenceQueue = useRef<Promise<void>>(Promise.resolve());
+
+  const publishSession = (next: AuthSession) => {
+    sessionRef.current = next;
+    setSession(next);
+  };
+  const isCurrent = (version: number) => mounted.current && generation.current === version;
+  const beginTransition = () => {
+    const version = ++generation.current;
+    hydrationGeneration.current += 1;
+    publishSession({ ...initialSession });
+    return version;
+  };
+  const enqueuePersistence = (task: () => Promise<void>): Promise<void> => {
+    const result = persistenceQueue.current.then(task);
+    persistenceQueue.current = result.catch(() => undefined);
+    return result;
+  };
 
   const hydrateAccountSnapshot = async (accountId: string | null): Promise<AuthAccountSnapshot | null> => {
     if (!accountId) {
@@ -93,115 +119,155 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
 
     try {
       return await fetchAccountSnapshotById(accountId);
-    } catch {
+    } catch (error) {
+      logAppEvent({ level: "warn", message: "auth-account-hydration-failed", details: error });
       return null;
     }
   };
 
   useEffect(() => {
-    let isMounted = true;
+    mounted.current = true;
+    const version = generation.current;
 
     void bootstrapSession()
       .then(async ({ token, accountId, language }) => {
-        if (!isMounted) {
+        if (!isCurrent(version)) {
           return;
         }
 
-        // Restore persisted language preference
-        if (language && i18n.language !== language) {
-          void i18n.changeLanguage(language);
-        }
-
         const resolvedAccountId = accountId ?? resolveAccountIdFromToken(token);
+        await enqueuePersistence(async () => {
+          if (!isCurrent(version)) return;
+          await resetAccountGraphqlState();
+          if (!isCurrent(version)) return;
+          // Repair older sessions whose account id was only encoded in the token.
+          await setPersistedAccountId(token ? resolvedAccountId : null);
+        });
+        if (!isCurrent(version)) return;
+        if (language && i18n.language !== language) {
+          await i18n.changeLanguage(language);
+        }
+        if (!isCurrent(version)) return;
+        const hydration = ++hydrationGeneration.current;
         const account = token ? await hydrateAccountSnapshot(resolvedAccountId) : null;
-
-        setSession({
+        if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        publishSession({
           token,
-          accountId: account?.id ?? resolvedAccountId,
+          accountId: token ? account?.id ?? resolvedAccountId : null,
           account,
           authenticated: Boolean(token),
           loading: false
         });
       })
-      .catch(() => {
-        if (!isMounted) {
+      .catch((error) => {
+        if (!isCurrent(version)) {
           return;
         }
-
-        setSession({ token: null, accountId: null, account: null, authenticated: false, loading: false });
+        logAppEvent({ level: "warn", message: "auth-bootstrap-failed", details: error });
+        publishSession({ ...initialSession, loading: false });
       });
 
     return () => {
-      isMounted = false;
+      mounted.current = false;
+      generation.current += 1;
+      hydrationGeneration.current += 1;
     };
   }, [i18n]);
+
+  const endSession = async (reason?: string) => {
+    const version = beginTransition();
+    if (reason) logAppEvent({ level: "warn", message: "auth-invalid-session", details: reason });
+    try {
+      await enqueuePersistence(async () => {
+        if (!isCurrent(version)) return;
+        try {
+          await resetAccountGraphqlState();
+        } finally {
+          // A cache failure must not prevent logout; a storage failure must not
+          // leave operations/cache created during the transition alive either.
+          try {
+            await clearPersistedToken();
+          } finally {
+            await resetAccountGraphqlState();
+          }
+        }
+      });
+    } catch (error) {
+      logAppEvent({ level: "error", message: "auth-clear-token-failed", details: error });
+    } finally {
+      if (isCurrent(version)) publishSession({ ...initialSession, loading: false });
+    }
+  };
 
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
       signIn: async (token: string, accountId?: string | null) => {
+        const version = beginTransition();
         const resolvedAccountId = accountId ?? resolveAccountIdFromToken(token);
-        setSession({ token, accountId: resolvedAccountId, account: null, authenticated: true, loading: false });
         try {
-          await setPersistedToken(token);
-          await setPersistedAccountId(resolvedAccountId);
+          await enqueuePersistence(async () => {
+            if (!isCurrent(version)) return;
+            await resetAccountGraphqlState();
+            if (!isCurrent(version)) return;
+            await setPersistedToken(token);
+            await setPersistedAccountId(resolvedAccountId);
+            await resetAccountGraphqlState();
+          });
         } catch (error) {
-          console.warn("[auth:persist-token-failed]", error);
+          logAppEvent({ level: "error", message: "auth-persist-token-failed", details: error });
+          if (isCurrent(version)) {
+            await endSession();
+            throw error;
+          }
+          return;
         }
-
+        if (!isCurrent(version)) return;
+        publishSession({ token, accountId: resolvedAccountId, account: null, authenticated: true, loading: false });
+        const hydration = ++hydrationGeneration.current;
         const account = await hydrateAccountSnapshot(resolvedAccountId);
-        setSession((previous) => ({
-          ...previous,
-          accountId: account?.id ?? previous.accountId,
+        if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        publishSession({
+          ...sessionRef.current,
+          accountId: account?.id ?? resolvedAccountId,
           account
-        }));
+        });
       },
-      signOut: async () => {
-        setSession({ token: null, accountId: null, account: null, authenticated: false, loading: false });
-        try {
-          await clearPersistedToken();
-        } catch (error) {
-          console.warn("[auth:clear-token-failed]", error);
-        }
-      },
-      invalidateSession: async (reason?: string) => {
-        if (reason) {
-          console.warn("[auth:invalid-session]", reason);
-        }
-
-        setSession({ token: null, accountId: null, account: null, authenticated: false, loading: false });
-        try {
-          await clearPersistedToken();
-        } catch (error) {
-          console.warn("[auth:clear-token-failed]", error);
-        }
-      },
+      signOut: () => endSession(),
+      invalidateSession: (reason?: string) => endSession(reason),
       changeLanguage: async (language: string) => {
         await i18n.changeLanguage(language);
         try {
           await setPersistedLanguage(language);
         } catch (error) {
-          console.warn("[auth:persist-language-failed]", error);
+          logAppEvent({ level: "warn", message: "auth-persist-language-failed", details: error });
         }
       },
       refreshSession: async () => {
-        if (!session.authenticated || !session.accountId) {
-          setSession((previous) => ({ ...previous, account: null }));
+        const current = sessionRef.current;
+        const version = generation.current;
+        if (!current.authenticated || !current.accountId) {
           return;
         }
 
-        const account = await hydrateAccountSnapshot(session.accountId);
-        setSession((previous) => ({
-          ...previous,
-          accountId: account?.id ?? previous.accountId,
+        const hydration = ++hydrationGeneration.current;
+        const account = await hydrateAccountSnapshot(current.accountId);
+        if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        publishSession({
+          ...sessionRef.current,
+          accountId: account?.id ?? current.accountId,
           account
-        }));
+        });
       }
     }),
     [session, i18n]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <React.Fragment key={JSON.stringify([session.accountId, session.token])}>{children}</React.Fragment>
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth(): AuthContextValue {

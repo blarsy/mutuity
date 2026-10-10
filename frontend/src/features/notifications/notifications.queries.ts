@@ -1,8 +1,11 @@
 import { gql } from "@apollo/client";
 
+// Migration 161 exposes timestamp ordering for every notification source.
+// Preserve a deterministic tie-breaker when timestamps are identical.
 export const NOTIFICATIONS_OVERVIEW_QUERY = gql`
-  query NotificationsOverview($first: Int = 200) {
-    allNeedClaimNotifications(first: $first) {
+  query NotificationsOverview($viewerId: UUID!, $first: Int = 25) {
+    allNeedClaimNotifications(first: $first, condition: { recipientAccountId: $viewerId }, orderBy: [CREATED_AT_DESC, ID_DESC]) {
+      pageInfo { hasNextPage }
       nodes {
         id
         needClaimId
@@ -12,7 +15,8 @@ export const NOTIFICATIONS_OVERVIEW_QUERY = gql`
         readAt
       }
     }
-    allResourceBidNotifications(first: $first) {
+    allResourceBidNotifications(first: $first, condition: { recipientAccountId: $viewerId }, orderBy: [CREATED_AT_DESC, ID_DESC]) {
+      pageInfo { hasNextPage }
       nodes {
         id
         resourceBidId
@@ -22,7 +26,8 @@ export const NOTIFICATIONS_OVERVIEW_QUERY = gql`
         readAt
       }
     }
-    allAccountNotifications(first: $first) {
+    allAccountNotifications(first: $first, condition: { recipientAccountId: $viewerId }, orderBy: [CREATED_AT_DESC, ID_DESC]) {
+      pageInfo { hasNextPage }
       nodes {
         id
         eventType

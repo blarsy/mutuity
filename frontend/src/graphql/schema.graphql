@@ -7308,6 +7308,8 @@ A condition to be used against `NeedClaimNotification` object types. All fields
 are tested for equality and combined with a logical ‘and.’
 """
 input NeedClaimNotificationCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
   """Checks for equality with the object’s `id` field."""
   id: UUID
   """Checks for equality with the object’s `needClaimId` field."""
@@ -7360,6 +7362,8 @@ type NeedClaimNotificationsEdge {
 
 """Methods to use when ordering `NeedClaimNotification`."""
 enum NeedClaimNotificationsOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
   ID_ASC
   ID_DESC
   NATURAL
@@ -9491,6 +9495,8 @@ A condition to be used against `ResourceBidNotification` object types. All
 fields are tested for equality and combined with a logical ‘and.’
 """
 input ResourceBidNotificationCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
   """Checks for equality with the object’s `id` field."""
   id: UUID
   """Checks for equality with the object’s `recipientAccountId` field."""
@@ -9543,6 +9549,8 @@ type ResourceBidNotificationsEdge {
 
 """Methods to use when ordering `ResourceBidNotification`."""
 enum ResourceBidNotificationsOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
   ID_ASC
   ID_DESC
   NATURAL

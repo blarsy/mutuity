@@ -140,6 +140,27 @@ docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.revi
 
 ## Pre-release checklist
 
+### Realtime balance and inbox rollout (migration 161)
+
+- Deploy `database/migrations/161_notification_realtime_foundation.sql` before
+  either updated client. Restart PostGraphile when schema watching is disabled:
+  all three notification ordering enums must expose `CREATED_AT_DESC` and `ID_DESC`.
+- This migration is additive/backward-compatible; older mobile binaries continue
+  working and no minimum-version floor increase is required for this change alone.
+- The clients share one account subscription, reconcile after reconnect/foreground,
+  and retain loaded balance/history/inbox windows during refresh. Notification
+  pagination expands the chronological window in **every** source, rather than
+  paginating only generic account notifications.
+- On the review stack, check with two accounts/devices: incoming gifts/refunds/rewards
+  update the open contribution balance and history; all three inbox event sources
+  increase the unread badge; single/all-read actions clear it across devices.
+- Repeat after background/offline recovery and logout/login as another account.
+  Old-account counts, balances and rows must never remain visible.
+- Narrow-screen web navigation shows unread badges inside the navigation drawer;
+  the native app shows its badge on the Notifications bottom tab.
+
+### General checks
+
 - [ ] All migrations written and locally verified (`./database/migrate.sh`).
 - [ ] `app_private.app_version_policy` floor bumped **iff** this release breaks
       older clients.

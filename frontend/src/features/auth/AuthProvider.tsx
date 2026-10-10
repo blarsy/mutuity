@@ -1,9 +1,11 @@
 import {
   createContext,
+  Fragment,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode
 } from "react";
@@ -13,6 +15,7 @@ import { AUTH_REQUIRED_EVENT } from "./events";
 import type { AuthSession, LoginInput } from "./types";
 import { logBackofficeError } from "../logging/operationalLogger";
 import i18n from "../../i18n";
+import { resetAccountGraphqlState } from "../../services/graphql/client";
 
 const LANGUAGE_STORAGE_KEY = "mutuity-language";
 
@@ -62,51 +65,69 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession>(ANONYMOUS_SESSION);
   const [status, setStatus] = useState<AuthStatus>("loading");
+  const requestVersion = useRef(0);
+  const identityRef = useRef<string | null>(null);
+  const cacheResetRef = useRef<Promise<void>>(Promise.resolve());
 
-  const applySession = useCallback((nextSession: AuthSession) => {
+  const applySession = useCallback(async (nextSession: AuthSession, version: number) => {
+    if (version !== requestVersion.current) return;
+    const identity = nextSession.authenticated ? nextSession.account?.id ?? null : null;
+    if (identity !== identityRef.current) {
+      identityRef.current = identity;
+      setSession(ANONYMOUS_SESSION);
+      setStatus("loading");
+      cacheResetRef.current = cacheResetRef.current.catch(() => undefined).then(resetAccountGraphqlState);
+    }
+    await cacheResetRef.current;
+    if (version !== requestVersion.current) return;
     setSession(nextSession);
     setStatus(getAuthStatus(nextSession));
   }, []);
 
   const refreshSession = useCallback(async () => {
+    const version = ++requestVersion.current;
     try {
       const nextSession = await getCurrentSession();
-      applySession(nextSession);
+      await applySession(nextSession, version);
       return;
     } catch (error) {
       console.error("[auth] Failed to restore session", error);
       void logBackofficeError("[auth] Failed to restore session", error, {
         context: "auth_session_restore"
       });
-      applySession(ANONYMOUS_SESSION);
+      await applySession(ANONYMOUS_SESSION, version);
     }
   }, [applySession]);
 
   const signIn = useCallback(
     async (input: LoginInput) => {
+      const version = ++requestVersion.current;
       const nextSession = await loginRequest(input);
-      applySession(nextSession);
+      await applySession(nextSession, version);
       return nextSession;
     },
     [applySession]
   );
 
   const signOut = useCallback(async () => {
+    const version = ++requestVersion.current;
     try {
       const nextSession = await logoutRequest();
-      applySession(nextSession);
+      await applySession(nextSession, version);
       return;
     } catch (error) {
       console.error("[auth] Failed to sign out", error);
       void logBackofficeError("[auth] Failed to sign out", error, {
         context: "auth_sign_out"
       });
-      applySession(ANONYMOUS_SESSION);
+      await applySession(ANONYMOUS_SESSION, version);
     }
   }, [applySession]);
 
   useEffect(() => {
-    void refreshSession();
+    void refreshSession().catch(error => {
+      console.error("[auth] Failed to initialize account state", error);
+    });
   }, [refreshSession]);
 
   useEffect(() => {
@@ -137,7 +158,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const handleAuthRequired = () => {
-      applySession(ANONYMOUS_SESSION);
+      void applySession(ANONYMOUS_SESSION, ++requestVersion.current).catch(error => {
+        console.error("[auth] Failed to clear account state", error);
+      });
 
       if (window.location.pathname === "/login") {
         return;
@@ -165,7 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [refreshSession, session, signIn, signOut, status]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <Fragment key={session.authenticated ? session.account?.id : "anonymous"}>{children}</Fragment>
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

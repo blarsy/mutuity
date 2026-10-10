@@ -12,9 +12,11 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { LoginDialog } from "../auth/LoginDialog";
 import { conversationThreadUrl, type ChatContextKind } from "../chat/chatRouting";
-import { TOKEN_BALANCE_QUERY } from "../contribution/contribution.queries";
+import { useTokenBalance } from "../contribution/useTokenBalance";
+import { TokenBalanceDisplay } from "../contribution/TokenBalanceDisplay";
+import { useUnreadNotifications } from "../notifications/useUnreadNotifications";
+import { reportRealtimeError } from "../../services/graphql/realtime";
 import { COUNT_UNREAD_CHAT_CONVERSATIONS_QUERY, LIST_CHAT_CONVERSATIONS_QUERY } from "../chat/chat.queries";
-import { COUNT_UNREAD_NOTIFICATIONS_QUERY } from "../notifications/notifications.queries";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import type { AppColorMode } from "../../theme";
@@ -65,17 +67,8 @@ export function AppTopBar({
     fetchPolicy: "network-only"
   });
 
-  const { data: balanceData, refetch: refetchBalance } = useQuery<{ currentTokenBalance: number }>(TOKEN_BALANCE_QUERY, {
-    skip: !session.authenticated
-  });
-  const { data: unreadNotificationsData, refetch: refetchUnreadNotifications } = useQuery<{ countUnreadNotifications: number | null }>(
-    COUNT_UNREAD_NOTIFICATIONS_QUERY,
-    {
-      skip: !session.authenticated,
-      fetchPolicy: "cache-and-network",
-      nextFetchPolicy: "cache-first"
-    }
-  );
+  const { balance } = useTokenBalance();
+  const { count: unreadNotificationsCount } = useUnreadNotifications();
   const { data: unreadChatData, refetch: refetchUnreadChatConversations } = useQuery<{ countUnreadChatConversations: number | null }>(
     COUNT_UNREAD_CHAT_CONVERSATIONS_QUERY,
     {
@@ -85,14 +78,9 @@ export function AppTopBar({
     }
   );
 
-  const unreadNotificationsCount = unreadNotificationsData?.countUnreadNotifications ?? 0;
   const unreadChatCount = unreadChatData?.countUnreadChatConversations ?? 0;
 
-  useAccountEventSignal(() => {
-    void refetchBalance();
-    void refetchUnreadNotifications();
-    void refetchUnreadChatConversations();
-  }, session.authenticated);
+  useAccountEventSignal(() => refetchUnreadChatConversations(), session.authenticated);
 
   useEffect(() => {
     if (!session.authenticated) {
@@ -116,14 +104,14 @@ export function AppTopBar({
           conversationKind: first.conversationKind ?? "RESOURCE",
           conversationId: first.conversationId
         });
-      });
+      }).catch(reportRealtimeError);
     }
 
     previousUnreadChatCountRef.current = unreadChatCount;
   }, [session.authenticated, unreadChatCount, router.pathname, fetchLatestConversation]);
 
   useEffect(() => {
-    if (!session.authenticated) {
+    if (!session.authenticated || unreadNotificationsCount === null) {
       previousUnreadNotificationsCountRef.current = null;
       setNotificationToast(null);
       return;
@@ -181,7 +169,7 @@ export function AppTopBar({
   };
 
   const renderNavLabel = (link: { labelKey: string; href: string }) => {
-    const badgeCount = link.href === "/app/notifications" ? unreadNotificationsCount : link.href === "/app/chat" ? unreadChatCount : 0;
+    const badgeCount = (link.href === "/app/notifications" ? unreadNotificationsCount : link.href === "/app/chat" ? unreadChatCount : 0) ?? 0;
 
     return (
       <Badge badgeContent={badgeCount} color="error" invisible={badgeCount === 0} overlap="circular">
@@ -234,7 +222,7 @@ export function AppTopBar({
                 {session.authenticated ? (
                   <>
                     <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
-                      {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
+                      <TokenBalanceDisplay balance={balance} format={count => t("topbar.tokenBalance", { count })} />
                     </Button>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
                       <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
@@ -289,7 +277,7 @@ export function AppTopBar({
                 {session.authenticated ? (
                   <>
                     <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
-                      {t("topbar.tokenBalance", { count: balanceData?.currentTokenBalance ?? 0 })}
+                      <TokenBalanceDisplay balance={balance} format={count => t("topbar.tokenBalance", { count })} />
                     </Button>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
                       <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>

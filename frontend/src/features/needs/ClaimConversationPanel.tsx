@@ -199,10 +199,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const canSend = canSendClaimMessages(claimStatus, Boolean(conversation), isCreator);
   const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(sendError);
 
-  useAccountEventSignal(() => {
-    void refetch();
-    void refetchConv();
-  }, Boolean(currentAccountId));
+  useAccountEventSignal(() => Promise.all([refetch(), refetchConv()]), Boolean(currentAccountId));
 
   const handleSendMessage = async () => {
     if (!claim || !draftBody.trim()) {

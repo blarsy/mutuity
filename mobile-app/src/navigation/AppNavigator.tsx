@@ -54,7 +54,8 @@ import {
   fetchUnreadChatConversationCount
 } from "../services/graphql/chat";
 import type { ChatConversationKind } from "../services/graphql/chat";
-import { subscribeToAccountEvents } from "../services/realtime/accountEvents";
+import { AccountEventSubscriptionProvider, subscribeToAccountEvents } from "../services/realtime/accountEvents";
+import { useUnreadNotificationsCount } from "../services/realtime/useUnreadNotificationsCount";
 import { designTokens } from "../theme/tokens";
 import { appFontFamilies } from "../theme/fonts";
 import { US2ExploreScreen } from "./US2Navigator";
@@ -844,6 +845,7 @@ function NotificationsScreen({ authenticated, onRequestAuth, onOpenNotification 
 
 function RootNavigator(): React.JSX.Element {
   const { authenticated, loading, accountId, displayName, avatarUrl } = useCurrentAccount();
+  const { count: unreadNotificationsCount } = useUnreadNotificationsCount(authenticated ? accountId : null);
   const {
     signIn,
     signOut
@@ -1349,7 +1351,10 @@ function RootNavigator(): React.JSX.Element {
                     />
                   )}
                 </Tab.Screen>
-                <Tab.Screen name="Notifications" options={{ tabBarLabel: t("notificationsLabel", { ns: "us1" }).toUpperCase() }}>
+                <Tab.Screen name="Notifications" options={{
+                  tabBarLabel: t("notificationsLabel", { ns: "us1" }).toUpperCase(),
+                  ...((unreadNotificationsCount ?? 0) > 0 ? { tabBarBadge: unreadNotificationsCount! } : {})
+                }}>
                   {() => <NotificationsScreen authenticated={authenticated} onRequestAuth={requestAuth} onOpenNotification={handleOpenNotification} />}
                 </Tab.Screen>
               </Tab.Navigator>
@@ -1404,7 +1409,9 @@ function RootNavigator(): React.JSX.Element {
 export function AppNavigator(): React.JSX.Element {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <AccountEventSubscriptionProvider>
+        <RootNavigator />
+      </AccountEventSubscriptionProvider>
     </AuthProvider>
   );
 }

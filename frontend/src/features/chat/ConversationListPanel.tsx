@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { LIST_CHAT_CONVERSATIONS_QUERY, COUNT_CHAT_CONVERSATIONS_QUERY } from "./chat.queries";
 import { conversationDraftUrl, conversationThreadUrl } from "./chatRouting";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
+import { handleRealtimeRefresh } from "../../services/graphql/realtime";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
 export type ConversationNode = {
@@ -106,18 +107,14 @@ export function ConversationListPanel({
     }
   );
 
-  useAccountEventSignal(() => {
-    void refetch();
-    void refetchCount();
-  }, isAuthenticated);
+  useAccountEventSignal(() => Promise.all([refetch(), refetchCount()]), isAuthenticated);
 
   useEffect(() => {
     if (!isAuthenticated || !listRefreshToken) {
       return;
     }
 
-    void refetch();
-    void refetchCount();
+    handleRealtimeRefresh(() => Promise.all([refetch(), refetchCount()]));
   }, [isAuthenticated, listRefreshToken, refetch, refetchCount]);
 
   const draftConversation: ConversationNode | null =

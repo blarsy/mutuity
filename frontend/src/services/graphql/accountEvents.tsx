@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { useSubscription } from "@apollo/client/react";
+import { useApolloClient } from "@apollo/client/react";
 import {
   createContext,
   useCallback,
@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { useAuth } from "../../features/auth/AuthProvider";
+import { handleRealtimeRefresh, onRealtimeConnected, reportRealtimeError } from "./realtime";
 
 const ACCOUNT_EVENTS_SUBSCRIPTION = gql`
   subscription AccountEvents($topic: String!) {
@@ -20,7 +21,7 @@ const ACCOUNT_EVENTS_SUBSCRIPTION = gql`
   }
 `;
 
-type AccountEventListener = () => void;
+type AccountEventListener = () => unknown;
 
 type AccountEventContextValue = {
   subscribe: (listener: AccountEventListener) => () => void;
@@ -36,6 +37,10 @@ export function accountEventsTopic(accountId: string) {
 
 export function AccountEventSubscriptionProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const client = useApolloClient();
+  const accountId = session.authenticated ? session.account?.id : null;
+  const accountIdRef = useRef(accountId);
+  accountIdRef.current = accountId;
   const listenersRef = useRef(new Set<AccountEventListener>());
 
   const subscribe = useCallback((listener: AccountEventListener) => {
@@ -46,31 +51,58 @@ export function AccountEventSubscriptionProvider({ children }: { children: React
     };
   }, []);
 
-  const emit = useCallback(() => {
-    for (const listener of listenersRef.current) {
-      listener();
-    }
-  }, []);
-
-  useSubscription<{ listen: { relatedNodeId: string } }>(
-    ACCOUNT_EVENTS_SUBSCRIPTION,
-    {
-      variables: {
-        topic: session.account?.id ? accountEventsTopic(session.account.id) : ""
-      },
-      skip: !session.authenticated || !session.account?.id,
-      onData: () => {
-        emit();
-      }
-    }
-  );
+  useEffect(() => {
+    if (!accountId) return;
+    let active = true;
+    let ended = false;
+    let subscription: { unsubscribe: () => void } | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const emit = () => {
+      if (!active || accountIdRef.current !== accountId || timer !== undefined) return;
+      timer = setTimeout(() => {
+        timer = undefined;
+        if (!active || accountIdRef.current !== accountId) return;
+        for (const listener of listenersRef.current) handleRealtimeRefresh(listener);
+      }, 100);
+    };
+    const connect = () => {
+      ended = false;
+      subscription = client.subscribe({
+        query: ACCOUNT_EVENTS_SUBSCRIPTION,
+        variables: { topic: accountEventsTopic(accountId) },
+        fetchPolicy: "no-cache"
+      }).subscribe({
+        next: emit,
+        error: error => { ended = true; reportRealtimeError(error); },
+        complete: () => { ended = true; }
+      });
+    };
+    const recover = () => {
+      if (!active || accountIdRef.current !== accountId) return;
+      if (ended) connect();
+      emit();
+    };
+    connect();
+    const unsubscribeConnected = onRealtimeConnected(emit);
+    const onVisible = () => { if (document.visibilityState === "visible") recover(); };
+    window.addEventListener("online", recover);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      active = false;
+      if (timer !== undefined) clearTimeout(timer);
+      subscription?.unsubscribe();
+      unsubscribeConnected();
+      window.removeEventListener("online", recover);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [accountId, client]);
 
   const value = useMemo(() => ({ subscribe }), [subscribe]);
 
   return <AccountEventContext.Provider value={value}>{children}</AccountEventContext.Provider>;
 }
 
-export function useAccountEventSignal(onSignal: () => void, enabled = true) {
+export function useAccountEventSignal(onSignal: () => unknown, enabled = true) {
   const { subscribe } = useContext(AccountEventContext);
   const onSignalRef = useRef(onSignal);
 
@@ -84,7 +116,7 @@ export function useAccountEventSignal(onSignal: () => void, enabled = true) {
     }
 
     return subscribe(() => {
-      onSignalRef.current();
+      return onSignalRef.current();
     });
   }, [enabled, subscribe]);
 }

@@ -23,6 +23,7 @@ import {
   type ViewerClaimOverviewQueryVariables
 } from "../graphql/generated";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
+import { handleRealtimeRefresh } from "../services/graphql/realtime";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 
 type ClaimOverviewNode = NonNullable<ViewerClaimOverviewQuery["sentNeedClaims"]>["nodes"][number];
@@ -158,15 +159,15 @@ export default function ClaimsPage() {
   });
 
   const [cancelClaim, { loading: cancelling }] = useMutation(CANCEL_NEED_CLAIM_MUTATION, {
-    onCompleted: () => { void refetch(); }
+    onCompleted: () => { handleRealtimeRefresh(() => refetch()); }
   });
   const [declineClaim, { loading: declining }] = useMutation(DECLINE_NEED_CLAIM_MUTATION, {
-    onCompleted: () => { void refetch(); }
+    onCompleted: () => { handleRealtimeRefresh(() => refetch()); }
   });
   const [settleClaim, { loading: settling }] = useMutation(SETTLE_NEED_CLAIM_MUTATION, {
     onCompleted: () => {
       setSettleConfirmClaimId(null);
-      void refetch();
+      handleRealtimeRefresh(() => refetch());
     }
   });
 
@@ -175,9 +176,7 @@ export default function ClaimsPage() {
     void settleClaim({ variables: { input: { needClaimId: settleConfirmClaimId } } });
   };
 
-  useAccountEventSignal(() => {
-    void refetch();
-  }, isAuthenticated);
+  useAccountEventSignal(() => refetch(), isAuthenticated);
 
   const currentAccountId = session.account?.id ?? null;
   const viewerBalance = data?.currentTokenBalance ?? null;

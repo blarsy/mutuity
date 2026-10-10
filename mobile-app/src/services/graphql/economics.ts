@@ -36,7 +36,8 @@ export async function fetchCurrentTokenBalance(): Promise<number> {
     fetchPolicy: "network-only"
   });
 
-  return data?.currentTokenBalance ?? 0;
+  if (typeof data?.currentTokenBalance !== "number") throw new Error("Token balance unavailable");
+  return data.currentTokenBalance;
 }
 
 export async function fetchTokenHistoryPage(

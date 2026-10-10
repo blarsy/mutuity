@@ -1,5 +1,6 @@
 {
   "title": "Notifications",
+  "loadMore": "Charger plus",
   "subtitle": "Événements nécessitant votre attention sur les besoins, les ressources, les campagnes, la complétion du profil et les transferts de Topes.",
   "unreadCount": "{{count}} non lues",
   "markAllAsRead": "Tout marquer comme lu",

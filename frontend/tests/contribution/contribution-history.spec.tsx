@@ -10,7 +10,7 @@ const mockUseQuery = jest.fn();
 
 jest.mock("@apollo/client/react", () => ({ useQuery: (...args: unknown[]) => mockUseQuery(...args) }));
 jest.mock("../../src/features/auth/AuthProvider", () => ({
-  useAuth: () => ({ session: { account: { id: "viewer" } } })
+  useAuth: () => ({ session: { authenticated: true, account: { id: "viewer" } } })
 }));
 jest.mock("../../src/features/auth/requireAuth", () => ({
   useRequireAuth: () => ({ isAuthenticated: true })
