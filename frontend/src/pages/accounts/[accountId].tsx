@@ -1,9 +1,8 @@
 import Head from "next/head";
 import type { GetServerSideProps } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
-import { Alert, Avatar, Box, Card, CardContent, Chip, Container, Link, List, ListItem, Stack, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Card, CardContent, Chip, Container, Link, Stack, Typography } from "@mui/material";
 import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -18,6 +17,7 @@ import {
 } from "../../features/shared/publicPageSeo";
 import { fetchServerGraphql, getLanguageFromHeaders } from "../../features/shared/serverGraphql";
 import { ResourceCard } from "../../features/ui/ResourceCard";
+import { NeedCard } from "../../features/ui/NeedCard";
 import { listingCardGridSx } from "../../features/ui/listingCardGrid";
 import { GiftTokensButton } from "../../features/contribution/GiftTokensButton";
 
@@ -48,6 +48,14 @@ type AccountResource = {
   canBeDelivered: boolean;
 };
 
+type AccountNeed = {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrls: string[];
+  expiresAt: string | null;
+};
+
 type PublicAccountDetailData = {
   accountById: {
     id: string;
@@ -61,10 +69,7 @@ type PublicAccountDetailData = {
     profileLinks: unknown;
   } | null;
   allNeeds: {
-    nodes: Array<{
-      id: string;
-      title: string;
-    }>;
+    nodes: AccountNeed[];
   } | null;
   allResources: {
     nodes: AccountResource[];
@@ -74,7 +79,7 @@ type PublicAccountDetailData = {
 type AccountDetailsPageProps = {
   accountId: string;
   initialAccount: PublicAccountDetailData["accountById"];
-  initialNeeds: Array<{ id: string; title: string }>;
+  initialNeeds: AccountNeed[];
   initialResources: AccountResource[];
 };
 
@@ -99,6 +104,9 @@ const PUBLIC_ACCOUNT_DETAIL_SSR_QUERY = `
       nodes {
         id
         title
+        description
+        imageUrls
+        expiresAt
       }
     }
     allResources(
@@ -266,23 +274,6 @@ export default function AccountDetailsPage({
           )}
 
           <Stack spacing={1}>
-            <Typography variant="h6">{t("publicAccount.activeNeeds")}</Typography>
-            {initialNeeds.length ? (
-              <List disablePadding>
-                {initialNeeds.map(need => (
-                  <ListItem disableGutters key={need.id}>
-                    <Typography component={NextLink} href={`/needs/${need.id}`} variant="body2">
-                      {need.title}
-                    </Typography>
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Typography color="text.secondary" variant="body2">{t("publicAccount.noNeeds")}</Typography>
-            )}
-          </Stack>
-
-          <Stack spacing={1}>
             <Typography variant="h6">{t("publicAccount.activeResources")}</Typography>
             {initialResources.length ? (
               <Box sx={listingCardGridSx}>
@@ -305,6 +296,30 @@ export default function AccountDetailsPage({
               </Box>
             ) : (
               <Typography color="text.secondary" variant="body2">{t("publicAccount.noResources")}</Typography>
+            )}
+          </Stack>
+
+          <Stack spacing={1}>
+            <Typography variant="h6">{t("publicAccount.activeNeeds")}</Typography>
+            {initialNeeds.length ? (
+              <Box sx={listingCardGridSx}>
+                {initialNeeds.map(need => (
+                  <Box key={need.id} sx={{ minWidth: 280, maxWidth: { xs: "100%", sm: 500 } }}>
+                    <NeedCard
+                      title={need.title}
+                      creatorName={displayName}
+                      creatorImageUrl={account?.avatarUrl}
+                      onCreatorClick={() => void router.push(`/accounts/${accountId}`)}
+                      description={need.description}
+                      expiresAt={need.expiresAt}
+                      imageUrls={need.imageUrls}
+                      onClick={() => void router.push(`/needs/${need.id}`)}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography color="text.secondary" variant="body2">{t("publicAccount.noNeeds")}</Typography>
             )}
           </Stack>
         </Stack>

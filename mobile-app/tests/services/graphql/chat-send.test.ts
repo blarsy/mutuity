@@ -34,7 +34,7 @@ describe.each([
 
   it("propagates authorization failure without attempting image writes", async () => {
     (apolloClient.mutate as jest.Mock).mockRejectedValue(new Error("Only participants can send messages"));
-    await expect(send("conversation", "sender", "Hello", "image")).rejects.toThrow("Only participants");
+    await expect(send("conversation", "sender", "Hello", "https://example.com/image.jpg")).rejects.toThrow("Only participants");
     expect(apolloClient.mutate).toHaveBeenCalledTimes(1);
   });
 

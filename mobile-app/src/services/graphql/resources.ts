@@ -1,4 +1,5 @@
 import { apolloClient } from "./client";
+import { uploadListingImages } from "../images";
 import {
   type CreateResourceInput,
   type Mutation,
@@ -523,6 +524,7 @@ export async function createResourceForAccount(
   input: UpsertResourceInput
 ): Promise<MyResourceItem | null> {
   const defaultTokenAmount = Math.max(0, Math.round(input.defaultTokenAmount));
+  const imageUrls = await uploadListingImages(input.imageUrls);
   const variables: { input: CreateResourceInput } = {
     input: {
       resource: {
@@ -530,7 +532,7 @@ export async function createResourceForAccount(
         title: input.title.trim(),
         description: input.description.trim(),
         defaultTokenAmount,
-        imageUrls: input.imageUrls,
+        imageUrls,
         ...(input.expiresAt ? { expiresAt: input.expiresAt } : {}),
         intensity: getResourceIntensityForTokenAmount(defaultTokenAmount),
         isProduct: input.isProduct,
@@ -566,13 +568,14 @@ export async function createResourceForAccount(
 
 export async function updateResourceById(resourceId: string, input: UpsertResourceInput): Promise<MyResourceItem | null> {
   const defaultTokenAmount = Math.max(0, Math.round(input.defaultTokenAmount));
+  const imageUrls = await uploadListingImages(input.imageUrls);
   const variables: { id: string; resourcePatch: ResourcePatch } = {
     id: resourceId,
     resourcePatch: {
       title: input.title.trim(),
       description: input.description.trim(),
       defaultTokenAmount,
-      imageUrls: input.imageUrls,
+      imageUrls,
       expiresAt: input.expiresAt,
       intensity: getResourceIntensityForTokenAmount(defaultTokenAmount),
       isProduct: input.isProduct,

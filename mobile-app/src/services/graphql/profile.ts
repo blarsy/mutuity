@@ -1,4 +1,5 @@
 import { apolloClient } from "./client";
+import { uploadListingImages } from "../images";
 import {
   type AccountPatch,
   type Mutation,
@@ -221,6 +222,9 @@ export async function updateMyProfile(
   profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { avatarUrl?: string | null }
 ): Promise<MyProfileRecord | null> {
   const locationValue: ProximityLocationValue | null = profilePatch.location ?? null;
+  const avatarPatch: Pick<AccountPatch, "avatarUrl"> = profilePatch.avatarUrl === undefined
+    ? {}
+    : { avatarUrl: profilePatch.avatarUrl ? (await uploadListingImages([profilePatch.avatarUrl]))[0] ?? null : null };
   const variables: { input: UpdateAccountByIdInput } = {
     input: {
       id: accountId,
@@ -231,7 +235,7 @@ export async function updateMyProfile(
         longitude: locationValue?.longitude ?? null,
         bio: profilePatch.bio,
         profileLinks: profilePatch.profileLinks ?? [],
-        ...(profilePatch.avatarUrl !== undefined && { avatarUrl: profilePatch.avatarUrl })
+        ...avatarPatch
       } satisfies AccountPatch
     }
   };

@@ -57,7 +57,7 @@ describe("resource conversation entry", () => {
       resourceId: "resource-1",
       otherAccountId: "owner-1",
       messageText: "Is this still available?",
-      imageUrl: "file:///photo.jpg"
+      imageUrl: "https://example.com/photo.jpg"
     })).resolves.toBe("conversation-1");
 
     expect(apolloClient.mutate).toHaveBeenCalledWith({
@@ -67,7 +67,7 @@ describe("resource conversation entry", () => {
           pResourceId: "resource-1",
           pOtherAccountId: "owner-1",
           pBody: "Is this still available?",
-          pImageUrls: ["file:///photo.jpg"]
+          pImageUrls: ["https://example.com/photo.jpg"]
         }
       }
     });

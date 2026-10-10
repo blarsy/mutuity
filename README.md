@@ -40,6 +40,15 @@ cp frontend/.env.example frontend/.env.local
 If your PostgreSQL credentials differ, update `DATABASE_URL` in `backend/.env`.
 For browser access from local frontend, set `BACKEND_CORS_ORIGINS` (comma-separated if needed).
 
+Mobile image uploads (needs, resources, avatars, and chat attachments) require `EXPO_PUBLIC_CLOUDINARY_CLOUD` and
+`EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET` in the Expo build/start environment.
+Use the same cloud and unsigned upload preset as the frontend's
+`NEXT_PUBLIC_CLOUDINARY_CLOUD` and `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET`.
+These are public upload settings, not a Cloudinary API secret. Restart Expo after changes.
+Images are uploaded before saving or sending; failed or unconfigured uploads prevent saving
+device-local file paths. Legacy device-local images must be reselected/re-uploaded from
+the original device; the web client cannot retrieve those files.
+
 Auth email delivery configuration (`backend/.env`):
 
 - `MAIL_DELIVERY_ENABLED=false` keeps delivery disabled (default for local/non-production)

@@ -1,4 +1,5 @@
 import { apolloClient } from "./client";
+import { uploadListingImages } from "../images";
 import {
   type CreateNeedInput,
   type Mutation,
@@ -492,9 +493,10 @@ export async function fetchMyNeeds(creatorAccountId: string): Promise<NeedItem[]
 
 export async function createNeedForAccount(creatorAccountId: string, input: UpsertNeedInput): Promise<NeedItem | null> {
   const proposedTokenAmount = Math.max(0, Math.round(input.proposedTokenAmount));
+  const imageUrls = await uploadListingImages(input.imageUrls);
   const optionalCreateInput: Partial<CreateNeedInput> = {
     ...(input.description.trim() ? { description: input.description.trim() } : {}),
-    ...(input.imageUrls.length > 0 ? { imageUrls: input.imageUrls } : {}),
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
     ...(input.location?.label?.trim() ? { location: input.location.label.trim() } : {}),
     ...(input.location?.latitude !== undefined ? { latitude: input.location.latitude } : {}),
     ...(input.location?.longitude !== undefined ? { longitude: input.location.longitude } : {}),
@@ -534,9 +536,10 @@ export async function createNeedForAccount(creatorAccountId: string, input: Upse
 
 export async function updateNeedById(needId: string, input: UpsertNeedInput): Promise<NeedItem | null> {
   const proposedTokenAmount = Math.max(0, Math.round(input.proposedTokenAmount));
+  const imageUrls = await uploadListingImages(input.imageUrls);
   const optionalNeedPatch: Partial<NeedPatch> = {
-    ...(input.description.trim() ? { description: input.description.trim() } : {}),
-    ...(input.imageUrls.length > 0 ? { imageUrls: input.imageUrls } : {}),
+    description: input.description.trim(),
+    imageUrls,
     ...(input.location?.label?.trim() ? { location: input.location.label.trim() } : {}),
     ...(input.location?.latitude !== undefined ? { latitude: input.location.latitude } : {}),
     ...(input.location?.longitude !== undefined ? { longitude: input.location.longitude } : {}),

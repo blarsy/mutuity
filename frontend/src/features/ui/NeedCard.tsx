@@ -40,7 +40,10 @@ export function NeedCard({
   onCreatorClick
 }: NeedCardProps) {
   const { t } = useTranslation("needs");
-  const images = (imageUrls ?? []).filter((url): url is string => Boolean(url && url.trim()));
+  // Older mobile builds persisted picker file/content URIs, which browsers cannot access.
+  const images = (imageUrls ?? [])
+    .map(url => url?.trim())
+    .filter((url): url is string => Boolean(url && (/^https?:\/\//i.test(url) || /^\/(?!\/)/.test(url))));
   const [imageIndex, setImageIndex] = useState(0);
   const currentImage = images[imageIndex] ?? null;
 

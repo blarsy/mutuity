@@ -1,3 +1,4 @@
+import { uploadListingImages } from "../images";
 import { apolloClient } from "./client";
 import {
   type Mutation,
@@ -152,13 +153,14 @@ export async function startNeedConversation(input: {
   messageText: string;
   imageUrl?: string | null;
 }): Promise<string> {
+  const imageUrls = await uploadListingImages(input.imageUrl ? [input.imageUrl] : []);
   const { data } = await apolloClient.mutate<SendNeedMessageMutationResult>({
     mutation: SEND_NEED_MESSAGE_MUTATION,
     variables: {
       input: {
         pNeedId: input.needId,
         pBody: input.messageText.trim(),
-        pImageUrls: input.imageUrl ? [input.imageUrl] : []
+        pImageUrls: imageUrls
       }
     }
   });
@@ -313,6 +315,7 @@ export async function sendResourceMessage(
   messageText: string,
   imageUrl?: string | null
 ): Promise<ChatMessageItem> {
+  const imageUrls = await uploadListingImages(imageUrl ? [imageUrl] : []);
   const result = await apolloClient.mutate<{
     sendResourceConversationMessage: { resourceMessage: { id: string; body: string; createdAt: string } | null } | null;
   }>({
@@ -321,7 +324,7 @@ export async function sendResourceMessage(
       input: {
         pConversationId: conversationId,
         pBody: messageText.trim(),
-        pImageUrls: imageUrl ? [imageUrl] : []
+        pImageUrls: imageUrls
       }
     }
   });
@@ -336,7 +339,7 @@ export async function sendResourceMessage(
     direction: "outgoing",
     body: createdMessage.body,
     createdAt: createdMessage.createdAt,
-    imageUrls: imageUrl ? [imageUrl] : []
+    imageUrls
   };
 }
 
@@ -346,6 +349,7 @@ export async function sendClaimMessage(
   messageText: string,
   imageUrl?: string | null
 ): Promise<ChatMessageItem> {
+  const imageUrls = await uploadListingImages(imageUrl ? [imageUrl] : []);
   const result = await apolloClient.mutate<{
     sendClaimConversationMessage: { claimMessage: { id: string; body: string; createdAt: string } | null } | null;
   }>({
@@ -354,7 +358,7 @@ export async function sendClaimMessage(
       input: {
         pConversationId: conversationId,
         pBody: messageText.trim(),
-        pImageUrls: imageUrl ? [imageUrl] : []
+        pImageUrls: imageUrls
       }
     }
   });
@@ -369,7 +373,7 @@ export async function sendClaimMessage(
     direction: "outgoing",
     body: createdMessage.body,
     createdAt: createdMessage.createdAt,
-    imageUrls: imageUrl ? [imageUrl] : []
+    imageUrls
   };
 }
 
@@ -425,6 +429,7 @@ export async function startResourceConversation(params: {
   messageText: string;
   imageUrl?: string | null;
 }): Promise<string> {
+  const imageUrls = await uploadListingImages(params.imageUrl ? [params.imageUrl] : []);
   const createResult = await apolloClient.mutate<
     SendResourceMessageDirectMutationResult,
     { input: { pResourceId: string; pOtherAccountId: string; pBody: string; pImageUrls: string[] } }
@@ -435,7 +440,7 @@ export async function startResourceConversation(params: {
         pResourceId: params.resourceId,
         pOtherAccountId: params.otherAccountId,
         pBody: params.messageText.trim(),
-        pImageUrls: params.imageUrl ? [params.imageUrl] : []
+        pImageUrls: imageUrls
       }
     }
   });

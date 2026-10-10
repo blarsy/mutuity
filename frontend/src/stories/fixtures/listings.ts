@@ -56,8 +56,20 @@ export const mockAccountDetail = {
 };
 
 export const mockAccountNeeds = [
-  { id: MOCK_NEED_ID, title: "Coup de main pour un déménagement" },
-  { id: "99999999-9999-4999-8999-999999999999", title: "Prêt d'une remorque" }
+  {
+    id: MOCK_NEED_ID,
+    title: "Coup de main pour un déménagement",
+    description: mockNeedDetail.description,
+    imageUrls: mockNeedDetail.imageUrls,
+    expiresAt: mockNeedDetail.expiresAt
+  },
+  {
+    id: "99999999-9999-4999-8999-999999999999",
+    title: "Prêt d'une remorque",
+    description: "Pour transporter des meubles le week-end.",
+    imageUrls: [],
+    expiresAt: null
+  }
 ];
 
 export const mockAccountResources = [
