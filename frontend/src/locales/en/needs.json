@@ -3,7 +3,7 @@
     "title": "Needs",
     "editTitle": "Edit need",
     "detailTitle": "Need details",
-    "detailDescription": "A dedicated public detail page for {{needId}} is reserved in the new shared UI architecture.",
+    "detailDescription": "View the full details of this need.",
     "thisNeed": "this need",
     "contactCreator": "Message creator",
     "signInToContact": "Sign in to message the creator"
@@ -124,6 +124,27 @@
     "competenceRequired": "competence required",
     "multiplePeople": "multiple people",
     "multiplePeopleCount": "{{count}}+ people"
+  },
+  "detail": {
+    "unknownAccount": "Unknown account",
+    "noImage": "No image provided for this need.",
+    "noDescription": "No additional description was provided.",
+    "published": "Published",
+    "permanent": "No expiry",
+    "unknownDate": "Unknown",
+    "proposedTopes": "{{amount}} Topes proposed",
+    "required": "Yes",
+    "notRequired": "No",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "availability": {
+      "VISIBLE_ACTIVE": "Active",
+      "VISIBLE_ENDED": "Ended",
+      "VISIBLE_DELETED": "Archived",
+      "NOT_FOUND_OR_HIDDEN": "Unavailable"
+    },
+    "archivedNotice": "This need is archived and kept visible for context.",
+    "endedNotice": "This need is no longer active."
   },
   "summaryFacts": {
     "location": "Location",

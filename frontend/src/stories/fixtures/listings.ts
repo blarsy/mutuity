@@ -15,12 +15,22 @@ export const mockNeedDetail = {
   title: "Coup de main pour un déménagement",
   description: "Deux heures de portage le samedi matin, un monte-charge est disponible.",
   location: "Tournai",
+  latitude: "50.6056",
+  longitude: "3.3870",
   intensity: "SHARING",
   proposedTopesAmount: 250,
+  objectRequired: false,
+  competenceRequired: false,
+  toolingRequired: true,
+  multiplePeopleRequired: true,
+  requiredCompetenceText: null,
+  requiredToolingText: "Gants de manutention",
+  requiredPeopleCount: 2,
   imageUrls: [],
-  expiresAt: "2026-06-30T12:00:00.000Z",
+  createdAt: "2026-09-01T09:00:00.000Z",
+  expiresAt: "2027-06-30T12:00:00.000Z",
   isActive: true,
-  accountByCreatorAccountId: creator
+  accountByCreatorAccountId: { ...creator, avatarUrl: null }
 };
 
 export const mockCampaignDetail = {

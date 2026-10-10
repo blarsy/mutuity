@@ -3,7 +3,7 @@
     "title": "Besoins",
     "editTitle": "Modifier le besoin",
     "detailTitle": "Détails du besoin",
-    "detailDescription": "Une page de détail publique dédiée à {{needId}} est réservée dans la nouvelle architecture.",
+    "detailDescription": "Consultez tous les détails de ce besoin.",
     "thisNeed": "ce besoin",
     "contactCreator": "Écrire au créateur",
     "signInToContact": "Se connecter pour écrire au créateur"
@@ -124,6 +124,27 @@
     "competenceRequired": "compétence requise",
     "multiplePeople": "plusieurs personnes",
     "multiplePeopleCount": "{{count}}+ personnes"
+  },
+  "detail": {
+    "unknownAccount": "Compte inconnu",
+    "noImage": "Aucune image n'a été fournie pour ce besoin.",
+    "noDescription": "Aucune description supplémentaire n'a été fournie.",
+    "published": "Publié",
+    "permanent": "Aucune expiration",
+    "unknownDate": "Inconnue",
+    "proposedTopes": "{{amount}} Topes proposés",
+    "required": "Oui",
+    "notRequired": "Non",
+    "previousImage": "Image précédente",
+    "nextImage": "Image suivante",
+    "availability": {
+      "VISIBLE_ACTIVE": "Actif",
+      "VISIBLE_ENDED": "Terminé",
+      "VISIBLE_DELETED": "Archivé",
+      "NOT_FOUND_OR_HIDDEN": "Indisponible"
+    },
+    "archivedNotice": "Ce besoin est archivé et reste visible à titre de contexte.",
+    "endedNotice": "Ce besoin n'est plus actif."
   },
   "summaryFacts": {
     "location": "Lieu",
