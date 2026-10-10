@@ -21,6 +21,7 @@ import { useRequireAuth } from "../auth/requireAuth";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { ImageUploadField } from "../../components/ImageUploadField";
 import { IntensityPicker } from "../../components/IntensityPicker";
+import { TokenAmount } from "../../components/TokenAmount";
 import { LocationPicker } from "../../components/LocationPicker";
 import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -343,6 +344,10 @@ export default function CreateResourcePage() {
                       : undefined
                   }
                 />
+
+                {typeof values.defaultTokenAmount === "number" && Number.isFinite(values.defaultTokenAmount) ? (
+                  <TokenAmount amount={values.defaultTokenAmount} size={28} />
+                ) : null}
 
                 <RichTextEditor
                   error={Boolean(touched.description && errors.description)}

@@ -2,6 +2,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from "rea
 import { Badge } from "@mui/material";
 import { AppTopBar } from "../../src/features/layout/AppTopBar";
 import { TokenBalanceDisplay } from "../../src/features/contribution/TokenBalanceDisplay";
+import { TokenAmount } from "../../src/components/TokenAmount";
 
 let mockBalance: number | null = null;
 let mockUnreadCount: number | null = null;
@@ -31,7 +32,7 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({ useAccountEventSi
 jest.mock("next/router", () => ({ useRouter: () => ({ pathname: "/app/search", push: jest.fn() }) }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }) }));
 
-type Props = { children?: ReactNode; primary?: ReactNode; badgeContent?: number; invisible?: boolean; balance?: number | null };
+type Props = { children?: ReactNode; primary?: ReactNode; badgeContent?: number; invisible?: boolean; balance?: number | null; format?: (amount: number) => ReactNode };
 function find(node: ReactNode, type: unknown): ReactElement<Props>[] {
   const results: ReactElement<Props>[] = [];
   Children.forEach(node, child => {
@@ -60,5 +61,14 @@ describe.each([false, true])("topbar reactive values (mobile=%s)", mobile => {
     tree = render();
     expect(find(tree, TokenBalanceDisplay)[0].props.balance).toBe(19);
     expect(find(tree, Badge).every(badge => badge.props.badgeContent === 0 && badge.props.invisible)).toBe(true);
+  });
+
+  it("uses a compact signed TokenAmount inside the contribution link without nesting a help button", () => {
+    mockMobile = mobile;
+    mockBalance = -12;
+    const tree = AppTopBar({ colorMode: "light", onToggleColorMode: jest.fn() });
+    const display = find(tree, TokenBalanceDisplay)[0];
+    const amount = find(display.props.format?.(-12), TokenAmount)[0];
+    expect(amount.props).toMatchObject({ amount: -12, size: 24, signed: true, showExplainer: false, textColor: "inherit" });
   });
 });

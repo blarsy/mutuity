@@ -9,6 +9,7 @@ import { ListingHeader } from "./ListingHeader";
 
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
+import { TokenAmount } from "../../components/TokenAmount";
 
 type NeedCardProps = {
   title: string;
@@ -16,6 +17,7 @@ type NeedCardProps = {
   creatorImageUrl?: string | null;
   description?: string | null;
   expiresAt?: string | null;
+  tokenAmount?: number | null;
   imageUrls?: string[] | null;
   chips?: ReactNode;
   footer?: ReactNode;
@@ -31,6 +33,7 @@ export function NeedCard({
   creatorImageUrl,
   description,
   expiresAt,
+  tokenAmount,
   imageUrls,
   chips,
   footer,
@@ -196,6 +199,10 @@ export function NeedCard({
           </Stack>
         ) : null}
       </Box>
+
+      {tokenAmount != null ? (
+        <TokenAmount amount={tokenAmount} size={28} sx={{ mx: 2, mt: 2 }} />
+      ) : null}
 
       <ButtonBase onClick={() => onClick?.()} sx={{ alignItems: "stretch", display: "block", flexGrow: 1, textAlign: "left" }}>
         <CardContent>

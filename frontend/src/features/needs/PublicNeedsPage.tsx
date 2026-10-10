@@ -506,9 +506,6 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
                     {buildNeedTags(need as NeedNode, t).filter(tag => tag.trim().length > 0).map(tag => (
                       <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                     ))}
-                    {need.proposedTopesAmount ? (
-                      <Chip label={t("browse.topesProposed", { amount: need.proposedTopesAmount })} size="small" color="primary" />
-                    ) : null}
                     {isCreator ? <Chip label={t("browse.yourNeedChip")} size="small" color="secondary" /> : null}
                     {ownClaim ? (
                       <Chip label={t("browse.yourClaim", { status: formatClaimStatus(ownClaim.status) })} size="small" color="success" />
@@ -521,6 +518,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
                 creatorName={need.creatorDisplayName ?? ""}
                 description={need.description}
                 expiresAt={need.expiresAt}
+                tokenAmount={need.proposedTopesAmount}
                 imageUrls={(need.imageUrls ?? []).filter((u): u is string => u != null)}
                 footer={
                   <Stack spacing={1}>

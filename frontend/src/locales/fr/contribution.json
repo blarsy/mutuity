@@ -1,11 +1,11 @@
 {
   "title": "Contribution",
+  "balanceLabel": "Votre solde de topes",
   "subtitle": "Consultez votre solde de Topes actuel et les événements du registre enregistrés depuis la complétion du profil, les jalons des ressources, les offres, propositions d'aide, dons et campagnes.",
   "loading": "Chargement de votre historique de contribution…",
   "loadMore": "Charger plus",
   "loadingMore": "Chargement…",
   "empty": "Aucun mouvement de jetons enregistré.",
-  "ledgerInfo": "Ce registre enregistre les récompenses de complétion de profil, les récompenses de premier jalon de ressource, les réserves/remboursements d'offres, les transferts liés au règlement des propositions d'aide, les dons directs entre comptes, les récompenses différées de 24 heures et les paiements d'airdrop de campagne.",
   "ledgerEntriesCount": "{{count}} entrées de registre",
   "topesAmount": "{{amount}} Topes",
   "topesGuide": {

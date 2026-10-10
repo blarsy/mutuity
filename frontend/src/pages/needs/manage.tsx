@@ -239,7 +239,6 @@ export default function ManageNeedsPage() {
                   )}
                   chips={
                     <>
-                      <Chip label={t("manage.topesChip", { amount: need.proposedTopesAmount ?? "-" })} size="small" variant="outlined" />
                       {buildNeedTags(need, t).slice(0, 2).map(tag => (
                         <Chip key={`${need.id}-${tag}`} label={tag} size="small" variant="outlined" />
                       ))}
@@ -248,6 +247,7 @@ export default function ManageNeedsPage() {
                   creatorName={creatorLabel}
                   description={need.description}
                   expiresAt={need.expiresAt}
+                  tokenAmount={need.proposedTopesAmount}
                   footer={(
                     <Typography color="text.secondary" variant="body2">
                       {t("lastUpdated", { ns: "common", date: formatUpdatedAt(need.updatedAt) })}

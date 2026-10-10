@@ -70,7 +70,9 @@ describe("Contribution gift history", () => {
     expect(html).toContain(detail);
     expect(html).toContain(amount);
     expect(html).toContain("Coucou");
-    expect(html).toContain("39 ledger entries");
+    expect(html).toContain('data-testid="token-amount"');
+    expect(html).toContain('aria-label="53 Topes"');
+    expect(html).toContain("width:80px");
     expect(mockUseQuery).toHaveBeenCalledWith(CONTRIBUTION_OVERVIEW_QUERY, expect.objectContaining({
       variables: { first: 10, viewerId: "viewer" }
     }));

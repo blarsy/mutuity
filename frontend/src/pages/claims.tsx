@@ -342,11 +342,6 @@ export default function ClaimsPage() {
                       chips={
                         <>
                           <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} status={claim.status} />
-                          <Chip
-                            label={need.proposedTopesAmount ? t("topesAmount", { amount: need.proposedTopesAmount }) : t("noTopes")}
-                            size="small"
-                            variant="outlined"
-                          />
                         </>
                       }
                       creatorName={need.creatorAccountId === currentAccountId
@@ -360,6 +355,7 @@ export default function ClaimsPage() {
                           : isOpen ? t("openClaimHint") : null
                       }
                       imageUrls={imageUrls}
+                      tokenAmount={need.proposedTopesAmount}
                       footer={
                         <Stack spacing={0.5}>
                           {!isOpen ? (
@@ -493,11 +489,6 @@ export default function ClaimsPage() {
                         <>
                           <NeedClaimStatusChip settledAt={claim.settledAt} showSummary={false} status={claim.status} />
                           <Chip label={claimerLabel} size="small" variant="outlined" />
-                          <Chip
-                            label={need.proposedTopesAmount ? t("topesAmount", { amount: need.proposedTopesAmount }) : t("noTopes")}
-                            size="small"
-                            variant="outlined"
-                          />
                         </>
                       }
                       creatorName={claimerLabel}
@@ -507,6 +498,7 @@ export default function ClaimsPage() {
                           : isOpen ? t("reviewClaimHint") : null
                       }
                       imageUrls={imageUrls}
+                      tokenAmount={need.proposedTopesAmount}
                       footer={
                         <Stack spacing={0.5}>
                             {!isOpen ? (

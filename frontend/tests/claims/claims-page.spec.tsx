@@ -69,14 +69,15 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({
 }));
 
 jest.mock("../../src/features/ui/NeedCard", () => ({
-  NeedCard: ({ title, actions, chips, creatorName, description, footer }: {
+  NeedCard: ({ title, actions, chips, creatorName, description, footer, tokenAmount }: {
     title: string;
     actions: ReactNode;
     chips: ReactNode;
     creatorName: string;
     description: ReactNode;
     footer: ReactNode;
-  }) => createElement("section", { "data-testid": "need-card" },
+    tokenAmount?: number | null;
+  }) => createElement("section", { "data-testid": "need-card", "data-token-amount": tokenAmount ?? undefined },
     createElement("h3", null, title),
     createElement("div", null, creatorName),
     createElement("div", null, chips),
@@ -203,6 +204,20 @@ function makeQueryResult(claims: ClaimNode[], balance: number | null = 100) {
 import ClaimsPage from "../../src/pages/claims";
 
 describe("ClaimsPage rendering and filters", () => {
+  it.each([50, 0, null])("forwards the need amount %s to sent and received cards without duplicate amount chips", amount => {
+    const sent = buildClaim({ id: "sent-token", needId: "sent-need", claimerAccountId: "acct-me", creatorAccountId: "acct-owner" });
+    const received = buildClaim({ id: "received-token", needId: "received-need", claimerAccountId: "acct-helper", creatorAccountId: "acct-me" });
+    sent.needByNeedId.proposedTopesAmount = amount;
+    received.needByNeedId.proposedTopesAmount = amount;
+    mockUseQuery.mockReturnValue(makeQueryResult([sent, received]));
+    const html = renderToStaticMarkup(createElement(ClaimsPage));
+    expect((html.match(/data-token-amount=/g) ?? []).length).toBe(amount === null ? 0 : 2);
+    if (amount !== null) expect(html).toContain(`data-token-amount="${amount}"`);
+    expect(html).not.toContain("No Topes");
+    expect(html).not.toContain(`>${amount} Topes<`);
+    expect(html).toContain('data-status="OPEN"');
+  });
+
   it("shows the actual need creator name in sent claim headers", () => {
     const sent = buildClaim({ id: "named", needId: "need", claimerAccountId: "acct-me", creatorAccountId: "acct-owner" });
     sent.needByNeedId.accountByCreatorAccountId = { displayName: "Alice Dupont", externalSubject: "alice-sub" };

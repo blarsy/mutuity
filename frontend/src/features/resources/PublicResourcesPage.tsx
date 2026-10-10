@@ -504,10 +504,11 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
                   creatorName={resource.creatorDisplayName ?? ""}
                   description={resource.description}
                   expiresAt={resource.expiresAt}
+                  tokenAmount={resource.defaultTokenAmount}
                   imageUrls={(resource.imageUrls ?? []).filter((u): u is string => u != null)}
                   footer={
                     <Typography color="text.secondary" variant="body2">
-                      {t("card.suggestedTokenAmount")}: {resource.defaultTokenAmount ?? t("card.notSet")} • {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
+                      {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
                     </Typography>
                   }
                   key={resource.id}

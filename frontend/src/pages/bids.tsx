@@ -34,6 +34,7 @@ import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { conversationThreadUrl } from "../features/chat/chatRouting";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { ListingHeader } from "../features/ui/ListingHeader";
+import { TokenAmount } from "../components/TokenAmount";
 
 const PAGE_SIZE = 5;
 
@@ -127,7 +128,7 @@ function BidCard({
 }) {
   const resource = bid.resourceByResourceId;
   const router = useRouter();
-  const tokenAmount = bid.proposedTokenAmount ?? resource.defaultTokenAmount;
+  const tokenAmount = bid.proposedTokenAmount;
 
   return (
     <Box
@@ -160,11 +161,10 @@ function BidCard({
         <Chip color={bidChipColor(bid.status)} label={t(`statuses.${bid.status}`)} size="small" />
       </Stack>
 
+      {tokenAmount != null ? <TokenAmount amount={tokenAmount} size={28} /> : null}
+
       <Stack direction="row" flexWrap="wrap" gap={0.75}>
         <Chip clickable component={NextLink} href={counterpartyHref} label={counterpartyLabel} size="small" variant="outlined" />
-        {tokenAmount != null ? (
-          <Chip label={t("chips.tokens", { value: tokenAmount })} size="small" variant="outlined" />
-        ) : null}
         {tokenAmount != null && bid.isActive ? (
           <Chip color="warning" label={t("reserved", { value: tokenAmount })} size="small" variant="outlined" />
         ) : null}

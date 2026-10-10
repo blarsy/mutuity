@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
+import { TokenAmount } from "../../components/TokenAmount";
 import { ListingHeader } from "./ListingHeader";
 
 type ResourceCardProps = {
@@ -15,6 +16,7 @@ type ResourceCardProps = {
   creatorImageUrl?: string | null;
   description?: string | null;
   expiresAt?: string | null;
+  tokenAmount?: number | null;
   /** All image URLs — first is shown by default, left/right arrows browse the rest */
   imageUrls?: string[] | null;
   location?: string | null;
@@ -34,6 +36,7 @@ export function ResourceCard({
   creatorImageUrl,
   description,
   expiresAt,
+  tokenAmount,
   imageUrls,
   location,
   chips,
@@ -220,6 +223,10 @@ export function ResourceCard({
           </Stack>
         ) : null}
       </Box>
+
+      {tokenAmount != null ? (
+        <TokenAmount amount={tokenAmount} size={28} sx={{ mx: 2, mt: 2 }} />
+      ) : null}
 
       {/* Text content */}
       <ButtonBase

@@ -14,6 +14,7 @@ import { LoginDialog } from "../auth/LoginDialog";
 import { conversationThreadUrl, type ChatContextKind } from "../chat/chatRouting";
 import { useTokenBalance } from "../contribution/useTokenBalance";
 import { TokenBalanceDisplay } from "../contribution/TokenBalanceDisplay";
+import { TokenAmount } from "../../components/TokenAmount";
 import { useUnreadNotifications } from "../notifications/useUnreadNotifications";
 import { reportRealtimeError } from "../../services/graphql/realtime";
 import { COUNT_UNREAD_CHAT_CONVERSATIONS_QUERY, LIST_CHAT_CONVERSATIONS_QUERY } from "../chat/chat.queries";
@@ -221,9 +222,11 @@ export function AppTopBar({
               <Stack alignItems="center" direction="row" spacing={0.5}>
                 {session.authenticated ? (
                   <>
-                    <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
-                      <TokenBalanceDisplay balance={balance} format={count => t("topbar.tokenBalance", { count })} />
-                    </Button>
+                    <Link color="inherit" component={NextLink} href="/app/contribution" size="small" variant="text">
+                      <TokenBalanceDisplay balance={balance} format={amount => (
+                        <TokenAmount amount={amount} size={24} signed showExplainer={false} textColor="inherit" />
+                      )} />
+                    </Link>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
                       <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
                         {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
@@ -277,7 +280,9 @@ export function AppTopBar({
                 {session.authenticated ? (
                   <>
                     <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
-                      <TokenBalanceDisplay balance={balance} format={count => t("topbar.tokenBalance", { count })} />
+                      <TokenBalanceDisplay balance={balance} format={amount => (
+                        <TokenAmount amount={amount} size={24} signed showExplainer={false} textColor="inherit" />
+                      )} />
                     </Button>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
                       <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>

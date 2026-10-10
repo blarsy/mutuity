@@ -20,6 +20,7 @@ import { useRequireAuth } from "../auth/requireAuth";
 import { ImageUploadField } from "../../components/ImageUploadField";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { IntensityPicker } from "../../components/IntensityPicker";
+import { TokenAmount } from "../../components/TokenAmount";
 import { LocationPicker } from "../../components/LocationPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
@@ -329,6 +330,10 @@ export default function EditNeedPage() {
                       : undefined
                   }
                 />
+
+                {typeof values.proposedTopesAmount === "number" && Number.isFinite(values.proposedTopesAmount) ? (
+                  <TokenAmount amount={values.proposedTopesAmount} size={28} />
+                ) : null}
 
                 <Stack spacing={0}>
                   <Typography variant="subtitle2">{t("form.needNatureLabel")}</Typography>

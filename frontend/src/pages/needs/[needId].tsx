@@ -16,6 +16,7 @@ import { CLAIM_CONVERSATION_LOOKUP_QUERY } from "../../features/chat/chat.querie
 import { StartConversationButton } from "../../features/chat/StartConversationDialog";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
+import { TokenAmount } from "../../components/TokenAmount";
 import { getDisplayIntensityLabel, type DisplayIntensity } from "../../features/shared/displayIntensity";
 import { buildNeedContactLoginHref, shouldShowNeedContactCta } from "../../features/needs/needCta";
 import { AvatarIconButton } from "../../features/ui/AvatarIconButton";
@@ -284,7 +285,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
                         <Chip label={getDisplayIntensityLabel(need.intensity.toLowerCase() as DisplayIntensity, t)} color="primary" />
                         <Chip label={t(`detail.availability.${availabilityState}`)} variant="outlined" />
                         {need.proposedTopesAmount !== null ? (
-                          <Chip label={t("detail.proposedTopes", { amount: need.proposedTopesAmount })} />
+                          <TokenAmount amount={need.proposedTopesAmount} />
                         ) : null}
                       </Stack>
                     </DetailSection>
