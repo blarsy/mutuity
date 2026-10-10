@@ -311,9 +311,18 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
   useEffect(() => {
     if (pendingDrawer) {
       setActiveDrawerItem(pendingDrawer.drawer);
-      if (pendingDrawer.needId) {
-        setOpenedClaimNeedId(pendingDrawer.needId);
-      }
+      setIsCreating(false);
+      setEditingResource(null);
+      setIsCreatingNeed(false);
+      setEditingNeed(null);
+      setPendingResourceCampaignId(null);
+      setPendingNeedCampaignId(null);
+      setOpenedCampaignId(null);
+      setOpenedBidResourceId(null);
+      setOpenedBidAccountId(null);
+      setOpenedBidConversationId(null);
+      setOpenedClaimAccountId(null);
+      setOpenedClaimNeedId(pendingDrawer.needId ?? null);
       onConsumePendingDrawer?.();
     }
   }, [pendingDrawer, onConsumePendingDrawer]);
@@ -989,6 +998,16 @@ function RootNavigator(): React.JSX.Element {
     setAuthEntry({ screen, returnTo: routeName });
   };
 
+  const openMyHubFromAccountMenu = (drawer: "profile" | "contribution" | "preferences"): void => {
+    setAccountMenuVisible(false);
+    setShowSupport(false);
+    setAuthEntry(null);
+    setPendingMyHubDrawer({ drawer });
+    setMyHubDrawerVisible(false);
+    setActiveRouteName("MyHub");
+    navigationRef.current?.navigate("MyHub");
+  };
+
   const completeLoginAuth = async (credentials: { email: string; password: string }): Promise<void> => {
     if (!authEntry) {
       return;
@@ -1194,6 +1213,24 @@ function RootNavigator(): React.JSX.Element {
                 </Pressable>
               )}
             >
+              <Menu.Item
+                title={t("myHubDrawerProfile", { ns: "us1", defaultValue: "Profile" })}
+                style={styles.accountMenuItem}
+                titleStyle={styles.accountMenuItemTitle}
+                onPress={() => openMyHubFromAccountMenu("profile")}
+              />
+              <Menu.Item
+                title={t("myHubDrawerContribution", { ns: "us1", defaultValue: "Contribution" })}
+                style={styles.accountMenuItem}
+                titleStyle={styles.accountMenuItemTitle}
+                onPress={() => openMyHubFromAccountMenu("contribution")}
+              />
+              <Menu.Item
+                title={t("myHubDrawerPreferences", { ns: "us1", defaultValue: "Preferences" })}
+                style={styles.accountMenuItem}
+                titleStyle={styles.accountMenuItemTitle}
+                onPress={() => openMyHubFromAccountMenu("preferences")}
+              />
               <Menu.Item
                 title={t("logout", { ns: "us1", defaultValue: "Log out" })}
                 style={styles.accountMenuItem}
@@ -1469,7 +1506,8 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   accountMenuItem: {
-    minWidth: 132
+    minWidth: 180,
+    backgroundColor: designTokens.colors.secondary
   },
   accountMenuItemTitle: {
     color: "#000000",
