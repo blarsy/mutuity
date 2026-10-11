@@ -472,16 +472,13 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
               return (
                 <ResourceCard
                   actions={
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                      <Button component={NextLink} href={`/resources/${resource.id}`} variant="outlined">
-                        {isCreator ? t("card.reviewResponses") : t("card.viewDetails")}
-                      </Button>
-                      {!session.authenticated ? (
-                        <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
-                          {t("card.signInToRespond")}
-                        </Button>
-                      ) : null}
-                    </Stack>
+                    !session.authenticated ? (
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                          <Button component={NextLink} href={`/login?next=%2Fresources%2F${resource.id}`} variant="contained">
+                            {t("card.signInToRespond")}
+                          </Button>
+                      </Stack>
+                    ) : null
                   }
                   chips={
                     <>

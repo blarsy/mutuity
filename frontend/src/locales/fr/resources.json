@@ -127,8 +127,6 @@
     "deliveryAvailable": "livraison disponible"
   },
   "card": {
-    "reviewResponses": "Voir les réponses",
-    "viewDetails": "Voir les détails",
     "signInToRespond": "Se connecter pour répondre",
     "distanceKm": "à {{value}} km",
     "yourResource": "votre ressource",

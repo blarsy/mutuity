@@ -471,36 +471,6 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
 
             return (
               <NeedCard
-                actions={
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                    {session.authenticated ? (
-                      isCreator ? (
-                        <Button
-                          component={NextLink}
-                          disabled={incomingClaimCount === 0}
-                          href="/app/claims"
-                          variant="outlined"
-                        >
-                          {incomingClaimCount > 0 ? t("browse.manageIncomingClaims") : t("browse.noClaimsYet")}
-                        </Button>
-                      ) : (
-                        <NeedClaimDialog
-                          existingClaim={ownClaim}
-                          needId={need.id ?? ""}
-                          needTitle={need.title ?? ""}
-                          onClaimed={handleClaimed}
-                        />
-                      )
-                    ) : (
-                      <Button component={NextLink} href="/login?next=%2Fneeds" variant="outlined">
-                        {t("browse.signInToClaim")}
-                      </Button>
-                    )}
-                    <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
-                      {t("browse.viewDetails")}
-                    </Button>
-                  </Stack>
-                }
                 chips={
                   <>
                     {buildNeedTags(need as NeedNode, t).filter(tag => tag.trim().length > 0).map(tag => (

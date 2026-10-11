@@ -131,8 +131,6 @@
     "deliveryAvailable": "delivery available"
   },
   "card": {
-    "reviewResponses": "Review responses",
-    "viewDetails": "View details",
     "signInToRespond": "Sign in to respond",
     "distanceKm": "{{value}} km away",
     "yourResource": "your resource",
