@@ -242,11 +242,11 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
               </Button>
             </Stack>
           </Alert>
-        ) : (
+        ) : !session.authenticated ? (
           <Alert severity="info" sx={{ mb: 2 }}>
             {t("detail.signInHint")}
           </Alert>
-        )}
+        ): null}
 
         {session.authenticated && isCreator && latestReceivedBid ? (
           <Alert severity="info" sx={{ mb: 2 }}>
