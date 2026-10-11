@@ -32,7 +32,7 @@
     "titleLabel": "Resource title",
     "descriptionLabel": "Description",
     "descriptionHelper": "Optional, up to 8000 characters.",
-    "intensityLabel": "Intensity",
+    "intensityLabel": "Reference Tope amount",
     "intensityHelper": "Choose the same intensity scale used for needs.",
     "defaultTokenLabel": "Suggested Tope amount",
     "tokenAmountLabel": "Suggested Tope amount",

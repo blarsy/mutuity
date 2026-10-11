@@ -355,6 +355,7 @@
   "resourceInactiveLabel": "This resource is archived and shown for context.",
   "resourceNotAvailableLabel": "This resource is not available anymore.",
   "resourceOptionsLabel": "Resource options",
+  "referenceTokenAmountLabel": "Reference Tope amount",
   "resourcePriceEditLabel": "Edit resource price",
   "resourceSaveError": "We could not save this resource.",
   "resourceSaved": "Resource saved.",

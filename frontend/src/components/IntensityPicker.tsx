@@ -11,6 +11,7 @@ import { Box, Stack, TextField, Typography, useTheme } from "@mui/material";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { TokenAmount } from "./TokenAmount";
 
 // ── zone helpers ─────────────────────────────────────────────────────────────
 
@@ -282,10 +283,15 @@ export interface IntensityDisplayProps {
 
 export function IntensityDisplay({ intensity, tokenAmount }: IntensityDisplayProps) {
   const { t } = useTranslation("resources");
-  const zone = normalizeIntensity(intensity);
+  const zone = tokenAmount != null ? tokenAmountToZone(tokenAmount) : normalizeIntensity(intensity);
 
   return (
-    <Stack spacing={0.5}>
+    <Stack spacing={0.5} gap={2}>
+      {tokenAmount != null ? (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <TokenAmount amount={tokenAmount} />
+        </Box>
+      ) : null}
       <GradientBar zone={zone} barHeight={10} />
       <Stack direction="row" justifyContent="space-between">
         {ZONE_ORDER.map((z) => (
@@ -299,11 +305,6 @@ export function IntensityDisplay({ intensity, tokenAmount }: IntensityDisplayPro
           </Typography>
         ))}
       </Stack>
-      {tokenAmount != null ? (
-        <Typography variant="body2" color="text.secondary">
-          {t("intensity.suggestedAmount")}: {tokenAmount}
-        </Typography>
-      ) : null}
     </Stack>
   );
 }

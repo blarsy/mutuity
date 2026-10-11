@@ -24,7 +24,6 @@ import { RESOURCE_CONVERSATION_LOOKUP_QUERY } from "../chat/chat.queries";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { IntensityDisplay } from "../../components/IntensityPicker";
-import { TokenAmount } from "../../components/TokenAmount";
 import { AvatarIconButton } from "../ui/AvatarIconButton";
 import { StartConversationButton } from "../chat/StartConversationDialog";
 import { ResourceBidDialog } from "./ResourceBidDialog";
@@ -397,8 +396,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 <Typography color="text.secondary" variant="overline">
                   {t("form.intensityLabel")}
                 </Typography>
-                <IntensityDisplay intensity={resource.intensity} />
-                {resource.defaultTokenAmount != null ? <TokenAmount amount={resource.defaultTokenAmount} /> : null}
+                <IntensityDisplay intensity={resource.intensity} tokenAmount={resource.defaultTokenAmount} />
               </Stack>
 
               <Stack spacing={0.5}>

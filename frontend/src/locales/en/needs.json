@@ -48,7 +48,7 @@
     "titleLabel": "Need title",
     "descriptionLabel": "Description",
     "locationLabel": "Location",
-    "intensityLabel": "Intensity",
+    "intensityLabel": "Reference Tope amount",
     "intensityLegUp": "Leg up",
     "intensitySharing": "Sharing",
     "intensityCommitment": "Commitment",

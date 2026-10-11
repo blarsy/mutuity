@@ -89,8 +89,9 @@ describe("web TokenAmount integration", () => {
     ["features/resources/ResourceDetailPage.tsx", "resource.defaultTokenAmount"]
   ])("uses the shared price tag on public detail %s", (path, amount) => {
     const file = source(path);
-    const [display] = elements(file, "TokenAmount");
-    expect(attribute(display, "amount", file)).toBe(`{${amount}}`);
+    const [display] = elements(file, "IntensityDisplay");
+    expect(attribute(display, "tokenAmount", file)).toBe(`{${amount}}`);
+    expect(elements(file, "TokenAmount")).toHaveLength(0);
   });
 
   it("centers a prominent contribution balance and preserves signed and unknown balance semantics", () => {

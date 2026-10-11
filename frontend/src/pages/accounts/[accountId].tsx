@@ -264,7 +264,6 @@ export default function AccountDetailsPage({
                   ) : null}
 
                   <Stack direction="row" spacing={1}>
-                    <Chip label={availabilityState.toLowerCase()} size="small" />
                     <Chip label={t("publicAccount.needsCount", { count: initialNeeds.length })} size="small" />
                     <Chip label={t("publicAccount.resourcesCount", { count: initialResources.length })} size="small" />
                   </Stack>

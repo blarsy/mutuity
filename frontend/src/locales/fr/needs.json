@@ -48,7 +48,7 @@
     "titleLabel": "Titre du besoin",
     "descriptionLabel": "Description",
     "locationLabel": "Lieu",
-    "intensityLabel": "Intensité",
+    "intensityLabel": "Montant de Tope de référence",
     "intensityLegUp": "Coup de pouce",
     "intensitySharing": "Partage",
     "intensityCommitment": "Engagement",

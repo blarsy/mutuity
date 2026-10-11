@@ -222,11 +222,11 @@ export function AppTopBar({
               <Stack alignItems="center" direction="row" spacing={0.5}>
                 {session.authenticated ? (
                   <>
-                    <Link color="inherit" component={NextLink} href="/app/contribution" size="small" variant="text">
+                    <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="text">
                       <TokenBalanceDisplay balance={balance} format={amount => (
                         <TokenAmount amount={amount} size={24} signed showExplainer={false} textColor="inherit" />
                       )} />
-                    </Link>
+                    </Button>
                     <Tooltip title={colorMode === "light" ? t("topbar.switchToDark") : t("topbar.switchToLight")}>
                       <IconButton aria-label={t("topbar.toggleColorMode")} color="inherit" onClick={onToggleColorMode}>
                         {colorMode === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />}
@@ -279,7 +279,7 @@ export function AppTopBar({
               <Stack alignItems="center" direction="row" spacing={1}>
                 {session.authenticated ? (
                   <>
-                    <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="outlined">
+                    <Button color="inherit" component={NextLink} href="/app/contribution" size="small" variant="text">
                       <TokenBalanceDisplay balance={balance} format={amount => (
                         <TokenAmount amount={amount} size={24} signed showExplainer={false} textColor="inherit" />
                       )} />

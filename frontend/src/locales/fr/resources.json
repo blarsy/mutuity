@@ -32,7 +32,7 @@
     "titleLabel": "Titre de la ressource",
     "descriptionLabel": "Description",
     "descriptionHelper": "Optionnel, jusqu’à 8000 caractères.",
-    "intensityLabel": "Intensité",
+    "intensityLabel": "Montant de Tope de référence",
     "intensityHelper": "Choisissez la même échelle d’intensité que pour les besoins.",
     "defaultTokenLabel": "Montant de Topes suggéré",
     "tokenAmountLabel": "Montant de Topes suggéré",

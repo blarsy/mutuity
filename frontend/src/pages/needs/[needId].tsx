@@ -16,8 +16,7 @@ import { CLAIM_CONVERSATION_LOOKUP_QUERY } from "../../features/chat/chat.querie
 import { StartConversationButton } from "../../features/chat/StartConversationDialog";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
-import { TokenAmount } from "../../components/TokenAmount";
-import { getDisplayIntensityLabel, type DisplayIntensity } from "../../features/shared/displayIntensity";
+import { IntensityDisplay } from "../../components/IntensityPicker";
 import { buildNeedContactLoginHref, shouldShowNeedContactCta } from "../../features/needs/needCta";
 import { AvatarIconButton } from "../../features/ui/AvatarIconButton";
 import {
@@ -281,13 +280,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
                     </DetailSection>
 
                     <DetailSection label={t("form.intensityLabel")}>
-                      <Stack direction="row" flexWrap="wrap" gap={1}>
-                        <Chip label={getDisplayIntensityLabel(need.intensity.toLowerCase() as DisplayIntensity, t)} color="primary" />
-                        <Chip label={t(`detail.availability.${availabilityState}`)} variant="outlined" />
-                        {need.proposedTopesAmount !== null ? (
-                          <TokenAmount amount={need.proposedTopesAmount} />
-                        ) : null}
-                      </Stack>
+                      <IntensityDisplay intensity={need.intensity} tokenAmount={need.proposedTopesAmount} />
                     </DetailSection>
 
                     <DetailSection label={t("form.needNatureLabel")}>
