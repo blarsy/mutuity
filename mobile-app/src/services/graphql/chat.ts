@@ -32,7 +32,7 @@ interface ChatConversationsQueryResult {
   listChatConversations: {
     nodes: Array<{
       conversationId: string | null;
-      conversationKind: ChatConversationKind | null;
+      conversationKind: string | null;
       contextTitle: string | null;
       contextImageUrl: string | null;
       otherAccountDisplayName: string | null;
@@ -192,7 +192,7 @@ export async function fetchChatConversations(): Promise<ChatConversationItem[]> 
 
         return [{
         id: node.conversationId,
-        kind: node.conversationKind ?? "resource",
+        kind: node.conversationKind?.toLowerCase() === "need" ? "need" : "resource",
         otherAccountDisplayName: node.otherAccountDisplayName ?? "Conversation",
         linkedResourceTitle: node.contextTitle,
         lastMessagePreview: node.lastMessagePreview ?? "",
