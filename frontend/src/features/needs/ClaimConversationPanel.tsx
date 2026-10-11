@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
   Alert,
@@ -21,14 +23,13 @@ import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import {
   NEED_CLAIM_DETAIL_QUERY,
   CLAIM_CONVERSATION_BY_PARTIES_QUERY,
-  MARK_CLAIM_MESSAGES_READ_MUTATION,
   SEND_CLAIM_MESSAGE_MUTATION
 } from "./claimConversation.queries";
 import { NeedClaimStatusChip } from "./NeedClaimStatusChip";
-import { logBackofficeError } from "../logging/operationalLogger";
+import { conversationThreadUrl } from "../chat/chatRouting";
 import { parseImageUrls, MAX_IMAGE_ATTACHMENTS } from "../chat/ConversationThread";
 import { ChatImageUploadDialog } from "../chat/ChatImageUploadDialog";
-import type { NeedClaimDetailQuery, NeedClaimDetailQueryVariables, ClaimConversationByPartiesQuery, ClaimConversationByPartiesQueryVariables } from "../../graphql/generated";
+import type { NeedClaimDetailQuery, ClaimConversationByPartiesQuery, SendClaimMessageMutation } from "../../graphql/generated";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -113,14 +114,20 @@ export function ClaimConversationThreadView({
 
 export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConversationPanelProps) {
   const { t } = useTranslation("needs");
+  const router = useRouter();
   const [draftBody, setDraftBody] = useState("");
   const [draftImageUrls, setDraftImageUrls] = useState<string[]>([]);
   const [showImageDialog, setShowImageDialog] = useState(false);
 
-  const [sendClaimMessage, { loading: sendLoading, error: sendError }] = useMutation(
+  const [sendClaimMessage, { loading: sendLoading, error: sendError }] = useMutation<SendClaimMessageMutation>(
     SEND_CLAIM_MESSAGE_MUTATION
   );
-  const [markClaimMessagesRead] = useMutation(MARK_CLAIM_MESSAGES_READ_MUTATION);
+
+  useEffect(() => {
+    setDraftBody("");
+    setDraftImageUrls([]);
+    setShowImageDialog(false);
+  }, [claimId, currentAccountId]);
 
   const { data, loading, error, refetch } = useQuery<NeedClaimDetailQuery>(NEED_CLAIM_DETAIL_QUERY, {
     fetchPolicy: "cache-and-network",
@@ -130,7 +137,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
 
   const claim = data?.needClaimById ?? null;
 
-  const { data: convData, refetch: refetchConv } = useQuery<ClaimConversationByPartiesQuery>(
+  const { data: convData, loading: conversationLoading, error: conversationError, refetch: refetchConv } = useQuery<ClaimConversationByPartiesQuery>(
     CLAIM_CONVERSATION_BY_PARTIES_QUERY,
     {
       fetchPolicy: "cache-and-network",
@@ -149,76 +156,36 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
   const claimStatus = claim?.status ?? "OPEN";
   const isCreator = claim?.needByNeedId?.creatorAccountId === currentAccountId;
 
-  const messages = useMemo<ClaimConversationViewMessage[]>(() => {
-    return sortConversationMessages(
-      (conversation?.claimMessagesByConversationId.nodes ?? []).map(message => ({
-        id: message.id,
-        senderAccountId: message.senderAccountId,
-        body: message.body,
-        createdAt: message.createdAt,
-        readAt: message.readAt,
-        imageUrls: message.claimMessageImagesByMessageId.nodes
-          .slice()
-          .sort((left, right) => left.sortOrder - right.sortOrder)
-          .map(image => image.imageUrl)
-      }))
-    );
-  }, [conversation?.claimMessagesByConversationId.nodes]);
-
-  const unreadCount = useMemo(
-    () => messages.filter(message => message.senderAccountId !== currentAccountId && !message.readAt).length,
-    [currentAccountId, messages]
-  );
-
-  useEffect(() => {
-    if (!conversation?.id || unreadCount === 0) {
-      return;
-    }
-
-    void markClaimMessagesRead({
-      variables: {
-        input: {
-          conversationId: conversation.id
-        }
-      }
-    })
-      .then(() => refetchConv())
-      .catch(markReadError => {
-        console.error("[needs] Failed to mark claim messages as read", markReadError);
-        void logBackofficeError("[needs] Failed to mark claim messages as read", markReadError, {
-          context: "claim_conversation_mark_read",
-          accountId: currentAccountId ?? undefined,
-          metadata: {
-            conversationId: conversation.id,
-            unreadCount
-          }
-        });
-      });
-  }, [conversation?.id, currentAccountId, markClaimMessagesRead, refetch, unreadCount]);
-
-  const canSend = canSendClaimMessages(claimStatus, Boolean(conversation), isCreator);
-  const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(sendError);
+  const canSend = !conversation && !conversationLoading && !conversationError && canSendClaimMessages(claimStatus, false, isCreator);
+  const errorMessage = getUserFacingGraphQLErrorMessage(error) ?? getUserFacingGraphQLErrorMessage(conversationError) ?? getUserFacingGraphQLErrorMessage(sendError);
 
   useAccountEventSignal(() => Promise.all([refetch(), refetchConv()]), Boolean(currentAccountId));
 
   const handleSendMessage = async () => {
-    if (!claim || !draftBody.trim()) {
+    if (!claim || !canSend || sendLoading || !draftBody.trim() || draftImageUrls.length > MAX_IMAGE_ATTACHMENTS) {
       return;
     }
 
-    await sendClaimMessage({
-      variables: {
-        input: {
-          needClaimId: claim.id,
-          body: draftBody.trim(),
-          imageUrls: draftImageUrls
+    try {
+      const result = await sendClaimMessage({
+        variables: {
+          input: {
+            needClaimId: claim.id,
+            body: draftBody.trim(),
+            imageUrls: draftImageUrls
+          }
         }
-      }
-    });
+      });
 
-    setDraftBody("");
-    setDraftImageUrls([]);
-    await refetchConv();
+      const conversationId = result.data?.sendClaimMessage?.claimMessage?.conversationId;
+      if (conversationId) {
+        setDraftBody("");
+        setDraftImageUrls([]);
+        await router.push(conversationThreadUrl("need", conversationId));
+      }
+    } catch {
+      // Apollo exposes send failures above; preserve the draft for retry.
+    }
   };
 
   if (loading && !claim) {
@@ -227,6 +194,14 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
 
   if (!claim) {
     return <Alert severity="warning">{t("claimConversation.notFound")}</Alert>;
+  }
+
+  if (conversation) {
+    return (
+      <Button component={NextLink} href={conversationThreadUrl("need", conversation.id)} variant="contained">
+        {t("claimConversation.openConversation")}
+      </Button>
+    );
   }
 
   return (
@@ -249,7 +224,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
 
           {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
-          {!conversation ? (
+          {!conversationLoading ? (
             <Alert severity={isCreator ? "info" : "warning"}>
               {isCreator
                 ? t("claimConversation.sendFirstReply")
@@ -257,7 +232,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             </Alert>
           ) : null}
 
-          {!conversation && claim.message ? (
+          {claim.message ? (
             <Box>
               <Typography variant="subtitle2">{t("claimConversation.initialClaimNote")}</Typography>
               <Typography color="text.secondary" variant="body2">
@@ -272,20 +247,14 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             </Alert>
           ) : null}
 
-          {conversation ? <ClaimConversationThreadView currentAccountId={currentAccountId} messages={messages} /> : null}
-
           <Stack spacing={1.5}>
             <TextField
               fullWidth
               disabled={!canSend || sendLoading}
-              label={conversation ? t("claimConversation.reply") : t("claimConversation.firstReply")}
+              label={t("claimConversation.firstReply")}
               minRows={3}
               multiline
-              placeholder={
-                conversation
-                  ? t("claimConversation.replyPlaceholder")
-                  : t("claimConversation.firstReplyPlaceholder")
-              }
+              placeholder={t("claimConversation.firstReplyPlaceholder")}
               value={draftBody}
               onChange={event => setDraftBody(event.target.value)}
             />
@@ -308,7 +277,7 @@ export function ClaimConversationPanel({ claimId, currentAccountId }: ClaimConve
             </Stack>
             <Box>
               <Button disabled={!canSend || sendLoading || !draftBody.trim() || draftImageUrls.length > MAX_IMAGE_ATTACHMENTS} onClick={() => void handleSendMessage()} variant="contained">
-                {sendLoading ? t("claimConversation.sending") : conversation ? t("claimConversation.sendMessage") : t("claimConversation.startConversation")}
+                {sendLoading ? t("claimConversation.sending") : t("claimConversation.startConversation")}
               </Button>
             </Box>
           </Stack>

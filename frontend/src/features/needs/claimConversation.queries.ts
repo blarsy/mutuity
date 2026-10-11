@@ -49,22 +49,6 @@ export const CLAIM_CONVERSATION_BY_PARTIES_QUERY = gql`
       claimerAccountId: $claimerAccountId
     ) {
       id
-      claimMessagesByConversationId(orderBy: PRIMARY_KEY_ASC) {
-        nodes {
-          id
-          senderAccountId
-          body
-          createdAt
-          readAt
-          claimMessageImagesByMessageId(orderBy: PRIMARY_KEY_ASC) {
-            nodes {
-              id
-              imageUrl
-              sortOrder
-            }
-          }
-        }
-      }
     }
   }
 `;

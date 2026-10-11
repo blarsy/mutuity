@@ -181,7 +181,8 @@
     "imagesAttached": "{{count}} image(s) jointe(s) (max {{max}})",
     "sending": "Envoi…",
     "sendMessage": "Envoyer le message",
-    "startConversation": "Démarrer la conversation"
+    "startConversation": "Démarrer la conversation",
+    "openConversation": "Ouvrir la conversation"
   },
   "claimNotifications": {
     "empty": "Aucune activité liée aux propositions d'aide pour le moment. Dès que vous proposez votre aide pour un besoin ou en recevez une pour l'un des vôtres, cela apparaîtra ici.",

@@ -181,7 +181,8 @@
     "imagesAttached": "{{count}} image(s) attached (max {{max}})",
     "sending": "Sending…",
     "sendMessage": "Send message",
-    "startConversation": "Start conversation"
+    "startConversation": "Start conversation",
+    "openConversation": "Open conversation"
   },
   "claimNotifications": {
     "empty": "No claim activity yet. Once you claim a need or receive one on your own need, it will appear here.",
