@@ -392,12 +392,6 @@ export default function BidsPage() {
         key={bid.id}
         actions={
           <Stack direction="row" flexWrap="wrap" gap={1}>
-            <Button component={NextLink} href={`/resources/${resource.id}`} size="small" variant="outlined">
-              {t("actions.viewResource")}
-            </Button>
-            <Button component={NextLink} href={`/accounts/${resource.creatorAccountId}`} size="small" variant="text">
-              {t("actions.viewCreator")}
-            </Button>
             {bid.resourceConversationsByResourceBidId.nodes[0]?.id ? (
               <Button
                 component={NextLink}
@@ -435,12 +429,6 @@ export default function BidsPage() {
         key={bid.id}
         actions={
           <Stack direction="row" flexWrap="wrap" gap={1}>
-            <Button component={NextLink} href={`/resources/${bid.resourceByResourceId.id}`} size="small" variant="outlined">
-              {t("actions.viewResource")}
-            </Button>
-            <Button component={NextLink} href={`/accounts/${bid.bidderAccountId}`} size="small" variant="text">
-              {t("actions.viewBidder")}
-            </Button>
             {bid.resourceConversationsByResourceBidId.nodes[0]?.id ? (
               <Button
                 component={NextLink}

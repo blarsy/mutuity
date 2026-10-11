@@ -116,10 +116,7 @@ jest.mock("react-i18next", () => ({
         topesAmount: "Topes",
         noTopes: "No Topes",
         "actions.viewClaim": "View claim",
-        "actions.viewNeed": "View need",
-        "actions.viewNeedOwner": "View need owner",
         "actions.reviewClaim": "Review claim",
-        "actions.viewClaimer": "View claimer",
         "actions.chat": "Chat"
       };
 

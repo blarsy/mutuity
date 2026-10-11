@@ -29,8 +29,6 @@
     "all": "Toutes"
   },
   "actions": {
-    "viewResource": "Voir la ressource",
-    "viewCreator": "Voir le créateur",
     "viewBidder": "Voir l'offreur",
     "chat": "Discussion",
     "cancel": "Annuler l'offre",

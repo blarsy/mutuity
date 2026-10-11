@@ -326,12 +326,6 @@ export default function ClaimsPage() {
                           >
                             {t("actions.viewClaim")}
                           </Button>
-                          <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
-                            {t("actions.viewNeed")}
-                          </Button>
-                          <Button component={NextLink} href={`/accounts/${need.creatorAccountId}`} variant="text">
-                            {t("actions.viewNeedOwner")}
-                          </Button>
                           {claimConversationId ? (
                             <Button component={NextLink} href={conversationThreadUrl("need", claimConversationId)} variant="text">
                               {t("actions.chat")}
@@ -471,12 +465,6 @@ export default function ClaimsPage() {
                             variant={isOpen ? "outlined" : "contained"}
                           >
                             {t("actions.reviewClaim")}
-                          </Button>
-                          <Button component={NextLink} href={`/accounts/${claim.claimerAccountId}`} variant="text">
-                            {t("actions.viewClaimer")}
-                          </Button>
-                          <Button component={NextLink} href={`/needs/${need.id}`} variant="outlined">
-                            {t("actions.viewNeed")}
                           </Button>
                           {claimConversationId ? (
                             <Button component={NextLink} href={conversationThreadUrl("need", claimConversationId)} variant="text">
