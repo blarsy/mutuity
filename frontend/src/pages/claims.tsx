@@ -183,7 +183,9 @@ export default function ClaimsPage() {
   const allClaims = useMemo(() => {
     const sent = data?.sentNeedClaims?.nodes ?? [];
     const received = data?.receivedNeedClaims?.nodes ?? [];
-    return [...sent, ...received].sort(
+    // The unfiltered received connection can also contain sent claims under RLS.
+    const uniqueClaims = new Map([...sent, ...received].map(claim => [claim.id, claim]));
+    return [...uniqueClaims.values()].sort(
       (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
     );
   }, [data?.sentNeedClaims?.nodes, data?.receivedNeedClaims?.nodes]);

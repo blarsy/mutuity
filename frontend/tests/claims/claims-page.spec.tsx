@@ -184,7 +184,10 @@ function buildClaim(overrides: Partial<ClaimNode> & {
 
 function makeQueryResult(claims: ClaimNode[], balance: number | null = 100) {
   const sent = claims.filter(claim => claim.claimerAccountId === "acct-me");
-  const received = claims.filter(claim => claim.needByNeedId.creatorAccountId === "acct-me");
+  // The received query has no condition: RLS returns both participant roles.
+  const received = claims.filter(claim =>
+    claim.claimerAccountId === "acct-me" || claim.needByNeedId.creatorAccountId === "acct-me"
+  );
   return {
     loading: false,
     error: undefined,
@@ -201,6 +204,45 @@ function makeQueryResult(claims: ClaimNode[], balance: number | null = 100) {
 import ClaimsPage from "../../src/pages/claims";
 
 describe("ClaimsPage rendering and filters", () => {
+  it("renders overlapping sent claims once and counts unique claims", () => {
+    const sent = buildClaim({ id: "sent-overlap", needId: "sent-need", claimerAccountId: "acct-me", creatorAccountId: "acct-owner" });
+    const received = buildClaim({ id: "received-only", needId: "received-need", claimerAccountId: "acct-helper", creatorAccountId: "acct-me" });
+    mockUseQuery.mockReturnValue(makeQueryResult([sent, received]));
+
+    const html = renderToStaticMarkup(createElement(ClaimsPage));
+
+    expect((html.match(/<h3>Need sent-overlap<\/h3>/g) ?? []).length).toBe(1);
+    expect((html.match(/data-testid="need-card"/g) ?? []).length).toBe(2);
+    expect(html).toContain("1 sent");
+    expect(html).toContain("1 received");
+  });
+
+  it("does not let overlapping results consume pagination slots or trigger load-more", () => {
+    const claims = Array.from({ length: 5 }, (_, i) =>
+      buildClaim({ id: `unique-${i}`, needId: `need-${i}`, claimerAccountId: "acct-me", creatorAccountId: "acct-owner" })
+    );
+    mockUseQuery.mockReturnValue(makeQueryResult(claims));
+
+    const html = renderToStaticMarkup(createElement(ClaimsPage));
+
+    expect(html).toContain("5 sent");
+    expect((html.match(/data-testid="need-card"/g) ?? []).length).toBe(5);
+    for (const claim of claims) expect(html).toContain(`Need ${claim.id}`);
+    expect(html).not.toContain("Load more");
+  });
+
+  it("preserves distinct received claims for the same need", () => {
+    const claims = ["helper-one", "helper-two"].map(claimerAccountId =>
+      buildClaim({ id: claimerAccountId, needId: "shared-need", claimerAccountId, creatorAccountId: "acct-me" })
+    );
+    mockUseQuery.mockReturnValue(makeQueryResult(claims));
+
+    const html = renderToStaticMarkup(createElement(ClaimsPage));
+
+    expect(html).toContain("2 received");
+    expect((html.match(/data-testid="need-card"/g) ?? []).length).toBe(2);
+  });
+
   it.each([50, 0, null])("forwards the need amount %s to sent and received cards without duplicate amount chips", amount => {
     const sent = buildClaim({ id: "sent-token", needId: "sent-need", claimerAccountId: "acct-me", creatorAccountId: "acct-owner" });
     const received = buildClaim({ id: "received-token", needId: "received-need", claimerAccountId: "acct-helper", creatorAccountId: "acct-me" });
