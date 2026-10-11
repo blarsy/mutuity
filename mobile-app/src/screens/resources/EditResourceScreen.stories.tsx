@@ -22,6 +22,7 @@ const EXISTING_RESOURCE: MyResourceItem = {
   title: "Family moving van (2h slot)",
   description: "Driver included in-city on Saturday mornings.",
   defaultTokenAmount: 48,
+  categoryCodes: [1],
   imageUrls: ["https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500"],
   isActive: true,
   isProduct: false,

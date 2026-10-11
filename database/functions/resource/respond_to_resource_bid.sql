@@ -1,5 +1,3 @@
-drop function if exists app_public.respond_to_resource_bid(uuid, app_public.resource_bid_status);
-
 create or replace function app_public.respond_to_resource_bid(
   resource_bid_id uuid,
   status app_public.resource_bid_status
@@ -52,10 +50,10 @@ begin
   end if;
 
   if v_context.resource_expires_at is not null and v_context.resource_expires_at <= now() then
-    update app_public.resource_bid
-    set status = case when status = 'open' then 'expired'::app_public.resource_bid_status else status end,
+    update app_public.resource_bid as rb
+    set status = case when rb.status = 'open' then 'expired'::app_public.resource_bid_status else rb.status end,
         updated_at = now()
-    where id = v_context.id;
+    where rb.id = v_context.id;
 
     v_reserved_amount := coalesce(v_context.proposed_token_amount, 0);
     if v_context.status = 'open' and v_reserved_amount > 0 then
@@ -97,7 +95,10 @@ begin
 
   if v_context.status <> 'open' then
     if v_context.status = respond_to_resource_bid.status then
-      return v_context;
+      select rb.* into v_bid
+      from app_public.resource_bid rb
+      where rb.id = v_context.id;
+      return v_bid;
     end if;
 
     raise exception using message = 'Resource bid is no longer open';

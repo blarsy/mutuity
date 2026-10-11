@@ -44,11 +44,12 @@ export function ImagePickerField({
         quality: 0.8
       });
 
-      if (result.canceled || result.assets.length === 0) {
+      const asset = result.assets?.[0];
+      if (result.canceled || !asset) {
         return;
       }
 
-      onChange(result.assets[0].uri);
+      onChange(asset.uri);
     } finally {
       setBusy(false);
     }
@@ -69,11 +70,12 @@ export function ImagePickerField({
         quality: 0.8
       });
 
-      if (result.canceled || result.assets.length === 0) {
+      const asset = result.assets?.[0];
+      if (result.canceled || !asset) {
         return;
       }
 
-      onChange(result.assets[0].uri);
+      onChange(asset.uri);
     } finally {
       setBusy(false);
     }

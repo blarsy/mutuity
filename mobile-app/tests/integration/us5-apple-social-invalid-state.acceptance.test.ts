@@ -1,6 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
+import { mockLinkingUrlListener } from "../utils/mockLinkingUrlListener";
 
 import App from "../../src/App";
 
@@ -48,13 +49,7 @@ describe("US5 Apple social invalid state acceptance", () => {
   it("keeps the user signed out when an Apple callback has invalid state", async () => {
     const mockUrlHandler = { current: null as ((event: { url: string }) => void) | null };
 
-    jest.spyOn(Linking, "addEventListener").mockImplementation(((eventName: string, handler: (event: { url: string }) => void) => {
-      if (eventName === "url") {
-        mockUrlHandler.current = handler;
-      }
-
-      return { remove: jest.fn() };
-    }) as typeof Linking.addEventListener);
+    mockLinkingUrlListener(mockUrlHandler);
 
     const screen = render(React.createElement(App));
 

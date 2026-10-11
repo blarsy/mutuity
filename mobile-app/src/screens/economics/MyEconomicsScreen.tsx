@@ -4,7 +4,7 @@ import { Button, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AccordionItem, AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import { HowToGetTokensSection } from "../../components/howToGetTokens/HowToGetTokensSection";
 import { type HowToGetTokensOpportunityId, type HowToGetTokensProgress } from "../../features/howToGetTokens";
 import { TokenExplainerDialog } from "../../components/tokenExplainer/TokenExplainerDialog";
@@ -36,7 +36,7 @@ export interface MyEconomicsScreenProps {
   onRetry?: () => void;
   onBack?: () => void;
   onLearnMore?: () => void;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
   onGoToOpportunity?: (id: HowToGetTokensOpportunityId) => void;
   /** Injected progress for tests/storybook; when omitted it is fetched remotely. */
   progress?: HowToGetTokensProgress;
@@ -55,7 +55,7 @@ export function MyEconomicsScreen({
   onRetry,
   onBack,
   onLearnMore,
-  onOpenDrawer,
+  onBackToHub,
   onGoToOpportunity,
   progress
 }: MyEconomicsScreenProps): React.JSX.Element {
@@ -169,18 +169,26 @@ export function MyEconomicsScreen({
   }, [historyScope, resolvedHistory]);
 
   if (resolvedLoading) {
-    return <LoadingState label={t("contributionLoading", { defaultValue: "Loading contribution details..." })} />;
+    return (
+      <MyHubScreenState title={t("contributionLabel", { defaultValue: "Contribution" })} onBackToHub={onBackToHub}>
+        <LoadingState label={t("contributionLoading", { defaultValue: "Loading contribution details..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (resolvedErrorMessage && (hasInjectedData || loadedAccount !== accountId)) {
-    return <ErrorState message={resolvedErrorMessage} {...(onRetry ? { onRetry } : { onRetry: () => void loadEconomics() })} />;
+    return (
+      <MyHubScreenState title={t("contributionLabel", { defaultValue: "Contribution" })} onBackToHub={onBackToHub}>
+        <ErrorState message={resolvedErrorMessage} {...(onRetry ? { onRetry } : { onRetry: () => void loadEconomics() })} />
+      </MyHubScreenState>
+    );
   }
 
   return (
     <ScreenContainer testID="my-economics-screen" style={styles.root}>
       <MyHubScreenHeader
         title={t("contributionLabel", { defaultValue: "Contribution" })}
-        onOpenDrawer={onOpenDrawer}
+        onBackToHub={onBackToHub}
         right={onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : undefined}
       />
 

@@ -27,7 +27,7 @@ export async function fetchLinkableCampaigns(): Promise<LinkableCampaignItem[]> 
   });
 
   return (data?.linkableCampaigns?.nodes ?? [])
-    .filter((campaign): campaign is { id: unknown; title?: string | null; startAt?: unknown; endAt?: unknown } =>
+    .filter((campaign): campaign is { id: unknown; title: string; startAt?: unknown; endAt?: unknown } =>
       campaign != null && campaign.id != null && typeof campaign.title === "string" && campaign.title.trim().length > 0
     )
     .map((campaign) => ({ id: String(campaign.id), title: campaign.title }));

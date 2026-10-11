@@ -50,8 +50,8 @@ export function AccountAvatar({ authenticated, displayName, avatarUrl, size = 24
   const content = (
     <AccountAvatarContent
       authenticated={authenticated}
-      displayName={displayName}
-      avatarUrl={avatarUrl}
+      displayName={displayName ?? null}
+      avatarUrl={avatarUrl ?? null}
       size={size}
     />
   );

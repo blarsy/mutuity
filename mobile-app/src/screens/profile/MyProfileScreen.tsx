@@ -13,7 +13,7 @@ import {
   ScreenContainer,
   ThemedDialog
 } from "../../components/primitives";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { useAuth } from "../../services/auth/AuthProvider";
@@ -90,7 +90,7 @@ export interface MyProfileScreenProps {
   onOpenContribution?: () => void;
   onLogout?: () => void;
   onDeleteAccount?: () => void;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
 }
 
 export function MyProfileScreen({
@@ -109,7 +109,7 @@ export function MyProfileScreen({
   onOpenContribution,
   onLogout,
   onDeleteAccount,
-  onOpenDrawer
+  onBackToHub
 }: MyProfileScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const { refreshSession, signOut } = useAuth();
@@ -450,18 +450,26 @@ export function MyProfileScreen({
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedProfile ? remoteErrorMessage : null);
 
   if (resolvedLoading) {
-    return <LoadingState label={t("profileLoading", { defaultValue: "Loading profile..." })} />;
+    return (
+      <MyHubScreenState title={t("myProfileTitle", { defaultValue: "My profile" })} onBackToHub={onBackToHub}>
+        <LoadingState label={t("profileLoading", { defaultValue: "Loading profile..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (resolvedErrorMessage) {
-    return <ErrorState message={resolvedErrorMessage} {...(onRetry ? { onRetry } : { onRetry: () => void loadProfile() })} />;
+    return (
+      <MyHubScreenState title={t("myProfileTitle", { defaultValue: "My profile" })} onBackToHub={onBackToHub}>
+        <ErrorState message={resolvedErrorMessage} {...(onRetry ? { onRetry } : { onRetry: () => void loadProfile() })} />
+      </MyHubScreenState>
+    );
   }
 
   return (
     <ScreenContainer testID="my-profile-screen" style={styles.root}>
       <MyHubScreenHeader
         title={t("myProfileTitle", { defaultValue: "My profile" })}
-        onOpenDrawer={onOpenDrawer}
+        onBackToHub={onBackToHub}
         right={onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : undefined}
       />
 

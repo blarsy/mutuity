@@ -110,7 +110,7 @@ export function DateTimePickerField({
 
       <TimePickerModal
         locale={i18n.language || "en"}
-        saveLabel={t("selectButtonCaption", { defaultValue: "Select" })}
+        confirmLabel={t("selectButtonCaption", { defaultValue: "Select" })}
         visible={timeOpen}
         onDismiss={() => setTimeOpen(false)}
         onConfirm={onTimeConfirm}

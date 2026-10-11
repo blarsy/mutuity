@@ -172,10 +172,9 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
   const searchRequestId = useRef(0);
   const suggestionsCache = useRef<Map<string, LocationSuggestion[]>>(new Map());
 
-  const [resolvedCoordinates, setResolvedCoordinates] = useState<{ latitude?: number; longitude?: number }>({
-    latitude: value?.latitude,
-    longitude: value?.longitude
-  });
+  const [resolvedCoordinates, setResolvedCoordinates] = useState<{ latitude?: number; longitude?: number }>(
+    toDraftCoordinates(value)
+  );
 
   useEffect(() => {
     const label = value?.label?.trim();

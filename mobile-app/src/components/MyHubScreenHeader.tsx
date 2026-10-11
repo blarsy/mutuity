@@ -1,21 +1,23 @@
-import React, { type ReactNode } from "react";
+import React, { type PropsWithChildren, type ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTranslation } from "react-i18next";
 
 import { appFontFamilies } from "../theme/fonts";
 import { designTokens } from "../theme/tokens";
+import { ScreenContainer } from "./primitives";
 
 export interface MyHubScreenHeaderProps {
   title: string;
-  onOpenDrawer?: (() => void) | undefined;
+  onBackToHub?: (() => void) | undefined;
   right?: ReactNode;
   testID?: string;
 }
 
 export function MyHubScreenHeader({
   title,
-  onOpenDrawer,
+  onBackToHub,
   right,
   testID
 }: MyHubScreenHeaderProps): React.JSX.Element {
@@ -24,25 +26,36 @@ export function MyHubScreenHeader({
   return (
     <View style={styles.headerRow} testID={testID}>
       <View style={styles.headerTitleGroup}>
-        {onOpenDrawer ? (
+        {onBackToHub ? (
           <Pressable
-            accessibilityRole="link"
-            accessibilityLabel={t("myHubLabel", { ns: "us1" })}
-            onPress={onOpenDrawer}
-            style={styles.breadcrumbRootLink}
-            testID="my-hub-drawer-open-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("myHubBack", { ns: "us1" })}
+            onPress={onBackToHub}
+            style={styles.backButton}
+            testID="my-hub-back-button"
           >
-            <Text variant="headlineSmall" style={styles.breadcrumbRootLinkText}>
-              {t("myHubLabel", { ns: "us1" })}
+            <MaterialCommunityIcons name="arrow-left" size={22} color={designTokens.colors.primary} />
+            <Text variant="labelLarge" style={styles.backLabel}>
+              {t("myHubBack", { ns: "us1" })}
             </Text>
           </Pressable>
         ) : null}
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.title}>
-           - {title}
+          {title}
         </Text>
       </View>
       {right ? <View style={styles.rightZone}>{right}</View> : null}
     </View>
+  );
+}
+
+// Loading and error states must keep the spoke's escape route available.
+export function MyHubScreenState({ children, ...headerProps }: PropsWithChildren<MyHubScreenHeaderProps>): React.JSX.Element {
+  return (
+    <ScreenContainer>
+      <MyHubScreenHeader {...headerProps} />
+      {children}
+    </ScreenContainer>
   );
 }
 
@@ -54,21 +67,18 @@ const styles = StyleSheet.create({
     gap: designTokens.spacing.sm
   },
   headerTitleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
+    flex: 1,
+    alignItems: "flex-start",
     gap: designTokens.spacing.xs
   },
-  breadcrumbRootLink: {
-    paddingVertical: designTokens.spacing.xs
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: 44,
+    gap: designTokens.spacing.xs
   },
-  breadcrumbRootLinkText: {
-    fontFamily: appFontFamilies.title,
-    color: designTokens.colors.primary,
-    textDecorationLine: "underline",
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    textAlignVertical: "center",
-    paddingTop: 8
+  backLabel: {
+    color: designTokens.colors.primary
   },
   rightZone: {
     flexDirection: "row",

@@ -34,6 +34,7 @@ import { notificationDestinationForEvent } from "../services/notifications/notif
 import { MyProfileScreen } from "../screens/profile/MyProfileScreen";
 import { MyPreferencesScreen } from "../screens/profile/MyPreferencesScreen";
 import { MyEconomicsScreen } from "../screens/economics/MyEconomicsScreen";
+import { MyHubDashboardScreen, type MyHubSection } from "../screens/hub/MyHubDashboardScreen";
 import { SupportScreen } from "../screens/profile/SupportScreen";
 import { UpdateRequiredScreen } from "../screens/system/UpdateRequiredScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
@@ -78,16 +79,6 @@ const navigationTheme = {
 type MainRouteName = "Explore" | "MyHub" | "Campaigns" | "Chat" | "Notifications";
 type MainTabParamList = Record<MainRouteName, undefined>;
 type AuthEntryScreen = "login" | "register" | "forgotPassword";
-type MyHubDrawerItem =
-  | "myResources"
-  | "receivedBids"
-  | "sentBids"
-  | "myNeeds"
-  | "receivedClaims"
-  | "sentClaims"
-  | "profile"
-  | "preferences"
-  | "contribution";
 
 interface SocialRegistrationContext {
   provider?: SocialProvider | undefined;
@@ -130,11 +121,8 @@ interface ChatScreenProps extends MainTabScreenProps {
 }
 
 interface MyHubScreenProps extends MainTabScreenProps {
-  drawerVisible: boolean;
-  onRequestOpenDrawer: () => void;
-  onRequestCloseDrawer: () => void;
-  pendingDrawer?: { drawer: MyHubDrawerItem; needId?: string } | null;
-  onConsumePendingDrawer?: () => void;
+  pendingSection?: { section: MyHubSection; needId?: string } | null;
+  onConsumePendingSection?: () => void;
   onOpenCampaigns?: () => void;
 }
 
@@ -258,20 +246,7 @@ function AuthScreenShell({
   );
 }
 
-function MyHubDrawerPlaceholderSurface({ title, body }: { title: string; body: string }): React.JSX.Element {
-  return (
-    <ScreenContainer>
-      <AppCard accessibilityLabel={title}>
-        <Text accessibilityRole="header" variant="headlineSmall">
-          {title}
-        </Text>
-        <Text variant="bodyMedium">{body}</Text>
-      </AppCard>
-    </ScreenContainer>
-  );
-}
-
-function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpenDrawer, onRequestCloseDrawer, pendingDrawer, onConsumePendingDrawer, onOpenCampaigns }: MyHubScreenProps): React.JSX.Element {
+export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onConsumePendingSection, onOpenCampaigns }: MyHubScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   const { signOut } = useAuth();
@@ -284,33 +259,17 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
   const [openedCampaignId, setOpenedCampaignId] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [needsRefreshToken, setNeedsRefreshToken] = useState(0);
-  const [activeDrawerItem, setActiveDrawerItem] = useState<MyHubDrawerItem>("myResources");
+  const [activeSection, setActiveSection] = useState<MyHubSection | null>(null);
   const [openedBidResourceId, setOpenedBidResourceId] = useState<string | null>(null);
   const [openedBidAccountId, setOpenedBidAccountId] = useState<string | null>(null);
   const [openedBidConversationId, setOpenedBidConversationId] = useState<string | null>(null);
   const [openedClaimNeedId, setOpenedClaimNeedId] = useState<string | null>(null);
   const [openedClaimAccountId, setOpenedClaimAccountId] = useState<string | null>(null);
-  const pendingDrawerCloseRef = useRef(false);
+  const backToHub = (): void => setActiveSection(null);
 
   useEffect(() => {
-    if (pendingDrawerCloseRef.current) {
-      pendingDrawerCloseRef.current = false;
-      onRequestCloseDrawer();
-    }
-  }, [activeDrawerItem, onRequestCloseDrawer]);
-
-  const selectDrawerItem = (key: MyHubDrawerItem): void => {
-    if (key === activeDrawerItem) {
-      return;
-    }
-
-    pendingDrawerCloseRef.current = true;
-    setActiveDrawerItem(key);
-  };
-
-  useEffect(() => {
-    if (pendingDrawer) {
-      setActiveDrawerItem(pendingDrawer.drawer);
+    if (pendingSection) {
+      setActiveSection(pendingSection.section);
       setIsCreating(false);
       setEditingResource(null);
       setIsCreatingNeed(false);
@@ -322,51 +281,28 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       setOpenedBidAccountId(null);
       setOpenedBidConversationId(null);
       setOpenedClaimAccountId(null);
-      setOpenedClaimNeedId(pendingDrawer.needId ?? null);
-      onConsumePendingDrawer?.();
+      setOpenedClaimNeedId(pendingSection.needId ?? null);
+      onConsumePendingSection?.();
     }
-  }, [pendingDrawer, onConsumePendingDrawer]);
+  }, [pendingSection, onConsumePendingSection]);
 
   const canAccessMyHub = authenticated && Boolean(accountId);
-
-  const topDrawerItems: Array<{ key: MyHubDrawerItem; label: string }> = [
-    { key: "myResources", label: t("myHubDrawerMyResources", { ns: "us1", defaultValue: "My resources" }) },
-    { key: "receivedBids", label: t("myHubDrawerReceivedBids", { ns: "us1", defaultValue: "Received bids" }) },
-    { key: "sentBids", label: t("myHubDrawerSentBids", { ns: "us1", defaultValue: "Sent bids" }) },
-    { key: "myNeeds", label: t("myHubDrawerMyNeeds", { ns: "us1", defaultValue: "My needs" }) },
-    { key: "receivedClaims", label: t("myHubDrawerReceivedClaims", { ns: "us1", defaultValue: "Received claims" }) },
-    { key: "sentClaims", label: t("myHubDrawerSentClaims", { ns: "us1", defaultValue: "Sent claims" }) }
-  ];
-
-  const bottomDrawerItems: Array<{ key: MyHubDrawerItem; label: string }> = [
-    { key: "profile", label: t("myHubDrawerProfile", { ns: "us1", defaultValue: "Profile" }) },
-    { key: "preferences", label: t("myHubDrawerPreferences", { ns: "us1", defaultValue: "Preferences" }) },
-    { key: "contribution", label: t("myHubDrawerContribution", { ns: "us1", defaultValue: "Contribution" }) }
-  ];
-
-  const drawerIconByItem: Record<MyHubDrawerItem, keyof typeof MaterialCommunityIcons.glyphMap> = {
-    myResources: "cube-outline",
-    receivedBids: "arrow-down-circle-outline",
-    sentBids: "arrow-up-circle-outline",
-    myNeeds: "clipboard-list-outline",
-    receivedClaims: "download-circle-outline",
-    sentClaims: "arrow-up-circle-outline",
-    profile: "account-circle-outline",
-    preferences: "tune-variant",
-    contribution: "cash-multiple"
-  };
 
   const renderActiveSurface = (): React.JSX.Element => {
     if (!accountId) {
       return <LoadingScreen />;
     }
 
-    if (activeDrawerItem === "myResources") {
+    if (activeSection === null) {
+      return <MyHubDashboardScreen onOpenSection={setActiveSection} />;
+    }
+
+    if (activeSection === "myResources") {
       return (
         <MyResourcesScreen
           creatorAccountId={accountId}
           refreshToken={refreshToken}
-          onOpenDrawer={onRequestOpenDrawer}
+          onBackToHub={backToHub}
           onAddResource={() => {
             setIsCreating(true);
             setEditingResource(null);
@@ -379,10 +315,10 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       );
     }
 
-    if (activeDrawerItem === "receivedBids") {
+    if (activeSection === "receivedBids") {
       return (
         <ReceivedBidsScreen
-          onOpenDrawer={onRequestOpenDrawer}
+          onBackToHub={backToHub}
           onOpenResource={(resourceId) => {
             setOpenedBidResourceId(resourceId);
           }}
@@ -396,10 +332,10 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       );
     }
 
-    if (activeDrawerItem === "sentBids") {
+    if (activeSection === "sentBids") {
       return (
         <SentBidsScreen
-          onOpenDrawer={onRequestOpenDrawer}
+          onBackToHub={backToHub}
           onOpenResource={(resourceId) => {
             setOpenedBidResourceId(resourceId);
           }}
@@ -413,12 +349,12 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       );
     }
 
-    if (activeDrawerItem === "myNeeds") {
+    if (activeSection === "myNeeds") {
       return (
         <MyNeedsScreen
           creatorAccountId={accountId}
           refreshToken={needsRefreshToken}
-          onOpenDrawer={onRequestOpenDrawer}
+          onBackToHub={backToHub}
           onAddNeed={() => {
             setIsCreatingNeed(true);
             setEditingNeed(null);
@@ -431,12 +367,12 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       );
     }
 
-    if (activeDrawerItem === "receivedClaims" || activeDrawerItem === "sentClaims") {
+    if (activeSection === "receivedClaims" || activeSection === "sentClaims") {
       return (
         <MyClaimsScreen
-          direction={activeDrawerItem === "receivedClaims" ? "received" : "sent"}
+          direction={activeSection === "receivedClaims" ? "received" : "sent"}
           accountId={accountId}
-          onOpenDrawer={onRequestOpenDrawer}
+          onBackToHub={backToHub}
           onOpenNeed={(needId) => {
             setOpenedClaimNeedId(needId);
           }}
@@ -447,11 +383,11 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       );
     }
 
-    if (activeDrawerItem === "profile") {
+    if (activeSection === "profile") {
       return (
         <MyProfileScreen
           accountId={accountId}
-          onOpenDrawer={onRequestOpenDrawer}
+          onBackToHub={backToHub}
           onLogout={async () => {
             await signOut();
           }}
@@ -459,28 +395,28 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
       );
     }
 
-    if (activeDrawerItem === "preferences") {
-      return <MyPreferencesScreen accountId={accountId} onOpenDrawer={onRequestOpenDrawer} />;
+    if (activeSection === "preferences") {
+      return <MyPreferencesScreen accountId={accountId} onBackToHub={backToHub} />;
     }
 
     return (
       <MyEconomicsScreen
         accountId={accountId}
-        onOpenDrawer={onRequestOpenDrawer}
+        onBackToHub={backToHub}
         onGoToOpportunity={(id) => {
           if (id === "campaignAirdrop") {
             onOpenCampaigns?.();
             return;
           }
 
-          const target: MyHubDrawerItem =
+          const target: MyHubSection =
             id === "resourceFirstImage" || id === "resourceDefaultTokenAmount" || id === "resourceAge24h"
               ? "myResources"
               : id === "needFirstImage" || id === "needDefaultTokenAmount" || id === "needAge24h"
                 ? "myNeeds"
                 : "profile";
 
-          selectDrawerItem(target);
+          setActiveSection(target);
         }}
       />
     );
@@ -637,65 +573,7 @@ function MyHubScreen({ authenticated, onRequestAuth, drawerVisible, onRequestOpe
     );
   }
 
-  return (
-    <View style={styles.myHubLayout}>
-      {drawerVisible ? (
-        <Pressable style={styles.myHubDrawerOverlay} onPress={onRequestCloseDrawer} accessibilityLabel={t("closeDrawer", { ns: "us1", defaultValue: "Close drawer" })} />
-      ) : null}
-
-      {drawerVisible ? (
-        <View style={styles.myHubDrawer}>
-          <View style={styles.myHubDrawerSection}>
-            {topDrawerItems.map((item) => {
-              const selected = activeDrawerItem === item.key;
-
-              return (
-                <Pressable
-                  key={item.key}
-                  accessibilityRole="button"
-                  accessibilityLabel={item.label}
-                  onPress={() => selectDrawerItem(item.key)}
-                  style={[styles.drawerItem, selected ? styles.drawerItemSelected : null]}
-                >
-                  <MaterialCommunityIcons
-                    name={drawerIconByItem[item.key]}
-                    size={20}
-                    color={selected ? "#ffffff" : "#7a3a15"}
-                  />
-                  <Text style={[styles.drawerItemLabel, selected ? styles.drawerItemLabelSelected : null]}>{item.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View style={styles.myHubDrawerSection}>
-            {bottomDrawerItems.map((item) => {
-              const selected = activeDrawerItem === item.key;
-
-              return (
-                <Pressable
-                  key={item.key}
-                  accessibilityRole="button"
-                  accessibilityLabel={item.label}
-                  onPress={() => selectDrawerItem(item.key)}
-                  style={[styles.drawerItem, selected ? styles.drawerItemSelected : null]}
-                >
-                  <MaterialCommunityIcons
-                    name={drawerIconByItem[item.key]}
-                    size={20}
-                    color={selected ? "#ffffff" : "#7a3a15"}
-                  />
-                  <Text style={[styles.drawerItemLabel, selected ? styles.drawerItemLabelSelected : null]}>{item.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      ) : null}
-
-      <View style={styles.myHubContent}>{renderActiveSurface()}</View>
-    </View>
-  );
+  return renderActiveSurface();
 }
 
 
@@ -864,7 +742,6 @@ function RootNavigator(): React.JSX.Element {
   const [activeRouteName, setActiveRouteName] = useState<MainRouteName>("Explore");
   const [mainNavigatorVersion, setMainNavigatorVersion] = useState(0);
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
-  const [myHubDrawerVisible, setMyHubDrawerVisible] = useState(true);
   const [showSupport, setShowSupport] = useState(false);
   const [activeChatConversation, setActiveChatConversation] = useState<ActiveChatConversation | null>(null);
   const [displayedChatConversationId, setDisplayedChatConversationId] = useState<string | null>(null);
@@ -873,7 +750,7 @@ function RootNavigator(): React.JSX.Element {
   const [incomingChatMessage, setIncomingChatMessage] = useState<ChatConversationItem | null>(null);
   const previousChatConversationsRef = useRef<Map<string, number> | null>(null);
   const navigationRef = useNavigationContainerRef<MainTabParamList>();
-  const [pendingMyHubDrawer, setPendingMyHubDrawer] = useState<{ drawer: MyHubDrawerItem; needId?: string } | null>(null);
+  const [pendingMyHubSection, setPendingMyHubSection] = useState<{ section: MyHubSection; needId?: string } | null>(null);
   const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
   const [minimumVersion, setMinimumVersion] = useState<string>(MINIMUM_SUPPORTED_APP_VERSION);
 
@@ -967,10 +844,9 @@ function RootNavigator(): React.JSX.Element {
 
     switch (destination.surface) {
       case "myHub":
-        setPendingMyHubDrawer(destination.needId
-          ? { drawer: destination.drawer, needId: destination.needId }
-          : { drawer: destination.drawer });
-        setMyHubDrawerVisible(false);
+        setPendingMyHubSection(destination.needId
+          ? { section: destination.drawer, needId: destination.needId }
+          : { section: destination.drawer });
         setActiveRouteName("MyHub");
         navigationRef.current?.navigate("MyHub");
         break;
@@ -998,12 +874,11 @@ function RootNavigator(): React.JSX.Element {
     setAuthEntry({ screen, returnTo: routeName });
   };
 
-  const openMyHubFromAccountMenu = (drawer: "profile" | "contribution" | "preferences"): void => {
+  const openMyHubFromAccountMenu = (section: "profile" | "contribution" | "preferences"): void => {
     setAccountMenuVisible(false);
     setShowSupport(false);
     setAuthEntry(null);
-    setPendingMyHubDrawer({ drawer });
-    setMyHubDrawerVisible(false);
+    setPendingMyHubSection({ section });
     setActiveRouteName("MyHub");
     navigationRef.current?.navigate("MyHub");
   };
@@ -1351,11 +1226,9 @@ function RootNavigator(): React.JSX.Element {
                     <MyHubScreen
                       authenticated={authenticated}
                       onRequestAuth={requestAuth}
-                      drawerVisible={myHubDrawerVisible}
-                      onRequestOpenDrawer={() => setMyHubDrawerVisible(true)}
-                      onRequestCloseDrawer={() => setMyHubDrawerVisible(false)}
-                      pendingDrawer={pendingMyHubDrawer}
-                      onConsumePendingDrawer={() => setPendingMyHubDrawer(null)}
+                      key={accountId ?? "anonymous"}
+                      pendingSection={pendingMyHubSection}
+                      onConsumePendingSection={() => setPendingMyHubSection(null)}
                       onOpenCampaigns={() => {
                         setActiveRouteName("Campaigns");
                         navigationRef.current?.navigate("Campaigns");
@@ -1512,70 +1385,6 @@ const styles = StyleSheet.create({
   accountMenuItemTitle: {
     color: "#000000",
     fontFamily: appFontFamilies.general
-  },
-  myHubLayout: {
-    flex: 1,
-    position: "relative"
-  },
-  myHubDrawerOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(255, 153, 68, 0.35)",
-    zIndex: 5
-  },
-  myHubDrawer: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    zIndex: 10,
-    elevation: 10,
-    backgroundColor: "#fff2e6",
-    borderRightWidth: 1,
-    borderRightColor: "#f1d6bf",
-    paddingVertical: 4,
-    paddingRight: 8,
-    paddingLeft: 0,
-    justifyContent: "space-between",
-    shadowColor: "#000000",
-    shadowOffset: { width: 2, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6
-  },
-  myHubDrawerSection: {
-    gap: 8
-  },
-  drawerItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderColor: "#f1d6bf"
-  },
-  drawerItemSelected: {
-    backgroundColor: "#ff4401",
-    borderColor: "#ff4401",
-    paddingVertical: 4,
-  },
-  drawerItemLabel: {
-    color: "#7a3a15",
-    textAlign: "center",
-    fontSize: 11,
-    lineHeight: 14,
-    fontWeight: "600"
-  },
-  drawerItemLabelSelected: {
-    color: "#ffffff"
-  },
-  myHubContent: {
-    flex: 1
   },
   chatMessageSnackbar: {
     backgroundColor: designTokens.colors.secondary

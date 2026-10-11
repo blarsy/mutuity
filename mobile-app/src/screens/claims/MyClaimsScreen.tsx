@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
 import { ScreenContainer } from "../../components/primitives";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
@@ -28,7 +28,7 @@ export interface MyClaimsScreenProps {
   injectedClaims?: NeedClaimItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
   onOpenNeed?: (needId: string) => void;
   onOpenCounterparty?: (accountId: string) => void;
   onAcceptClaim?: (claim: NeedClaimItem) => Promise<void>;
@@ -47,7 +47,7 @@ export function MyClaimsScreen({
   injectedClaims,
   injectedLoading,
   injectedErrorMessage,
-  onOpenDrawer,
+  onBackToHub,
   onOpenNeed,
   onOpenCounterparty,
   onAcceptClaim,
@@ -117,24 +117,31 @@ export function MyClaimsScreen({
   const sourceClaims = injectedClaims ?? claims;
   const resolvedLoading = injectedLoading ?? loading;
   const resolvedErrorMessage = injectedErrorMessage ?? errorMessage;
+  const title = direction === "received"
+    ? t("myClaimsReceivedTitle", { defaultValue: "Received claims" })
+    : t("myClaimsSentTitle", { defaultValue: "Sent claims" });
 
   if (resolvedLoading) {
-    return <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />;
+    return (
+      <MyHubScreenState title={title} onBackToHub={onBackToHub}>
+        <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (resolvedErrorMessage) {
-    return <ErrorState message={resolvedErrorMessage} onRetry={() => void loadClaims()} />;
+    return (
+      <MyHubScreenState title={title} onBackToHub={onBackToHub}>
+        <ErrorState message={resolvedErrorMessage} onRetry={() => void loadClaims()} />
+      </MyHubScreenState>
+    );
   }
 
   return (
     <ScreenContainer testID={`my-claims-screen-${direction}`} style={styles.root}>
       <MyHubScreenHeader
-        title={
-          direction === "received"
-            ? t("myClaimsReceivedTitle", { defaultValue: "Received claims" })
-            : t("myClaimsSentTitle", { defaultValue: "Sent claims" })
-        }
-        onOpenDrawer={onOpenDrawer}
+        title={title}
+        onBackToHub={onBackToHub}
       />
 
       {actionErrorMessage ? (

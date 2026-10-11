@@ -42,4 +42,23 @@ describe("fetchLinkableCampaigns", () => {
       { id: "campaign-2", title: "Autumn relaunch" }
     ]);
   });
+
+  it("filters missing IDs and absent or blank titles without altering valid titles", async () => {
+    jest.mocked(apolloClient.query).mockResolvedValue({
+      data: {
+        linkableCampaigns: {
+          nodes: [
+            null,
+            { id: null, title: "Missing ID" },
+            { id: "missing-title" },
+            { id: "null-title", title: null },
+            { id: "blank-title", title: "  " },
+            { id: "valid", title: " Valid title " }
+          ]
+        }
+      }
+    });
+
+    expect(await fetchLinkableCampaigns()).toEqual([{ id: "valid", title: " Valid title " }]);
+  });
 });

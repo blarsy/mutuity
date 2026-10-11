@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Icon, IconButton, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import { ScreenContainer } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -29,7 +30,7 @@ export interface BidsListScreenProps {
   onCancelBid?: (bid: BidWorkspaceItem) => Promise<void>;
   onAcceptBid?: (bid: BidWorkspaceItem) => Promise<void>;
   onDeclineBid?: (bid: BidWorkspaceItem) => Promise<void>;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
 }
 
 function formatDate(value: string | null, fallbackLabel: string): string {
@@ -48,14 +49,14 @@ function formatDate(value: string | null, fallbackLabel: string): string {
   }).format(parsedDate);
 }
 
-function statusChipLabel(status: BidWorkspaceItem["status"], t: (k: string, o?: Record<string, unknown>) => string): string {
+function statusChipLabel(status: BidWorkspaceItem["status"], t: TFunction): string {
   return t(`statuses.${status}`, { defaultValue: status.toLowerCase() });
 }
 
 function inactiveExplanationLabel(
   bid: BidWorkspaceItem,
   unknownDateLabel: string,
-  t: (k: string, o?: Record<string, unknown>) => string
+  t: TFunction
 ): string {
   if (bid.status === "WITHDRAWN") {
     return t("inactive.withdrawn", {
@@ -177,7 +178,7 @@ export function BidsListScreen({
   onCancelBid,
   onAcceptBid,
   onDeclineBid,
-  onOpenDrawer
+  onBackToHub
 }: BidsListScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [includeInactive, setIncludeInactive] = useState(includeInactiveDefault);
@@ -229,21 +230,27 @@ export function BidsListScreen({
   }, [includeInactive, remoteBids]);
 
   if (remoteLoading) {
-    return <LoadingState label={t("myBidsLoading", { defaultValue: "Loading your bids..." })} />;
+    return (
+      <MyHubScreenState title={title} onBackToHub={onBackToHub}>
+        <LoadingState label={t("myBidsLoading", { defaultValue: "Loading your bids..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (remoteErrorMessage) {
     return (
-      <ErrorState
-        message={remoteErrorMessage}
-        {...(onRetry ? { onRetry } : { onRetry: () => void loadBids() })}
-      />
+      <MyHubScreenState title={title} onBackToHub={onBackToHub}>
+        <ErrorState
+          message={remoteErrorMessage}
+          {...(onRetry ? { onRetry } : { onRetry: () => void loadBids() })}
+        />
+      </MyHubScreenState>
     );
   }
 
   return (
     <ScreenContainer testID={testID} style={styles.root}>
-      <MyHubScreenHeader title={title} onOpenDrawer={onOpenDrawer} />
+      <MyHubScreenHeader title={title} onBackToHub={onBackToHub} />
 
       <Pressable
         accessibilityRole="checkbox"

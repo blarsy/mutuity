@@ -11,7 +11,7 @@ import { fetchResourceById } from "../../src/services/graphql/resources";
 
 describe("fetchResourceById normalization", () => {
   it("uses the account display name when it is present", async () => {
-    const mockedQuery = apolloClient.query as jest.Mock;
+    const mockedQuery = jest.mocked(apolloClient.query);
     mockedQuery.mockResolvedValue({
       data: {
         resourceById: {
@@ -50,7 +50,7 @@ describe("fetchResourceById normalization", () => {
   });
 
   it("does not show a raw UUID in place of an account name", async () => {
-    const mockedQuery = apolloClient.query as jest.Mock;
+    const mockedQuery = jest.mocked(apolloClient.query);
     mockedQuery.mockResolvedValue({
       data: {
         resourceById: {
@@ -89,7 +89,7 @@ describe("fetchResourceById normalization", () => {
   });
 
   it("ignores a UUID-like display name and falls back to a safe label", async () => {
-    const mockedQuery = apolloClient.query as jest.Mock;
+    const mockedQuery = jest.mocked(apolloClient.query);
     mockedQuery.mockResolvedValue({
       data: {
         resourceById: {

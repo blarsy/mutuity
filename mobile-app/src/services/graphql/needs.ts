@@ -417,7 +417,10 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
     .filter((need): need is NeedItem => need !== null);
 
   for (const need of sourceNeeds) {
-    need.campaignId = campaignIdByNeedId.get(need.id) ?? need.campaignId;
+    const campaignId = campaignIdByNeedId.get(need.id);
+    if (campaignId !== undefined) {
+      need.campaignId = campaignId;
+    }
   }
 
   return sourceNeeds.filter((need) => {

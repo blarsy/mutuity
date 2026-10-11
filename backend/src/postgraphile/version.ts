@@ -57,10 +57,7 @@ export async function getAppVersionFloor(pool: Pool): Promise<AppVersionFloor> {
 
   try {
     const { rows } = await pool.query<AppVersionFloor>(
-      `select min_ios_semver as "minIosSemver",
-              min_android_semver as "minAndroidSemver"
-       from app_private.app_version_policy
-       where id = true`
+      'select min_ios_semver as "minIosSemver", min_android_semver as "minAndroidSemver" from app_public.app_version_policy()'
     );
 
     cachedFloor = rows[0] ?? DEFAULT_FLOOR;

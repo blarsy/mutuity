@@ -4,7 +4,7 @@ import { Button, Icon, IconButton, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -21,7 +21,7 @@ export interface MyResourcesScreenProps {
   injectedResources?: MyResourceItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
 }
 
 export function MyResourcesScreen({
@@ -32,7 +32,7 @@ export function MyResourcesScreen({
   injectedResources,
   injectedLoading,
   injectedErrorMessage,
-  onOpenDrawer
+  onBackToHub
 }: MyResourcesScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const [resources, setResources] = useState<MyResourceItem[]>([]);
@@ -123,18 +123,26 @@ export function MyResourcesScreen({
   );
 
   if (effectiveLoading) {
-    return <LoadingState label={t("loading", { defaultValue: "Loading..." })} />;
+    return (
+      <MyHubScreenState title={t("myResourcesTitle", { defaultValue: "My resources" })} onBackToHub={onBackToHub}>
+        <LoadingState label={t("loading", { defaultValue: "Loading..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (effectiveErrorMessage) {
-    return <ErrorState message={effectiveErrorMessage} onRetry={() => void loadResources()} />;
+    return (
+      <MyHubScreenState title={t("myResourcesTitle", { defaultValue: "My resources" })} onBackToHub={onBackToHub}>
+        <ErrorState message={effectiveErrorMessage} onRetry={() => void loadResources()} />
+      </MyHubScreenState>
+    );
   }
 
   return (
     <ScreenContainer testID="my-resources-screen" style={styles.root}>
       <MyHubScreenHeader
         title={t("myResourcesTitle", { defaultValue: "My resources" })}
-        onOpenDrawer={onOpenDrawer}
+        onBackToHub={onBackToHub}
         right={
           <PrimaryButton
             label={t("addResourceLabel", { defaultValue: "Add Resource" })}

@@ -4,7 +4,7 @@ import { Button, Icon, IconButton, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
 import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -21,7 +21,7 @@ export interface MyNeedsScreenProps {
   injectedNeeds?: NeedItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
 }
 
 export function MyNeedsScreen({
@@ -32,7 +32,7 @@ export function MyNeedsScreen({
   injectedNeeds,
   injectedLoading,
   injectedErrorMessage,
-  onOpenDrawer
+  onBackToHub
 }: MyNeedsScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us2"]);
   const [needs, setNeeds] = useState<NeedItem[]>([]);
@@ -106,18 +106,26 @@ export function MyNeedsScreen({
   }, [pendingDeleteNeed, t]);
 
   if (resolvedLoading) {
-    return <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />;
+    return (
+      <MyHubScreenState title={t("myNeedsTitle", { ns: "us2", defaultValue: "My needs" })} onBackToHub={onBackToHub}>
+        <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (resolvedErrorMessage) {
-    return <ErrorState message={resolvedErrorMessage} onRetry={() => void loadNeeds()} />;
+    return (
+      <MyHubScreenState title={t("myNeedsTitle", { ns: "us2", defaultValue: "My needs" })} onBackToHub={onBackToHub}>
+        <ErrorState message={resolvedErrorMessage} onRetry={() => void loadNeeds()} />
+      </MyHubScreenState>
+    );
   }
 
   return (
     <ScreenContainer testID="my-needs-screen" style={styles.root}>
       <MyHubScreenHeader
         title={t("myNeedsTitle", { ns: "us2", defaultValue: "My needs" })}
-        onOpenDrawer={onOpenDrawer}
+        onBackToHub={onBackToHub}
         right={
           <PrimaryButton
             label={t("addNeedLabel", { ns: "us2", defaultValue: "Add need" })}

@@ -191,7 +191,11 @@ function toProfileRecord(
     email: "",
     avatarUrl: account.avatarUrl ?? null,
     location: locationLabel
-      ? { label: locationLabel, latitude, longitude }
+      ? {
+          label: locationLabel,
+          ...(latitude !== undefined ? { latitude } : {}),
+          ...(longitude !== undefined ? { longitude } : {})
+        }
       : null,
     bio: account.bio ?? "",
     profileLinks: normalizeProfileLinks((account as { profileLinks?: unknown }).profileLinks),

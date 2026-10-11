@@ -1,6 +1,7 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
+import { mockLinkingUrlListener } from "../utils/mockLinkingUrlListener";
 
 import App from "../../src/App";
 
@@ -32,13 +33,7 @@ describe("S8 Apple social auth smoke", () => {
     const mockUrlHandler = { current: null as ((event: { url: string }) => void) | null };
 
     jest.spyOn(Linking, "getInitialURL").mockResolvedValue(null);
-    jest.spyOn(Linking, "addEventListener").mockImplementation(((eventName: string, handler: (event: { url: string }) => void) => {
-      if (eventName === "url") {
-        mockUrlHandler.current = handler;
-      }
-
-      return { remove: jest.fn() };
-    }) as typeof Linking.addEventListener);
+    mockLinkingUrlListener(mockUrlHandler);
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined as never);
 
     const screen = render(React.createElement(App));

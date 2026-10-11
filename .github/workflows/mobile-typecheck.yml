@@ -13,12 +13,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: mobile-app/package-lock.json
 
@@ -29,4 +29,4 @@ jobs:
         run: npm run typecheck
 
       - name: Enforce GraphQL codegen drift
-        run: git diff --exit-code -- src/services/graphql/schema.graphql src/services/graphql/generated.ts
+        run: git diff --exit-code -- src/services/graphql/schema.graphql src/services/graphql/generated.ts src/services/graphql/operations.generated.ts

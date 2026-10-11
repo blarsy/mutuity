@@ -1,6 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
+import { mockLinkingUrlListener } from "../utils/mockLinkingUrlListener";
 
 import App from "../../src/App";
 import * as sessionService from "../../src/services/auth/session";
@@ -55,13 +56,7 @@ describe("US5 Apple social signup acceptance", () => {
   it("opens the registration completion flow for an Apple signup callback", async () => {
     const mockUrlHandler = { current: null as ((event: { url: string }) => void) | null };
 
-    jest.spyOn(Linking, "addEventListener").mockImplementation(((eventName: string, handler: (event: { url: string }) => void) => {
-      if (eventName === "url") {
-        mockUrlHandler.current = handler;
-      }
-
-      return { remove: jest.fn() };
-    }) as typeof Linking.addEventListener);
+    mockLinkingUrlListener(mockUrlHandler);
 
     jest.mocked(graphqlAuth.authenticateWithPassword).mockResolvedValue({ accountId: "mock-account-id" } as never);
     jest.mocked(graphqlAuth.registerWithSocialIdentity).mockResolvedValue(undefined as never);

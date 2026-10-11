@@ -29,10 +29,7 @@ export const Default: Story = {
 };
 
 export const WithoutDismiss: Story = {
-  args: {
-    onDismiss: undefined
-  },
-  render: (args) => (
+  render: ({ onDismiss: _onDismiss, ...args }) => (
     <Frame>
       <UpdateRequiredScreen {...args} />
     </Frame>

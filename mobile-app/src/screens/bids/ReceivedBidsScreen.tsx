@@ -12,7 +12,7 @@ export interface ReceivedBidsScreenProps {
   onOpenResource?: (resourceId: string) => void;
   onOpenCounterparty?: (accountId: string) => void;
   onOpenConversation?: (conversationId: string) => void;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
 }
 
 export function ReceivedBidsScreen({
@@ -22,7 +22,7 @@ export function ReceivedBidsScreen({
   onOpenResource,
   onOpenCounterparty,
   onOpenConversation,
-  onOpenDrawer
+  onBackToHub
 }: ReceivedBidsScreenProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -42,7 +42,7 @@ export function ReceivedBidsScreen({
       {...(onOpenResource ? { onOpenResource } : {})}
       {...(onOpenCounterparty ? { onOpenCounterparty } : {})}
       {...(onOpenConversation ? { onOpenConversation } : {})}
-      {...(onOpenDrawer ? { onOpenDrawer } : {})}
+      {...(onBackToHub ? { onBackToHub } : {})}
     />
   );
 }

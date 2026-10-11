@@ -4,7 +4,7 @@ import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AppSegmentedButtons, FormFieldLabel, PrimaryButton, ScreenContainer } from "../../components/primitives";
-import { MyHubScreenHeader } from "../../components/MyHubScreenHeader";
+import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
 import {
   fetchNotificationPreferencesFromBackend,
   getNotificationPreferences,
@@ -60,10 +60,10 @@ export interface MyPreferencesScreenProps {
   accountId?: string | null;
   preferences?: NotificationPreferenceRecord[];
   onBack?: () => void;
-  onOpenDrawer?: () => void;
+  onBackToHub?: () => void;
 }
 
-export function MyPreferencesScreen({ accountId = null, preferences, onBack, onOpenDrawer }: MyPreferencesScreenProps = {}): React.JSX.Element {
+export function MyPreferencesScreen({ accountId = null, preferences, onBack, onBackToHub }: MyPreferencesScreenProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -131,18 +131,26 @@ export function MyPreferencesScreen({ accountId = null, preferences, onBack, onO
   }, [persistedStateByCategory, stateByCategory]);
 
   if (loading) {
-    return <LoadingState label={t("preferencesLoading", { defaultValue: "Loading preferences..." })} />;
+    return (
+      <MyHubScreenState title={t("myPreferencesTitle", { defaultValue: "My preferences" })} onBackToHub={onBackToHub}>
+        <LoadingState label={t("preferencesLoading", { defaultValue: "Loading preferences..." })} />
+      </MyHubScreenState>
+    );
   }
 
   if (errorMessage) {
-    return <ErrorState message={errorMessage} onRetry={loadPreferences} />;
+    return (
+      <MyHubScreenState title={t("myPreferencesTitle", { defaultValue: "My preferences" })} onBackToHub={onBackToHub}>
+        <ErrorState message={errorMessage} onRetry={loadPreferences} />
+      </MyHubScreenState>
+    );
   }
 
   return (
     <ScreenContainer testID="my-preferences-screen" style={styles.root}>
       <MyHubScreenHeader
         title={t("myPreferencesTitle", { defaultValue: "My preferences" })}
-        onOpenDrawer={onOpenDrawer}
+        onBackToHub={onBackToHub}
         right={onBack ? <PrimaryButton label={t("backLabel", { defaultValue: "Back" })} onPress={onBack} /> : undefined}
       />
 

@@ -1,12 +1,23 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import { AppNavigator } from "../../src/navigation/AppNavigator";
+import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { AppNavigator, MyHubScreen } from "../../src/navigation/AppNavigator";
+import type { MyHubSection } from "../../src/screens/hub/MyHubDashboardScreen";
 import { designTokens } from "../../src/theme/tokens";
 import { appFontFamilies } from "../../src/theme/fonts";
 
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 const mockNavigate = jest.fn();
 const mockAccountId = "11111111-1111-4111-8111-111111111111";
+
+function mockSpoke(title: string, props: any) {
+  const React = require("react");
+  const { View, Button } = require("react-native");
+  const { MyHubScreenHeader } = require("../../src/components/MyHubScreenHeader");
+  return React.createElement(View, null,
+    React.createElement(MyHubScreenHeader, { title, onBackToHub: props.onBackToHub }),
+    props.onAddResource ? React.createElement(Button, { title: "Add resource", onPress: props.onAddResource }) : null,
+    props.onGoToOpportunity ? React.createElement(Button, { title: "Resource opportunity", onPress: () => props.onGoToOpportunity("resourceFirstImage") }) : null);
+}
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key })
@@ -35,26 +46,37 @@ jest.mock("../../src/navigation/US2Navigator", () => ({ US2ExploreScreen: () => 
 jest.mock("../../src/navigation/US3Navigator", () => ({ US3Navigator: () => null }));
 jest.mock("../../src/navigation/AccountPublicProfileNavigator", () => ({ AccountPublicProfileNavigator: () => null }));
 jest.mock("../../src/screens/profile/MyProfileScreen", () => ({
-  MyProfileScreen: ({ onOpenDrawer }: { onOpenDrawer: () => void }) => {
+  MyProfileScreen: (props: any) => mockSpoke("Profile screen", props)
+}));
+jest.mock("../../src/screens/profile/MyPreferencesScreen", () => ({
+  MyPreferencesScreen: (props: any) => mockSpoke("Preferences screen", props)
+}));
+jest.mock("../../src/screens/economics/MyEconomicsScreen", () => ({
+  MyEconomicsScreen: (props: any) => mockSpoke("Economics screen", props)
+}));
+jest.mock("../../src/screens/resources/MyResourcesScreen", () => ({
+  MyResourcesScreen: (props: any) => mockSpoke("Resources screen", props)
+}));
+jest.mock("../../src/screens/needs/MyNeedsScreen", () => ({
+  MyNeedsScreen: (props: any) => mockSpoke("Needs screen", props)
+}));
+jest.mock("../../src/screens/bids/ReceivedBidsScreen", () => ({
+  ReceivedBidsScreen: (props: any) => mockSpoke("Received bids screen", props)
+}));
+jest.mock("../../src/screens/bids/SentBidsScreen", () => ({
+  SentBidsScreen: (props: any) => mockSpoke("Sent bids screen", props)
+}));
+jest.mock("../../src/screens/claims/MyClaimsScreen", () => ({
+  MyClaimsScreen: (props: any) => mockSpoke(`${props.direction} claims screen`, props)
+}));
+jest.mock("../../src/screens/resources/EditResourceScreen", () => ({
+  EditResourceScreen: ({ onBack }: { onBack: () => void }) => {
     const React = require("react");
     const { View, Text, Button } = require("react-native");
     return React.createElement(View, null,
-      React.createElement(Text, null, "Profile screen"),
-      React.createElement(Button, { title: "Open drawer", onPress: onOpenDrawer }));
+      React.createElement(Text, null, "Edit resource screen"),
+      React.createElement(Button, { title: "Cancel editor", onPress: onBack }));
   }
-}));
-jest.mock("../../src/screens/profile/MyPreferencesScreen", () => ({
-  MyPreferencesScreen: () => require("react").createElement(require("react-native").Text, null, "Preferences screen")
-}));
-jest.mock("../../src/screens/economics/MyEconomicsScreen", () => ({
-  MyEconomicsScreen: () => require("react").createElement(require("react-native").Text, null, "Economics screen")
-}));
-jest.mock("../../src/screens/resources/MyResourcesScreen", () => ({
-  MyResourcesScreen: ({ onAddResource }: { onAddResource: () => void }) =>
-    require("react").createElement(require("react-native").Button, { title: "Add resource", onPress: onAddResource })
-}));
-jest.mock("../../src/screens/resources/EditResourceScreen", () => ({
-  EditResourceScreen: () => require("react").createElement(require("react-native").Text, null, "Edit resource screen")
 }));
 jest.mock("react-native-paper", () => {
   const actual = jest.requireActual("react-native-paper");
@@ -109,8 +131,8 @@ it("leaves a nested My Hub editor when selecting another account shortcut", asyn
   fireEvent.press(screen.getByLabelText("Account"));
   fireEvent.press(screen.getByRole("button", { name: "Profile" }));
   await waitFor(() => expect(screen.getByText("Profile screen")).toBeTruthy());
-  fireEvent.press(screen.getByText("Open drawer"));
-  fireEvent.press(screen.getByRole("button", { name: "My resources" }));
+  fireEvent.press(screen.getByTestId("my-hub-back-button"));
+  fireEvent.press(screen.getByTestId("my-hub-section-myResources"));
   fireEvent.press(screen.getByText("Add resource"));
   expect(screen.getByText("Edit resource screen")).toBeTruthy();
   fireEvent.press(screen.getByLabelText("Account"));
@@ -125,4 +147,77 @@ it("preserves logout", async () => {
   fireEvent.press(screen.getByRole("button", { name: "Log out" }));
   await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
   expect(screen.queryByTestId("account-menu")).toBeNull();
+});
+
+const sections: Array<[MyHubSection, string]> = [
+  ["myResources", "Resources screen"],
+  ["receivedBids", "Received bids screen"],
+  ["sentBids", "Sent bids screen"],
+  ["myNeeds", "Needs screen"],
+  ["receivedClaims", "received claims screen"],
+  ["sentClaims", "sent claims screen"],
+  ["profile", "Profile screen"],
+  ["preferences", "Preferences screen"],
+  ["contribution", "Economics screen"]
+];
+
+it.each(sections)("opens %s directly from the dashboard and returns to Hub", (section, title) => {
+  const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} />);
+  expect(screen.getByTestId("my-hub-dashboard")).toBeTruthy();
+  expect(screen.queryByText("myHubDashboardIntro")).toBeNull();
+  for (const [key] of sections) {
+    expect(screen.getByTestId(`my-hub-section-${key}`)).toHaveStyle({ width: 100, height: 100 });
+  }
+  for (const group of ["Resources", "Needs", "Account"]) {
+    expect(within(screen.getByTestId(`myHub${group}Group`)).getAllByRole("button")).toHaveLength(3);
+  }
+  fireEvent.press(screen.getByTestId(`my-hub-section-${section}`));
+  expect(screen.getByRole("header", { name: title })).toBeTruthy();
+  expect(screen.queryByTestId("my-hub-dashboard")).toBeNull();
+  expect(screen.queryByTestId("my-hub-drawer-open-button")).toBeNull();
+  fireEvent.press(screen.getByRole("button", { name: "myHubBack" }));
+  expect(screen.getByTestId("my-hub-dashboard")).toBeTruthy();
+  expect(screen.queryByText(title)).toBeNull();
+});
+
+it("keeps editor back within its spoke, then returns to Hub", () => {
+  const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} />);
+  fireEvent.press(screen.getByTestId("my-hub-section-myResources"));
+  fireEvent.press(screen.getByText("Add resource"));
+  fireEvent.press(screen.getByText("Cancel editor"));
+  expect(screen.getByText("Resources screen")).toBeTruthy();
+  fireEvent.press(screen.getByTestId("my-hub-back-button"));
+  expect(screen.getByTestId("my-hub-dashboard")).toBeTruthy();
+});
+
+it("opens a pending notification destination and can return to Hub", () => {
+  const consumed = jest.fn();
+  const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()}
+    pendingSection={{ section: "receivedClaims" }} onConsumePendingSection={consumed} />);
+  expect(screen.getByText("received claims screen")).toBeTruthy();
+  expect(consumed).toHaveBeenCalledTimes(1);
+  fireEvent.press(screen.getByTestId("my-hub-back-button"));
+  expect(screen.getByTestId("my-hub-dashboard")).toBeTruthy();
+});
+
+it("preserves contribution opportunity shortcuts without a drawer", () => {
+  const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} />);
+  fireEvent.press(screen.getByTestId("my-hub-section-contribution"));
+  fireEvent.press(screen.getByText("Resource opportunity"));
+  expect(screen.getByText("Resources screen")).toBeTruthy();
+  fireEvent.press(screen.getByTestId("my-hub-back-button"));
+  expect(screen.getByTestId("my-hub-dashboard")).toBeTruthy();
+});
+
+it.each([
+  { injectedLoading: true },
+  { injectedErrorMessage: "Unable to load resources" }
+])("keeps the real resource screen's back button available in state %j", (state) => {
+  const { MyResourcesScreen: RealMyResourcesScreen } = jest.requireActual("../../src/screens/resources/MyResourcesScreen");
+  const back = jest.fn();
+  const screen = render(<RealMyResourcesScreen creatorAccountId={mockAccountId}
+    onAddResource={jest.fn()} onEditResource={jest.fn()} onBackToHub={back} {...state} />);
+  expect(screen.getByRole("header", { name: "My resources" })).toBeTruthy();
+  fireEvent.press(screen.getByTestId("my-hub-back-button"));
+  expect(back).toHaveBeenCalledTimes(1);
 });
