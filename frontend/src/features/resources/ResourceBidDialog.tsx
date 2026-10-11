@@ -7,10 +7,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Stack,
   TextField,
+  Tooltip,
   Typography
 } from "@mui/material";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -121,10 +124,15 @@ export function ResourceBidDialog({
 
   return (
     <>
-      <Stack alignItems={{ xs: "stretch", sm: "flex-start" }} spacing={1}>
-        <Button disabled={disabled || acceptedAlready} onClick={() => setOpen(true)} variant="contained">
-          {buttonLabel}
-        </Button>
+      <Stack alignItems="flex-start" spacing={1}>
+        <Tooltip title={buttonLabel}>
+          <span>
+            <IconButton aria-label={buttonLabel} aria-haspopup="dialog" color="primary"
+              disabled={disabled || acceptedAlready} onClick={() => setOpen(true)}>
+              <VolunteerActivismIcon fontSize="large" />
+            </IconButton>
+          </span>
+        </Tooltip>
         {resolvedDisabledReason ? (
           <Typography color="text.secondary" variant="caption">
             {resolvedDisabledReason}

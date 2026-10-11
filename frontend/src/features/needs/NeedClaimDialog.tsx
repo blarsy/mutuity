@@ -7,10 +7,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Stack,
   TextField,
+  Tooltip,
   Typography
 } from "@mui/material";
+import WavingHandIcon from "@mui/icons-material/WavingHand";
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
@@ -26,6 +29,7 @@ type NeedClaimDialogProps = {
     status: string;
   } | null;
   disabled?: boolean;
+  iconOnly?: boolean;
   disabledReason?: string | null;
   onClaimed?: (claimId: string) => void;
 };
@@ -35,6 +39,7 @@ export function NeedClaimDialog({
   needTitle,
   existingClaim,
   disabled = false,
+  iconOnly = false,
   disabledReason,
   onClaimed
 }: NeedClaimDialogProps) {
@@ -64,29 +69,45 @@ export function NeedClaimDialog({
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
   const handleSubmit = async () => {
-    const result = await claimNeed({
-      variables: {
-        input: {
-          needId,
-          message: message.trim() || null
+    if (loading || disabled) return;
+    try {
+      const result = await claimNeed({
+        variables: {
+          input: {
+            needId,
+            message: message.trim() || null
+          }
         }
+      });
+
+      const claimId = result.data?.claimNeed?.needClaim?.id;
+
+      if (claimId) {
+        setOpen(false);
+        onClaimed?.(claimId);
       }
-    });
-
-    const claimId = result.data?.claimNeed?.needClaim?.id;
-
-    if (claimId) {
-      setOpen(false);
-      onClaimed?.(claimId);
+    } catch {
+      // Apollo exposes the error above; preserve the message for retry.
     }
   };
 
   return (
     <>
-      <Stack alignItems={{ xs: "stretch", sm: "flex-start" }} spacing={1}>
-        <Button disabled={disabled} onClick={() => setOpen(true)} variant="contained">
-          {buttonLabel}
-        </Button>
+      <Stack alignItems={iconOnly ? "flex-start" : { xs: "stretch", sm: "flex-start" }} spacing={1}>
+        {iconOnly ? (
+          <Tooltip title={buttonLabel}>
+            <span>
+              <IconButton aria-label={buttonLabel} aria-haspopup="dialog" color="primary"
+                disabled={disabled} onClick={() => setOpen(true)}>
+                <WavingHandIcon fontSize="large" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        ) : (
+          <Button disabled={disabled} onClick={() => setOpen(true)} variant="contained">
+            {buttonLabel}
+          </Button>
+        )}
         {disabledReason ? (
           <Typography color="text.secondary" variant="caption">
             {disabledReason}
@@ -94,7 +115,7 @@ export function NeedClaimDialog({
         ) : null}
       </Stack>
 
-      <Dialog fullWidth maxWidth="sm" onClose={() => setOpen(false)} open={open}>
+      <Dialog fullWidth maxWidth="sm" onClose={() => { if (!loading) setOpen(false); }} open={open}>
         <DialogTitle>{existingClaim ? t("claimDialog.updateYourClaim") : t("claimDialog.claimThisNeed")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
@@ -119,7 +140,7 @@ export function NeedClaimDialog({
           <Button onClick={() => setOpen(false)} disabled={loading}>
             {t("actions.cancel", { ns: "common" })}
           </Button>
-          <Button onClick={() => void handleSubmit()} disabled={loading} variant="contained">
+          <Button onClick={() => void handleSubmit()} disabled={loading || disabled} variant="contained">
             {loading ? t("claimDialog.saving") : existingClaim ? t("claimDialog.saveClaim") : t("claimDialog.submitClaim")}
           </Button>
         </DialogActions>

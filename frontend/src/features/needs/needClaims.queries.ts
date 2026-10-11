@@ -1,5 +1,15 @@
 import { gql } from "@apollo/client";
 
+export const VIEWER_NEED_CLAIM_QUERY = gql`
+  query ViewerNeedClaim($needId: UUID!, $claimerAccountId: UUID!) {
+    needClaimByNeedIdAndClaimerAccountId(needId: $needId, claimerAccountId: $claimerAccountId) {
+      id
+      message
+      status
+    }
+  }
+`;
+
 export const CLAIM_NEED_MUTATION = gql`
   mutation ClaimNeed($input: ClaimNeedInput!) {
     claimNeed(input: $input) {

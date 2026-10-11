@@ -14,6 +14,9 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { CLAIM_CONVERSATION_LOOKUP_QUERY } from "../../features/chat/chat.queries";
 import { StartConversationButton } from "../../features/chat/StartConversationDialog";
+import { NeedClaimDialog } from "../../features/needs/NeedClaimDialog";
+import { VIEWER_NEED_CLAIM_QUERY } from "../../features/needs/needClaims.queries";
+import type { ViewerNeedClaimQuery } from "../../graphql/generated";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
 import { IntensityDisplay } from "../../components/IntensityPicker";
@@ -137,7 +140,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
     setCurrentImageIndex(0);
   }, [need?.id]);
 
-  const { data: conversationData, loading: conversationLoading } = useQuery<ClaimConversationLookupData>(CLAIM_CONVERSATION_LOOKUP_QUERY, {
+  const { data: conversationData, loading: conversationLoading, refetch: refetchConversation } = useQuery<ClaimConversationLookupData>(CLAIM_CONVERSATION_LOOKUP_QUERY, {
     skip: !need || !session.authenticated || !session.account?.id || need.creatorAccountId === session.account.id,
     variables: {
       needId,
@@ -145,6 +148,12 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
       claimerAccountId: session.account?.id
     }
   });
+
+  const { data: claimData, loading: claimLoading, error: claimError, refetch: refetchClaim } = useQuery<ViewerNeedClaimQuery>(VIEWER_NEED_CLAIM_QUERY, {
+    skip: !need || !session.authenticated || !session.account?.id || need.creatorAccountId === session.account.id,
+    variables: { needId, claimerAccountId: session.account?.id }
+  });
+  const claimUnavailable = !need?.isActive || Boolean(need.expiresAt && new Date(need.expiresAt).getTime() <= Date.now());
 
   const existingConversationId =
     conversationData?.claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId?.id ?? null;
@@ -190,15 +199,30 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
                     viewerAccountId: session.account?.id,
                     creatorAccountId: need.creatorAccountId
                   }) && session.authenticated ? (
-                    <StartConversationButton
-                      buttonLabel={t("page.contactCreator")}
-                      contextId={need.id}
-                      existingConversationId={existingConversationId}
-                      kind="need"
-                      lookupLoading={conversationLoading}
-                      otherAccountId={need.creatorAccountId}
-                      title={need.title}
-                    />
+                    <Stack direction="row" spacing={1}>
+                      <StartConversationButton
+                        buttonLabel={t("page.contactCreator")}
+                        contextId={need.id}
+                        existingConversationId={existingConversationId}
+                        kind="need"
+                        lookupLoading={conversationLoading}
+                        otherAccountId={need.creatorAccountId}
+                        title={need.title}
+                      />
+                      <NeedClaimDialog
+                        key={`${need.id}-${session.account?.id}`}
+                        iconOnly
+                        needId={need.id}
+                        needTitle={need.title}
+                        existingClaim={claimData?.needClaimByNeedIdAndClaimerAccountId}
+                        disabled={claimUnavailable || claimLoading || Boolean(claimError)}
+                        disabledReason={claimUnavailable ? t("detail.endedNotice") : null}
+                        onClaimed={() => {
+                          void refetchClaim().catch(() => {});
+                          void refetchConversation().catch(() => {});
+                        }}
+                      />
+                    </Stack>
                   ) : !session.authenticated ? (
                     <Button component={NextLink} href={buildNeedContactLoginHref(need.id)} variant="contained">
                       {t("page.signInToContact")}
