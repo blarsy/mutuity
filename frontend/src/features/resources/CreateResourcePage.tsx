@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Container,
   FormControlLabel,
   FormGroup,
   MenuItem,
@@ -43,6 +42,7 @@ import {
 import { RESOURCE_INTENSITY_OPTIONS, type ResourceCategoryOption } from "./types";
 import type { LinkableResourceCampaignOptionsQuery, PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
+import { PageContainer } from "../../components/PageContainer";
 
 function normalizeOptionalInteger(value: number | "") {
   if (value === "") {
@@ -215,7 +215,7 @@ export default function CreateResourcePage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="sm">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
@@ -224,38 +224,38 @@ export default function CreateResourcePage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   if (isEditMode && loadingEditResource) {
     return (
-      <Container maxWidth="sm">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
           </Typography>
           <Alert severity="info">{t("form.loading")}</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   if (isEditMode && !editResource && !loadingEditResource) {
     return (
-      <Container maxWidth="sm">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
           </Typography>
           <Alert severity="warning">{t("form.notFound")}</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
           <Box>
@@ -563,6 +563,6 @@ export default function CreateResourcePage() {
           )}
         </Formik>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

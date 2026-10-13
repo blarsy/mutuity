@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Alert, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../components/PageContainer";
 import { useAuth } from "../features/auth/AuthProvider";
 import { WorkspaceChatButton } from "../features/chat/WorkspaceChatButton";
 import { useRequireAuth } from "../features/auth/requireAuth";
@@ -227,7 +228,7 @@ export default function ClaimsPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("title")}
@@ -236,12 +237,12 @@ export default function ClaimsPage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -550,6 +551,6 @@ export default function ClaimsPage() {
           <Button color="success" disabled={settling} onClick={handleSettleConfirm} variant="contained">{t("settleConfirm.confirm")}</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

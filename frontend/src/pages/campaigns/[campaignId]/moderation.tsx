@@ -9,7 +9,6 @@ import {
   Button,
   Chip,
   CircularProgress,
-  Container,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -31,6 +30,7 @@ import {
   type CreateCampaignValues
 } from "../../../features/campaigns/createCampaign.validation";
 import { RichTextEditor } from "../../../components/richText/RichTextEditor";
+import { PageContainer } from "../../../components/PageContainer";
 import {
   CAMPAIGN_MODERATION_DETAILS_QUERY,
   UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION
@@ -351,7 +351,7 @@ export default function CampaignModerationPage() {
   };
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 3 }}>
         <Stack direction="row" spacing={2} sx={{ mb: 3, alignItems: "center" }}>
           <IconButton onClick={() => router.push("/campaigns")}>
@@ -713,6 +713,6 @@ export default function CampaignModerationPage() {
           </Stack>
         ) : null}
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

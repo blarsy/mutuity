@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Container,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -33,6 +32,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useRequireAdmin } from "../auth/requireAdmin";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextContent } from "../../components/richText/RichTextContent";
+import { PageContainer } from "../../components/PageContainer";
 import {
   APPROVE_CAMPAIGN_MUTATION,
 } from "../campaigns/campaigns.queries";
@@ -956,26 +956,26 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
 
   if (isChecking || isRedirecting || isForbiddenRedirecting) {
     return (
-      <Container maxWidth="xl">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Alert severity="info">Checking administrator access...</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   if (!isAdmin) {
     return (
-      <Container maxWidth="xl">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Alert severity="error">Administrator access is required.</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <PageContainer>
       <Box sx={{ py: 4 }}>
         <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
           {getAdminSectionOrder().map(sectionKey => {
@@ -1128,6 +1128,6 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
           </Stack>
         </Stack>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

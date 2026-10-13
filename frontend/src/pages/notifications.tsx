@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,6 +16,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../components/PageContainer";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { useAuth } from "../features/auth/AuthProvider";
 import { useUnreadNotifications } from "../features/notifications/useUnreadNotifications";
@@ -392,7 +392,7 @@ export default function NotificationsPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("title")}
@@ -401,12 +401,12 @@ export default function NotificationsPage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
@@ -514,6 +514,6 @@ export default function NotificationsPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

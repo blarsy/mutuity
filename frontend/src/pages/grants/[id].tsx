@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useRouter } from "next/router";
-import { Alert, Box, Button, CircularProgress, Container, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../../components/PageContainer";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import {
   ClaimGrantDocument,
@@ -39,20 +40,20 @@ export default function GrantClaimPage() {
 
   if (isChecking || isRedirecting) {
     return (
-      <Container maxWidth="sm" sx={{ py: 6, textAlign: "center" }}>
+      <PageContainer sx={{ py: 6, textAlign: "center" }}>
         <CircularProgress />
-      </Container>
+      </PageContainer>
     );
   }
 
   if (!grantId || queryLoading) {
     return (
-      <Container maxWidth="sm" sx={{ py: 6, textAlign: "center" }}>
+      <PageContainer sx={{ py: 6, textAlign: "center" }}>
         <CircularProgress />
         <Typography variant="body2" sx={{ mt: 2 }}>
           {t("loading")}
         </Typography>
-      </Container>
+      </PageContainer>
     );
   }
 
@@ -60,14 +61,14 @@ export default function GrantClaimPage() {
 
   if (!grant) {
     return (
-      <Container maxWidth="sm" sx={{ py: 6 }}>
+      <PageContainer sx={{ py: 6 }}>
         <Alert severity="warning">
           <Typography fontWeight={700}>{t("unavailable")}</Typography>
           <Typography variant="body2" sx={{ mt: 1 }}>
             {t("unavailableDescription")}
           </Typography>
         </Alert>
-      </Container>
+      </PageContainer>
     );
   }
 
@@ -79,7 +80,7 @@ export default function GrantClaimPage() {
   const isDenial = outcome !== null && !isSuccess;
 
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
+    <PageContainer sx={{ py: 6 }}>
       <Stack spacing={3}>
         <Box>
           <Typography variant="h4" fontWeight={700}>
@@ -133,6 +134,6 @@ export default function GrantClaimPage() {
           </Alert>
         )}
       </Stack>
-    </Container>
+    </PageContainer>
   );
 }

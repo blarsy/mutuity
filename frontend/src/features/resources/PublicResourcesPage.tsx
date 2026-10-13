@@ -11,7 +11,6 @@ import {
   CardContent,
   Checkbox,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -28,6 +27,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { LocationPicker, type LocationValue } from "../../components/LocationPicker";
+import { PageContainer } from "../../components/PageContainer";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import { TOURNAI_CITY_CENTRE, TOURNAI_CENTRE_ADDRESS, getBrowserLocation } from "../needs/locationFallback";
@@ -257,7 +257,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
 
   return (
     <APIProvider apiKey={GOOGLE_API_KEY}>
-    <Container maxWidth="xl">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -524,7 +524,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
           </Box>
         )}
       </Box>
-    </Container>
+    </PageContainer>
     </APIProvider>
   );
 }

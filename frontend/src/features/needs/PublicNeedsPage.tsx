@@ -11,7 +11,6 @@ import {
   CardContent,
   Chip,
   Checkbox,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -27,6 +26,7 @@ import { APIProvider, useApiIsLoaded } from "@vis.gl/react-google-maps";
 
 import { useAuth } from "../auth/AuthProvider";
 import { LocationPicker, type LocationValue } from "../../components/LocationPicker";
+import { PageContainer } from "../../components/PageContainer";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { isCampaignActive } from "../campaigns/PublicCampaignsPage";
@@ -298,7 +298,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
 
   return (
     <APIProvider apiKey={GOOGLE_API_KEY}>
-    <Container maxWidth="xl">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -521,7 +521,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
             );})}
         </Box>
       </Box>
-    </Container>
+    </PageContainer>
     </APIProvider>
   );
 }

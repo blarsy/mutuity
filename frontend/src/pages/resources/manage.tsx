@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,6 +16,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../../components/PageContainer";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import { MY_RESOURCES_CONNECTION_QUERY, RESOURCE_OPEN_BID_COUNT_QUERY, SOFT_DELETE_RESOURCE_MUTATION } from "../../features/resources/resources.queries";
@@ -168,7 +168,7 @@ export default function ManageResourcesPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("manage.title")}
@@ -177,12 +177,12 @@ export default function ManageResourcesPage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="lg">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -304,6 +304,6 @@ export default function ManageResourcesPage() {
       >
         {t("manage.addButton")}
       </Button>
-    </Container>
+    </PageContainer>
   );
 }

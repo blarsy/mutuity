@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import type { ParsedUrlQuery } from "querystring";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../components/PageContainer";
 import {
   completeSocialRegistration,
   registerLocalAccount,
@@ -128,7 +129,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Container maxWidth="sm">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("register.title")}
@@ -174,6 +175,6 @@ export default function RegisterPage() {
           </Button>
         </Stack>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

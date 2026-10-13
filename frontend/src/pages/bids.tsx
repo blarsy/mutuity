@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -35,6 +34,7 @@ import { WorkspaceChatButton } from "../features/chat/WorkspaceChatButton";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { ListingHeader } from "../features/ui/ListingHeader";
 import { TokenAmount } from "../components/TokenAmount";
+import { PageContainer } from "../components/PageContainer";
 
 const PAGE_SIZE = 5;
 
@@ -460,7 +460,7 @@ export default function BidsPage() {
   if (isChecking || isRedirecting) return null;
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
+    <PageContainer sx={{ py: 3 }}>
       <Stack spacing={4}>
         <Box>
           <Typography variant="h4">{t("workspaceTitle")}</Typography>
@@ -508,6 +508,6 @@ export default function BidsPage() {
           <Button color="success" onClick={handleAcceptConfirm} variant="contained">{t("acceptConfirm.confirm")}</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

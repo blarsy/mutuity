@@ -2,7 +2,7 @@ import Head from "next/head";
 import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
-import { Alert, Avatar, Box, Card, CardContent, Chip, Container, Link, Stack, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Card, CardContent, Chip, Link, Stack, Typography } from "@mui/material";
 import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -20,6 +20,7 @@ import { ResourceCard } from "../../features/ui/ResourceCard";
 import { NeedCard } from "../../features/ui/NeedCard";
 import { listingCardGridSx } from "../../features/ui/listingCardGrid";
 import { GiftTokensButton } from "../../features/contribution/GiftTokensButton";
+import { PageContainer } from "../../components/PageContainer";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -185,7 +186,7 @@ export default function AccountDetailsPage({
     Number.isFinite(longitude);
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Head>
         <title>{pageMeta.title}</title>
         <meta content={pageMeta.description} name="description" />
@@ -323,7 +324,7 @@ export default function AccountDetailsPage({
           </Stack>
         </Stack>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }
 

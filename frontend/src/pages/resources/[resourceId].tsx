@@ -1,7 +1,8 @@
-import { Alert, Box, Container } from "@mui/material";
+import { Alert, Box } from "@mui/material";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../../components/PageContainer";
 import { ResourceDetailPage } from "../../features/resources/ResourceDetailPage";
 
 export default function ResourceDetailRoute() {
@@ -11,11 +12,11 @@ export default function ResourceDetailRoute() {
 
   if (!resourceId) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Alert severity="info">{t("detail.loading")}</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 

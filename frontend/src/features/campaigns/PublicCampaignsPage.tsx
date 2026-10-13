@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
-import { Alert, Box, Card, CardContent, Chip, Container, Grid, Stack, Typography } from "@mui/material";
+import { Alert, Box, Card, CardContent, Chip, Grid, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { PUBLIC_CAMPAIGNS_QUERY } from "./campaigns.queries";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import type { PublicCampaignsQuery } from "../../graphql/generated";
+import { PageContainer } from "../../components/PageContainer";
 
 type CampaignNode = {
   id: string;
@@ -38,7 +39,7 @@ export default function PublicCampaignsPage() {
   }, [data?.allCampaigns?.nodes]);
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("public.title")}
@@ -79,6 +80,6 @@ export default function PublicCampaignsPage() {
           ))}
         </Grid>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

@@ -9,7 +9,6 @@ import {
   CardActions,
   CardContent,
   Chip,
-  Container,
   Grid,
   Link,
   Stack,
@@ -19,6 +18,7 @@ import { useTranslation } from "react-i18next";
 
 import { CampaignNeedStatusChip, type CampaignNeedStatus } from "../../components/campaign/CampaignNeedStatusChip";
 import { NeedSummaryFacts } from "../../components/need/NeedSummaryFacts";
+import { PageContainer } from "../../components/PageContainer";
 import { useRequireAuth } from "../auth/requireAuth";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
@@ -190,7 +190,7 @@ export default function CampaignNeedTriagePage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("triage.title")}
@@ -199,12 +199,12 @@ export default function CampaignNeedTriagePage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="xl">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("triage.title")}
@@ -300,6 +300,6 @@ export default function CampaignNeedTriagePage() {
           })}
         </Grid>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

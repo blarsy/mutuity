@@ -5,7 +5,6 @@ import {
   Box,
   Card,
   CardContent,
-  Container,
   Divider,
   FormControl,
   InputLabel,
@@ -17,6 +16,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../components/PageContainer";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import {
   GET_DELIVERY_PREFERENCES_MUTATION,
@@ -127,17 +127,17 @@ export default function PreferencesPage() {
 
   if (isChecking || isRedirecting) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <PageContainer sx={{ mt: 4 }}>
         <LinearProgress />
         <Typography variant="body2" sx={{ mt: 1 }}>
           {isRedirecting ? t("redirecting", { ns: "common" }) : t("checking", { ns: "common" })}
         </Typography>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4, mb: 6 }}>
+    <PageContainer sx={{ mt: 4, mb: 6 }}>
       <Stack spacing={3}>
         <Box>
           <Typography variant="h5" component="h1" gutterBottom>
@@ -212,6 +212,6 @@ export default function PreferencesPage() {
           );
         })}
       </Stack>
-    </Container>
+    </PageContainer>
   );
 }

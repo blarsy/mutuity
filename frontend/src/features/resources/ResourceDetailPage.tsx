@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Container,
   IconButton,
   Stack,
   Typography
@@ -31,6 +30,7 @@ import { RESOURCE_BIDS_FOR_RESOURCE_QUERY, RESOURCE_CATEGORY_OPTIONS_QUERY, RESO
 import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from "./types";
 import type { ResourceCategoryOption } from "./types";
 import type { ResourceDetailQuery, ResourceBidsForResourceQuery, ResourceCategoryOptionsQuery, ResourceConversationLookupQuery } from "../../graphql/generated";
+import { PageContainer } from "../../components/PageContainer";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -140,7 +140,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   }
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
           <Box>
@@ -525,6 +525,6 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
         </Card>
 
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

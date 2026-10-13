@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
-import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../components/PageContainer";
 import { useAuth } from "../features/auth/AuthProvider";
 import { LoginForm } from "../features/auth/LoginForm";
 import { confirmPendingLink } from "../features/auth/auth.api";
@@ -54,7 +55,7 @@ export default function LoginPage() {
   };
 
   return (
-    <Container maxWidth="sm">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("signIn.title")}
@@ -118,6 +119,6 @@ export default function LoginPage() {
           onSuccess={handleLoginSuccess}
         />
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

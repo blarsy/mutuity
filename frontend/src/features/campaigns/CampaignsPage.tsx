@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -28,6 +27,7 @@ import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMe
 import { buildCampaignExplainerSlides } from "./campaignExplainer";
 import { INSPIRATION_CAMPAIGNS_QUERY, MY_CAMPAIGNS_CONNECTION_QUERY } from "./campaigns.queries";
 import { RichTextContent } from "../../components/richText/RichTextContent";
+import { PageContainer } from "../../components/PageContainer";
 import { resolveMobileStoreLinks } from "../../features/shared/mobileStoreLinks";
 import type { MyCampaignsConnectionQuery, MyCampaignsConnectionQueryVariables, InspirationCampaignsQuery } from "../../graphql/generated";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
@@ -249,7 +249,7 @@ export default function CampaignsPage() {
   }, [inspirationData?.allCampaigns?.nodes]);
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("page.title")}
@@ -400,6 +400,6 @@ export default function CampaignsPage() {
           </DialogActions>
         </Dialog>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

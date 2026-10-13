@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Container,
   Stack,
   Typography
 } from "@mui/material";
@@ -18,6 +17,7 @@ import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { CONTRIBUTION_OVERVIEW_QUERY } from "../features/contribution/contribution.queries";
 import { TokenAmount } from "../components/TokenAmount";
+import { PageContainer } from "../components/PageContainer";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { useTokenBalance } from "../features/contribution/useTokenBalance";
@@ -151,7 +151,7 @@ export default function ContributionPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("title")}
@@ -160,12 +160,12 @@ export default function ContributionPage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -299,6 +299,6 @@ export default function ContributionPage() {
         </Stack>
       </Box>
 
-    </Container>
+    </PageContainer>
   );
 }

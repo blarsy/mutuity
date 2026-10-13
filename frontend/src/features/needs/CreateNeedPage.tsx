@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Container,
   FormControlLabel,
   MenuItem,
   Stack,
@@ -39,6 +38,7 @@ import {
 } from "./needs.queries";
 import type { CreateNeedMutation, CreateNeedMutationVariables, UpdateNeedMutation, UpdateNeedMutationVariables, LinkableCampaignOptionsQuery, NeedEditDetailQuery, NeedEditDetailQueryVariables } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
+import { PageContainer } from "../../components/PageContainer";
 
 function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   const startAt = new Date(startAtIso);
@@ -178,33 +178,33 @@ export default function EditNeedPage() {
 
   if (isEditMode && editNeedLoading) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
           </Typography>
           <Alert severity="info">{t("form.loading")}</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   if (isEditMode && !editNeedData?.needById && !editNeedLoading) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
           </Typography>
           <Alert severity="warning">{t("form.notFound")}</Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("form.title")}
@@ -213,12 +213,12 @@ export default function EditNeedPage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("form.title")}
@@ -464,6 +464,6 @@ export default function EditNeedPage() {
           )}
         </Formik>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

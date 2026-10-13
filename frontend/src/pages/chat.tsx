@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Alert, Box, Container, Stack, Typography } from "@mui/material";
+import { Alert, Box, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { PageContainer } from "../components/PageContainer";
 import { useAuth } from "../features/auth/AuthProvider";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import { ConversationListPanel, type ConversationNode } from "../features/chat/ConversationListPanel";
@@ -73,7 +74,7 @@ export default function ChatPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("workspaceTitle")}
@@ -86,12 +87,12 @@ export default function ChatPage() {
                 : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container disableGutters maxWidth={false} sx={{ px: { xs: 0, sm: 2 }, py: 0 }}>
+    <PageContainer disableGutters sx={{ px: { xs: 0, sm: 2 }, py: 0 }}>
       <Stack
         direction="row"
         sx={{
@@ -161,7 +162,7 @@ export default function ChatPage() {
           )}
         </Box>
       </Stack>
-    </Container>
+    </PageContainer>
   );
 }
 

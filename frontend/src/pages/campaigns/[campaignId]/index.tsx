@@ -12,7 +12,6 @@ import {
   CardContent,
   Checkbox,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -25,6 +24,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { RichTextContent } from "../../../components/richText/RichTextContent";
+import { PageContainer } from "../../../components/PageContainer";
 import { useAuth } from "../../../features/auth/AuthProvider";
 import { buildCampaignExplainerSlides } from "../../../features/campaigns/campaignExplainer";
 import {
@@ -620,7 +620,7 @@ export default function PublicCampaignDetailPage({
   };
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Head>
         <title>{pageMeta.title}</title>
         <meta content={pageMeta.description} name="description" />
@@ -1004,7 +1004,7 @@ export default function PublicCampaignDetailPage({
           ) : <Alert severity="warning">{t("public.empty")}</Alert>}
         </Stack>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }
 

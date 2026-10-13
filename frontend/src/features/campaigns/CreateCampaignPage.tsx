@@ -1,5 +1,5 @@
 import { useMutation } from "@apollo/client/react";
-import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
@@ -14,6 +14,7 @@ import {
   type CreateCampaignValues
 } from "./createCampaign.validation";
 import type { CreateCampaignMutation, CreateCampaignMutationVariables, CreateCampaignLegacyMutation, CreateCampaignLegacyMutationVariables } from "../../graphql/generated";
+import { PageContainer } from "../../components/PageContainer";
 
 function isUnsupportedCampaignImageFieldError(error: unknown) {
   const maybeError = error as {
@@ -77,7 +78,7 @@ export default function CreateCampaignPage() {
 
   if (!isAuthenticated) {
     return (
-      <Container maxWidth="md">
+      <PageContainer>
         <Box sx={{ py: 6 }}>
           <Typography component="h1" gutterBottom variant="h4">
             {t("create.title")}
@@ -86,12 +87,12 @@ export default function CreateCampaignPage() {
             {isChecking ? t("authGuard.checking", { ns: "common" }) : isRedirecting ? t("authGuard.redirecting", { ns: "common" }) : t("authGuard.signInRequired", { ns: "common" })}
           </Alert>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Box sx={{ py: 6 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           {t("create.title")}
@@ -241,6 +242,6 @@ export default function CreateCampaignPage() {
           )}
         </Formik>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }

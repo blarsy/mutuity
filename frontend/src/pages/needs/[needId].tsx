@@ -5,7 +5,7 @@ import type { GetServerSideProps } from "next";
 import { useQuery } from "@apollo/client/react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Alert, Box, Button, Card, CardContent, Chip, Container, IconButton, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography } from "@mui/material";
 import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -20,6 +20,7 @@ import type { ViewerNeedClaimQuery } from "../../graphql/generated";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { ZoomableImage } from "../../components/ZoomableImage";
 import { IntensityDisplay } from "../../components/IntensityPicker";
+import { PageContainer } from "../../components/PageContainer";
 import { buildNeedContactLoginHref, shouldShowNeedContactCta } from "../../features/needs/needCta";
 import { AvatarIconButton } from "../../features/ui/AvatarIconButton";
 import {
@@ -159,7 +160,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
     conversationData?.claimConversationByNeedIdAndCreatorAccountIdAndClaimerAccountId?.id ?? null;
 
   return (
-    <Container maxWidth="md">
+    <PageContainer>
       <Head>
         <title>{pageMeta.title}</title>
         <meta content={pageMeta.description} name="description" />
@@ -366,7 +367,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
           ) : <Alert severity="warning">{t("form.notFound")}</Alert>}
         </Stack>
       </Box>
-    </Container>
+    </PageContainer>
   );
 }
 
