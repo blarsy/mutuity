@@ -27,17 +27,17 @@ import { RichTextContent } from "../../../components/richText/RichTextContent";
 import { PageContainer } from "../../../components/PageContainer";
 import { useAuth } from "../../../features/auth/AuthProvider";
 import { buildCampaignExplainerSlides } from "../../../features/campaigns/campaignExplainer";
+import { resolveCampaignParticipationState } from "../../../features/campaigns/campaignParticipation";
 import {
   buildCampaignPageMeta,
-  resolveCampaignAvailabilityState,
-  type PublicAvailabilityState
+  resolveCampaignAvailabilityState
 } from "../../../features/shared/publicPageSeo";
 import { formatPublicDateTime } from "../../../features/shared/publicDateTime";
 import { resolveMobileStoreLinks } from "../../../features/shared/mobileStoreLinks";
 import { fetchServerGraphql, getLanguageFromHeaders } from "../../../features/shared/serverGraphql";
 import { NeedCard } from "../../../features/ui/NeedCard";
 import { ResourceCard } from "../../../features/ui/ResourceCard";
-import { listingCardGridSx } from "../../../features/ui/listingCardGrid";
+import { centeredResponsiveListingCardGridSx } from "../../../features/ui/listingCardGrid";
 import { getUserFacingGraphQLErrorMessage } from "../../../services/graphql/errorMessages";
 
 type PublicCampaignDetailData = {
@@ -301,6 +301,20 @@ export default function PublicCampaignDetailPage({
   const router = useRouter();
   const campaign = initialCampaign;
   const availabilityState = resolveCampaignAvailabilityState(campaign);
+  const [now, setNow] = useState(() => Date.now());
+  const participationState = resolveCampaignParticipationState(campaign, now);
+  const canJoinCampaign = participationState === "running";
+
+  useEffect(() => {
+    const nextBoundary = [Date.parse(campaign?.startAt ?? ""), Date.parse(campaign?.endAt ?? "")]
+      .filter(timestamp => Number.isFinite(timestamp) && timestamp > now)
+      .sort((a, b) => a - b)[0];
+    if (nextBoundary === undefined) return;
+
+    const timer = setTimeout(() => setNow(Date.now()), Math.min(Math.max(0, nextBoundary - Date.now()), 2_147_483_647));
+    return () => clearTimeout(timer);
+  }, [campaign?.startAt, campaign?.endAt, now]);
+
   const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
   const [runningResourceIds, setRunningResourceIds] = useState<string[]>([]);
   const [bulkRunning, setBulkRunning] = useState(false);
@@ -351,7 +365,7 @@ export default function PublicCampaignDetailPage({
   } = useQuery<MyActiveResourcesForCampaignData, MyActiveResourcesForCampaignVariables>(
     MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY,
     {
-      skip: !campaign || !session.authenticated || !session.account?.id,
+      skip: !canJoinCampaign || !session.authenticated || !session.account?.id,
       variables: {
         creatorAccountId: session.account?.id ?? "",
         campaignId
@@ -369,7 +383,7 @@ export default function PublicCampaignDetailPage({
   } = useQuery<MyActiveNeedsForCampaignData, MyActiveNeedsForCampaignVariables>(
     MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY,
     {
-      skip: !campaign || !session.authenticated || !session.account?.id,
+      skip: !canJoinCampaign || !session.authenticated || !session.account?.id,
       variables: {
         creatorAccountId: session.account?.id ?? "",
         campaignId
@@ -416,6 +430,7 @@ export default function PublicCampaignDetailPage({
   }, [selectedNeedIds, needStatusByNeedId]);
 
   const requestJoinForResource = async (resourceId: string) => {
+    if (resolveCampaignParticipationState(campaign) !== "running") return;
     const status = statusByResourceId.get(resourceId);
 
     if (status === "ACCEPTED" || status === "PENDING") {
@@ -502,6 +517,7 @@ export default function PublicCampaignDetailPage({
   };
 
   const requestJoinForNeed = async (needId: string) => {
+    if (resolveCampaignParticipationState(campaign) !== "running") return;
     const status = needStatusByNeedId.get(needId);
 
     if (status === "ACCEPTED" || status === "PENDING") {
@@ -652,7 +668,6 @@ export default function PublicCampaignDetailPage({
                   {t("public.ownCampaignHint")}
                 </Alert>
               ) : null}
-              <CampaignAvailabilityAlert state={availabilityState} />
               <Card variant="outlined">
                 <CardContent>
                   <Stack spacing={1.5}>
@@ -775,7 +790,8 @@ export default function PublicCampaignDetailPage({
                 </DialogActions>
               </Dialog>
 
-              <Stack spacing={2}>
+                {canJoinCampaign ? <>
+                <Stack spacing={2}>
                     <Typography component="h2" variant="h5">{t("public.resourceJoin.title")}</Typography>
                     <Typography color="text.secondary" variant="body2">{t("public.resourceJoin.subtitle")}</Typography>
 
@@ -824,7 +840,7 @@ export default function PublicCampaignDetailPage({
                           </Button>
                         </Stack>
 
-                        <Box sx={listingCardGridSx}>
+                        <Box sx={centeredResponsiveListingCardGridSx}>
                           {activeResources.map(resource => {
                             const status = resource.campaignResourcesByResourceId.nodes[0]?.status ?? null;
                             const isJoinDisabled = status === "ACCEPTED" || status === "PENDING";
@@ -835,9 +851,10 @@ export default function PublicCampaignDetailPage({
 
                             return (
                               <ResourceCard
+                                cardMaxWidth={400}
                                 onClick={() => void router.push(`/resources/${resource.id}`)}
                                 actions={
-                                  <Stack alignItems={{ xs: "stretch", sm: "center" }} direction={{ xs: "column", sm: "row" }} spacing={1}>
+                                  <Stack spacing={1}>
                                     <FormControlLabel
                                       control={(
                                         <Checkbox
@@ -872,15 +889,10 @@ export default function PublicCampaignDetailPage({
                                 onCreatorClick={() => void router.push(`/accounts/${resource.creatorAccountId}`)}
                                 description={resource.description}
                                 expiresAt={resource.expiresAt}
-                                footer={
-                                  <Typography color="text.secondary" variant="body2">
-                                    {t("public.resourceJoin.tokens", { count: resource.defaultTokenAmount ?? 0 })}
-                                  </Typography>
-                                }
+                                tokenAmount={resource.defaultTokenAmount}
                                 imageUrls={resource.imageUrls ?? []}
                                 key={resource.id}
                                 location={resource.location}
-                                showListingHeader={false}
                                 title={resource.title}
                               />
                             );
@@ -939,7 +951,7 @@ export default function PublicCampaignDetailPage({
                       </Button>
                     </Stack>
 
-                    <Box sx={listingCardGridSx}>
+                    <Box sx={centeredResponsiveListingCardGridSx}>
                       {activeNeeds.map(need => {
                         const status = need.campaignNeedsByNeedId.nodes[0]?.status ?? null;
                         const isJoinDisabled = status === "ACCEPTED" || status === "PENDING";
@@ -950,9 +962,10 @@ export default function PublicCampaignDetailPage({
 
                         return (
                           <NeedCard
+                            cardMaxWidth={400}
                             onClick={() => void router.push(`/needs/${need.id}`)}
                             actions={
-                              <Stack alignItems={{ xs: "stretch", sm: "center" }} direction={{ xs: "column", sm: "row" }} spacing={1}>
+                              <Stack spacing={1}>
                                 <FormControlLabel
                                   control={(
                                     <Checkbox
@@ -985,11 +998,7 @@ export default function PublicCampaignDetailPage({
                             onCreatorClick={() => void router.push(`/accounts/${need.creatorAccountId}`)}
                             description={need.description}
                             expiresAt={need.expiresAt}
-                            footer={
-                              <Typography color="text.secondary" variant="body2">
-                                {t("public.needJoin.tokens", { count: need.proposedTopesAmount ?? 0 })}
-                              </Typography>
-                            }
+                            tokenAmount={need.proposedTopesAmount}
                             imageUrls={need.imageUrls ?? []}
                             key={need.id}
                             title={need.title}
@@ -1000,24 +1009,20 @@ export default function PublicCampaignDetailPage({
                   </>
                 )}
               </Stack>
+              </> : (
+                <Alert severity="info">
+                  {t(`public.participation.${participationState}`, {
+                    start: formattedDates.startAt,
+                    end: formattedDates.endAt
+                  })}
+                </Alert>
+              )}
             </>
           ) : <Alert severity="warning">{t("public.empty")}</Alert>}
         </Stack>
       </Box>
     </PageContainer>
   );
-}
-
-function CampaignAvailabilityAlert({ state }: { state: PublicAvailabilityState }) {
-  if (state === "VISIBLE_ENDED") {
-    return <Alert severity="info">This campaign has ended.</Alert>;
-  }
-
-  if (state === "VISIBLE_DELETED") {
-    return <Alert severity="warning">This campaign is archived and kept visible for context.</Alert>;
-  }
-
-  return null;
 }
 
 export const getServerSideProps: GetServerSideProps<PublicCampaignDetailPageProps> = async context => {

@@ -51,6 +51,13 @@
     },
     "loading": "Chargement des campagnes…",
     "empty": "Aucune campagne approuvée active pour le moment.",
+    "participation": {
+      "upcoming": "Vous pourrez rattacher vos ressources et besoins à cette campagne approuvée du {{start}} au {{end}}.",
+      "pending": "Cette campagne attend son approbation. Vous pourrez y rattacher vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",
+      "awaitingAdaptation": "Le créateur doit apporter des modifications avant que cette campagne puisse être approuvée. Vous pourrez y rattacher vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",
+      "ended": "Cette campagne s’est terminée le {{end}}. Il n’est plus possible d’y rattacher des ressources ou des besoins.",
+      "unavailable": "Cette campagne n’est pas ouverte aux rattachements. Les ressources et besoins ne peuvent rejoindre qu’une campagne approuvée pendant les dates prévues."
+    },
     "resourceJoin": {
       "title": "Joindre vos ressources a cette campagne",
       "subtitle": "Selectionnez une ou plusieurs ressources actives et envoyez des demandes de rattachement au createur de la campagne.",

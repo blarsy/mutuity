@@ -51,6 +51,13 @@
     },
     "loading": "Loading campaigns…",
     "empty": "No active approved campaigns at the moment.",
+    "participation": {
+      "upcoming": "You can join your resources and needs to this approved campaign from {{start}} until {{end}}.",
+      "pending": "This campaign is awaiting approval. You can join your resources and needs once it is approved and running, between {{start}} and {{end}}.",
+      "awaitingAdaptation": "The creator must make changes before this campaign can be approved. You can join your resources and needs once it is approved and running, between {{start}} and {{end}}.",
+      "ended": "This campaign ended on {{end}}. Resources and needs can no longer join it.",
+      "unavailable": "This campaign is not open for joining. Resources and needs can only join an approved campaign during its scheduled dates."
+    },
     "resourceJoin": {
       "title": "Join your resources to this campaign",
       "subtitle": "Select one or more active resources and send join requests to the campaign creator.",
