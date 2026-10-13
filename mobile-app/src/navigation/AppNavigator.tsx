@@ -55,6 +55,7 @@ import {
   fetchUnreadChatConversationCount
 } from "../services/graphql/chat";
 import type { ChatConversationKind } from "../services/graphql/chat";
+import { openBidChat, openClaimChat, sendWorkspaceFirstMessage, type WorkspaceConversation } from "../services/graphql/workspaceChat";
 import { AccountEventSubscriptionProvider, subscribeToAccountEvents } from "../services/realtime/accountEvents";
 import { useUnreadNotificationsCount } from "../services/realtime/useUnreadNotificationsCount";
 import { designTokens } from "../theme/tokens";
@@ -262,7 +263,7 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
   const [activeSection, setActiveSection] = useState<MyHubSection | null>(null);
   const [openedBidResourceId, setOpenedBidResourceId] = useState<string | null>(null);
   const [openedBidAccountId, setOpenedBidAccountId] = useState<string | null>(null);
-  const [openedBidConversationId, setOpenedBidConversationId] = useState<string | null>(null);
+  const [openedWorkspaceConversation, setOpenedWorkspaceConversation] = useState<WorkspaceConversation | null>(null);
   const [openedClaimNeedId, setOpenedClaimNeedId] = useState<string | null>(null);
   const [openedClaimAccountId, setOpenedClaimAccountId] = useState<string | null>(null);
   const backToHub = (): void => setActiveSection(null);
@@ -279,7 +280,7 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
       setOpenedCampaignId(null);
       setOpenedBidResourceId(null);
       setOpenedBidAccountId(null);
-      setOpenedBidConversationId(null);
+      setOpenedWorkspaceConversation(null);
       setOpenedClaimAccountId(null);
       setOpenedClaimNeedId(pendingSection.needId ?? null);
       onConsumePendingSection?.();
@@ -325,8 +326,8 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
           onOpenCounterparty={(counterpartyAccountId) => {
             setOpenedBidAccountId(counterpartyAccountId);
           }}
-          onOpenConversation={(conversationId) => {
-            setOpenedBidConversationId(conversationId);
+          onOpenChat={async (bid) => {
+            setOpenedWorkspaceConversation(await openBidChat(bid, accountId));
           }}
         />
       );
@@ -342,8 +343,8 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
           onOpenCounterparty={(counterpartyAccountId) => {
             setOpenedBidAccountId(counterpartyAccountId);
           }}
-          onOpenConversation={(conversationId) => {
-            setOpenedBidConversationId(conversationId);
+          onOpenChat={async (bid) => {
+            setOpenedWorkspaceConversation(await openBidChat(bid, accountId));
           }}
         />
       );
@@ -378,6 +379,9 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
           }}
           onOpenCounterparty={(counterpartyAccountId) => {
             setOpenedClaimAccountId(counterpartyAccountId);
+          }}
+          onOpenChat={async (claim) => {
+            setOpenedWorkspaceConversation(await openClaimChat(claim, activeSection === "receivedClaims" ? "received" : "sent", accountId));
           }}
         />
       );
@@ -532,21 +536,27 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
     );
   }
 
-  if (openedBidConversationId && accountId) {
+  if (openedWorkspaceConversation && accountId) {
+    const draftConversation = openedWorkspaceConversation.id === null ? openedWorkspaceConversation : null;
     return (
       <ChatDetailScreen
-        conversationId={openedBidConversationId}
+        key={openedWorkspaceConversation.id ?? draftConversation?.draft.id}
+        conversationId={openedWorkspaceConversation.id}
+        conversationKind={openedWorkspaceConversation.kind}
         currentAccountId={accountId}
-        conversation={null}
-        onBackToList={() => {
-          setOpenedBidConversationId(null);
-        }}
-        onOpenLinkedResource={(resourceId) => {
-          setOpenedBidResourceId(resourceId);
-        }}
+        conversation={draftConversation?.draft ?? null}
+        onBackToList={() => setOpenedWorkspaceConversation(null)}
+        onOpenLinkedResource={setOpenedBidResourceId}
+        onOpenLinkedNeed={setOpenedClaimNeedId}
         onOpenLinkedAccount={(otherAccountId) => {
-          setOpenedBidAccountId(otherAccountId);
+          if (openedWorkspaceConversation.kind === "need") setOpenedClaimAccountId(otherAccountId);
+          else setOpenedBidAccountId(otherAccountId);
         }}
+        {...(draftConversation ? {
+          onSendMessage: async (messageText: string, imageUri?: string | null) => {
+            setOpenedWorkspaceConversation(await sendWorkspaceFirstMessage(draftConversation, messageText, imageUri));
+          }
+        } : {})}
       />
     );
   }

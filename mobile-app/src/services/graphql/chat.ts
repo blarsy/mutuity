@@ -19,6 +19,7 @@ import {
   RESOURCE_CONVERSATION_BY_ID_QUERY,
   RESOURCE_MESSAGES_QUERY,
   SEND_NEED_MESSAGE_MUTATION,
+  START_CLAIM_CONVERSATION_MUTATION,
   SEND_RESOURCE_MESSAGE_DIRECT_MUTATION
 } from "./operations";
 import type { ChatConversationItem } from "../../screens/chat/ChatListScreen";
@@ -170,6 +171,23 @@ export async function startNeedConversation(input: {
     throw new Error("Need conversation was not created");
   }
 
+  return conversationId;
+}
+
+export async function startClaimConversation(input: {
+  needClaimId: string;
+  messageText: string;
+  imageUrl?: string | null;
+}): Promise<string> {
+  const imageUrls = await uploadListingImages(input.imageUrl ? [input.imageUrl] : []);
+  const { data } = await apolloClient.mutate<{
+    sendClaimMessage: { claimMessage: { conversationId: string } | null } | null;
+  }>({
+    mutation: START_CLAIM_CONVERSATION_MUTATION,
+    variables: { input: { needClaimId: input.needClaimId, body: input.messageText.trim(), imageUrls } }
+  });
+  const conversationId = data?.sendClaimMessage?.claimMessage?.conversationId;
+  if (!conversationId) throw new Error("Claim conversation was not created");
   return conversationId;
 }
 

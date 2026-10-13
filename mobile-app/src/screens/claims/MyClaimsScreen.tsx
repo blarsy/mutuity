@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, IconButton, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import ChatIcon from "../../assets/img/CHAT.svg";
 import { ListingContextHeader } from "../../components/listings/ListingContextHeader";
 import { ScreenContainer } from "../../components/primitives";
 import { MyHubScreenHeader, MyHubScreenState } from "../../components/MyHubScreenHeader";
@@ -31,6 +32,8 @@ export interface MyClaimsScreenProps {
   onBackToHub?: () => void;
   onOpenNeed?: (needId: string) => void;
   onOpenCounterparty?: (accountId: string) => void;
+  onOpenConversation?: (conversationId: string) => void;
+  onOpenChat?: (claim: NeedClaimItem) => Promise<void> | void;
   onAcceptClaim?: (claim: NeedClaimItem) => Promise<void>;
   onDeclineClaim?: (claim: NeedClaimItem) => Promise<void>;
   onCancelClaim?: (claim: NeedClaimItem) => Promise<void>;
@@ -50,6 +53,8 @@ export function MyClaimsScreen({
   onBackToHub,
   onOpenNeed,
   onOpenCounterparty,
+  onOpenConversation,
+  onOpenChat,
   onAcceptClaim,
   onDeclineClaim,
   onCancelClaim
@@ -60,6 +65,7 @@ export function MyClaimsScreen({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [actionErrorMessage, setActionErrorMessage] = useState<string | null>(null);
   const [pendingActionClaimId, setPendingActionClaimId] = useState<string | null>(null);
+  const [openingChatClaimId, setOpeningChatClaimId] = useState<string | null>(null);
 
   const hasInjectedState =
     injectedClaims !== undefined || injectedLoading !== undefined || injectedErrorMessage !== undefined;
@@ -169,19 +175,22 @@ export function MyClaimsScreen({
 
             return (
               <View key={claim.id} testID={`my-claim-card-${claim.id}`} style={styles.claimCard}>
-                <ListingContextHeader
-                  kind="need"
-                  title={claim.needTitle || t("claimNeedMissingTitle", { ns: "us2", defaultValue: "Need" })}
-                  authorDisplayName={counterpartyDisplayName}
-                  authorAvatarUrl={counterpartyAvatarUrl}
-                  listingImageUrl={claim.needImageUrl}
-                  onPressListing={onOpenNeed ? () => onOpenNeed(claim.needId) : undefined}
-                  onPressAuthor={
-                    onOpenCounterparty && counterpartyAccountId
-                      ? () => onOpenCounterparty(counterpartyAccountId)
-                      : undefined
-                  }
-                />
+                <View style={styles.headerRow}>
+                  <ListingContextHeader
+                    containerStyle={styles.listingHeader}
+                    kind="need"
+                    title={claim.needTitle || t("claimNeedMissingTitle", { ns: "us2", defaultValue: "Need" })}
+                    authorDisplayName={counterpartyDisplayName}
+                    authorAvatarUrl={counterpartyAvatarUrl}
+                    listingImageUrl={claim.needImageUrl}
+                    onPressListing={onOpenNeed ? () => onOpenNeed(claim.needId) : undefined}
+                    onPressAuthor={
+                      onOpenCounterparty && counterpartyAccountId
+                        ? () => onOpenCounterparty(counterpartyAccountId)
+                        : undefined
+                    }
+                  />
+                </View>
 
                 <View style={styles.statusRow}>
                   <Text style={styles.statusChip}>
@@ -195,37 +204,37 @@ export function MyClaimsScreen({
                   </Text>
                 ) : null}
 
-                {showReceivedActions ? (
-                  <View style={styles.actionsRow}>
-                    <Button
-                      icon="thumb-up"
-                      compact
-                      mode="contained"
-                      style={styles.mainButton}
-                      contentStyle={styles.mainButtonContent}
-                      onPress={() => void runClaimAction(claim, acceptClaim)}
-                      loading={isActionPending}
-                      disabled={isActionPending}
-                    >
-                      {t("actions.accept", { defaultValue: "Accept" })}
-                    </Button>
-                    <Button
-                      icon="thumb-down"
-                      compact
-                      mode="contained"
-                      style={styles.mainButton}
-                      contentStyle={styles.mainButtonContent}
-                      onPress={() => void runClaimAction(claim, declineClaim)}
-                      loading={isActionPending}
-                      disabled={isActionPending}
-                    >
-                      {t("actions.decline", { defaultValue: "Decline" })}
-                    </Button>
-                  </View>
-                ) : null}
+                <View style={styles.actionsRow}>
+                  {showReceivedActions ? (
+                    <>
+                      <Button
+                        icon="thumb-up"
+                        compact
+                        mode="contained"
+                        style={styles.mainButton}
+                        contentStyle={styles.mainButtonContent}
+                        onPress={() => void runClaimAction(claim, acceptClaim)}
+                        loading={isActionPending}
+                        disabled={isActionPending}
+                      >
+                        {t("actions.accept", { defaultValue: "Accept" })}
+                      </Button>
+                      <Button
+                        icon="thumb-down"
+                        compact
+                        mode="contained"
+                        style={styles.mainButton}
+                        contentStyle={styles.mainButtonContent}
+                        onPress={() => void runClaimAction(claim, declineClaim)}
+                        loading={isActionPending}
+                        disabled={isActionPending}
+                      >
+                        {t("actions.decline", { defaultValue: "Decline" })}
+                      </Button>
+                    </>
+                  ) : null}
 
-                {showSentActions ? (
-                  <View style={styles.actionsRow}>
+                  {showSentActions ? (
                     <Button
                       icon="cancel"
                       compact
@@ -238,8 +247,26 @@ export function MyClaimsScreen({
                     >
                       {t("actions.cancel", { defaultValue: "Cancel" })}
                     </Button>
-                  </View>
-                ) : null}
+                  ) : null}
+                  <IconButton
+                    icon={() => <ChatIcon width={32} height={32} fill={designTokens.colors.primary} />}
+                    size={22}
+                    testID={`my-claim-chat-${claim.id}`}
+                    disabled={openingChatClaimId !== null || (!onOpenChat && !(claim.conversationId && onOpenConversation))}
+                    onPress={() => {
+                      if (!onOpenChat) {
+                        if (claim.conversationId) onOpenConversation?.(claim.conversationId);
+                        return;
+                      }
+                      setOpeningChatClaimId(claim.id);
+                      setActionErrorMessage(null);
+                      void Promise.resolve().then(() => onOpenChat(claim)).catch(() => {
+                        setActionErrorMessage(t("chatOpenError", { ns: "common", defaultValue: "We could not open this conversation." }));
+                      }).finally(() => setOpeningChatClaimId(null));
+                    }}
+                    accessibilityLabel={t("chatLabel", { ns: "common", defaultValue: "Chat" })}
+                  />
+                </View>
               </View>
             );
           })}
@@ -276,6 +303,13 @@ const styles = StyleSheet.create({
   },
   statusRow: {
     alignSelf: "flex-start"
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start"
+  },
+  listingHeader: {
+    flex: 1
   },
   statusChip: {
     paddingHorizontal: designTokens.spacing.sm,

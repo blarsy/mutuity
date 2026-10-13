@@ -27,6 +27,7 @@ export interface BidsListScreenProps {
   onOpenResource?: (resourceId: string) => void;
   onOpenCounterparty?: (accountId: string) => void;
   onOpenConversation?: (conversationId: string) => void;
+  onOpenChat?: (bid: BidWorkspaceItem) => Promise<void> | void;
   onCancelBid?: (bid: BidWorkspaceItem) => Promise<void>;
   onAcceptBid?: (bid: BidWorkspaceItem) => Promise<void>;
   onDeclineBid?: (bid: BidWorkspaceItem) => Promise<void>;
@@ -175,6 +176,7 @@ export function BidsListScreen({
   onOpenResource,
   onOpenCounterparty,
   onOpenConversation,
+  onOpenChat,
   onCancelBid,
   onAcceptBid,
   onDeclineBid,
@@ -187,6 +189,7 @@ export function BidsListScreen({
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [actionErrorMessage, setActionErrorMessage] = useState<string | null>(null);
   const [pendingActionBidId, setPendingActionBidId] = useState<string | null>(null);
+  const [openingChatBidId, setOpeningChatBidId] = useState<string | null>(null);
   const [openUpdatedTooltipBidId, setOpenUpdatedTooltipBidId] = useState<string | null>(null);
 
   const loadBids = useCallback(async (): Promise<void> => {
@@ -290,7 +293,6 @@ export function BidsListScreen({
             const reviewedAtLabel = formatDate(bid.respondedAt ?? null, unknownDateLabel);
             const validityLabel = formatDate(bid.validUntil ?? null, unknownDateLabel);
             const isActionPending = pendingActionBidId === bid.id;
-            const showChatButton = Boolean(bid.conversationId) && onOpenConversation;
             const showSentActions = bid.direction === "sent" && bid.isActive;
             const showReceivedActions = bid.direction === "received" && bid.isActive;
             return (
@@ -307,8 +309,9 @@ export function BidsListScreen({
                 }}
                 style={styles.bidCard}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <View style={styles.headerRow}>
                   <ListingContextHeader
+                    containerStyle={styles.listingHeader}
                     kind="resource"
                     title={bid.title}
                     authorDisplayName={bid.counterpartyDisplayName}
@@ -317,17 +320,25 @@ export function BidsListScreen({
                     onPressListing={onOpenResource ? () => onOpenResource(bid.resourceId) : undefined}
                     onPressAuthor={onOpenCounterparty ? () => onOpenCounterparty(bid.counterpartyAccountId) : undefined}
                   />
-                  {showChatButton ? (
-                  <IconButton
-                    icon={() => <ChatIcon width={26} height={26} />}
-                    size={22}
-                    onPress={(event) => {
+                    <IconButton
+                      icon={() => <ChatIcon width={26} height={26} />}
+                      size={22}
+                      testID={`my-bid-chat-${bid.id}`}
+                      disabled={openingChatBidId !== null || (!onOpenChat && !(bid.conversationId && onOpenConversation))}
+                      onPress={(event) => {
                         event.stopPropagation();
-                        onOpenConversation(bid.conversationId!);
-                    }}
-                    accessibilityLabel={t("chatLabel", { defaultValue: "Chat" })}
-                  />
-                  ) : null}
+                        if (!onOpenChat) {
+                          if (bid.conversationId) onOpenConversation?.(bid.conversationId);
+                          return;
+                        }
+                        setOpeningChatBidId(bid.id);
+                        setActionErrorMessage(null);
+                        void Promise.resolve().then(() => onOpenChat(bid)).catch(() => {
+                          setActionErrorMessage(t("chatOpenError", { defaultValue: "We could not open this conversation." }));
+                        }).finally(() => setOpeningChatBidId(null));
+                      }}
+                      accessibilityLabel={t("chatLabel", { defaultValue: "Chat" })}
+                    />
                 </View>
 
                 <View style={styles.statusRow}>
@@ -475,6 +486,13 @@ const styles = StyleSheet.create({
   },
   statusRow: {
     alignSelf: "flex-start"
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start"
+  },
+  listingHeader: {
+    flex: 1
   },
   statusChip: {
     paddingHorizontal: designTokens.spacing.sm,

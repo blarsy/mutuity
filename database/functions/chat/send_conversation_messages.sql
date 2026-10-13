@@ -28,11 +28,6 @@ begin
   if nullif(btrim(p_body), '') is null then
     raise exception using message = 'Message body is required';
   end if;
-  if exists (select 1 from app_public.need_claim where id = v_conversation.need_claim_id
-             and status in ('declined', 'withdrawn', 'expired')) then
-    raise exception using message = 'Need claim is closed';
-  end if;
-
   insert into app_public.claim_message (conversation_id, sender_account_id, body)
   values (p_conversation_id, v_account_id, btrim(p_body)) returning * into v_message;
   foreach v_image_url in array coalesce(p_image_urls, array[]::text[]) loop

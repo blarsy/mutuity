@@ -43,18 +43,16 @@ begin
     raise exception using message = 'Need claim not found';
   end if;
 
-  if v_claim.status in ('declined', 'withdrawn', 'expired') then
-    raise exception using message = 'Need claim is closed';
-  end if;
-
   if v_account_id not in (v_claim.claimer_account_id, v_claim.creator_account_id) then
     raise exception using message = 'Only claim participants can send messages';
   end if;
 
   select *
   into v_conversation
-  from app_public.claim_conversation
-  where claim_conversation.need_claim_id = send_claim_message.need_claim_id;
+  from app_public.claim_conversation cc
+  where cc.need_id = v_claim.need_id
+    and cc.creator_account_id = v_claim.creator_account_id
+    and cc.claimer_account_id = v_claim.claimer_account_id;
 
   if not found then
     if v_account_id <> v_claim.creator_account_id then
@@ -73,21 +71,30 @@ begin
       v_claim.creator_account_id,
       v_claim.claimer_account_id
     )
+    on conflict (need_id, creator_account_id, claimer_account_id) do nothing
     returning * into v_conversation;
 
-    if nullif(btrim(coalesce(v_claim.message, '')), '') is not null then
-      insert into app_public.claim_message (
-        conversation_id,
-        sender_account_id,
-        body,
-        created_at
-      )
-      values (
-        v_conversation.id,
-        v_claim.claimer_account_id,
-        v_claim.message,
-        v_claim.created_at
-      );
+    if found then
+      if nullif(btrim(coalesce(v_claim.message, '')), '') is not null then
+        insert into app_public.claim_message (
+          conversation_id,
+          sender_account_id,
+          body,
+          created_at
+        )
+        values (
+          v_conversation.id,
+          v_claim.claimer_account_id,
+          v_claim.message,
+          v_claim.created_at
+        );
+      end if;
+    else
+      select * into v_conversation
+      from app_public.claim_conversation cc
+      where cc.need_id = v_claim.need_id
+        and cc.creator_account_id = v_claim.creator_account_id
+        and cc.claimer_account_id = v_claim.claimer_account_id;
     end if;
   end if;
 

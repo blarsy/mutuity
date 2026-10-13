@@ -13,6 +13,7 @@ const SAMPLE_CLAIMS: NeedClaimItem[] = [
     needTitle: "Bike repair workshop",
     needImageUrl: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500",
     message: "I have all the tools needed and I'm free this weekend to help out.",
+    conversationId: "claim-conversation-001",
     createdAt: "2026-07-25T14:00:00.000Z",
     updatedAt: "2026-07-25T14:00:00.000Z",
     status: NeedClaimStatus.Open,
@@ -29,6 +30,7 @@ const SAMPLE_CLAIMS: NeedClaimItem[] = [
     needTitle: "English tutoring for kids",
     needImageUrl: null,
     message: "Already settled, thanks again!",
+    conversationId: null,
     createdAt: "2026-07-20T10:30:00.000Z",
     updatedAt: "2026-07-21T09:00:00.000Z",
     status: NeedClaimStatus.Settled,
@@ -49,7 +51,8 @@ const meta = {
     accountId: "00000000-0000-0000-0000-000000000111",
     injectedClaims: SAMPLE_CLAIMS,
     onOpenNeed: () => undefined,
-    onOpenCounterparty: () => undefined
+    onOpenCounterparty: () => undefined,
+    onOpenChat: () => undefined
   }
 } satisfies Meta<typeof MyClaimsScreen>;
 

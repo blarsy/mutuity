@@ -688,6 +688,11 @@ export const SENT_NEED_CLAIMS_QUERY = gql`
         status
         createdAt
         updatedAt
+        claimConversationsByNeedClaimId(first: 1) {
+          nodes {
+            id
+          }
+        }
         needByNeedId {
           id
           title
@@ -729,6 +734,11 @@ export const RECEIVED_NEED_CLAIMS_QUERY = gql`
             status
             createdAt
             updatedAt
+            claimConversationsByNeedClaimId(first: 1) {
+              nodes {
+                id
+              }
+            }
             accountByClaimerAccountId {
               id
               displayName
@@ -941,6 +951,16 @@ export const SEND_RESOURCE_CONVERSATION_MESSAGE_MUTATION = gql`
         body
         createdAt
         senderAccountId
+      }
+    }
+  }
+`;
+
+export const START_CLAIM_CONVERSATION_MUTATION = gql`
+  mutation StartClaimConversation($input: SendClaimMessageInput!) {
+    sendClaimMessage(input: $input) {
+      claimMessage {
+        conversationId
       }
     }
   }

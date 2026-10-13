@@ -12,6 +12,7 @@ export interface SentBidsScreenProps {
   onOpenResource?: (resourceId: string) => void;
   onOpenCounterparty?: (accountId: string) => void;
   onOpenConversation?: (conversationId: string) => void;
+  onOpenChat?: (bid: BidWorkspaceItem) => Promise<void> | void;
   onBackToHub?: () => void;
 }
 
@@ -22,6 +23,7 @@ export function SentBidsScreen({
   onOpenResource,
   onOpenCounterparty,
   onOpenConversation,
+  onOpenChat,
   onBackToHub
 }: SentBidsScreenProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -39,6 +41,7 @@ export function SentBidsScreen({
       {...(onOpenResource ? { onOpenResource } : {})}
       {...(onOpenCounterparty ? { onOpenCounterparty } : {})}
       {...(onOpenConversation ? { onOpenConversation } : {})}
+      {...(onOpenChat ? { onOpenChat } : {})}
       {...(onBackToHub ? { onBackToHub } : {})}
     />
   );

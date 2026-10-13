@@ -154,8 +154,9 @@ describe.each(["identified_account", "admin"])("function-only claim/chat writes 
     await identity(action === "cancel" ? peerId : ownerId);
     expect((await client.query(`select * from app_public.${action}_need_claim($1)`, [claimId])).rows[0].status)
       .toBe(action === "cancel" ? "withdrawn" : "declined");
-    await reject("select app_public.send_claim_conversation_message($1, 'Closed thread', array[]::text[])",
-      [claimConversationId], { code: "P0001", message: "Need claim is closed" });
+    const reply = await client.query("select * from app_public.send_claim_conversation_message($1, 'Closed thread', array[]::text[])",
+      [claimConversationId]);
+    expect(reply.rows[0]).toMatchObject({ conversation_id: claimConversationId, body: "Closed thread" });
   });
 
   it("keeps existing entry-point and exchange messaging functions executable", async () => {

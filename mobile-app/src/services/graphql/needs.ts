@@ -131,6 +131,7 @@ export interface NeedClaimItem {
   needTitle: string;
   needImageUrl: string | null;
   message: string | null;
+  conversationId: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   status: NeedClaimStatus;
@@ -202,6 +203,9 @@ interface ReceivedNeedClaimsQueryResult {
           needId: string;
           claimerAccountId: string;
           message?: string | null;
+          claimConversationsByNeedClaimId?: {
+            nodes: Array<{ id: string } | null>;
+          } | null;
           status: NeedClaimStatus;
           createdAt: string;
           updatedAt?: string | null;
@@ -643,12 +647,15 @@ function normalizeNeedClaim(
     return null;
   }
 
+  const conversationId = node.claimConversationsByNeedClaimId?.nodes[0]?.id;
+
   return {
     id: String(node.id),
     needId: String(node.needId),
     needTitle: node.needByNeedId?.title ?? "",
     needImageUrl: firstImageUrl(node.needByNeedId?.imageUrls),
     message: typeof node.message === "string" ? node.message : null,
+    conversationId: typeof conversationId === "string" ? conversationId : null,
     createdAt: typeof node.createdAt === "string" ? node.createdAt : null,
     updatedAt: typeof node.updatedAt === "string" ? node.updatedAt : null,
     status: node.status,
@@ -701,6 +708,7 @@ export async function fetchNeedClaimsForAccount(input: {
       needTitle: need.title,
       needImageUrl: firstImageUrl(need.imageUrls),
       message: typeof claim.message === "string" ? claim.message : null,
+      conversationId: claim.claimConversationsByNeedClaimId?.nodes[0]?.id ?? null,
       createdAt: claim.createdAt,
       updatedAt: typeof claim.updatedAt === "string" ? claim.updatedAt : null,
       status: claim.status,
