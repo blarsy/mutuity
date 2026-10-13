@@ -226,7 +226,9 @@ export function ResourceCard({
       </Box>
 
       {tokenAmount != null ? (
-        <TokenAmount amount={tokenAmount} size={28} sx={{ mx: 2, mt: 2 }} />
+        <Box onClick={() => onClick?.()} sx={{ cursor: onClick ? "pointer" : undefined, display: "flex", mx: 2, mt: 2 }}>
+          <TokenAmount amount={tokenAmount} size={28} />
+        </Box>
       ) : null}
 
       {/* Text content */}

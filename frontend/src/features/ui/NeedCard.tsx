@@ -213,7 +213,9 @@ export function NeedCard({
       </Box> : null}
 
       {tokenAmount != null ? (
-        <TokenAmount amount={tokenAmount} size={28} sx={{ mx: 2, mt: 2 }} />
+        <Box onClick={() => onClick?.()} sx={{ cursor: onClick ? "pointer" : undefined, display: "flex", mx: 2, mt: 2 }}>
+          <TokenAmount amount={tokenAmount} size={28} />
+        </Box>
       ) : null}
 
       <ButtonBase onClick={() => onClick?.()} sx={{ alignItems: "stretch", display: "block", flexGrow: 1, textAlign: "left" }}>
