@@ -97,8 +97,22 @@ export const UPDATE_NEED_MUTATION = gql`
       need {
         id
         title
+        description
+        location
+        latitude
+        longitude
         intensity
         proposedTopesAmount
+        objectRequired
+        competenceRequired
+        toolingRequired
+        multiplePeopleRequired
+        requiredCompetenceText
+        requiredToolingText
+        requiredPeopleCount
+        imageUrls
+        expiresAt
+        updatedAt
       }
     }
   }

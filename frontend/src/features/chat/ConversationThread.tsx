@@ -23,6 +23,7 @@ import {
   CLAIM_CONVERSATION_QUERY,
   RESOURCE_CONVERSATION_QUERY,
   SEND_CLAIM_MESSAGE_MUTATION,
+  SEND_CLAIM_CONVERSATION_MESSAGE_MUTATION,
   SEND_RESOURCE_MESSAGE_DIRECT_MUTATION,
   SEND_NEED_MESSAGE_MUTATION,
   MARK_RESOURCE_MESSAGES_READ_MUTATION,
@@ -35,6 +36,8 @@ import { ZoomableImage } from "../../components/ZoomableImage";
 import { ListingHeader } from "../ui/ListingHeader";
 import { conversationContextUrl } from "./chatRouting";
 import { GiftTokensButton } from "../contribution/GiftTokensButton";
+import { sendNeedThreadMessage } from "./needThreadMessaging";
+import type { SendClaimMessageMutation } from "../../graphql/generated";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -154,6 +157,7 @@ export function ConversationThread({
     contextId: string;
     otherAccountId: string | null;
     title: string | null;
+    needClaimId?: string | null;
   } | null;
   onConversationCreated?: (kind: "need" | "resource", conversationId: string) => void | Promise<void>;
   onMessagesRead?: () => void;
@@ -542,7 +546,7 @@ function MessageComposer({
   isResource: boolean;
   resourceConv: ResourceConv;
   claimConv: ClaimConv;
-  draftThread?: { kind: "need" | "resource"; contextId: string; otherAccountId: string | null } | null;
+  draftThread?: { kind: "need" | "resource"; contextId: string; otherAccountId: string | null; needClaimId?: string | null } | null;
   myAccountId: string | null;
   onConversationCreated?: (kind: "need" | "resource", conversationId: string) => void | Promise<void>;
   onSent: () => void;
@@ -556,7 +560,8 @@ function MessageComposer({
 
   const [sendResourceMessageDirect] = useMutation<SendResourceMessageDirectMutationData>(SEND_RESOURCE_MESSAGE_DIRECT_MUTATION);
   const [sendNeedMessage] = useMutation<SendNeedMessageMutationData>(SEND_NEED_MESSAGE_MUTATION);
-  const [sendClaimMessage] = useMutation(SEND_CLAIM_MESSAGE_MUTATION);
+  const [sendClaimMessage] = useMutation<SendClaimMessageMutation>(SEND_CLAIM_MESSAGE_MUTATION);
+  const [sendClaimConversationMessage] = useMutation(SEND_CLAIM_CONVERSATION_MESSAGE_MUTATION);
 
   const tooManyImages = imageUrls.length > MAX_IMAGE_ATTACHMENTS;
   const canSend = isComposerBodyReady(body) && !tooManyImages;
@@ -598,30 +603,33 @@ function MessageComposer({
         if (conversationId && onConversationCreated) {
           await onConversationCreated("resource", conversationId);
         }
-      } else if (!isResource && draftThread?.kind === "need") {
-        const result = await sendNeedMessage({
-          variables: {
-            input: {
-              pNeedId: draftThread.contextId,
-              pBody: trimmed,
-              pImageUrls: imageUrls
-            }
+      } else if (!isResource && (claimConv || draftThread?.kind === "need")) {
+        const conversationId = await sendNeedThreadMessage({
+          conversationId: claimConv?.id,
+          needClaimId: draftThread?.needClaimId,
+          needId: claimConv?.needId ?? draftThread!.contextId,
+          body: trimmed,
+          imageUrls
+        }, {
+          conversation: async ({ conversationId, body, imageUrls }) => {
+            await sendClaimConversationMessage({
+              variables: { input: { pConversationId: conversationId, pBody: body, pImageUrls: imageUrls } }
+            });
+            return conversationId;
+          },
+          claim: async ({ needClaimId, body, imageUrls }) => {
+            const result = await sendClaimMessage({ variables: { input: { needClaimId, body, imageUrls } } });
+            return result.data?.sendClaimMessage?.claimMessage?.conversationId;
+          },
+          publicNeed: async ({ needId, body, imageUrls }) => {
+            const result = await sendNeedMessage({
+              variables: { input: { pNeedId: needId, pBody: body, pImageUrls: imageUrls } }
+            });
+            return result.data?.sendNeedMessage?.claimMessage?.conversationId;
           }
         });
-
-        const conversationId = result.data?.sendNeedMessage?.claimMessage?.conversationId;
-        if (conversationId && onConversationCreated) {
+        if (!claimConv && conversationId && onConversationCreated) {
           await onConversationCreated("need", conversationId);
-        }
-      } else if (!isResource && claimConv) {
-        if (claimConv.needClaimId) {
-          await sendClaimMessage({
-            variables: { input: { needClaimId: claimConv.needClaimId, body: trimmed, imageUrls } }
-          });
-        } else {
-          await sendNeedMessage({
-            variables: { input: { pNeedId: claimConv.needId, pBody: trimmed, pImageUrls: imageUrls } }
-          });
         }
       }
       setBody("");

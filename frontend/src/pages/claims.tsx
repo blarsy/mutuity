@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { Alert, Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../features/auth/AuthProvider";
-import { conversationThreadUrl } from "../features/chat/chatRouting";
+import { WorkspaceChatButton } from "../features/chat/WorkspaceChatButton";
 import { useRequireAuth } from "../features/auth/requireAuth";
 import {
   CANCEL_NEED_CLAIM_MUTATION,
@@ -328,11 +327,16 @@ export default function ClaimsPage() {
                           >
                             {t("actions.viewClaim")}
                           </Button>
-                          {claimConversationId ? (
-                            <Button component={NextLink} href={conversationThreadUrl("need", claimConversationId)} variant="text">
-                              {t("actions.chat")}
-                            </Button>
-                          ) : null}
+                          <WorkspaceChatButton
+                            kind="need"
+                            contextId={need.id}
+                            creatorAccountId={need.creatorAccountId}
+                            participantAccountId={claim.claimerAccountId}
+                            linkedConversationId={claimConversationId}
+                            needClaimId={claim.id}
+                            title={need.title}
+                            label={t("actions.chat")}
+                          />
                         </Stack>
                       }
                       chips={
@@ -469,11 +473,16 @@ export default function ClaimsPage() {
                           >
                             {t("actions.reviewClaim")}
                           </Button>
-                          {claimConversationId ? (
-                            <Button component={NextLink} href={conversationThreadUrl("need", claimConversationId)} variant="text">
-                              {t("actions.chat")}
-                            </Button>
-                          ) : null}
+                          <WorkspaceChatButton
+                            kind="need"
+                            contextId={need.id}
+                            creatorAccountId={need.creatorAccountId}
+                            participantAccountId={claim.claimerAccountId}
+                            linkedConversationId={claimConversationId}
+                            needClaimId={claim.id}
+                            title={need.title}
+                            label={t("actions.chat")}
+                          />
                         </Stack>
                       }
                       chips={

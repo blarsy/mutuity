@@ -20,6 +20,12 @@ describe("chat conversation routing", () => {
     expect(conversationContextUrl("resource", "resource-xyz")).toBe("/resources/resource-xyz");
   });
 
+  it("preserves claim context for owner-initiated need drafts without adding it to resource drafts", () => {
+    const params = { contextId: "listing", otherAccountId: "helper", title: "Title", needClaimId: "claim" };
+    expect(conversationDraftUrl({ ...params, kind: "need" })).toContain("needClaimId=claim");
+    expect(conversationDraftUrl({ ...params, kind: "resource" })).not.toContain("needClaimId");
+  });
+
   it("handles uppercase GraphQL enum values returned by PostGraphile", () => {
     // PostGraphile returns enum values in UPPERCASE; helpers normalise before comparison
     expect(conversationThreadUrl("NEED", "conv-333")).toBe("/chat?kind=NEED&id=conv-333");

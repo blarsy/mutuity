@@ -25,6 +25,7 @@ export default function ChatPage() {
   const draftContextId = typeof router.query.contextId === "string" ? router.query.contextId : null;
   const draftOtherAccountId = typeof router.query.otherAccountId === "string" ? router.query.otherAccountId : null;
   const draftTitle = typeof router.query.title === "string" ? router.query.title : null;
+  const draftNeedClaimId = typeof router.query.needClaimId === "string" ? router.query.needClaimId : null;
 
   const draftThread =
     isDraft && selectedKind === "resource" && draftContextId && draftOtherAccountId
@@ -38,7 +39,8 @@ export default function ChatPage() {
         ? {
             kind: "need" as const,
             contextId: draftContextId,
-        otherAccountId: draftOtherAccountId,
+            otherAccountId: draftOtherAccountId,
+            needClaimId: draftNeedClaimId,
             title: draftTitle
           }
       : null;

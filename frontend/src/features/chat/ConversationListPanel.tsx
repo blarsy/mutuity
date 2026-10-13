@@ -35,6 +35,7 @@ export type ConversationNode = {
   lastMessagePreview: string | null;
   unreadCount: number;
   lastActivityAt: string | null;
+  needClaimId?: string | null;
 };
 
 type ListChatConversationsData = {
@@ -75,6 +76,7 @@ export function ConversationListPanel({
     contextId: string;
     otherAccountId: string | null;
     title: string | null;
+    needClaimId?: string | null;
   } | null;
   selectedConversationId?: string | null;
   isAuthenticated: boolean;
@@ -128,7 +130,8 @@ export function ConversationListPanel({
           otherAccountDisplayName: null,
           lastMessagePreview: null,
           unreadCount: 0,
-          lastActivityAt: null
+          lastActivityAt: null,
+          needClaimId: draftThread.needClaimId
         }
       : null;
 
@@ -242,7 +245,8 @@ function ConversationListItem({
         kind: conv.conversationKind as "need" | "resource",
         contextId: conv.contextId,
         otherAccountId: conv.otherAccountId || null,
-        title: conv.contextTitle
+        title: conv.contextTitle,
+        needClaimId: conv.needClaimId
       })
     : conversationThreadUrl(
         conv.conversationKind as "need" | "resource",

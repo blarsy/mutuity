@@ -213,6 +213,9 @@ describe("BidsPage action controls", () => {
         };
       }
 
+      if (query === require("../../src/features/chat/chat.queries").RESOURCE_CONVERSATION_LOOKUP_QUERY) {
+        return { loading: false, data: { resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: null } };
+      }
       throw new Error("Unexpected query document");
     });
   });
@@ -228,7 +231,7 @@ describe("BidsPage action controls", () => {
 
     expect(markup).toContain("Cancel bid");
     expect(markup).toContain("This bid was cancelled by the bidder.");
-    expect(markup).toContain("View creator");
+    expect((markup.match(/href="\/chat\?kind=resource/g) ?? []).length).toBe(2);
   });
 
   it("shows accept/decline controls for active received bids", () => {
@@ -271,7 +274,8 @@ describe("BidsPage action controls", () => {
 
     expect(markup).toContain("Accept bid");
     expect(markup).toContain("Decline bid");
-    expect(markup).toContain("View bidder");
+    expect(markup).toContain('href="/chat?kind=resource&amp;draft=1');
+    expect(markup).toContain("otherAccountId=acct-bidder-2");
   });
 
   it("keeps final-acceptance confirmation messaging available in locale copy", () => {

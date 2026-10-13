@@ -31,7 +31,7 @@ import {
 } from "../features/resources/resources.queries";
 import type { ResourceBidStatus } from "../features/resources/types";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
-import { conversationThreadUrl } from "../features/chat/chatRouting";
+import { WorkspaceChatButton } from "../features/chat/WorkspaceChatButton";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { ListingHeader } from "../features/ui/ListingHeader";
 import { TokenAmount } from "../components/TokenAmount";
@@ -391,16 +391,15 @@ export default function BidsPage() {
         key={bid.id}
         actions={
           <Stack direction="row" flexWrap="wrap" gap={1}>
-            {bid.resourceConversationsByResourceBidId.nodes[0]?.id ? (
-              <Button
-                component={NextLink}
-                href={conversationThreadUrl("resource", bid.resourceConversationsByResourceBidId.nodes[0].id)}
-                size="small"
-                variant="text"
-              >
-                {t("actions.chat")}
-              </Button>
-            ) : null}
+            <WorkspaceChatButton
+              kind="resource"
+              contextId={bid.resourceId}
+              creatorAccountId={resource.creatorAccountId}
+              participantAccountId={bid.bidderAccountId}
+              linkedConversationId={bid.resourceConversationsByResourceBidId.nodes[0]?.id}
+              title={resource.title}
+              label={t("actions.chat")}
+            />
             {bid.isActive ? (
               <Button color="error" onClick={() => { handleCancel(bid.id); }} size="small" variant="outlined">
                 {t("actions.cancel")}
@@ -428,16 +427,15 @@ export default function BidsPage() {
         key={bid.id}
         actions={
           <Stack direction="row" flexWrap="wrap" gap={1}>
-            {bid.resourceConversationsByResourceBidId.nodes[0]?.id ? (
-              <Button
-                component={NextLink}
-                href={conversationThreadUrl("resource", bid.resourceConversationsByResourceBidId.nodes[0].id)}
-                size="small"
-                variant="text"
-              >
-                {t("actions.chat")}
-              </Button>
-            ) : null}
+            <WorkspaceChatButton
+              kind="resource"
+              contextId={bid.resourceId}
+              creatorAccountId={bid.resourceByResourceId.creatorAccountId}
+              participantAccountId={bid.bidderAccountId}
+              linkedConversationId={bid.resourceConversationsByResourceBidId.nodes[0]?.id}
+              title={bid.resourceByResourceId.title}
+              label={t("actions.chat")}
+            />
             {bid.isActive ? (
               <>
                 <Button color="success" onClick={() => { setAcceptConfirmBidId(bid.id); }} size="small" variant="contained">

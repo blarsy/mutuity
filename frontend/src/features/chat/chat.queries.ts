@@ -229,6 +229,20 @@ export const SEND_CLAIM_MESSAGE_MUTATION = gql`
   }
 `;
 
+export const SEND_CLAIM_CONVERSATION_MESSAGE_MUTATION = gql`
+  mutation ChatSendClaimConversationMessage($input: SendClaimConversationMessageInput!) {
+    sendClaimConversationMessage(input: $input) {
+      claimMessage {
+        id
+        conversationId
+        senderAccountId
+        body
+        createdAt
+      }
+    }
+  }
+`;
+
 export const MARK_RESOURCE_MESSAGES_READ_MUTATION = gql`
   mutation MarkResourceMessagesRead($input: MarkResourceMessagesReadInput!) {
     markResourceMessagesRead(input: $input) {

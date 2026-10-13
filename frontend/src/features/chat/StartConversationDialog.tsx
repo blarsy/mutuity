@@ -16,6 +16,7 @@ type StartConversationButtonProps = {
   title: string;
   buttonLabel: string;
   existingConversationId?: string | null;
+  needClaimId?: string | null;
   lookupLoading?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -31,7 +32,8 @@ export function StartConversationButton(props: StartConversationButtonProps) {
         kind: props.kind,
         contextId: props.contextId,
         otherAccountId: props.otherAccountId,
-        title: props.title
+        title: props.title,
+        needClaimId: props.needClaimId
       });
 
   return (

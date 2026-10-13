@@ -209,8 +209,6 @@ describe("BidsPage navigation links", () => {
     const { default: BidsPage } = require("../../src/pages/bids");
     const markup = renderToStaticMarkup(createElement(BidsPage));
 
-    expect(markup).toContain(`href="/resources/${RESOURCE_ID}"`);
-    expect(markup).toContain(`href="/accounts/${CREATOR_ACCOUNT_ID}"`);
     expect(markup).toContain(`href="/chat?kind=resource&amp;id=${CONVERSATION_ID}"`);
     expect(markup).toContain("Chat");
     const headerProps = jest.mocked(ListingHeader).mock.calls[0][0];
@@ -224,7 +222,7 @@ describe("BidsPage navigation links", () => {
     expect(mockPush).toHaveBeenCalledWith(`/resources/${RESOURCE_ID}`);
   });
 
-  it("sent bid card omits chat button when no conversation exists", () => {
+  it("sent bid card opens a draft addressed to the resource owner when no conversation exists", () => {
     const sentBid: BidNode = {
       id: "bid-sent-2",
       resourceId: RESOURCE_ID,
@@ -248,7 +246,7 @@ describe("BidsPage navigation links", () => {
     const { default: BidsPage } = require("../../src/pages/bids");
     const markup = renderToStaticMarkup(createElement(BidsPage));
 
-    expect(markup).not.toContain(`href="/chat`);
+    expect(markup).toContain(`href="/chat?kind=resource&amp;draft=1&amp;contextId=${RESOURCE_ID}&amp;otherAccountId=${CREATOR_ACCOUNT_ID}`);
   });
 
   it("received bid card links to the resource, bidder account, and chat when conversation exists", () => {
@@ -275,8 +273,6 @@ describe("BidsPage navigation links", () => {
     const { default: BidsPage } = require("../../src/pages/bids");
     const markup = renderToStaticMarkup(createElement(BidsPage));
 
-    expect(markup).toContain(`href="/resources/${RESOURCE_ID}"`);
-    expect(markup).toContain(`href="/accounts/${BIDDER_ACCOUNT_ID}"`);
     expect(markup).toContain(`href="/chat?kind=resource&amp;id=${CONVERSATION_ID}"`);
     expect(markup).toContain("Chat");
     const headerProps = jest.mocked(ListingHeader).mock.calls[0][0];
@@ -290,7 +286,7 @@ describe("BidsPage navigation links", () => {
     expect(mockPush).toHaveBeenCalledWith(`/resources/${RESOURCE_ID}`);
   });
 
-  it("received bid card omits chat button when no conversation exists", () => {
+  it("received bid card opens a draft addressed to the bidder when no conversation exists", () => {
     const receivedBid: BidNode = {
       id: "bid-recv-2",
       resourceId: RESOURCE_ID,
@@ -314,6 +310,6 @@ describe("BidsPage navigation links", () => {
     const { default: BidsPage } = require("../../src/pages/bids");
     const markup = renderToStaticMarkup(createElement(BidsPage));
 
-    expect(markup).not.toContain(`href="/chat`);
+    expect(markup).toContain(`href="/chat?kind=resource&amp;draft=1&amp;contextId=${RESOURCE_ID}&amp;otherAccountId=${BIDDER_ACCOUNT_ID}`);
   });
 });

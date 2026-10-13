@@ -174,6 +174,9 @@ describe("BidsPage", () => {
     mockUseQuery.mockImplementation((query: unknown) => {
       if (query === SENT_QUERY_DOC) return sentQueryResult;
       if (query === RECEIVED_QUERY_DOC) return receivedQueryResult;
+      if (query === require("../../src/features/chat/chat.queries").RESOURCE_CONVERSATION_LOOKUP_QUERY) {
+        return { loading: false, data: { resourceConversationByResourceIdAndOwnerAccountIdAndBidderAccountId: null } };
+      }
       throw new Error("Unexpected query document");
     });
   });

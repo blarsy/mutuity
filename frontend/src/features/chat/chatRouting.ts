@@ -21,6 +21,7 @@ export function conversationDraftUrl(params: {
   contextId: string;
   otherAccountId?: string | null;
   title?: string | null;
+  needClaimId?: string | null;
 }): string {
   const query = new URLSearchParams({
     kind: params.kind,
@@ -34,6 +35,10 @@ export function conversationDraftUrl(params: {
 
   if (params.title?.trim()) {
     query.set("title", params.title.trim());
+  }
+
+  if (params.kind === "need" && params.needClaimId?.trim()) {
+    query.set("needClaimId", params.needClaimId.trim());
   }
 
   return `/chat?${query.toString()}`;

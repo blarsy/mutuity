@@ -30,6 +30,14 @@ type ClaimNode = {
 
 const CLAIM_OVERVIEW_QUERY_DOC = { kind: "Document", name: "claims-overview" };
 const mockUseQuery = jest.fn();
+const mockPush = jest.fn();
+const mockCardProps = jest.fn();
+
+jest.mock("../../src/features/needs/NeedClaimManagementPage", () => ({ NeedClaimManagementPage: () => null }));
+jest.mock("../../src/graphql/generated", () => ({
+  ...jest.requireActual("../../src/graphql/generated"),
+  ViewerClaimOverviewDocument: CLAIM_OVERVIEW_QUERY_DOC
+}));
 
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -38,7 +46,7 @@ jest.mock("next/link", () => ({
 }));
 
 jest.mock("next/router", () => ({
-  useRouter: () => ({ query: {} })
+  useRouter: () => ({ query: {}, push: mockPush })
 }));
 
 jest.mock("@apollo/client/react", () => ({
@@ -66,21 +74,27 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({
 }));
 
 jest.mock("../../src/features/ui/NeedCard", () => ({
-  NeedCard: ({ title, actions, chips, creatorName, description, footer }: {
+  NeedCard: (props: {
     title: string;
     actions: ReactNode;
     chips: ReactNode;
     creatorName: string;
     description: ReactNode;
     footer: ReactNode;
-  }) => createElement("section", null,
+    onListingClick?: () => void;
+    onCreatorClick?: () => void;
+  }) => {
+    mockCardProps(props);
+    const { title, actions, chips, creatorName, description, footer } = props;
+    return createElement("section", null,
     createElement("h3", null, title),
     createElement("div", null, creatorName),
     createElement("div", null, chips),
     createElement("div", null, description),
     createElement("div", null, footer),
     createElement("div", null, actions)
-  )
+    );
+  }
 }));
 
 jest.mock("../../src/features/needs/NeedClaimStatusChip", () => ({
@@ -154,6 +168,10 @@ function buildClaim(overrides: Partial<ClaimNode> & { id: string; needId: string
 }
 
 describe("ClaimsPage navigation links", () => {
+  beforeEach(() => {
+    mockCardProps.mockClear();
+    mockPush.mockClear();
+  });
   it("sent claim card links to need, need owner, and chat when conversation exists", () => {
     const sentClaim = buildClaim({
       id: "claim-sent-1",
@@ -182,12 +200,15 @@ describe("ClaimsPage navigation links", () => {
     const { default: ClaimsPage } = require("../../src/pages/claims");
     const markup = renderToStaticMarkup(createElement(ClaimsPage));
 
-    expect(markup).toContain('href="/needs/need-1"');
-    expect(markup).toContain('href="/accounts/acct-owner-1"');
+    const props = mockCardProps.mock.calls[0][0];
+    props.onListingClick();
+    props.onCreatorClick();
+    expect(mockPush).toHaveBeenCalledWith("/needs/need-1");
+    expect(mockPush).toHaveBeenCalledWith("/accounts/acct-owner-1");
     expect(markup).toContain('href="/chat?kind=need&amp;id=conv-need-1"');
   });
 
-  it("sent claim card hides chat button when no conversation exists", () => {
+  it("sent claim card opens a draft addressed to the need owner when no conversation exists", () => {
     const sentClaim = buildClaim({
       id: "claim-sent-2",
       needId: "need-2",
@@ -214,7 +235,8 @@ describe("ClaimsPage navigation links", () => {
     const { default: ClaimsPage } = require("../../src/pages/claims");
     const markup = renderToStaticMarkup(createElement(ClaimsPage));
 
-    expect(markup).not.toContain('href="/chat?kind=need');
+    expect(markup).toContain('href="/chat?kind=need&amp;draft=1&amp;contextId=need-2&amp;otherAccountId=acct-owner-2');
+    expect(markup).toContain("needClaimId=claim-sent-2");
   });
 
   it("received claim card links to need, claimer account, and chat when conversation exists", () => {
@@ -245,12 +267,15 @@ describe("ClaimsPage navigation links", () => {
     const { default: ClaimsPage } = require("../../src/pages/claims");
     const markup = renderToStaticMarkup(createElement(ClaimsPage));
 
-    expect(markup).toContain('href="/needs/need-3"');
-    expect(markup).toContain('href="/accounts/acct-claimer-1"');
+    const props = mockCardProps.mock.calls[0][0];
+    props.onListingClick();
+    props.onCreatorClick();
+    expect(mockPush).toHaveBeenCalledWith("/needs/need-3");
+    expect(mockPush).toHaveBeenCalledWith("/accounts/acct-claimer-1");
     expect(markup).toContain('href="/chat?kind=need&amp;id=conv-need-3"');
   });
 
-  it("received claim card hides chat button when no conversation exists", () => {
+  it("received claim card opens a draft addressed to the claimer when no conversation exists", () => {
     const receivedClaim = buildClaim({
       id: "claim-received-2",
       needId: "need-4",
@@ -277,6 +302,7 @@ describe("ClaimsPage navigation links", () => {
     const { default: ClaimsPage } = require("../../src/pages/claims");
     const markup = renderToStaticMarkup(createElement(ClaimsPage));
 
-    expect(markup).not.toContain('href="/chat?kind=need');
+    expect(markup).toContain('href="/chat?kind=need&amp;draft=1&amp;contextId=need-4&amp;otherAccountId=acct-claimer-2');
+    expect(markup).toContain("needClaimId=claim-received-2");
   });
 });
