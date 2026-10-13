@@ -69,7 +69,7 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({
 }));
 
 jest.mock("../../src/features/ui/NeedCard", () => ({
-  NeedCard: ({ title, actions, chips, creatorName, description, footer, tokenAmount }: {
+  NeedCard: ({ title, actions, chips, creatorName, description, footer, tokenAmount, showImageGallery }: {
     title: string;
     actions: ReactNode;
     chips: ReactNode;
@@ -77,7 +77,8 @@ jest.mock("../../src/features/ui/NeedCard", () => ({
     description: ReactNode;
     footer: ReactNode;
     tokenAmount?: number | null;
-  }) => createElement("section", { "data-testid": "need-card", "data-token-amount": tokenAmount ?? undefined },
+    showImageGallery?: boolean;
+  }) => createElement("section", { "data-testid": "need-card", "data-token-amount": tokenAmount ?? undefined, "data-show-gallery": showImageGallery },
     createElement("h3", null, title),
     createElement("div", null, creatorName),
     createElement("div", null, chips),
@@ -289,6 +290,8 @@ describe("ClaimsPage rendering and filters", () => {
     expect(html).toContain("Received section");
     expect(html).toContain(`Need ${sent.id}`);
     expect(html).toContain(`Need ${received.id}`);
+    expect((html.match(/data-show-gallery="false"/g) ?? []).length).toBe(2);
+    expect(html).toContain("grid-template-columns:1fr 1fr");
   });
 
   it("summary chips show total counts regardless of filter", () => {

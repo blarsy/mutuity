@@ -16,7 +16,6 @@ import {
 import { NeedClaimManagementPage } from "../features/needs/NeedClaimManagementPage";
 import { NeedClaimStatusChip } from "../features/needs/NeedClaimStatusChip";
 import { NeedCard } from "../features/ui/NeedCard";
-import { listingCardGridSx } from "../features/ui/listingCardGrid";
 import {
   ViewerClaimOverviewDocument,
   type ViewerClaimOverviewQuery,
@@ -243,7 +242,7 @@ export default function ClaimsPage() {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="xl">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -272,8 +271,9 @@ export default function ClaimsPage() {
             </Box>
           ) : null}
 
-          <Stack spacing={2}>
-            <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
+          <Box sx={{ display: "grid", gap: 4, gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" } }}>
+          <Stack spacing={2} sx={{ minWidth: 0 }}>
+            <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1} justifyContent="space-between">
               <Typography variant="h5">{t("sentSection")}</Typography>
               <ToggleButtonGroup
                 exclusive
@@ -297,7 +297,7 @@ export default function ClaimsPage() {
               <Alert severity="info">{t("sentFilterEmpty")}</Alert>
             ) : (
               <>
-                <Box sx={listingCardGridSx}>
+                <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "minmax(0, 1fr)" }}>
                   {sentClaims.map(claim => {
                     const need = claim.needByNeedId;
                     const imageUrls = (need.imageUrls ?? []).filter((url: string | null): url is string => typeof url === "string" && url.length > 0);
@@ -307,7 +307,7 @@ export default function ClaimsPage() {
                   return (
                     <NeedCard
                       actions={
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                        <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                           {isOpen ? (
                             <Button
                               color="error"
@@ -351,6 +351,7 @@ export default function ClaimsPage() {
                           : isOpen ? t("openClaimHint") : null
                       }
                       imageUrls={imageUrls}
+                      showImageGallery={false}
                       tokenAmount={need.proposedTopesAmount}
                       footer={
                         <Stack spacing={0.5}>
@@ -389,8 +390,8 @@ export default function ClaimsPage() {
             )}
           </Stack>
 
-          <Stack spacing={2}>
-            <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
+          <Stack spacing={2} sx={{ minWidth: 0 }}>
+            <Stack alignItems="center" direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1} justifyContent="space-between">
               <Typography variant="h5">{t("receivedSection")}</Typography>
               <ToggleButtonGroup
                 exclusive
@@ -414,7 +415,7 @@ export default function ClaimsPage() {
               <Alert severity="info">{t("receivedFilterEmpty")}</Alert>
             ) : (
               <>
-                <Box sx={listingCardGridSx}>
+                <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "minmax(0, 1fr)" }}>
                   {receivedClaims.map(claim => {
                     const need = claim.needByNeedId;
                     const imageUrls = (need.imageUrls ?? []).filter((url: string | null): url is string => typeof url === "string" && url.length > 0);
@@ -429,7 +430,7 @@ export default function ClaimsPage() {
                     return (
                     <NeedCard
                       actions={
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                        <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>
                           {isOpen ? (
                             <Button
                               color="success"
@@ -488,6 +489,7 @@ export default function ClaimsPage() {
                           : isOpen ? t("reviewClaimHint") : null
                       }
                       imageUrls={imageUrls}
+                      showImageGallery={false}
                       tokenAmount={need.proposedTopesAmount}
                       footer={
                         <Stack spacing={0.5}>
@@ -525,6 +527,7 @@ export default function ClaimsPage() {
             </>
             )}
           </Stack>
+          </Box>
         </Stack>
       </Box>
 

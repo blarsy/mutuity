@@ -164,7 +164,6 @@ function BidCard({
       {tokenAmount != null ? <TokenAmount amount={tokenAmount} size={28} /> : null}
 
       <Stack direction="row" flexWrap="wrap" gap={0.75}>
-        <Chip clickable component={NextLink} href={counterpartyHref} label={counterpartyLabel} size="small" variant="outlined" />
         {tokenAmount != null && bid.isActive ? (
           <Chip color="warning" label={t("reserved", { value: tokenAmount })} size="small" variant="outlined" />
         ) : null}

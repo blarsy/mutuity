@@ -257,7 +257,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
 
   return (
     <APIProvider apiKey={GOOGLE_API_KEY}>
-    <Container maxWidth="lg">
+    <Container maxWidth="xl">
       <Box sx={{ py: 6 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}

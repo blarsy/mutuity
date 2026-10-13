@@ -204,7 +204,7 @@ export default function CampaignNeedTriagePage() {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="xl">
       <Box sx={{ py: 6 }}>
         <Typography component="h1" gutterBottom variant="h4">
           {t("triage.title")}

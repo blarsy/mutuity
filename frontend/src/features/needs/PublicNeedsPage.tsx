@@ -298,7 +298,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
 
   return (
     <APIProvider apiKey={GOOGLE_API_KEY}>
-    <Container maxWidth="lg">
+    <Container maxWidth="xl">
       <Box sx={{ py: 6 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}

@@ -19,6 +19,7 @@ type NeedCardProps = {
   expiresAt?: string | null;
   tokenAmount?: number | null;
   imageUrls?: string[] | null;
+  showImageGallery?: boolean;
   chips?: ReactNode;
   footer?: ReactNode;
   actions?: ReactNode;
@@ -36,6 +37,7 @@ export function NeedCard({
   expiresAt,
   tokenAmount,
   imageUrls,
+  showImageGallery = true,
   chips,
   footer,
   actions,
@@ -86,7 +88,7 @@ export function NeedCard({
         thumbnailUrl={images[0] ?? null}
       />
 
-      <Box
+      {showImageGallery ? <Box
         sx={{
           mt: 1,
           mx: 2,
@@ -208,7 +210,7 @@ export function NeedCard({
             ))}
           </Stack>
         ) : null}
-      </Box>
+      </Box> : null}
 
       {tokenAmount != null ? (
         <TokenAmount amount={tokenAmount} size={28} sx={{ mx: 2, mt: 2 }} />

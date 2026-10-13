@@ -28,4 +28,34 @@ describe("need card content", () => {
     expect(html).not.toContain("file://");
     expect(html).toContain("<strong>description</strong>");
   });
+
+  it("shows the header thumbnail and large gallery by default", () => {
+    const html = renderToStaticMarkup(createElement(NeedCard, {
+      title: "Need", creatorName: "Creator",
+      imageUrls: ["https://example.com/public.jpg", "https://example.com/other.jpg"]
+    }));
+    expect((html.match(/<img /g) ?? []).length).toBe(2);
+    expect(html).toContain("ArrowForwardIosIcon");
+  });
+
+  it("keeps only the header thumbnail when the gallery is hidden", () => {
+    const html = renderToStaticMarkup(createElement(NeedCard, {
+      title: "Need", creatorName: "Creator", showImageGallery: false,
+      imageUrls: ["https://example.com/public.jpg", "https://example.com/other.jpg"]
+    }));
+    expect((html.match(/<img /g) ?? []).length).toBe(1);
+    expect(html).toContain("https://example.com/public.jpg");
+    expect(html).not.toContain("padding-top:100%");
+    expect(html).not.toContain("ArrowForwardIosIcon");
+    expect(html).not.toContain("ArrowBackIosNewIcon");
+  });
+
+  it("omits the large empty-image placeholder when the gallery is hidden", () => {
+    const html = renderToStaticMarkup(createElement(NeedCard, {
+      title: "Need", creatorName: "Creator", showImageGallery: false
+    }));
+    // The small header thumbnail retains its own empty-image label.
+    expect((html.match(/>No image</g) ?? []).length).toBe(1);
+    expect(html).not.toContain("padding-top:100%");
+  });
 });
