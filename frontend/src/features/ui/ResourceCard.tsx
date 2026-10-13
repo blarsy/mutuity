@@ -25,6 +25,7 @@ type ResourceCardProps = {
   actions?: ReactNode;
   showListingHeader?: boolean;
   showCreatorAvatarInHeader?: boolean;
+  cardMaxWidth?: number;
   onClick?: () => void;
   onListingClick?: () => void;
   onCreatorClick?: () => void;
@@ -44,6 +45,7 @@ export function ResourceCard({
   actions,
   showListingHeader = true,
   showCreatorAvatarInHeader = true,
+  cardMaxWidth,
   onClick,
   onListingClick,
   onCreatorClick,
@@ -66,15 +68,14 @@ export function ResourceCard({
   return (
     <Card
       data-testid="resource-card"
-      sx={(theme) => ({
+      sx={{
         display: "flex",
         flexDirection: "column",
-        // 400–500 px wide, filling available space, max 500 px
-        flex: "0 1 460px",
-        minWidth: 280,
-        maxWidth: 500,
-        [theme.breakpoints.down("sm")]: { flex: "0 1 100%", maxWidth: "100%" },
-      })}
+        alignSelf: "flex-start",
+        minWidth: 0,
+        width: "100%",
+        ...(cardMaxWidth ? { maxWidth: cardMaxWidth } : {})
+      }}
       variant="outlined"
     >
       {showListingHeader ? (

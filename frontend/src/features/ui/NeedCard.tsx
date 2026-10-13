@@ -22,6 +22,7 @@ type NeedCardProps = {
   chips?: ReactNode;
   footer?: ReactNode;
   actions?: ReactNode;
+  cardMaxWidth?: number;
   onClick?: () => void;
   onListingClick?: () => void;
   onCreatorClick?: () => void;
@@ -38,6 +39,7 @@ export function NeedCard({
   chips,
   footer,
   actions,
+  cardMaxWidth,
   onClick,
   onListingClick,
   onCreatorClick
@@ -61,7 +63,15 @@ export function NeedCard({
   };
 
   return (
-    <Card data-testid="need-card" sx={{ display: "flex", flexDirection: "column", height: "100%" }} variant="outlined">
+    <Card data-testid="need-card" sx={{
+      alignSelf: cardMaxWidth ? "center" : undefined,
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      minWidth: 0,
+      width: "100%",
+      ...(cardMaxWidth ? { maxWidth: cardMaxWidth } : {})
+    }} variant="outlined">
       <ListingHeader
         creatorImageUrl={creatorImageUrl}
         creatorName={creatorName}

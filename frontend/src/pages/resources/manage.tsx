@@ -22,7 +22,7 @@ import { useRequireAuth } from "../../features/auth/requireAuth";
 import { MY_RESOURCES_CONNECTION_QUERY, RESOURCE_OPEN_BID_COUNT_QUERY, SOFT_DELETE_RESOURCE_MUTATION } from "../../features/resources/resources.queries";
 import { ResourceCard } from "../../features/ui/ResourceCard";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
-import { listingCardGridSx } from "../../features/ui/listingCardGrid";
+import { centeredResponsiveListingCardGridSx } from "../../features/ui/listingCardGrid";
 
 type ManageResourceNode = {
   id: string;
@@ -182,7 +182,7 @@ export default function ManageResourcesPage() {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -198,9 +198,7 @@ export default function ManageResourcesPage() {
             <Alert severity="info">{t("manage.empty")}</Alert>
           ) : null}
 
-          <Box
-              sx={listingCardGridSx}
-          >
+          <Box sx={centeredResponsiveListingCardGridSx}>
             {sortedResources.map(resource => {
               const creatorLabel = resource.accountByCreatorAccountId?.displayName
                 ?? resource.accountByCreatorAccountId?.externalSubject
@@ -208,6 +206,7 @@ export default function ManageResourcesPage() {
 
               return (
                 <ResourceCard
+                  cardMaxWidth={400}
                   actions={(
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                       <Button
@@ -262,7 +261,7 @@ export default function ManageResourcesPage() {
           </Box>
 
           {hasNextPage ? (
-            <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Box ref={loadMoreRef} sx={{ display: "flex", gridColumn: "1 / -1", justifyContent: "center", mt: 2 }}>
               <Chip label={t("manage.loadingMore")} size="small" variant="outlined" />
             </Box>
           ) : null}

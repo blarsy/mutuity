@@ -49,7 +49,7 @@ import {
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { isCampaignActive } from "../campaigns/PublicCampaignsPage";
 import { ResourceCard } from "../ui/ResourceCard";
-import { listingCardGridSx } from "../ui/listingCardGrid";
+import { centeredResponsiveListingCardGridSx } from "../ui/listingCardGrid";
 import {
   PUBLIC_RESOURCE_CAMPAIGN_FILTER_QUERY,
   PUBLIC_RESOURCES_QUERY,
@@ -257,7 +257,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
 
   return (
     <APIProvider apiKey={GOOGLE_API_KEY}>
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box sx={{ py: 6 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -465,12 +465,13 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
         ) : resources.length === 0 ? (
           <Alert severity="warning">{t("browse.empty")}</Alert>
         ) : (
-          <Box sx={listingCardGridSx}>
+          <Box sx={centeredResponsiveListingCardGridSx}>
             {resources.map(resource => {
               const isCreator = session.account?.id === resource.creatorAccountId;
 
               return (
                 <ResourceCard
+                  cardMaxWidth={400}
                   actions={
                     !session.authenticated ? (
                       <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>

@@ -4,7 +4,8 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  View
+  View,
+  useWindowDimensions
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "react-native-paper";
@@ -31,7 +32,7 @@ import {
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
-const MAX_DISTANCE_KM = 100;
+const MAX_DISTANCE_KM = 50;
 
 interface ProximityOptionRowProps {
   title: string;
@@ -130,6 +131,7 @@ export function SearchResourcesScreen({
   onOpenCampaign
 }: SearchResourcesScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
   const defaultLocationLabel = t("locationDefault", { defaultValue: "Tournai center" });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -784,9 +786,12 @@ const styles = StyleSheet.create({
   },
   resourcesList: {
     gap: 10,
+    width: "100%",
     paddingBottom: 4
   },
   foundCard: {
+    alignSelf: "center",
+    width: "100%",
     flexDirection: "row",
     alignItems: "stretch",
     gap: 12,

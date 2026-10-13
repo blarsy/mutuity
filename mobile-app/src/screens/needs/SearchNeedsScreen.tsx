@@ -26,7 +26,7 @@ import { NeedIntensity } from "../../services/graphql/generated";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
-const MAX_DISTANCE_KM = 100;
+const MAX_DISTANCE_KM = 50;
 
 interface ProximityOptionRowProps {
   title: string;

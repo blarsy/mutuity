@@ -98,7 +98,6 @@
     "loading": "Chargement de vos ressources…",
     "addButton": "Ajouter une ressource",
     "loadingMore": "Chargement en cours…",
-    "backToSearch": "Retour à la recherche de ressources",
     "tokensChip": "{{amount}} Topes",
     "deleteDialog": {
       "title": "Supprimer la ressource ?",

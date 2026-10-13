@@ -22,7 +22,7 @@ import { useRequireAuth } from "../../features/auth/requireAuth";
 import { MY_NEEDS_CONNECTION_QUERY, SOFT_DELETE_NEED_MUTATION } from "../../features/needs/needs.queries";
 import { getDisplayIntensityLabel } from "../../features/shared/displayIntensity";
 import { NeedCard } from "../../features/ui/NeedCard";
-import { listingCardGridSx } from "../../features/ui/listingCardGrid";
+import { centeredResponsiveListingCardGridSx } from "../../features/ui/listingCardGrid";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 
 type ManageNeedNode = {
@@ -192,7 +192,7 @@ export default function ManageNeedsPage() {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
           <Box>
@@ -208,7 +208,7 @@ export default function ManageNeedsPage() {
             <Alert severity="info">{t("manage.empty")}</Alert>
           ) : null}
 
-          <Box sx={listingCardGridSx}>
+          <Box sx={centeredResponsiveListingCardGridSx}>
             {sortedNeeds.map(need => {
               const creatorLabel = need.accountByCreatorAccountId?.displayName
                 ?? need.accountByCreatorAccountId?.externalSubject
@@ -216,6 +216,7 @@ export default function ManageNeedsPage() {
 
               return (
                 <NeedCard
+                  cardMaxWidth={400}
                   actions={(
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                       <Button
@@ -268,14 +269,10 @@ export default function ManageNeedsPage() {
           </Box>
 
           {hasNextPage ? (
-            <Box ref={loadMoreRef} sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Box ref={loadMoreRef} sx={{ display: "flex", gridColumn: "1 / -1", justifyContent: "center", mt: 2 }}>
               <Chip label={t("manage.loadingMore")} size="small" variant="outlined" />
             </Box>
           ) : null}
-
-          <Typography color="text.secondary" variant="body2">
-            <NextLink href="/app/needs">{t("manage.backToSearch")}</NextLink>
-          </Typography>
         </Stack>
       </Box>
 

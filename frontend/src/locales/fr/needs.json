@@ -95,7 +95,6 @@
     "loading": "Chargement de vos besoins…",
     "addButton": "Ajouter un besoin",
     "loadingMore": "Chargement en cours…",
-    "backToSearch": "Retour à la recherche de besoins",
     "topesChip": "{{amount}} topes",
     "deleteDialog": {
       "title": "Supprimer le besoin ?",

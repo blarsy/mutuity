@@ -100,7 +100,6 @@
     "loading": "Loading your resources…",
     "addButton": "Add resource",
     "loadingMore": "Loading more…",
-    "backToSearch": "Back to resource search",
     "tokensChip": "{{amount}} Topes",
     "deleteDialog": {
       "title": "Delete resource?",

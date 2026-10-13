@@ -41,7 +41,7 @@ import {
 } from "../../graphql/generated";
 import { PUBLIC_NEED_CAMPAIGN_FILTER_QUERY, PUBLIC_NEEDS_QUERY } from "./needs.queries";
 import { NeedCard } from "../ui/NeedCard";
-import { listingCardGridSx } from "../ui/listingCardGrid";
+import { centeredResponsiveListingCardGridSx } from "../ui/listingCardGrid";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
 import type { PublicNeedsQuery } from "../../graphql/generated";
 
@@ -298,7 +298,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
 
   return (
     <APIProvider apiKey={GOOGLE_API_KEY}>
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box sx={{ py: 6 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -463,7 +463,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
           <Alert severity="warning">{t("browse.empty")}</Alert>
         ) : null}
 
-        <Box sx={{ ...listingCardGridSx, mt: 3 }}>
+        <Box sx={{ ...centeredResponsiveListingCardGridSx, mt: 3 }}>
           {needs.map(need => {
             const ownClaim = myClaimsByNeedId.get(need.id);
             const isCreator = session.account?.id === need.creatorAccountId;
@@ -471,6 +471,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
 
             return (
               <NeedCard
+                cardMaxWidth={400}
                 chips={
                   <>
                     {buildNeedTags(need as NeedNode, t).filter(tag => tag.trim().length > 0).map(tag => (
