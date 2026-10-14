@@ -13,6 +13,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+    ports:
+      - "5532:5432"
     networks:
       - internal
 
