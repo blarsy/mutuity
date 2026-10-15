@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = process.cwd();
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, "..");
 const tasksPath = path.join(repoRoot, "specs/014-mutuity-mobile-rewrite/tasks.md");
 const contractsDir = path.join(repoRoot, "specs/014-mutuity-mobile-rewrite/ui-contracts");
 
