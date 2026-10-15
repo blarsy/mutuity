@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { MyNeedsScreen } from "../../src/screens/needs/MyNeedsScreen";
 import { NeedIntensity } from "../../src/services/graphql/generated";
 import type { NeedItem } from "../../src/services/graphql/needs";
+
+jest.mock("../../src/assets/img/TOKENS.svg", () => () => null);
 
 import "../../src/i18n";
 
@@ -45,7 +48,11 @@ function NeedsCreateClaimHarness(): React.JSX.Element {
 describe("E2E Smoke S5 - Needs Create and Claim", () => {
   it("creates a need and sees it appear in the list", () => {
     const screen = render(
-      React.createElement(SafeAreaProvider, null, React.createElement(NeedsCreateClaimHarness))
+      React.createElement(
+        SafeAreaProvider,
+        null,
+        React.createElement(PaperProvider, null, React.createElement(NeedsCreateClaimHarness))
+      )
     );
 
     // Trigger need creation
@@ -53,12 +60,16 @@ describe("E2E Smoke S5 - Needs Create and Claim", () => {
 
     // The new need should appear in the list
     expect(screen.getByTestId("my-need-card-need-e2e-smoke")).toBeTruthy();
-    expect(screen.getByLabelText("E2E Smoke Need - Help moving furniture. 150 Tope.")).toBeTruthy();
+    expect(screen.getByLabelText("Edit E2E Smoke Need - Help moving furniture")).toBeTruthy();
   });
 
   it("created need shows correct intensity and token amount", () => {
     const screen = render(
-      React.createElement(SafeAreaProvider, null, React.createElement(NeedsCreateClaimHarness))
+      React.createElement(
+        SafeAreaProvider,
+        null,
+        React.createElement(PaperProvider, null, React.createElement(NeedsCreateClaimHarness))
+      )
     );
 
     fireEvent.press(screen.getAllByRole("button", { name: "Add need" })[0]);

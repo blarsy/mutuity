@@ -1,5 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { EditResourceScreen } from "../../src/screens/resources/EditResourceScreen";
@@ -9,6 +10,9 @@ import "../../src/i18n";
 jest.mock("../../src/services/network/useNetworkStatus", () => ({
   useNetworkStatus: () => ({ isConnected: false, isInternetReachable: false })
 }));
+
+jest.mock("../../src/assets/img/CAMERA.svg", () => () => null);
+jest.mock("../../src/assets/img/PHOTOS.svg", () => () => null);
 
 /**
  * E2E Smoke S4: Offline during resource save does not show false success.
@@ -20,12 +24,14 @@ describe("E2E Smoke S4 - Offline Resource Save Exception", () => {
   it("offline warning is present when network is unavailable", () => {
     const screen = render(
       React.createElement(SafeAreaProvider, null,
-        React.createElement(EditResourceScreen, {
-          creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
-          initialResource: null,
-          onBack: () => undefined,
-          onSaved: () => undefined
-        })
+        React.createElement(PaperProvider, null,
+          React.createElement(EditResourceScreen, {
+            creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
+            initialResource: null,
+            onBack: () => undefined,
+            onSaved: () => undefined
+          })
+        )
       )
     );
 
@@ -36,12 +42,14 @@ describe("E2E Smoke S4 - Offline Resource Save Exception", () => {
   it("does not show false success message when offline", () => {
     const screen = render(
       React.createElement(SafeAreaProvider, null,
-        React.createElement(EditResourceScreen, {
-          creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
-          initialResource: null,
-          onBack: () => undefined,
-          onSaved: () => undefined
-        })
+        React.createElement(PaperProvider, null,
+          React.createElement(EditResourceScreen, {
+            creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
+            initialResource: null,
+            onBack: () => undefined,
+            onSaved: () => undefined
+          })
+        )
       )
     );
 

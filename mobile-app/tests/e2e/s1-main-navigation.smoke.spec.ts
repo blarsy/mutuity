@@ -7,6 +7,8 @@ jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
 
   return {
+    DefaultTheme: { colors: { background: "#fff" }, dark: false, fonts: {} },
+    useNavigationContainerRef: () => ({ current: null, navigate: jest.fn() }),
     NavigationContainer: ({ children }: { children: React.ReactNode }) =>
       mockReact.createElement(mockReact.Fragment, null, children)
   };
