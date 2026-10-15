@@ -26,6 +26,7 @@
     "android:prod": "TARGET_ENV=prod expo run:android",
     "ios:prod": "TARGET_ENV=prod expo run:ios",
     "storybook": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true expo start -c",
+    "storybook:build": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true STORYBOOK_SERVER=false STORYBOOK_DISABLE_TELEMETRY=1 expo export --platform android --platform ios --no-bytecode --max-workers 2 --output-dir storybook-static",
     "storybook:ios": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:ios",
     "storybook:android": "TARGET_ENV=local EXPO_PUBLIC_STORYBOOK_ENABLED=true expo run:android"
   },

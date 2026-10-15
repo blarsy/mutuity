@@ -12,23 +12,29 @@ jobs:
     defaults:
       run:
         working-directory: mobile-app
+    env:
+      CI: "true"
+      STORYBOOK_DISABLE_TELEMETRY: "1"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: mobile-app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Storybook
-        run: npx storybook build --config-dir .storybook
+      - name: Bundle on-device Storybook for Android and iOS
+        run: npm run storybook:build
 
       - name: Verify Storybook build output
-        run: test -d storybook-static && test -f storybook-static/index.html
+        run: |
+          test -s storybook-static/metadata.json
+          test -n "$(find storybook-static/_expo/static/js/android -name '*.js' -size +0c -print -quit)"
+          test -n "$(find storybook-static/_expo/static/js/ios -name '*.js' -size +0c -print -quit)"

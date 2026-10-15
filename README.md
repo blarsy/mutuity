@@ -155,6 +155,30 @@ Then sign in with:
 
 For local-only manual testing, dev headers (`x-role`, `x-account-id`) are still supported when `ALLOW_DEV_AUTH_HEADERS=true`, but the browser flow should use the real session cookie path above.
 
+## Mobile Storybook
+
+Mobile Storybook is an **on-device React Native** application, not a browser
+Storybook site. Use Node.js 22 (matching the mobile GitHub Actions) and install
+its dependencies separately with `npm --prefix mobile-app ci`; the mobile app
+is not part of the root npm workspaces.
+
+- **Run the CI build locally:** `npm --prefix mobile-app run storybook:build`.
+  This bundles all stories for Android and iOS without Xcode, an Android SDK,
+  a running backend, or a local environment file. It disables Storybook's
+  development server so the command exits when the export completes.
+- **View on iOS:** `npm --prefix mobile-app run storybook:ios` (requires Xcode
+  and an iOS simulator or device).
+- **View on Android:** `npm --prefix mobile-app run storybook:android` (requires
+  an Android SDK and an emulator or device).
+- **Already have a development build installed?** Run
+  `npm --prefix mobile-app run storybook` to start Metro, then open that build.
+
+The build output contains native JavaScript bundles and assets, not a browser
+`index.html`. The workflow verifies both platforms' bundles. This is a
+compilation check; interactive rendering still needs a simulator or device.
+Some stories can call the backend, so exercising those screens may require the
+local services even though building Storybook does not.
+
 ## Local Deployment With Docker Compose
 
 ### Prerequisites
