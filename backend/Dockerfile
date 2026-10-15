@@ -6,7 +6,7 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
 
-RUN npm ci
+RUN npm ci --workspace backend --include-workspace-root=false
 
 COPY backend backend
 
@@ -20,7 +20,8 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
 
-RUN npm ci --omit=dev
+RUN npm ci --workspace backend --include-workspace-root=false --omit=dev \
+    && npm cache clean --force
 
 COPY --from=builder /app/backend/dist backend/dist
 COPY backend/.env.example backend/.env.example
