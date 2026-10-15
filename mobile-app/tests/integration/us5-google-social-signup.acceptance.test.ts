@@ -11,6 +11,7 @@ jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
 
   return {
+    useNavigationContainerRef: () => ({ current: null, navigate: jest.fn() }),
     NavigationContainer: ({ children }: { children: React.ReactNode }) =>
       mockReact.createElement(mockReact.Fragment, null, children)
   };
@@ -33,7 +34,11 @@ jest.mock("@react-navigation/native-stack", () => {
 jest.mock("../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
   clearPersistedToken: jest.fn(),
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  getPersistedLanguage: jest.fn().mockResolvedValue(null),
   getPersistedToken: jest.fn().mockResolvedValue(null),
+  setPersistedAccountId: jest.fn(),
+  setPersistedLanguage: jest.fn(),
   setPersistedToken: jest.fn()
 }));
 
@@ -86,8 +91,10 @@ describe("US5 Google social signup acceptance", () => {
       expect(screen.getByTestId("auth-register-screen")).toBeTruthy();
     });
 
-    expect(screen.getByTestId("auth-register-full-name").props.value).toBe("Jane Doe");
-    expect(screen.getByTestId("auth-register-email").props.value).toBe("jane@example.com");
+    await waitFor(() => {
+      expect(screen.getByTestId("auth-register-full-name").props.value).toBe("Jane Doe");
+      expect(screen.getByTestId("auth-register-email").props.value).toBe("jane@example.com");
+    });
 
     fireEvent.changeText(screen.getByTestId("auth-register-full-name"), "Jane Smith");
     fireEvent.changeText(screen.getByTestId("auth-register-email"), "jane.updated@example.com");

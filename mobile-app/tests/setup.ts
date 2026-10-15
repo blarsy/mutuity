@@ -1,4 +1,5 @@
 import "@testing-library/jest-native/extend-expect";
+import "../src/i18n";
 
 jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper", () => ({}), {
 	virtual: true
@@ -11,6 +12,7 @@ jest.mock("expo-constants", () => {
 		__esModule: true,
 		default: {
 			expoConfig: {
+				version: "0.1.0",
 				extra: {
 					targetEnv: localAppSettings.targetEnv,
 					appSettings: localAppSettings
@@ -18,6 +20,7 @@ jest.mock("expo-constants", () => {
 			}
 		},
 		expoConfig: {
+			version: "0.1.0",
 			extra: {
 				targetEnv: localAppSettings.targetEnv,
 				appSettings: localAppSettings

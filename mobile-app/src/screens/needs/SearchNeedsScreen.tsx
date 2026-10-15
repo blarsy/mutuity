@@ -188,6 +188,10 @@ export function SearchNeedsScreen({
     const parsed = Number.parseInt(debouncedFilters.maxTokenAmount, 10);
     return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
   }, [debouncedFilters.maxTokenAmount]);
+  const currentMaxTokenAmount = useMemo(() => {
+    const parsed = Number.parseInt(filterSnapshot.maxTokenAmount, 10);
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
+  }, [filterSnapshot.maxTokenAmount]);
 
   const loadNeeds = useCallback(async () => {
     if (hasInjectedNeeds) {
@@ -245,27 +249,27 @@ export function SearchNeedsScreen({
   );
 
   const filteredNeeds = useMemo(() => {
-    const normalizedSearch = debouncedFilters.searchTerm.trim().toLowerCase();
-    const maxDistance = Number.parseFloat(debouncedFilters.distanceFilter);
+    const normalizedSearch = filterSnapshot.searchTerm.trim().toLowerCase();
+    const maxDistance = Number.parseFloat(filterSnapshot.distanceFilter);
     const hasDistanceFilter = Number.isFinite(maxDistance);
-    const hasDebouncedReferenceLocation = debouncedFilters.referenceLocationLabel !== null;
+    const hasReferenceLocation = filterSnapshot.referenceLocationLabel !== null;
 
     return sourceNeeds.filter((need) => {
       const matchesSearch =
         normalizedSearch.length === 0 || `${need.title} ${need.description}`.toLowerCase().includes(normalizedSearch);
       const matchesIntensity =
-        debouncedFilters.selectedIntensities.length === 0 ||
-        debouncedFilters.selectedIntensities.includes(need.intensity);
-      const matchesTokenAmount = parsedMaxTokenAmount === null || need.proposedTokenAmount <= parsedMaxTokenAmount;
+        filterSnapshot.selectedIntensities.length === 0 ||
+        filterSnapshot.selectedIntensities.includes(need.intensity);
+      const matchesTokenAmount = currentMaxTokenAmount === null || need.proposedTokenAmount <= currentMaxTokenAmount;
       const matchesCampaign =
-        debouncedFilters.selectedCampaignIds.length === 0 ||
+        filterSnapshot.selectedCampaignIds.length === 0 ||
         (need.campaignId !== null &&
           need.campaignId !== undefined &&
-          debouncedFilters.selectedCampaignIds.includes(need.campaignId));
-      const matchesClaimedVisibility = !debouncedFilters.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
+          filterSnapshot.selectedCampaignIds.includes(need.campaignId));
+      const matchesClaimedVisibility = !filterSnapshot.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
       const matchesDistance =
-        !hasDebouncedReferenceLocation || !hasDistanceFilter || need.distanceKm <= maxDistance;
-      const matchesUnlocated = !debouncedFilters.excludeUnlocated || need.located;
+        !hasReferenceLocation || !hasDistanceFilter || need.distanceKm <= maxDistance;
+      const matchesUnlocated = !filterSnapshot.excludeUnlocated || need.located;
 
       return (
         matchesSearch &&
@@ -277,7 +281,7 @@ export function SearchNeedsScreen({
         matchesUnlocated
       );
     });
-  }, [debouncedFilters, parsedMaxTokenAmount, sourceNeeds]);
+  }, [currentMaxTokenAmount, filterSnapshot, sourceNeeds]);
 
   const resolvedLoading = loading || (!hasInjectedNeeds && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedNeeds ? remoteErrorMessage : null);

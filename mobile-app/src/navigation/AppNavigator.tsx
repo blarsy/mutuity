@@ -70,9 +70,9 @@ import {
 } from "../components/icons/TopelaBottomTabIcons";
 
 const navigationTheme = {
-  ...DefaultTheme,
+  ...(DefaultTheme ?? {}),
   colors: {
-    ...DefaultTheme.colors,
+    ...DefaultTheme?.colors,
     background: "#ffffff"
   }
 };

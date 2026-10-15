@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { MyCampaignsScreen } from "../../src/screens/campaigns/MyCampaignsScreen";
@@ -41,14 +42,18 @@ function CreateCampaignHarness(): React.JSX.Element {
 describe("US3 create campaign pending acceptance", () => {
   it("new campaign appears as pending", () => {
     const screen = render(
-      React.createElement(SafeAreaProvider, null, React.createElement(CreateCampaignHarness))
+      React.createElement(
+        SafeAreaProvider,
+        null,
+        React.createElement(PaperProvider, null, React.createElement(CreateCampaignHarness))
+      )
     );
 
-    fireEvent.press(screen.getAllByRole("button", { name: /add campaign|new campaign/i })[0]);
+    fireEvent.press(screen.getAllByRole("button", { name: "Create campaign" })[0]);
 
     expect(screen.getByTestId("campaign-card-campaign-pending")).toBeTruthy();
     expect(screen.getByText("Summer community garden project")).toBeTruthy();
-    expect(screen.getByLabelText(/pending|awaiting approval/i)).toBeTruthy();
+    expect(screen.getByText("Pending")).toBeTruthy();
   });
 });
 

@@ -15,7 +15,7 @@ export function UpdateRequiredScreen({ onDismiss }: UpdateRequiredScreenProps): 
   return (
     <View style={styles.container}>
       <Image source={require("../../assets/img/logo.jpeg")} style={styles.logo} />
-      <Surface accessibilityRole="alert" elevation={5} style={styles.card}>
+      <Surface accessible accessibilityRole="alert" elevation={5} style={styles.card}>
         <Icon source="wrench" size={40} />
         <Text variant="titleSmall">{t("updateRequiredTitle", { defaultValue: "Update required" })}</Text>
         <Text variant="bodySmall" style={styles.body}>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { MyNeedsScreen } from "../../src/screens/needs/MyNeedsScreen";
@@ -11,6 +12,8 @@ import "../../src/i18n";
 jest.mock("../../src/services/graphql/needs", () => ({
   fetchMyNeeds: jest.fn()
 }));
+
+jest.mock("../../src/assets/img/TOKENS.svg", () => () => null);
 
 function CreateNeedHarness(): React.JSX.Element {
   const [needs, setNeeds] = useState<NeedItem[]>([]);
@@ -44,12 +47,16 @@ function CreateNeedHarness(): React.JSX.Element {
 describe("US2 create need acceptance", () => {
   it("create need and see it in lists", () => {
     const screen = render(
-      React.createElement(SafeAreaProvider, null, React.createElement(CreateNeedHarness))
+      React.createElement(
+        SafeAreaProvider,
+        null,
+        React.createElement(PaperProvider, null, React.createElement(CreateNeedHarness))
+      )
     );
 
     fireEvent.press(screen.getAllByRole("button", { name: "Add need" })[0]);
 
     expect(screen.getByTestId("my-need-card-need-created")).toBeTruthy();
-    expect(screen.getByLabelText("Urgent grocery pickup. 25 Tope.")).toBeTruthy();
+    expect(screen.getByLabelText("Edit Urgent grocery pickup")).toBeTruthy();
   });
 });

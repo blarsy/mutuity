@@ -8,7 +8,11 @@ import { isRestrictedMainScreen } from "../../src/navigation/US1Navigator";
 jest.mock("../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
   clearPersistedToken: jest.fn(),
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  getPersistedLanguage: jest.fn().mockResolvedValue(null),
   getPersistedToken: jest.fn().mockResolvedValue(null),
+  setPersistedAccountId: jest.fn(),
+  setPersistedLanguage: jest.fn(),
   setPersistedToken: jest.fn()
 }));
 

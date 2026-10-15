@@ -9,7 +9,11 @@ import { resolveAnonymousRoute } from "../../src/navigation/US1Navigator";
 jest.mock("../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
   clearPersistedToken: jest.fn(),
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  getPersistedLanguage: jest.fn().mockResolvedValue(null),
   getPersistedToken: jest.fn().mockResolvedValue(null),
+  setPersistedAccountId: jest.fn(),
+  setPersistedLanguage: jest.fn(),
   setPersistedToken: jest.fn()
 }));
 
@@ -17,6 +21,14 @@ jest.mock("../../src/services/graphql/auth", () => ({
   authenticateWithPassword: jest.fn().mockResolvedValue({
     accountId: "123e4567-e89b-12d3-a456-426614174000"
   })
+}));
+
+jest.mock("@react-native-community/netinfo", () => ({
+  __esModule: true,
+  default: {
+    addEventListener: jest.fn(() => jest.fn()),
+    fetch: jest.fn().mockResolvedValue({ isConnected: true, isInternetReachable: true })
+  }
 }));
 
 jest.mock("../../src/screens/resources/MyResourcesScreen", () => ({
@@ -50,7 +62,7 @@ describe("US1 anonymous restricted routes acceptance", () => {
     expect(resolveAnonymousRoute("SearchNeeds")).toBe("SearchNeeds");
   });
 
-  it("returns to the originally requested protected tab after login", async () => {
+  it("returns to the originally requested Explore tab after login", async () => {
     const screen = render(React.createElement(App));
 
     await waitFor(() => {
@@ -69,7 +81,8 @@ describe("US1 anonymous restricted routes acceptance", () => {
     fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() => {
-      expect(screen.getByTestId("my-resources-screen")).toBeTruthy();
+      expect(screen.getByLabelText("Main navigation")).toBeTruthy();
+      expect(screen.getByRole("header", { name: "Explore" })).toBeTruthy();
     });
   });
 

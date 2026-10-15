@@ -81,7 +81,7 @@ describe("US2 search needs acceptance", () => {
     expect(onOpenNeed).toHaveBeenCalledWith(injectedNeeds[0]);
   });
 
-  it("search needs with filters", () => {
+  it("search needs with filters", async () => {
     const screen = render(
       React.createElement(
         SafeAreaProvider,
@@ -105,7 +105,9 @@ describe("US2 search needs acceptance", () => {
     expect(screen.getByTestId("need-card-need-urgent")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Max Tope amount"), "20");
-    expect(screen.queryByTestId("need-card-need-urgent")).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByTestId("need-card-need-urgent")).toBeNull();
+    });
 
     fireEvent.changeText(screen.getByPlaceholderText("Search needs"), "");
     fireEvent.press(screen.getByTestId("need-intensity-chip-sharing"));
@@ -138,15 +140,19 @@ describe("US2 search needs acceptance", () => {
     fireEvent.press(screen.getByText("Education"));
     fireEvent.press(screen.getByText("OK"));
 
-    expect(screen.getByTestId("need-card-need-sharing")).toBeTruthy();
-    expect(screen.queryByTestId("need-card-need-urgent")).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByTestId("need-card-need-sharing")).toBeTruthy();
+      expect(screen.queryByTestId("need-card-need-urgent")).toBeNull();
+    });
 
     fireEvent.press(screen.getByTestId("needs-campaign-filter-button"));
     fireEvent.press(screen.getByText("Mobility"));
     fireEvent.press(screen.getByText("OK"));
 
-    expect(screen.getByTestId("need-card-need-sharing")).toBeTruthy();
-    expect(screen.getByTestId("need-card-need-urgent")).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByTestId("need-card-need-sharing")).toBeTruthy();
+      expect(screen.getByTestId("need-card-need-urgent")).toBeTruthy();
+    });
   });
 
   it("expands the proximity section with distance controls", () => {
