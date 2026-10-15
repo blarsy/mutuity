@@ -1,0 +1,74 @@
+name: Frontend Quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-jest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend Jest tests
+        run: npm --workspace frontend test -- --runInBand
+
+  frontend-browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CI: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run frontend browser smoke tests
+        run: npm run test:e2e:sanity
+
+      - name: Dump Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=200 postgres backend frontend || true
+
+      - name: Stop Compose services
+        if: always()
+        run: docker compose down --volumes --remove-orphans || true
+
+      - name: Upload Playwright reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

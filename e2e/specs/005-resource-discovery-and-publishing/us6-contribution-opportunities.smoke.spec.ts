@@ -21,7 +21,7 @@ test("@smoke @spec-005-us6 authenticated user sees contribution opportunities an
   const profileLink = page.locator('a[href="/profile"]').first();
   const resourceCreateLink = page.locator('a[href="/resources/create"]').first();
   const resourceManageLink = page.locator('a[href="/resources/manage"]').first();
-  const claimsLink = page.locator('a[href="/claims"]').first();
+  const claimsLink = page.locator('a[href="/app/claims"]').first();
 
   await expect(profileLink).toBeVisible();
   await expect(resourceCreateLink).toBeVisible();

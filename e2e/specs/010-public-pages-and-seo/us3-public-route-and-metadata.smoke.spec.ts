@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { E2E_NEED_ID } from "../../helpers/testUsers";
+import { E2E_NEED_ID, E2E_NEED_TITLE } from "../../helpers/testUsers";
 
 // Spec: specs/010-public-pages-and-seo
 // Story: US3 (public route availability, hidden handling, SSR metadata)
@@ -7,7 +7,7 @@ import { E2E_NEED_ID } from "../../helpers/testUsers";
 
 test("@smoke @spec-010-us3 visible public routes render core content", async ({ page }) => {
   await page.goto(`/needs/${E2E_NEED_ID}`);
-  await expect(page.getByRole("heading", { name: /need details|details du besoin|détails du besoin/i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: E2E_NEED_TITLE })).toBeVisible();
 
   await page.goto("/campaigns");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

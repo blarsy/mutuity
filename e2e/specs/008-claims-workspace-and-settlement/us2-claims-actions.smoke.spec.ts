@@ -19,9 +19,13 @@ test("@smoke @spec-008-us2 claimer can cancel a seeded sent claim", async ({ pag
   });
 
   const claimCard = page.locator('[data-testid="need-card"]').filter({ has: page.getByText(E2E_ACTION_NEED_TITLE) }).first();
-  const cancelAction = claimCard.getByRole("button", { name: /^(Cancel claim|Annuler la demande)$/i });
+  const cancelAction = claimCard.getByRole("button", { name: /^(Cancel claim|Annuler la demande|Retirer la proposition)$/i });
 
   await expect(claimCard).toBeVisible();
   await cancelAction.click();
+  await expect(claimCard).not.toBeVisible();
+
+  await page.getByRole("button", { name: /Inactive|Inactives/i }).first().click();
   await expect(claimCard).toBeVisible();
+  await expect(claimCard.getByText(/Cancelled on|Annulée le/i)).toBeVisible();
 });

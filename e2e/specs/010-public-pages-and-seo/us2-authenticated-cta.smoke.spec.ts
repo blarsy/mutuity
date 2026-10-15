@@ -18,10 +18,10 @@ test("@smoke @spec-010-us2 authenticated non-owner sees conversation CTA on need
 
   await expect(page).toHaveURL(/\/(?:app\/)?needs\//);
 
-  const conversationButton = page.getByRole("button", {
+  const conversationLink = page.getByRole("link", {
     name: /message creator|ecrire au createur|écrire au créateur/i
   });
-  await expect(conversationButton).toBeVisible();
+  await expect(conversationLink).toBeVisible();
 });
 
 test("@smoke @spec-010-us2 authenticated user clicking conversation CTA opens draft/existing thread dialog", async ({
@@ -33,11 +33,11 @@ test("@smoke @spec-010-us2 authenticated user clicking conversation CTA opens dr
     nextPath: `/needs/${E2E_NEED_ID}`
   });
 
-  const conversationButton = page.getByRole("button", {
+  const conversationLink = page.getByRole("link", {
     name: /message creator|ecrire au createur|écrire au créateur/i
   });
-  await expect(conversationButton).toBeVisible();
-  await conversationButton.click();
+  await expect(conversationLink).toBeVisible();
+  await conversationLink.click();
 
   await expect(page).toHaveURL(/\/(?:app\/)?chat\?kind=need&(id=|draft=1&contextId=)/);
 });

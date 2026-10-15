@@ -22,6 +22,6 @@ test("@smoke @spec-012-social-apple callback error keeps explicit recovery actio
 
   await expect(page).toHaveURL(/\/auth\/apple\/callback/);
   await expect(page.getByRole("alert").first()).toContainText(/provider callback failed/i);
-  await expect(page.getByRole("link", { name: /back to sign in|retour a la connexion|retour à la connexion/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /back to sign in|retour a la connexion|retour à la connexion|^back$|^retour$/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /complete registration|finaliser l'inscription/i })).toBeVisible();
 });

@@ -55,7 +55,7 @@ test("@smoke @spec-008-us2-settle settling one claim auto-declines sibling claim
     .first();
 
   await expect(siblingClaimCard).toBeVisible();
-  await expect(siblingClaimCard.getByText(/Declined on|Refusée le/i)).toBeVisible();
+  await expect(siblingClaimCard.getByText(/Declined on|Refusée le|Déclinée le/i)).toBeVisible();
 
   await siblingClaimerPage.close();
 
