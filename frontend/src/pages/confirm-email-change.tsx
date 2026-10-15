@@ -54,7 +54,7 @@ export default function ConfirmEmailChangePage() {
     return () => {
       cancelled = true;
     };
-  }, [refreshSession, router.isReady, token]);
+  }, [refreshSession, router.isReady, t, token]);
 
   return (
     <Container maxWidth="sm">

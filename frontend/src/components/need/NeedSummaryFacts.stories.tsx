@@ -2,10 +2,12 @@ import type { ComponentProps } from "react";
 
 import { NeedSummaryFacts } from "./NeedSummaryFacts";
 
-export default {
+const meta = {
   title: "Need/NeedSummaryFacts",
   component: NeedSummaryFacts
 };
+
+export default meta;
 
 type StoryArgs = ComponentProps<typeof NeedSummaryFacts>;
 

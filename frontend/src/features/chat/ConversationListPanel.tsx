@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
 import { useQuery } from "@apollo/client/react";
 import {
@@ -119,7 +119,7 @@ export function ConversationListPanel({
     handleRealtimeRefresh(() => Promise.all([refetch(), refetchCount()]));
   }, [isAuthenticated, listRefreshToken, refetch, refetchCount]);
 
-  const draftConversation: ConversationNode | null =
+  const draftConversation = useMemo<ConversationNode | null>(() =>
     draftThread && !debouncedSearch
       ? {
           conversationKind: draftThread.kind,
@@ -133,11 +133,15 @@ export function ConversationListPanel({
           lastActivityAt: null,
           needClaimId: draftThread.needClaimId
         }
-      : null;
+      : null,
+    [draftThread, debouncedSearch]
+  );
 
-  const conversations = draftConversation
+  const conversations = useMemo(() => draftConversation
     ? [draftConversation, ...(data?.listChatConversations.nodes ?? [])]
-    : (data?.listChatConversations.nodes ?? []);
+    : (data?.listChatConversations.nodes ?? []),
+    [draftConversation, data?.listChatConversations.nodes]
+  );
   const totalCount = countData?.countChatConversations ?? 0;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 

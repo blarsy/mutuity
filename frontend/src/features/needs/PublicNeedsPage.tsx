@@ -235,7 +235,6 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
     PUBLIC_NEED_CAMPAIGN_FILTER_QUERY
   );
 
-  const searchNeeds = data?.searchNeeds?.nodes ?? [];
   const campaignOptions = useMemo(() => {
     const now = new Date();
     return (campaignFilterData?.allCampaigns?.nodes ?? []).filter(campaign =>
@@ -243,6 +242,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
     );
   }, [campaignFilterData?.allCampaigns?.nodes]);
   const needs = useMemo(() => {
+    const searchNeeds = data?.searchNeeds?.nodes ?? [];
     if (selectedCampaignIds.length === 0) {
       return searchNeeds;
     }
@@ -253,7 +253,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
         .map(link => link.needId)
     );
     return searchNeeds.filter(need => matchingNeedIds.has(need.id));
-  }, [campaignFilterData?.publicCampaignNeedLinks?.nodes, searchNeeds, selectedCampaignIds]);
+  }, [campaignFilterData?.publicCampaignNeedLinks?.nodes, data?.searchNeeds?.nodes, selectedCampaignIds]);
   const sentClaims = claimOverviewData?.sentNeedClaims?.nodes ?? [];
   const receivedClaims = claimOverviewData?.receivedNeedClaims?.nodes ?? [];
   const myClaimsByNeedId = new Map(

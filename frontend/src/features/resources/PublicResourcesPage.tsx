@@ -203,11 +203,13 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
     PUBLIC_RESOURCE_CAMPAIGN_FILTER_QUERY
   );
 
-  const searchResources = data?.searchResources?.nodes ?? [];
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const campaignFilterErrorMessage = getUserFacingGraphQLErrorMessage(campaignFilterError);
-  const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
+  const categoryOptions = useMemo(
+    () => categoryData?.allResourceCategories?.nodes ?? [],
+    [categoryData?.allResourceCategories?.nodes]
+  );
   const campaignOptions = useMemo(() => {
     const now = new Date();
     return (campaignFilterData?.allCampaigns?.nodes ?? []).filter(campaign =>
@@ -215,6 +217,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
     );
   }, [campaignFilterData?.allCampaigns?.nodes]);
   const resources = useMemo(() => {
+    const searchResources = data?.searchResources?.nodes ?? [];
     if (selectedCampaignIds.length === 0) {
       return searchResources;
     }
@@ -225,7 +228,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
         .map(link => link.resourceId)
     );
     return searchResources.filter(resource => matchingResourceIds.has(resource.id));
-  }, [campaignFilterData?.publicCampaignResourceLinks?.nodes, searchResources, selectedCampaignIds]);
+  }, [campaignFilterData?.publicCampaignResourceLinks?.nodes, data?.searchResources?.nodes, selectedCampaignIds]);
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
   const localizedCategoryByLabel = useMemo(() => {
     const map = new Map<string, string>();

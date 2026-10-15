@@ -400,8 +400,14 @@ export default function PublicCampaignDetailPage({
     campaignImageUrl: campaign?.imageUrl
   });
 
-  const activeResources = myResourcesData?.allResources.nodes ?? [];
-  const activeNeeds = myNeedsData?.allNeeds.nodes ?? [];
+  const activeResources = useMemo(
+    () => myResourcesData?.allResources.nodes ?? [],
+    [myResourcesData?.allResources.nodes]
+  );
+  const activeNeeds = useMemo(
+    () => myNeedsData?.allNeeds.nodes ?? [],
+    [myNeedsData?.allNeeds.nodes]
+  );
 
   const statusByResourceId = useMemo(() => {
     return new Map(

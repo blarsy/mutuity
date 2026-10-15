@@ -56,12 +56,12 @@ export default function RegisterPage() {
   } = resolveSocialPrefill(router.query);
 
   useEffect(() => {
-    if (suggestedName && displayName.trim().length === 0) {
-      setDisplayName(suggestedName);
+    if (suggestedName) {
+      setDisplayName(current => current.trim().length === 0 ? suggestedName : current);
     }
 
-    if (suggestedEmail && identifier.trim().length === 0) {
-      setIdentifier(suggestedEmail.toLowerCase());
+    if (suggestedEmail) {
+      setIdentifier(current => current.trim().length === 0 ? suggestedEmail.toLowerCase() : current);
     }
   }, [suggestedEmail, suggestedName]);
 

@@ -54,7 +54,7 @@ export default function VerifyEmailPage() {
     return () => {
       cancelled = true;
     };
-  }, [refreshSession, router.isReady, token]);
+  }, [refreshSession, router.isReady, t, token]);
 
   return (
     <Container maxWidth="sm">

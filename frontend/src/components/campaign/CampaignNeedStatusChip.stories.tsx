@@ -2,10 +2,12 @@ import type { ComponentProps } from "react";
 
 import { CampaignNeedStatusChip } from "./CampaignNeedStatusChip";
 
-export default {
+const meta = {
   title: "Campaign/CampaignNeedStatusChip",
   component: CampaignNeedStatusChip
 };
+
+export default meta;
 
 type StoryArgs = ComponentProps<typeof CampaignNeedStatusChip>;
 

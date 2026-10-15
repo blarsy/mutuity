@@ -7,11 +7,13 @@ import { TRIAGE_CAMPAIGN_ID, TRIAGE_MUTATION_ERROR, type CampaignTriagePhase } f
 import { ANONYMOUS_SESSION } from "../harness/mockAuth";
 import { pageParameters } from "../harness/pageStory";
 
-const renderPhase = (phase: CampaignTriagePhase) => () => (
-  <CampaignTriageStoryProvider kind="need" phase={phase}>
-    <CampaignNeedTriagePage />
-  </CampaignTriageStoryProvider>
-);
+const renderPhase = (phase: CampaignTriagePhase) => function CampaignNeedTriageStory() {
+  return (
+    <CampaignTriageStoryProvider kind="need" phase={phase}>
+      <CampaignNeedTriagePage />
+    </CampaignTriageStoryProvider>
+  );
+};
 
 const meta: Meta<typeof CampaignNeedTriagePage> = {
   title: "Pages/Campaigns/Need Triage",

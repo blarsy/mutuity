@@ -93,19 +93,18 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
   const imageUrls = resource?.imageUrls ?? [];
   const currentImageUrl = imageUrls[currentImageIndex] ?? null;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
-  const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
   const isFrench = i18n.language.toLowerCase().startsWith("fr");
   const localizedCategoryByLabel = useMemo(() => {
     const map = new Map<string, string>();
 
-    for (const category of categoryOptions) {
+    for (const category of categoryData?.allResourceCategories?.nodes ?? []) {
       const localizedLabel = isFrench ? category.labelFr : category.label;
       map.set(category.label, localizedLabel);
       map.set(category.labelFr, localizedLabel);
     }
 
     return map;
-  }, [categoryOptions, isFrench]);
+  }, [categoryData?.allResourceCategories?.nodes, isFrench]);
   const natureLabels = [
     resource?.isProduct ? t("form.isProduct") : null,
     resource?.isService ? t("form.isService") : null
