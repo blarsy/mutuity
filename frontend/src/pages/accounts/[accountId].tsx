@@ -343,6 +343,20 @@ export const getServerSideProps: GetServerSideProps<AccountDetailsPageProps> = a
     return { notFound: true };
   }
 
+  // PostGraphile expects UUID variables. Keep malformed public URLs renderable
+  // as unavailable profiles without issuing a request that can only fail
+  // GraphQL variable coercion (for example, the legacy /accounts/account-001).
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawAccountId)) {
+    return {
+      props: {
+        accountId: rawAccountId,
+        initialAccount: null,
+        initialNeeds: [],
+        initialResources: []
+      }
+    };
+  }
+
   const language = getLanguageFromHeaders(context.req.headers);
 
   const data = await fetchServerGraphql<PublicAccountDetailData>(PUBLIC_ACCOUNT_DETAIL_SSR_QUERY, {

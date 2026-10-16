@@ -80,4 +80,21 @@ describe("public account listing cards", () => {
     expect(needSelection).toContain("expiresAt");
     expect(result).toMatchObject({ props: { initialNeeds: mockAccountNeeds } });
   });
+
+  it("does not send malformed account route IDs as GraphQL UUID variables", async () => {
+    const result = await getServerSideProps({
+      params: { accountId: "account-001" },
+      req: { headers: {} }
+    } as unknown as GetServerSidePropsContext);
+
+    expect(fetchServerGraphql).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      props: {
+        accountId: "account-001",
+        initialAccount: null,
+        initialNeeds: [],
+        initialResources: []
+      }
+    });
+  });
 });
