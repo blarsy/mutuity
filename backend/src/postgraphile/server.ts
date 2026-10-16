@@ -265,6 +265,19 @@ const pool = new Pool({
   connectionString: DATABASE_URL
 });
 
+type GraphqlRequestDiagnostic = {
+  method: string;
+  path: string;
+  contentType: string | undefined;
+  contentLength: string | undefined;
+  readableAtMiddlewareEntry: boolean;
+  readableEndedAtMiddlewareEntry: boolean;
+  completeAtMiddlewareEntry: boolean;
+  destroyedAtMiddlewareEntry: boolean;
+};
+
+const graphqlRequestDiagnostics = new WeakMap<IncomingMessage, GraphqlRequestDiagnostic>();
+
 function toLoggedError(error: GraphQLError) {
   const originalError =
     error.originalError instanceof Error
@@ -847,12 +860,17 @@ const postgraphileMiddleware = postgraphile(
     ignoreIndexes: false,
     appendPlugins: [createAuthGraphqlPlugin(pool)],
     handleErrors: (errors, req) => {
+      const requestDiagnostic = graphqlRequestDiagnostics.get(req);
       for (const error of errors) {
-        console.error("[postgraphile] GraphQL request failed", toLoggedError(error));
+        console.error("[postgraphile] GraphQL request failed", {
+          ...toLoggedError(error),
+          request: requestDiagnostic ?? { diagnostic: "missing GraphQL request snapshot" }
+        });
         void logWebApiError("GraphQL request failed", error, {
           path: error.path,
           extensions: error.extensions,
-          originalError: toLoggedError(error).originalError
+          originalError: toLoggedError(error).originalError,
+          request: requestDiagnostic
         });
       }
 
@@ -983,6 +1001,17 @@ app.post("/auth/social/complete-registration", express.json(), async (req, res) 
 // update-required screen. This gate is a backstop for clients that skip that
 // check and still issue GraphQL operations.
 app.use("/graphql", async (req, res, next) => {
+  graphqlRequestDiagnostics.set(req, {
+    method: req.method,
+    path: req.path,
+    contentType: req.get("content-type"),
+    contentLength: req.get("content-length"),
+    readableAtMiddlewareEntry: req.readable,
+    readableEndedAtMiddlewareEntry: req.readableEnded,
+    completeAtMiddlewareEntry: req.complete,
+    destroyedAtMiddlewareEntry: req.destroyed
+  });
+
   const version = req.headers["x-app-version"];
   const platformRaw = req.headers["x-app-platform"];
 
