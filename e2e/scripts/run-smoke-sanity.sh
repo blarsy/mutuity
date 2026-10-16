@@ -9,7 +9,21 @@ DB_URL="${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/mutuity}"
 echo "[e2e] Starting local stack services (postgres, backend, frontend)..."
 docker compose up -d postgres
 
-echo "[e2e] Applying migrations..."
+echo "[e2e] Waiting for PostgreSQL readiness..."
+for i in {1..120}; do
+  if docker compose exec -T postgres pg_isready -U postgres -d mutuity >/dev/null 2>&1; then
+    break
+  fi
+  if [[ "${i}" -eq 120 ]]; then
+    echo "PostgreSQL did not become ready in time"
+    docker compose ps postgres
+    docker compose logs --no-color --tail=100 postgres
+    exit 1
+  fi
+  sleep 1
+done
+
+echo "[e2e] PostgreSQL is healthy; applying migrations..."
 DATABASE_URL="${DB_URL}" ./database/migrate.sh
 
 if curl -fsS "http://localhost:5050/health" >/dev/null; then
