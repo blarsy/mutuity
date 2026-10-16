@@ -5,6 +5,7 @@ module.exports = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   testMatch: ["**/*.spec.ts", "**/*.spec.tsx"],
   moduleNameMapper: {
+    "^next/font/local$": "<rootDir>/tests/setup/nextFontLocalMock.ts",
     "\\.css$": "<rootDir>/tests/setup/cssModuleMock.js"
   },
   transform: {

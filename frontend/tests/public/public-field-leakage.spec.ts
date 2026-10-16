@@ -64,7 +64,7 @@ describe("public page projections - restricted field exclusion", () => {
 
   describe("account deletion anonymization - field masking", () => {
     it("should mask external_subject with deleted- prefix", () => {
-      const deletedAccountExternalSubject = "deleted-account-uuid";
+      const deletedAccountExternalSubject = "deleted-123e4567-e89b-12d3-a456-426614174000";
       
       // Verify it follows the deletion pattern
       expect(deletedAccountExternalSubject).toMatch(/^deleted-[a-f0-9-]+$/);
@@ -92,7 +92,7 @@ describe("public page projections - restricted field exclusion", () => {
     it("should preserve id for referential integrity", () => {
       const deletedAccount = {
         id: "account-uuid", // Should be preserved
-        externalSubject: "deleted-account-uuid"
+        externalSubject: "deleted-123e4567-e89b-12d3-a456-426614174000"
       };
 
       // ID must be present for referential integrity
@@ -109,8 +109,6 @@ describe("public page projections - restricted field exclusion", () => {
       const pageContent = `
         <h1>John Creator</h1>
         <p>I create needs</p>
-        <!-- Email should NOT appear anywhere in HTML -->
-        <!-- Password should NOT appear anywhere in HTML -->
       `;
 
       expect(pageContent).not.toMatch(/john@example\.com/);

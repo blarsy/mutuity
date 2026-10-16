@@ -8,6 +8,7 @@ import {
   requestEmailVerification,
   requestPasswordReset
 } from "../../src/features/auth/auth.api";
+import i18n from "../../src/i18n";
 import { apolloClient } from "../../src/services/graphql/client";
 
 jest.mock("../../src/services/graphql/client", () => ({
@@ -131,7 +132,7 @@ describe("auth api local flow coverage", () => {
         identifier: "recover@example.com"
       })
     ).resolves.toEqual({
-      message: "If an account exists for that email, password reset instructions have been sent."
+      message: i18n.t("restoreAccess.resetRequestedFallback", { ns: "auth" })
     });
 
     expect(mockedApollo().mutate).toHaveBeenCalledWith(

@@ -59,7 +59,7 @@ describe("submitRegistration", () => {
 });
 
 describe("RegisterPage social provider branch", () => {
-  it("calls social registration mutation with normalized variables when provider query is present", async () => {
+  it("registers the social identity, skips local sign-in, and falls back to login when provider OAuth is unavailable", async () => {
     let submitOnClick: (() => Promise<void>) | undefined;
 
     const registerLocalAccountMock = jest.fn().mockResolvedValue({ message: "local" });
@@ -122,6 +122,10 @@ describe("RegisterPage social provider branch", () => {
         SocialAuthButtons: () => null
       }));
 
+      jest.doMock("../../src/features/auth/socialAuth", () => ({
+        getSocialAuthStartUrl: () => null
+      }));
+
       const react = require("react") as typeof import("react");
       const useStateSpy = jest.spyOn(react, "useState");
 
@@ -156,11 +160,8 @@ describe("RegisterPage social provider branch", () => {
         preferredLanguage: "en"
       });
 
-      expect(signInMock).toHaveBeenCalledWith({
-        identifier: "jane@example.com",
-        password: "password-123"
-      });
-      expect(replaceMock).toHaveBeenCalledWith("/");
+      expect(signInMock).not.toHaveBeenCalled();
+      expect(replaceMock).toHaveBeenCalledWith("/login?next=%2F");
 
       useStateSpy.mockRestore();
     });

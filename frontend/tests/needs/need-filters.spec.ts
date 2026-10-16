@@ -34,6 +34,8 @@ describe("need filters", () => {
       toolingRequired: "NEUTRAL",
       competenceRequired: "UNSET",
       objectRequired: "SET",
+      favorLocalResources: true,
+      maxDistanceKm: 50,
       limitCount: 50
     });
   });

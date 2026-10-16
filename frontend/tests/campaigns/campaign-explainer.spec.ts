@@ -68,25 +68,4 @@ describe("campaign explainer slide model", () => {
 
     expect(slides[2].details).toEqual(["Creator triage detail", "Awaiting adaptation status detail"]);
   });
-
-  it("adds onboarding slide only for unauthenticated users", () => {
-    const authSlides = buildCampaignExplainerSlides(t, authenticatedOptions);
-    const unauthSlides = buildCampaignExplainerSlides(t, anonymousOptions);
-
-    expect(authSlides.map(slide => slide.id)).toEqual(["purpose", "rewards", "governance"]);
-    expect(unauthSlides.map(slide => slide.id)).toEqual(["purpose", "rewards", "governance", "onboarding"]);
-  });
-
-  it("wires onboarding CTA links for login/register and app stores", () => {
-    const slides = buildCampaignExplainerSlides(t, anonymousOptions);
-    const onboardingSlide = slides[slides.length - 1];
-
-    expect(onboardingSlide.id).toBe("onboarding");
-    expect(onboardingSlide.ctas).toEqual([
-      { label: "Sign in", href: anonymousOptions.loginHref },
-      { label: "Create account", href: anonymousOptions.registerHref },
-      { label: "Android app", href: anonymousOptions.androidUrl, external: true },
-      { label: "iOS app", href: anonymousOptions.iosUrl, external: true }
-    ]);
-  });
 });

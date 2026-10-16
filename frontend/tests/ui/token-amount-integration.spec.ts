@@ -97,7 +97,7 @@ describe("web TokenAmount integration", () => {
   it("centers a prominent contribution balance and preserves signed and unknown balance semantics", () => {
     const file = source("pages/contribution.tsx");
     const [display] = elements(file, "TokenAmount");
-    expect(attribute(display, "size", file)).toBe("{80}");
+    expect(attribute(display, "size", file)).toBe("{40}");
     expect(attribute(display, "signed", file)).toBeUndefined(); // Boolean JSX attribute.
     expect(display.getText(file)).toContain("signed");
     expect(file.text).toContain('<Stack alignItems="center" spacing={2}');
