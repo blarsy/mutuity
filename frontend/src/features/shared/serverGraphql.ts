@@ -1,6 +1,8 @@
 import type { IncomingHttpHeaders } from "http";
 
-const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:5050/graphql";
+const graphqlUrl = process.env.GRAPHQL_SERVER_URL?.trim()
+  || process.env.NEXT_PUBLIC_GRAPHQL_URL
+  || "http://localhost:5050/graphql";
 
 type GraphqlResponse<T> = {
   data?: T;
