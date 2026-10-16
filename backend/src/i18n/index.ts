@@ -1,9 +1,6 @@
 import i18next from "i18next";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-const en = require("./locales/en.json");
-const fr = require("./locales/fr.json");
+import en from "./locales/en.json" with { type: "json" };
+import fr from "./locales/fr.json" with { type: "json" };
 
 i18next.init({
   resources: {
