@@ -6,6 +6,17 @@ cd "${ROOT_DIR}"
 
 DB_URL="${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/mutuity}"
 
+dump_compose_diagnostics() {
+  local exit_code=$?
+  if [[ "${exit_code}" -ne 0 ]]; then
+    echo "[e2e] Sanity run failed (exit ${exit_code}); Compose status and recent logs follow."
+    docker compose ps postgres backend frontend || true
+    docker compose logs --no-color --tail=150 postgres backend frontend || true
+  fi
+  return "${exit_code}"
+}
+trap dump_compose_diagnostics EXIT
+
 echo "[e2e] Starting local stack services (postgres, backend, frontend)..."
 docker compose up -d postgres
 
@@ -42,26 +53,30 @@ fi
 
 echo "[e2e] Waiting for backend health endpoint..."
 for i in {1..60}; do
-  if curl -fsS "http://localhost:5050/health" >/dev/null; then
+  if curl -fsS "http://localhost:5050/health" >/dev/null 2>&1; then
     break
   fi
-  sleep 1
   if [[ "$i" -eq 60 ]]; then
     echo "Backend did not become healthy in time"
+    docker compose ps backend
+    docker compose logs --no-color --tail=150 backend
     exit 1
   fi
+  sleep 1
 done
 
 echo "[e2e] Waiting for frontend..."
 for i in {1..60}; do
-  if curl -fsS "http://localhost:3000" >/dev/null; then
+  if curl -fsS "http://localhost:3000" >/dev/null 2>&1; then
     break
   fi
-  sleep 1
   if [[ "$i" -eq 60 ]]; then
     echo "Frontend did not become ready in time"
+    docker compose ps frontend
+    docker compose logs --no-color --tail=150 frontend
     exit 1
   fi
+  sleep 1
 done
 
 echo "[e2e] Seeding smoke users/data..."
