@@ -31,6 +31,9 @@ test("@smoke @spec-007-us1 claimer creates a bid and creator accepts it", async 
   await expect(bidDialog).toBeVisible();
   await bidDialog.getByRole("textbox", { name: /optional message|message optionnel/i }).fill("E2E smoke bid message");
   await bidDialog.getByRole("button", { name: /Send bid|Save bid|Envoyer|Enregistrer/i }).click();
+  // The submit handler is asynchronous; wait for the dialog to close on a
+  // successful mutation before navigating away and potentially aborting it.
+  await expect(bidDialog).not.toBeVisible();
 
   await bidderPage.goto("/app/bids");
   await expect(bidderPage).toHaveURL(urlRegexForPath("/bids"));

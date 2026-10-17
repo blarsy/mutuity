@@ -8,7 +8,7 @@ test("@smoke @spec-012-us1 landing/campaign/legal render expected first-screen z
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByText(/latest needs|derniers besoins/i)).toBeVisible();
+  await expect(page.getByText(/find what you need|trouve ce qu'il te faut/i)).toBeVisible();
   await expect(page.getByText(/our team|notre team|notre equipe|notre équipe/i)).toBeVisible();
 
   await page.goto("/campaigns");
