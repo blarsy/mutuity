@@ -1,6 +1,6 @@
 import { Linking } from "react-native";
 
-import { appSettings } from "../../config/appSettings";
+import { buildSocialAuthStartUrl } from "./start";
 
 export type SocialProvider = "google" | "apple";
 export type SocialCallbackStatus = "success" | "register_required" | "link_confirmation_required" | "password_reset_required" | "cancelled" | "error";
@@ -103,8 +103,7 @@ export function parseSocialCallbackPayloadFromUrl(url: string): SocialCallbackPa
 }
 
 export async function openSocialAuthStart(provider: SocialProvider, destination: string): Promise<void> {
-  const startUrl = new URL(`${appSettings.apiUrl}/auth/${provider}/start`);
-  startUrl.searchParams.set("next", destination.startsWith("/") ? destination : "/");
+  const startUrl = new URL(buildSocialAuthStartUrl(provider, destination));
   startUrl.searchParams.set("context", "mobile");
   await Linking.openURL(startUrl.toString());
 }

@@ -1,4 +1,10 @@
-import { parseSocialCallbackPayload, parseSocialCallbackPayloadFromUrl, type SocialCallbackPayload } from "../src/services/socialAuth/callback";
+import { Linking } from "react-native";
+import {
+  openSocialAuthStart,
+  parseSocialCallbackPayload,
+  parseSocialCallbackPayloadFromUrl,
+  type SocialCallbackPayload
+} from "../src/services/socialAuth/callback";
 import { buildSocialAuthStartUrl } from "../src/services/socialAuth/start";
 
 describe("social auth callback parsing", () => {
@@ -52,5 +58,19 @@ describe("social auth start URL building", () => {
 
     expect(url).toContain("/auth/google/start");
     expect(url).toContain("next=%2Fmy-hub");
+    expect(url).toContain("appVersion=");
+    expect(url).toContain("appPlatform=");
+  });
+
+  it("includes routing metadata in the native OAuth launch", async () => {
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue();
+
+    await openSocialAuthStart("apple", "/my-hub");
+
+    const launchedUrl = new URL(openUrl.mock.calls[0][0]);
+    expect(launchedUrl.searchParams.get("appVersion")).toBeTruthy();
+    expect(launchedUrl.searchParams.get("appPlatform")).toBeTruthy();
+    expect(launchedUrl.searchParams.get("context")).toBe("mobile");
+    openUrl.mockRestore();
   });
 });

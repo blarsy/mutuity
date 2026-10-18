@@ -87,56 +87,172 @@ behind the version floor).
 Slowest path due to App Store Connect / Play Console review.
 
 1. Bump `APP_VERSION` and `APP_VERSION_CODE` in `mobile-app/app.config.ts`.
-2. Build with the target env (`TARGET_ENV=prod` selects the API URL from
-   `mobile-app/config/environments/prod.json`).
-3. Submit for review (both stores). Review latency ranges from hours (routine
-   bugfix) to days (new app / major change).
-4. Release, ideally with a staged/phased rollout, and monitor.
+2. Build with `TARGET_ENV=review`; that embeds the stable review API host.
+3. Deploy/migrate the review stack and confirm it is healthy. Set
+   `REVIEW_CANDIDATE_VERSION` to the exact `APP_VERSION` using
+   `bash scripts/set-review-candidate-version.sh <version>`. Verify this version
+   is newer than `PRODUCTION_APP_VERSION`, reaches review, and the released
+   version still reaches production.
+4. Submit that exact binary for review (both stores). Review latency ranges from
+   hours (routine bugfix) to days (new app / major change).
+5. After approval and production readiness checks, promote the exact binary by
+   running `bash scripts/promote-review-candidate.sh`. It advances
+   `PRODUCTION_APP_VERSION`, disables the candidate route, and sends the same
+   embedded review hostname to production for that version.
+6. Release, ideally with a staged/phased rollout, and monitor. Set the next
+   candidate version only when ready to test it on the review stack.
 
 The mobile binary is the one artifact you cannot change after shipping, so it is
 the long pole in any combined upgrade.
 
 ### 4. Combined upgrade (all three)
 
-Ordering resolves the chicken-and-egg between "new backend breaks old app":
+Ordering resolves the chicken-and-egg between "new backend breaks old app" and
+the immutable store candidate:
 
-1. **Prepare the new mobile binary first** and submit it for review (it takes the
-   longest), but do not force-release yet.
-2. **Deploy backend + DB** (scenario 1), bumping the version floor **in the same
-   migration** that introduces any breaking change.
-3. **Deploy the website** (scenario 2) once the backend is live.
-4. **Release the mobile app** once the backend is confirmed stable and review
-   has passed.
-5. **Coordinate the cutover**: between "backend live" and "mobile released",
-   old clients are held by the version floor + `UpdateRequiredScreen` rather than
-   corrupting writes. For zero-breakage, run the new backend on the review stack
-   while prod keeps serving the old app, then flip (blue/green).
+1. **Build version `n+1` with `TARGET_ENV=review`**; keep the currently released
+   version `n` routed to production.
+2. **Deploy the matching review backend + DB** (scenario 1), migrate the review
+   database independently, then set `n+1` as the candidate and smoke-test it.
+   Submit that exact binary to the stores only after this route is verified.
+3. **Prepare production deployment artifacts** and verify compatibility. You
+   may prebuild images and apply additive changes, but do not activate a
+   breaking migration or raise the production version floor while the candidate
+   is still awaiting approval unless intentionally forcing all older clients
+   to update.
+4. **Deploy the website** (scenario 2) if it depends on the new backend/schema,
+   preserving compatibility with currently released clients until cutover.
+5. Once store approval is granted, deploy the production backend + DB changes.
+   For a breaking change, raise the minimum-version floor in the same migration
+   as the break and confirm the candidate version passes that floor.
+6. Verify production, then **promote version `n+1`** with
+   `bash scripts/promote-review-candidate.sh`. This records `n+1` as production
+   and disables its review route; the embedded review hostname now routes it to
+   production. Version `n` stayed on production throughout.
+7. **Release the approved binary** using a staged/phased rollout and monitor.
+   After release, set `n+2` as the next review candidate when ready. Any rollback
+   must restore a known-good **production** backend; never send released users
+   to the isolated review database.
 
 Decide up front: **backward-compatible** (ship backend/web independently, let
 mobile users update lazily) vs **breaking** (the sequence above is mandatory and
 the floor is the failsafe).
 
+## Mobile review and backend cutover
+
+The app keeps a stable API hostname per build, while routing selection is
+version-aware. `TARGET_ENV=prod` uses `www.tope-la.com`; `TARGET_ENV=review` uses
+`review.tope-la.com`. On the review host, the ingress matches the exact
+`x-app-version` header for GraphQL/health and `appVersion` query parameter for
+OAuth starts. The matching candidate reaches review; all other *versioned mobile
+requests* reach production. Health requests carry both version and platform
+headers. Versionless review-website GraphQL/auth requests and OAuth callbacks
+already in flight stay on review. New mobile OAuth starts carry a version and
+are routed by it.
+
+Release state in `.env.ingress` records both `PRODUCTION_APP_VERSION` (`n`) and
+`REVIEW_CANDIDATE_VERSION` (`n+1`). The candidate must exactly match
+`APP_VERSION` in `mobile-app/app.config.ts` and be newer than production. Manage
+the candidate with `bash scripts/set-review-candidate-version.sh <version|none>`;
+use `none` only to cancel a candidate, not to promote it:
+
+1. Deploy the isolated review stack, then set `n+1` before submitting its
+   `TARGET_ENV=review` binary. Version `n` continues to use production while
+   `n+1` and its health/version floor use the review stack.
+2. After approval and production readiness checks, run
+   `bash scripts/promote-review-candidate.sh`. No app rebuild is needed: the
+   script atomically sets production to `n+1` and disables candidate routing,
+   so `n+1` now routes to production.
+3. When preparing the next release, set `n+2`; only that exact version returns
+   to review. The candidate setting is singular, so only one version is tested
+   on review at a time.
+
+Versioned mobile requests with a version other than the configured candidate
+default to production. On the review hostname, requests without version
+metadata stay on review to support the review website and OAuth callback flows;
+the production hostname always routes API paths to production. This routing
+setting is not an authorization boundary: keep review credentials and data
+isolated, and retain each stack's independent minimum-version floor. Never use a
+version route rollback to send an already-released version to review. For
+post-release rollback, restore a known-good production backend/image and leave
+version routing pointed at production.
+
+Review and production databases are intentionally separate. Review accounts,
+sessions, and test data do not move to production. A session/token created on the
+review stack may be invalid after cutover; test with a fresh production sign-in
+and ensure the app clears or recovers from stale review credentials and cached
+account data. Do not copy reviewer/test data into production as part of the
+switch.
+
+The repository provides a single shared Caddy ingress in
+`docker-compose.ingress.yml`. It joins the external `mutuity-edge` network, as do
+the production and review backend/frontend services. Do not start Caddy in each
+application stack.
+
+The candidate config is embedded in the immutable binary, but promotion does not
+change its hostname. Instead, exact version routing maps the same review origin
+to review before approval and production after promotion. A separately built
+`TARGET_ENV=prod` binary is not the same artifact approved from the review
+submission.
+
 ## Environment isolation (review / prod stacks)
 
-Each stack = `postgres + migrate + backend + worker + frontend (+ caddy)` with its
-own volume, network, and `.env`. `docker-compose.prod.yml` is already
-parameterized via `.env.prod`; use the Compose `-p` project flag to keep two
-stacks fully isolated:
+Each application stack = `postgres + migrate + backend + worker + frontend`,
+with its own volume, network, and `.env`. Use the Compose `-p` project flag to
+isolate stack resources. Prepare `.env.prod` and `.env.review` from their
+examples, set distinct secrets and public URLs, and make sure their backend
+CORS settings allow the review app origin. Prepare `.env.ingress` from its
+example with the real public hostnames and the existing Caddy data/config volume
+names. The production mobile API hostname must remain stable; with the current
+mobile config it is `www.tope-la.com`.
 
-```bash
-# Production
-docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  up -d --build
-# Review / app-store staging
-docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d --build
+Set the release-state values in `.env.ingress` to the currently live version
+and the candidate (or the disabled sentinel):
+
+```dotenv
+PRODUCTION_APP_VERSION=1.0.0
+REVIEW_CANDIDATE_VERSION=__NO_REVIEW_CANDIDATE__
 ```
 
-- The app-store/play-store review build targets the *review* stack by building
-  with `TARGET_ENV=review` (the `mobile-app/config/environments/review.json`
-  already points at `https://review.tope-la.com`, and `start:review` /
-  `android:review` / `ios:review` scripts exist), which keeps an unreleased app
-  fully exercisable against its own unreleased backend **and** its own DB.
-- Add a matching site block to `deploy/caddy/Caddyfile` for the review host
-  (mirror the existing `test.tope-la.com` block).
+```bash
+# Create the shared network once, then bring up each isolated database and migrate it.
+docker network create mutuity-edge  # omit if it already exists
+docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  up -d postgres
+docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  run --rm migrate
+docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d postgres
+docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review run --rm migrate
+
+# Start/upgrade app services only after their database migrations complete.
+docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  up -d --build --remove-orphans backend worker frontend
+docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d --build --remove-orphans backend worker frontend
+
+# Start the one shared ingress after both stacks are reachable.
+docker compose -p mutuity-ingress -f docker-compose.ingress.yml --env-file .env.ingress up -d
+```
+
+- The app stacks publish PostgreSQL only on loopback and use distinct defaults
+  (`5532` production, `5533` review); neither publishes backend port 5050 or
+  frontend port 3000 to the host. Set `POSTGRES_HOST_PORT` if those local ports
+  are already occupied.
+- The ingress owns host ports 80/443. Before moving an existing deployment,
+  back up and configure `.env.ingress` to reuse that Caddy project's existing
+  data and config volume names. The first production app-stack `up` above uses
+  `--remove-orphans` to remove its old per-stack Caddy container; do not start
+  the shared ingress until that container has released ports 80/443. Do not
+  delete the old volumes; they hold ACME certificates/state. On a fresh install,
+  create the configured external Caddy volumes before starting ingress. DNS for
+  every configured public host must resolve to this ingress.
+- Initialize `PRODUCTION_APP_VERSION` to the currently live version. Before
+   candidate review, set `REVIEW_CANDIDATE_VERSION` to the candidate's exact
+   `APP_VERSION`; the setter rejects mismatches and candidates not newer than
+   production. After approval and production verification, run
+   `bash scripts/promote-review-candidate.sh` to update production version and
+   disable candidate routing together. Use `set-review-candidate-version.sh
+   none` only to cancel a candidate. Both scripts validate Caddy before
+   recreating ingress. Verify `/health`, GraphQL, WebSocket, OAuth, and sign-in
+   for `n` (production) and `n+1` (review, then production after promotion). For
+   rollback after release, restore the previous production backend/image without
+   routing users to review.
 
 ## Pre-release checklist
 
@@ -170,7 +286,13 @@ docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.revi
 - [ ] Frontend `typecheck` + `build` green.
 - [ ] Mobile `APP_VERSION` / `APP_VERSION_CODE` bumped; binary built with the
       correct `TARGET_ENV`.
-- [ ] Review environment provisioned (second compose project + Caddy block) if
-      this release requires staging before cutover.
+- [ ] `PRODUCTION_APP_VERSION` matches the released version and
+      `REVIEW_CANDIDATE_VERSION` matches a newer candidate `APP_VERSION`.
+- [ ] Verify current production version routes to production and candidate
+      version routes to review for health, GraphQL, subscriptions, and OAuth.
+- [ ] After approval, promotion advanced production version and disabled
+      candidate routing; verify production without rebuilding the binary.
+- [ ] Production cutover tested with fresh sign-in; review sessions and data
+      are treated as isolated and are not assumed to transfer.
 - [ ] Rollback path agreed (previous image tag / previous migration set
       documented).

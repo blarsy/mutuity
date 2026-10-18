@@ -1,21 +1,103 @@
 {
-  email topela.tech@gmail.com
+	email {$CADDY_EMAIL}
+}
+
+{$PRODUCTION_WEB_HOST}, {$PRODUCTION_API_HOST}, {$PRODUCTION_MOBILE_API_HOST} {
+	encode zstd gzip
+
+	@mobileApi {
+		path /graphql /graphql/* /health /auth /auth/*
+	}
+
+	handle @mobileApi {
+		reverse_proxy {$PRODUCTION_API_UPSTREAM}
+	}
+
+	handle {
+		reverse_proxy {$PRODUCTION_FRONTEND_UPSTREAM}
+	}
+}
+
+review.tope-la.com {
+	encode zstd gzip
+
+	@reviewCandidateApi {
+		path /graphql /graphql/* /health
+		header X-App-Version {$REVIEW_CANDIDATE_VERSION}
+	}
+
+	@reviewCandidateOAuth {
+		path /auth/*
+		query appVersion={$REVIEW_CANDIDATE_VERSION}
+	}
+
+	handle @reviewCandidateApi {
+		reverse_proxy {$REVIEW_API_UPSTREAM}
+	}
+
+	handle @reviewCandidateOAuth {
+		reverse_proxy {$REVIEW_API_UPSTREAM}
+	}
+
+	@versionedOAuthStart {
+		path /auth/*
+		query appVersion=*
+	}
+
+	handle @versionedOAuthStart {
+		reverse_proxy {$PRODUCTION_API_UPSTREAM}
+	}
+
+	@versionedApi {
+		path /graphql /graphql/* /health
+		header X-App-Version *
+	}
+
+	handle @versionedApi {
+		reverse_proxy {$PRODUCTION_API_UPSTREAM}
+	}
+
+	@unversionedApi {
+		path /graphql /graphql/* /health
+		not header X-App-Version *
+	}
+
+	handle @unversionedApi {
+		reverse_proxy {$REVIEW_API_UPSTREAM}
+	}
+
+	# OAuth callbacks already in flight when a candidate is promoted return to
+	# the review callback host configured in the review stack.
+	handle /auth/* {
+		reverse_proxy {$REVIEW_API_UPSTREAM}
+	}
+
+	handle {
+		reverse_proxy {$REVIEW_FRONTEND_UPSTREAM}
+	}
 }
 
 test.tope-la.com {
-  encode zstd gzip
+	encode zstd gzip
 
-  handle_path /api/* {
-    reverse_proxy backend:5050
-  }
+	@mobileApi {
+		path /graphql /graphql/* /health /auth /auth/*
+	}
 
-  # Optional: normalize /api to /api/
-  redir /api /api/ 308
+	handle @mobileApi {
+		reverse_proxy {$TEST_API_UPSTREAM}
+	}
 
-  @staticAssets {
-    path /_next/* /favicon.ico /robots.txt /sitemap.xml
-  }
-  header @staticAssets Cache-Control "public, max-age=31536000, immutable"
+	handle_path /api/* {
+		reverse_proxy {$TEST_API_UPSTREAM}
+	}
 
-  reverse_proxy frontend:3000
+	redir /api /api/ 308
+
+	@staticAssets {
+		path /_next/* /favicon.ico /robots.txt /sitemap.xml
+	}
+	header @staticAssets Cache-Control "public, max-age=31536000, immutable"
+
+	reverse_proxy {$TEST_FRONTEND_UPSTREAM}
 }

@@ -28,7 +28,11 @@ export async function fetchAppVersionFloor(): Promise<AppVersionFloor | null> {
   try {
     const response = await fetch(`${appSettings.apiUrl}/health`, {
       method: "GET",
-      headers: { accept: "application/json" }
+      headers: {
+        accept: "application/json",
+        "x-app-version": getCurrentAppVersion(),
+        "x-app-platform": getCurrentAppPlatform()
+      }
     });
 
     if (!response.ok) {

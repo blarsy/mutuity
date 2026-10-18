@@ -1,0 +1,39 @@
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      CADDY_EMAIL: ${CADDY_EMAIL:?Set CADDY_EMAIL in .env.ingress}
+      PRODUCTION_WEB_HOST: ${PRODUCTION_WEB_HOST:?Set PRODUCTION_WEB_HOST in .env.ingress}
+      PRODUCTION_API_HOST: ${PRODUCTION_API_HOST:?Set PRODUCTION_API_HOST in .env.ingress}
+      PRODUCTION_MOBILE_API_HOST: ${PRODUCTION_MOBILE_API_HOST:?Set PRODUCTION_MOBILE_API_HOST in .env.ingress}
+      PRODUCTION_FRONTEND_UPSTREAM: ${PRODUCTION_FRONTEND_UPSTREAM:-frontend-prod:3000}
+      PRODUCTION_API_UPSTREAM: ${PRODUCTION_API_UPSTREAM:-backend-prod:5050}
+      REVIEW_FRONTEND_UPSTREAM: ${REVIEW_FRONTEND_UPSTREAM:-frontend-review:3000}
+      REVIEW_API_UPSTREAM: ${REVIEW_API_UPSTREAM:-backend-review:5050}
+      REVIEW_CANDIDATE_VERSION: ${REVIEW_CANDIDATE_VERSION:-__NO_REVIEW_CANDIDATE__}
+      TEST_FRONTEND_UPSTREAM: ${TEST_FRONTEND_UPSTREAM:-frontend-prod:3000}
+      TEST_API_UPSTREAM: ${TEST_API_UPSTREAM:-backend-prod:5050}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+volumes:
+  caddy_data:
+    external: true
+    name: ${CADDY_DATA_VOLUME:-mutuity-prod_caddy_data}
+  caddy_config:
+    external: true
+    name: ${CADDY_CONFIG_VOLUME:-mutuity-prod_caddy_config}
+
+networks:
+  edge:
+    external: true
+    name: mutuity-edge
