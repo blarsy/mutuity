@@ -4,16 +4,12 @@ services:
     restart: unless-stopped
     environment:
       CADDY_EMAIL: ${CADDY_EMAIL:?Set CADDY_EMAIL in .env.ingress}
-      PRODUCTION_WEB_HOST: ${PRODUCTION_WEB_HOST:?Set PRODUCTION_WEB_HOST in .env.ingress}
-      PRODUCTION_API_HOST: ${PRODUCTION_API_HOST:?Set PRODUCTION_API_HOST in .env.ingress}
-      PRODUCTION_MOBILE_API_HOST: ${PRODUCTION_MOBILE_API_HOST:?Set PRODUCTION_MOBILE_API_HOST in .env.ingress}
+      PRODUCTION_HOSTS: ${PRODUCTION_HOSTS:?Set PRODUCTION_HOSTS in .env.ingress}
       PRODUCTION_FRONTEND_UPSTREAM: ${PRODUCTION_FRONTEND_UPSTREAM:-frontend-prod:3000}
       PRODUCTION_API_UPSTREAM: ${PRODUCTION_API_UPSTREAM:-backend-prod:5050}
       REVIEW_FRONTEND_UPSTREAM: ${REVIEW_FRONTEND_UPSTREAM:-frontend-review:3000}
       REVIEW_API_UPSTREAM: ${REVIEW_API_UPSTREAM:-backend-review:5050}
       REVIEW_CANDIDATE_VERSION: ${REVIEW_CANDIDATE_VERSION:-__NO_REVIEW_CANDIDATE__}
-      TEST_FRONTEND_UPSTREAM: ${TEST_FRONTEND_UPSTREAM:-frontend-prod:3000}
-      TEST_API_UPSTREAM: ${TEST_API_UPSTREAM:-backend-prod:5050}
     ports:
       - "80:80"
       - "443:443"
@@ -36,4 +32,4 @@ volumes:
 networks:
   edge:
     external: true
-    name: mutuity-edge
+    name: ${EDGE_NETWORK_NAME:-mutuity-edge}

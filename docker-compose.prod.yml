@@ -149,4 +149,4 @@ networks:
     driver: bridge
   edge:
     external: true
-    name: mutuity-edge
+    name: ${EDGE_NETWORK_NAME:-mutuity-edge}

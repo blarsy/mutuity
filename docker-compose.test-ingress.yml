@@ -1,0 +1,31 @@
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      CADDY_EMAIL: ${CADDY_EMAIL:?Set CADDY_EMAIL in .env.test-ingress}
+      TEST_FRONTEND_UPSTREAM: ${TEST_FRONTEND_UPSTREAM:-frontend-test:3000}
+      TEST_API_UPSTREAM: ${TEST_API_UPSTREAM:-backend-test:5050}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/caddy/Caddyfile.test:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+volumes:
+  caddy_data:
+    external: true
+    name: ${CADDY_DATA_VOLUME:-mutuity-test_caddy_data}
+  caddy_config:
+    external: true
+    name: ${CADDY_CONFIG_VOLUME:-mutuity-test_caddy_config}
+
+networks:
+  edge:
+    external: true
+    name: ${EDGE_NETWORK_NAME:-mutuity-test-edge}

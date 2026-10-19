@@ -1,0 +1,28 @@
+{
+	email {$CADDY_EMAIL}
+}
+
+test.tope-la.com {
+	encode zstd gzip
+
+	@mobileApi {
+		path /graphql /graphql/* /health /auth /auth/*
+	}
+
+	handle @mobileApi {
+		reverse_proxy {$TEST_API_UPSTREAM}
+	}
+
+	handle_path /api/* {
+		reverse_proxy {$TEST_API_UPSTREAM}
+	}
+
+	redir /api /api/ 308
+
+	@staticAssets {
+		path /_next/* /favicon.ico /robots.txt /sitemap.xml
+	}
+	header @staticAssets Cache-Control "public, max-age=31536000, immutable"
+
+	reverse_proxy {$TEST_FRONTEND_UPSTREAM}
+}

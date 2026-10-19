@@ -184,10 +184,11 @@ and ensure the app clears or recovers from stale review credentials and cached
 account data. Do not copy reviewer/test data into production as part of the
 switch.
 
-The repository provides a single shared Caddy ingress in
-`docker-compose.ingress.yml`. It joins the external `mutuity-edge` network, as do
-the production and review backend/frontend services. Do not start Caddy in each
-application stack.
+The repository provides a shared production/review Caddy ingress in
+`docker-compose.ingress.yml`. Production and review services share its external
+`mutuity-edge` network. The dedicated test host uses a separate ingress Compose
+file, Caddyfile, environment file, and `mutuity-test-edge` network. Do not put
+the test hostname in the production/review Caddyfile.
 
 The candidate config is embedded in the immutable binary, but promotion does not
 change its hostname. Instead, exact version routing maps the same review origin
@@ -195,64 +196,153 @@ to review before approval and production after promotion. A separately built
 `TARGET_ENV=prod` binary is not the same artifact approved from the review
 submission.
 
-## Environment isolation (review / prod stacks)
+## Remote deployment procedures
 
-Each application stack = `postgres + migrate + backend + worker + frontend`,
-with its own volume, network, and `.env`. Use the Compose `-p` project flag to
-isolate stack resources. Prepare `.env.prod` and `.env.review` from their
-examples, set distinct secrets and public URLs, and make sure their backend
-CORS settings allow the review app origin. Prepare `.env.ingress` from its
-example with the real public hostnames and the existing Caddy data/config volume
-names. The production mobile API hostname must remain stable; with the current
-mobile config it is `www.tope-la.com`.
+Use `docker-compose.prod.yml` for the application services on all hosts, but
+use distinct Compose projects, environment files, named volumes, and Docker
+networks for each environment. Copy each `.example` file to the named live env
+file on the corresponding server; do not commit live env files or reuse secrets
+between environments. The examples contain placeholders that must be replaced.
 
-Set the release-state values in `.env.ingress` to the currently live version
-and the candidate (or the disabled sentinel):
+### A. Dedicated test host
 
-```dotenv
-PRODUCTION_APP_VERSION=1.0.0
-REVIEW_CANDIDATE_VERSION=__NO_REVIEW_CANDIDATE__
-```
+This host has one test application stack and its own Caddy ingress. It must not
+use the production/review ingress Caddyfile or its Caddy volumes.
 
-```bash
-# Create the shared network once, then bring up each isolated database and migrate it.
-docker network create mutuity-edge  # omit if it already exists
-docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  up -d postgres
-docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  run --rm migrate
-docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d postgres
-docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review run --rm migrate
+1. On the test server, copy `.env.test.example` to `.env.test` and
+   `.env.test-ingress.example` to `.env.test-ingress`. Set test-only database,
+   session, and OAuth credentials; set the actual test domain and mail policy.
+   The test app stack uses `EDGE_NETWORK_NAME=mutuity-test-edge` and the aliases
+   `backend-test` / `frontend-test`.
+2. Point `test.tope-la.com` DNS to this host. Allow inbound TCP 80/443 (and UDP
+   443 if using HTTP/3). Ensure those ports are not held by a previous Caddy.
+3. Create this host's private Docker network and persistent Caddy volumes once:
+   ```bash
+   docker network create mutuity-test-edge
+   docker volume create mutuity-test_caddy_data
+   docker volume create mutuity-test_caddy_config
+   ```
+   If they already exist, keep and reuse them. Never use `docker compose down -v`
+   or prune volumes when you need to preserve the test database or Caddy state.
+4. Start PostgreSQL, apply migrations, then start the app services:
+   ```bash
+   docker compose -p mutuity-test -f docker-compose.prod.yml --env-file .env.test up -d postgres
+   docker compose -p mutuity-test -f docker-compose.prod.yml --env-file .env.test run --rm migrate
+   docker compose -p mutuity-test -f docker-compose.prod.yml --env-file .env.test up -d --build --remove-orphans backend worker frontend
+   ```
+5. Start the test-only ingress:
+   ```bash
+   docker compose -p mutuity-test-ingress -f docker-compose.test-ingress.yml --env-file .env.test-ingress up -d
+   ```
+6. Verify `https://test.tope-la.com/health`, GraphQL, WebSocket subscriptions,
+   OAuth callbacks (if configured), frontend health, and worker logs. For future
+   test deployments, migrate first, then rebuild/restart only the affected
+   backend/worker/frontend services. The test environment remains a single
+   stack; no review candidate routing is configured there.
 
-# Start/upgrade app services only after their database migrations complete.
-docker compose -p mutuity-prod  -f docker-compose.prod.yml --env-file .env.prod  up -d --build --remove-orphans backend worker frontend
-docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d --build --remove-orphans backend worker frontend
+### B. Production/review host: initial setup and production
 
-# Start the one shared ingress after both stacks are reachable.
-docker compose -p mutuity-ingress -f docker-compose.ingress.yml --env-file .env.ingress up -d
-```
+This host has one shared production/review ingress and an always-on production
+application stack. The review application stack is optional and can be stopped
+between candidate cycles. The production/review Caddy config must not contain
+`test.tope-la.com`.
 
-- The app stacks publish PostgreSQL only on loopback and use distinct defaults
-  (`5532` production, `5533` review); neither publishes backend port 5050 or
-  frontend port 3000 to the host. Set `POSTGRES_HOST_PORT` if those local ports
-  are already occupied.
-- The ingress owns host ports 80/443. Before moving an existing deployment,
-  back up and configure `.env.ingress` to reuse that Caddy project's existing
-  data and config volume names. The first production app-stack `up` above uses
-  `--remove-orphans` to remove its old per-stack Caddy container; do not start
-  the shared ingress until that container has released ports 80/443. Do not
-  delete the old volumes; they hold ACME certificates/state. On a fresh install,
-  create the configured external Caddy volumes before starting ingress. DNS for
-  every configured public host must resolve to this ingress.
-- Initialize `PRODUCTION_APP_VERSION` to the currently live version. Before
-   candidate review, set `REVIEW_CANDIDATE_VERSION` to the candidate's exact
-   `APP_VERSION`; the setter rejects mismatches and candidates not newer than
-   production. After approval and production verification, run
-   `bash scripts/promote-review-candidate.sh` to update production version and
-   disable candidate routing together. Use `set-review-candidate-version.sh
-   none` only to cancel a candidate. Both scripts validate Caddy before
-   recreating ingress. Verify `/health`, GraphQL, WebSocket, OAuth, and sign-in
-   for `n` (production) and `n+1` (review, then production after promotion). For
-   rollback after release, restore the previous production backend/image without
-   routing users to review.
+1. On this host, copy `.env.prod.example` to `.env.prod`,
+   `.env.review.example` to `.env.review`, and `.env.ingress.example` to
+   `.env.ingress`. Replace all example domains and secrets. Set the production
+   app URLs to the actual domains. In `.env.ingress`, set `PRODUCTION_HOSTS` to
+   a whitespace-separated list of unique production web/API/mobile hostnames;
+   list a hostname only once even when web and API share it, and do not include
+   `review.tope-la.com` or `test.tope-la.com` because they have separate site
+   definitions. Keep
+   `PRODUCTION_APP_VERSION` equal to the currently released mobile version and
+   `REVIEW_CANDIDATE_VERSION=__NO_REVIEW_CANDIDATE__` initially. Point DNS for
+   production domains and `review.tope-la.com` to this host.
+2. Ensure TCP 80/443 (and UDP 443 if using HTTP/3) reach the ingress. Create the
+   shared network and the ingress's persistent Caddy volumes once:
+   ```bash
+   docker network create mutuity-edge
+   docker volume create mutuity-prod_caddy_data
+   docker volume create mutuity-prod_caddy_config
+   ```
+   Reuse them on later deploys; do not remove the volumes. If migrating an
+   existing deployment, stop its old per-stack Caddy before starting the shared
+   ingress, and preserve any existing certificate volumes instead of creating
+   new ones.
+3. Bring up and migrate the production database, then start production
+   services:
+   ```bash
+   docker compose -p mutuity-prod -f docker-compose.prod.yml --env-file .env.prod up -d postgres
+   docker compose -p mutuity-prod -f docker-compose.prod.yml --env-file .env.prod run --rm migrate
+   docker compose -p mutuity-prod -f docker-compose.prod.yml --env-file .env.prod up -d --build --remove-orphans backend worker frontend
+   ```
+4. Start the shared production/review ingress:
+   ```bash
+   docker compose -p mutuity-ingress -f docker-compose.ingress.yml --env-file .env.ingress up -d
+   ```
+5. Verify production web/mobile hosts, `/health`, GraphQL and WebSocket, CORS,
+   OAuth callbacks, and worker logs. The app stack publishes PostgreSQL only on
+   loopback (default `5532`); backend/frontend are exposed only on the Docker
+   network. Change `POSTGRES_HOST_PORT` if that host-local port is occupied.
+
+### C. Production/review host: candidate review and promotion
+
+Only start review when there is a candidate to exercise. Its DB volume and
+network namespace are separate from production; its fixed edge aliases make it
+reachable to Caddy when it is running. Review uses PostgreSQL host port `5533`
+by default and mail delivery is disabled by default.
+
+1. Bump `APP_VERSION` / `APP_VERSION_CODE`, build the mobile candidate with
+   `TARGET_ENV=review`, and submit that immutable binary only after review-stack
+   smoke tests pass.
+2. Start/migrate review and deploy its backend/worker/frontend:
+   ```bash
+   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d postgres
+   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review run --rm migrate
+   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d --build --remove-orphans backend worker frontend
+   ```
+3. Set the candidate route. The script requires its version to equal
+   `APP_VERSION` and be newer than `PRODUCTION_APP_VERSION`; it validates Caddy
+   before recreating ingress:
+   ```bash
+   bash scripts/set-review-candidate-version.sh <APP_VERSION>
+   ```
+   Confirm the released version routes to production and the candidate version
+   routes to review for health, GraphQL, subscriptions, and OAuth.
+4. After store approval, deploy/migrate production changes and verify them
+   against production. For breaking changes, raise the production minimum-version
+   floor in the same migration as the break; do not raise it before approval
+   unless intentionally requiring all older production clients to update.
+5. Promote the exact candidate binary without rebuilding it:
+   ```bash
+   bash scripts/promote-review-candidate.sh
+   ```
+   This updates `PRODUCTION_APP_VERSION` and disables the candidate route as
+   one validated ingress update. Verify candidate health, GraphQL, WebSocket,
+   OAuth, and fresh production sign-in, then release with a staged rollout.
+6. Once no candidate requests need review, stop only its app services while
+   retaining its named database volume for the next cycle:
+   ```bash
+   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review stop backend worker frontend postgres
+   ```
+   Do not use `down -v`. The shared ingress and production stack remain online.
+   Before the next candidate, start/migrate review, deploy the services, then
+   set the next candidate version. Never route an already-released version to
+   the review stack; post-release rollback restores a known-good production
+   backend/image.
+
+### D. Routine updates and shutdown
+
+- For every app stack update: start its PostgreSQL service if needed, run its
+  `migrate` service, then rebuild/restart the changed long-running services.
+  Keep production up; review and test may be stopped when idle.
+- Restart the appropriate ingress after changing its Caddyfile or ingress env.
+  The production/review server uses `docker-compose.ingress.yml` plus
+  `.env.ingress`; the dedicated test server uses
+  `docker-compose.test-ingress.yml` plus `.env.test-ingress`.
+- To stop an environment without deleting data, use `docker compose ... stop` or
+  `down` without `-v`. Named Postgres and Caddy volumes are persistent state;
+  back them up before host migration or destructive cleanup.
 
 ## Pre-release checklist
 

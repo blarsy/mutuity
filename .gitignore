@@ -7,6 +7,8 @@ coverage/
 .env.prod
 .env.review
 .env.ingress
+.env.test
+.env.test-ingress
 frontend/tsconfig.tsbuildinfo
 .vscode/
 .DS_Store
