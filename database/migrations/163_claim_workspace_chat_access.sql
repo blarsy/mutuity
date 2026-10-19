@@ -188,6 +188,6 @@ begin
 end;
 $$;
 
-update app_private.app_version_policy set min_ios_version = '1.0', min_android_version = '1.0';
+update app_private.app_version_policy set min_ios_semver = '1.0', min_android_semver = '1.0';
 
 commit;
