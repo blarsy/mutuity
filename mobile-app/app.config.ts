@@ -103,6 +103,7 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
   return {
     name: "Tope Là",
     slug: "tope-la",
+    owner: "tope_la",
     scheme: "topela",
     version: APP_VERSION,
     orientation: "portrait",
@@ -144,11 +145,16 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
           locationWhenInUsePermission:
             "Tope-là would like to access your location to position resources and calculate proximity."
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font"
     ],
     extra: {
       targetEnv,
-      appSettings
+      appSettings,
+      eas: {
+        projectId: "484b7ec5-78c2-47e0-bc80-4f9182b4916a"
+      }
     }
   };
 }

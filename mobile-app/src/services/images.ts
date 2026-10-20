@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 /** Picker URIs are device-local; only uploaded HTTP(S) URLs may be persisted. */
 export async function uploadListingImages(imageUris: string[]): Promise<string[]> {

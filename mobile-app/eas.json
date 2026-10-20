@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "appVersionSource": "local"
+  },
+  "build": {
+    "production": {
+      "distribution": "store",
+      "developmentClient": false,
+      "env": {
+        "TARGET_ENV": "review"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}

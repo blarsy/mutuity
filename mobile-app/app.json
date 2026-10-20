@@ -1,4 +1,17 @@
 {
   "expo": {
+    "extra": {
+      "targetEnv": "review",
+      "appSettings": {
+        "targetEnv": "review",
+        "apiUrl": "https://review.tope-la.com",
+        "graphQlApiUrl": "https://review.tope-la.com/graphql",
+        "subscriptionsUrl": "wss://review.tope-la.com/graphql",
+        "diagnostic": true
+      },
+      "eas": {
+        "projectId": "484b7ec5-78c2-47e0-bc80-4f9182b4916a"
+      }
+    }
   }
 }
