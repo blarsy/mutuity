@@ -1,0 +1,1 @@
+export { TimeUpSvgMock as default } from "./notificationSvgMocks";

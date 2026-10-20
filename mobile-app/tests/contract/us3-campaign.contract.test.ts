@@ -30,8 +30,11 @@ describe("US3 campaign contract", () => {
     expect(normalized).toEqual({
       id: "00000000-0000-0000-0000-000000000055",
       title: "Test campaign",
+      theme: "",
       description: "A test campaign",
+      imageUrl: null,
       startAt: "2026-08-01T00:00:00.000Z",
+      airdropAt: "",
       endAt: "2026-09-01T00:00:00.000Z",
       moderationStatus: CampaignModerationStatus.Pending,
       createdAt: "2026-07-25T12:00:00.000Z",

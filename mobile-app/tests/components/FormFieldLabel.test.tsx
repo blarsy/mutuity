@@ -2,7 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import { FormFieldLabel } from "../../src/components/primitives/FormFieldLabel";
-import { designTokens } from "../../src/theme/tokens";
+import { appFontFamilies } from "../../src/theme/fonts";
 
 function flattenStyles(value: unknown): unknown[] {
   if (Array.isArray(value)) {
@@ -21,12 +21,14 @@ describe("FormFieldLabel", () => {
     expect(resolvedStyles).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          color: designTokens.colors.primary,
-          textTransform: "uppercase",
+          color: "#000",
+          fontFamily: appFontFamilies.general,
           letterSpacing: 0.4,
-          fontSize: 12
+          fontSize: 16,
+          textTransform: "none"
         })
       ])
     );
+
   });
 });

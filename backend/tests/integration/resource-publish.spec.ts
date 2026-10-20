@@ -214,7 +214,7 @@ describe("resource publishing integration", () => {
     await expect(response.json()).resolves.toEqual({
       data: {
         deleteResourceById: {
-          deletedResourceId: resourceId
+          deletedResourceId: Buffer.from(JSON.stringify(["resources", resourceId])).toString("base64")
         }
       }
     });

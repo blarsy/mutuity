@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper";
 
 import { MyResourcesScreen } from "../../src/screens/resources/MyResourcesScreen";
 import type { MyResourceItem } from "../../src/services/graphql/resources";
@@ -33,9 +34,11 @@ const sampleResources: MyResourceItem[] = [
   }
 ];
 
+const renderWithPaper = (ui: React.ReactElement) => render(ui, { wrapper: PaperProvider });
+
 describe("MyResourcesScreen", () => {
   it("renders injected resources instead of showing a loading state", () => {
-    const { queryByText, getByText } = render(
+    const { queryByText, getByText } = renderWithPaper(
       <MyResourcesScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         onAddResource={() => undefined}
@@ -49,7 +52,7 @@ describe("MyResourcesScreen", () => {
   });
 
   it("still shows loading when injectedLoading is explicitly true", () => {
-    const { getByText } = render(
+    const { getByText } = renderWithPaper(
       <MyResourcesScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         onAddResource={() => undefined}
@@ -64,7 +67,7 @@ describe("MyResourcesScreen", () => {
 
   it("opens the selected resource for editing when its card is pressed", () => {
     const onEditResource = jest.fn();
-    const screen = render(
+    const screen = renderWithPaper(
       <MyResourcesScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         onAddResource={() => undefined}

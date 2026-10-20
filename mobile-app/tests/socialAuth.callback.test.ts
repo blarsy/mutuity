@@ -63,11 +63,16 @@ describe("social auth start URL building", () => {
   });
 
   it("includes routing metadata in the native OAuth launch", async () => {
-    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue();
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
 
     await openSocialAuthStart("apple", "/my-hub");
 
-    const launchedUrl = new URL(openUrl.mock.calls[0][0]);
+    expect(openUrl).toHaveBeenCalledTimes(1);
+    const launchCall = openUrl.mock.calls[0];
+    if (!launchCall) {
+      throw new Error("Expected the native OAuth URL to be opened");
+    }
+    const launchedUrl = new URL(launchCall[0]);
     expect(launchedUrl.searchParams.get("appVersion")).toBeTruthy();
     expect(launchedUrl.searchParams.get("appPlatform")).toBeTruthy();
     expect(launchedUrl.searchParams.get("context")).toBe("mobile");

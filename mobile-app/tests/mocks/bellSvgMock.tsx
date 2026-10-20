@@ -1,0 +1,1 @@
+export { BellSvgMock as default } from "./notificationSvgMocks";

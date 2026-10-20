@@ -4,10 +4,11 @@ import { Client } from "pg";
 // Deliberately no development-DB fallback. Run with TEST_DATABASE_URL pointing
 // to a disposable migrated database; all fixtures and function effects roll back.
 const databaseUrl = process.env.TEST_DATABASE_URL;
+const describeWithDisposableDatabase = databaseUrl ? describe : describe.skip;
 const duplicateEmail = "An account with this email already exists";
 const password = "Audit-regression-password-123!";
 
-describe("database quality regressions (rollback fixtures)", () => {
+describeWithDisposableDatabase("database quality regressions (rollback fixtures)", () => {
   let client: Client;
   let passwordHash: string;
 

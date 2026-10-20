@@ -2,8 +2,9 @@ import * as FileSystem from "expo-file-system";
 import { uploadListingImages } from "../../src/services/images";
 
 jest.mock("expo-file-system", () => ({
-  EncodingType: { Base64: "base64" },
-  readAsStringAsync: jest.fn().mockResolvedValue("image-base64")
+  File: jest.fn().mockImplementation(() => ({
+    base64: jest.fn().mockResolvedValue("image-base64")
+  }))
 }));
 
 describe("listing image uploads", () => {
@@ -29,7 +30,8 @@ describe("listing image uploads", () => {
   it("uploads local picker files and preserves existing public URLs in order", async () => {
     expect(await uploadListingImages(["https://example.com/existing.jpg", "file:///cache/picked.jpg"]))
       .toEqual(["https://example.com/existing.jpg", "https://example.com/uploaded.jpg"]);
-    expect(FileSystem.readAsStringAsync).toHaveBeenCalledWith("file:///cache/picked.jpg", { encoding: "base64" });
+    expect(FileSystem.File).toHaveBeenCalledWith("file:///cache/picked.jpg");
+    expect(jest.mocked(FileSystem.File).mock.results[0]?.value.base64).toHaveBeenCalledTimes(1);
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 

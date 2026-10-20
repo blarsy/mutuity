@@ -113,17 +113,17 @@ function normalizeCampaign(campaign: Campaign, _creatorAccountId?: string): Camp
     theme: campaign.theme ?? "",
     description: campaign.description ?? "",
     imageUrl: campaign.imageUrl ?? null,
-    startAt: String(campaign.startAt) ?? "",
-    airdropAt: String(campaign.airdropAt) ?? "",
-    endAt: String(campaign.endAt) ?? "",
-    createdAt: String(campaign.createdAt) ?? "",
+    startAt: campaign.startAt == null ? "" : String(campaign.startAt),
+    airdropAt: campaign.airdropAt == null ? "" : String(campaign.airdropAt),
+    endAt: campaign.endAt == null ? "" : String(campaign.endAt),
+    createdAt: campaign.createdAt == null ? "" : String(campaign.createdAt),
     creatorAccountId: typeof campaign.creatorAccountId === "string" ? campaign.creatorAccountId : null,
     moderationStatus: campaign.moderationStatus ?? CampaignModerationStatus.Pending,
     resourceCount: (campaign as any).campaignResourcesByCampaignId?.totalCount ?? 0,
     needCount: (campaign as any).campaignNeedsByCampaignId?.totalCount ?? 0,
-    rewardsMultiplier: typeof (campaign as any).rewardsMultiplier === "number" ? (campaign as any).rewardsMultiplier : undefined,
-    airdropAmount: typeof (campaign as any).airdropAmount === "number" ? (campaign as any).airdropAmount : undefined,
-    managerNoteFromCreator: typeof (campaign as any).managerNoteFromCreator === "string" ? (campaign as any).managerNoteFromCreator : undefined
+    ...(typeof (campaign as any).rewardsMultiplier === "number" && { rewardsMultiplier: (campaign as any).rewardsMultiplier }),
+    ...(typeof (campaign as any).airdropAmount === "number" && { airdropAmount: (campaign as any).airdropAmount }),
+    ...(typeof (campaign as any).managerNoteFromCreator === "string" && { managerNoteFromCreator: (campaign as any).managerNoteFromCreator })
   };
 }
 

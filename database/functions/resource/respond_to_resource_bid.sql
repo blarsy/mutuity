@@ -135,9 +135,26 @@ begin
     )
   );
 
-  if v_bid.status = 'declined' then
-    v_reserved_amount := coalesce(v_bid.proposed_token_amount, 0);
+  v_reserved_amount := coalesce(v_bid.proposed_token_amount, 0);
 
+  if v_bid.status = 'accepted' then
+    if v_reserved_amount > 0 then
+      perform app_private.create_token_movement(
+        v_context.resource_creator_account_id,
+        v_reserved_amount,
+        'resource_bid_settled',
+        'resource_bid',
+        v_bid.id,
+        v_bid.bidder_account_id,
+        jsonb_build_object(
+          'resourceId', v_bid.resource_id,
+          'resourceBidId', v_bid.id,
+          'settledAmount', v_reserved_amount
+        ),
+        format('resource_bid:%s:settlement', v_bid.id)
+      );
+    end if;
+  elsif v_bid.status = 'declined' then
     if v_reserved_amount > 0 then
       perform app_private.create_token_movement(
         v_bid.bidder_account_id,

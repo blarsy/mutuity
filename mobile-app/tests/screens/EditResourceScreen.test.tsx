@@ -1,5 +1,6 @@
 import React from "react";
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render, within } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper";
 
 import { EditResourceScreen } from "../../src/screens/resources/EditResourceScreen";
 
@@ -29,9 +30,11 @@ jest.mock("../../src/services/network/useNetworkStatus", () => ({
   useNetworkStatus: () => ({ isConnected: true, isInternetReachable: true })
 }));
 
+const renderWithPaper = (ui: React.ReactElement) => render(ui, { wrapper: PaperProvider });
+
 describe("EditResourceScreen", () => {
   it("shows validation errors inline only after the first submit attempt", () => {
-    const screen = render(
+    const screen = renderWithPaper(
       <EditResourceScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         initialResource={null}
@@ -52,7 +55,7 @@ describe("EditResourceScreen", () => {
   });
 
   it("opens the category selector with available resource categories", async () => {
-    const screen = render(
+    const screen = renderWithPaper(
       <EditResourceScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         initialResource={null}
@@ -68,7 +71,7 @@ describe("EditResourceScreen", () => {
   });
 
   it("lists selected categories as removable pills", async () => {
-    const screen = render(
+    const screen = renderWithPaper(
       <EditResourceScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         initialResource={null}
@@ -81,19 +84,20 @@ describe("EditResourceScreen", () => {
     fireEvent.press(screen.getByRole("button", { name: /Categories/ }));
     fireEvent.press(await screen.findByText("Decoration"));
     fireEvent.press(screen.getByText("Transport"));
-    fireEvent.press(screen.getByText("Confirm"));
+    fireEvent.press(screen.getByText("OK"));
 
     expect(screen.getByTestId("selected-resource-category-1")).toBeTruthy();
     expect(screen.getByTestId("selected-resource-category-2")).toBeTruthy();
 
-    fireEvent(screen.getByTestId("selected-resource-category-1"), "close");
+    const firstSelectedCategory = screen.getByTestId("selected-resource-category-1-container");
+    fireEvent.press(within(firstSelectedCategory).getByLabelText("Close"));
 
     expect(screen.queryByTestId("selected-resource-category-1")).toBeNull();
     expect(screen.getByTestId("selected-resource-category-2")).toBeTruthy();
   });
 
   it("offers an optional single campaign picker", async () => {
-    const screen = render(
+    const screen = renderWithPaper(
       <EditResourceScreen
         creatorAccountId="00000000-0000-0000-0000-000000000111"
         initialResource={null}
@@ -104,8 +108,9 @@ describe("EditResourceScreen", () => {
 
     fireEvent.press(screen.getByRole("button", { name: /Campaign \(optional\)/ }));
 
-    expect(await screen.findByText("Community Garden")).toBeTruthy();
-    expect(screen.getByText("No campaign")).toBeTruthy();
-    expect(screen.getAllByRole("radio")).toHaveLength(3);
+    const campaignDialog = await screen.findByTestId("resource-campaign-dialog");
+    expect(within(campaignDialog).getByText("Community Garden")).toBeTruthy();
+    expect(within(campaignDialog).getByText("Repair Week")).toBeTruthy();
+    expect(within(campaignDialog).queryByText("No campaign")).toBeNull();
   });
 });

@@ -5,12 +5,6 @@ import Denied from "../../src/assets/img/denied.svg";
 import Claim from "../../src/assets/img/claim.svg";
 import Bell from "../../src/assets/img/BELL.svg";
 
-jest.mock("../../src/assets/img/gone.svg", () => () => null);
-jest.mock("../../src/assets/img/time-up.svg", () => () => null);
-jest.mock("../../src/assets/img/denied.svg", () => () => null);
-jest.mock("../../src/assets/img/claim.svg", () => () => null);
-jest.mock("../../src/assets/img/BELL.svg", () => () => null);
-
 describe("mobile notification lifecycle icons", () => {
   it.each([
     ["claim_declined", Denied],

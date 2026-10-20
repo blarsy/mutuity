@@ -69,6 +69,7 @@ describe("campaign airdrop payouts", () => {
     await client.connect();
 
     let campaignId = "";
+    let recipientABalanceBeforeAirdrop = 0;
 
     try {
       const campaignResult = await client.query<{ id: string }>(
@@ -128,6 +129,14 @@ describe("campaign airdrop payouts", () => {
         `,
         [campaignId, resourceA1.id, resourceA2.id, resourceB.id, resourceOnly1.id, resourceOnly2.id, singleResource.id, rejectedResource.id]
       );
+
+      const balanceResult = await client.query<{ balance: number }>(
+        `select coalesce(sum(amount_delta), 0)::int as balance
+         from app_public.token_movement
+         where account_id = $1`,
+        [recipientA.accountId]
+      );
+      recipientABalanceBeforeAirdrop = balanceResult.rows[0]?.balance ?? 0;
     } finally {
       await client.end();
     }
@@ -171,7 +180,7 @@ describe("campaign airdrop payouts", () => {
     expect(recipientAOverviewResponse.status).toBe(200);
     await expect(recipientAOverviewResponse.json()).resolves.toMatchObject({
       data: {
-        currentTokenBalance: 3400,
+        currentTokenBalance: recipientABalanceBeforeAirdrop + 3400,
         allTokenMovements: {
           nodes: expect.arrayContaining([
             expect.objectContaining({

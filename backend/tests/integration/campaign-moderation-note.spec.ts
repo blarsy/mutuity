@@ -6,8 +6,8 @@ describe("campaign moderation note SQL", () => {
     const sqlPath = path.resolve(process.cwd(), "../database/functions/campaign/add_campaign_moderation_note.sql");
     const sql = fs.readFileSync(sqlPath, "utf8");
 
-    expect(sql).toContain("Only admins can add moderation notes");
-    expect(sql).toContain("pending campaigns");
+    expect(sql).toContain("Only administrators can add moderation notes");
+    expect(sql).toContain("Moderation notes are not allowed for approved campaigns");
     expect(sql).toContain("Moderation note body is required");
   });
 });

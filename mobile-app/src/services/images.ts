@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system/legacy";
+import { File } from "expo-file-system";
 
 /** Picker URIs are device-local; only uploaded HTTP(S) URLs may be persisted. */
 export async function uploadListingImages(imageUris: string[]): Promise<string[]> {
@@ -17,7 +17,7 @@ export async function uploadListingImages(imageUris: string[]): Promise<string[]
       throw new Error("Image uploads are not configured for this app.");
     }
 
-    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const base64 = await new File(uri).base64();
     const extension = uri.split(/[?#]/)[0]?.split(".").pop()?.toLowerCase();
     const mimeType = extension === "png" ? "image/png"
       : extension === "webp" ? "image/webp"

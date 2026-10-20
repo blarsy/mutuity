@@ -1,0 +1,1 @@
+export { GoneSvgMock as default } from "./notificationSvgMocks";
