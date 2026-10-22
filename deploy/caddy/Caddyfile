@@ -13,6 +13,12 @@
 		reverse_proxy {$PRODUCTION_API_UPSTREAM}
 	}
 
+	handle_path /api/* {
+		reverse_proxy {$PRODUCTION_API_UPSTREAM}
+	}
+
+	redir /api /api/ 308
+
 	handle {
 		reverse_proxy {$PRODUCTION_FRONTEND_UPSTREAM}
 	}

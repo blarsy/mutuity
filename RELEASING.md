@@ -258,6 +258,16 @@ between candidate cycles. The production/review Caddy config must not contain
    `PRODUCTION_APP_VERSION` equal to the currently released mobile version and
    `REVIEW_CANDIDATE_VERSION=__NO_REVIEW_CANDIDATE__` initially. Point DNS for
    production domains and `review.tope-la.com` to this host.
+   Production supports the same web API URL scheme as test: set
+   `NEXT_PUBLIC_GRAPHQL_URL=https://<production-host>/api/graphql`,
+   `NEXT_PUBLIC_GRAPHQL_WS_URL=wss://<production-host>/api/graphql`, and
+   `NEXT_PUBLIC_BACKEND_URL=https://<production-host>/api`. Caddy strips `/api`
+   before proxying to the backend; the unprefixed `/graphql`, `/health`, and
+   `/auth/*` routes remain available for mobile clients. Use the exact same
+   hostname in these URLs, DNS, and `PRODUCTION_HOSTS` (for example,
+   `next.tope-la.com` is different from `next.topela.com`). Public frontend
+   variables are baked into the browser bundle: rebuild the frontend after
+   changing them, rather than only restarting it.
 2. Ensure TCP 80/443 (and UDP 443 if using HTTP/3) reach the ingress. Create the
    shared network and the ingress's persistent Caddy volumes once:
    ```bash
