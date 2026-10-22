@@ -87,7 +87,40 @@ behind the version floor).
 Slowest path due to App Store Connect / Play Console review.
 
 1. Bump `APP_VERSION` and `APP_VERSION_CODE` in `mobile-app/app.config.ts`.
-2. Build with `TARGET_ENV=review`; that embeds the stable review API host.
+2. Build the store packages locally with the EAS `production` profile. The
+   `--local` flag runs the native build on this machine instead of EAS hosted
+   builders. Despite the profile name, it explicitly sets `TARGET_ENV=review`,
+   so the immutable candidate embeds the stable review API host. From the
+   repository root:
+   ```bash
+   cd mobile-app
+   npx eas-cli build --local --profile production --platform all
+   ```
+   Or build a single platform:
+   ```bash
+   npx eas-cli build --local --profile production --platform android
+   npx eas-cli build --local --profile production --platform ios
+   ```
+   The CLI reports the local artifact paths: an Android App Bundle (`.aab`)
+   and/or an iOS store package (`.ipa`). Local builds require the relevant
+   platform toolchain (Android SDK/JDK for Android; macOS with Xcode for iOS)
+   and store signing credentials. EAS-managed credentials may require EAS
+   authentication; alternatively, configure local signing credentials. The
+   Android build number and iOS build number come from `APP_VERSION_CODE`; keep
+   them unique for each store upload.
+
+   **Signing check before distribution:** `mobile-app/android/app/build.gradle`
+   currently signs the Android `release` variant with the debug signing config.
+   Do not upload that artifact to Play as a release; configure a dedicated
+   release keystore/signing config first. iOS distribution also requires a
+   valid Apple distribution certificate and provisioning profile. For local
+   device/simulator development rather than store packages, use
+   `npm run android:review` or `npm run ios:review` from `mobile-app`; these
+   run/install a development build and do not replace the store artifacts.
+
+   The EAS profile sets `TARGET_ENV=review` itself; do not override it to
+   `prod` for a candidate. The optional public upload/maps configuration must
+   also be available to the build environment if those features are needed.
 3. Deploy/migrate the review stack and confirm it is healthy. Set
    `REVIEW_CANDIDATE_VERSION` to the exact `APP_VERSION` using
    `bash scripts/set-review-candidate-version.sh <version>`. Verify this version
