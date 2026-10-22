@@ -1,17 +1,4 @@
-const svgTransformer = require('react-native-svg-transformer');
-
-let baseTransformer;
-
-try {
-  baseTransformer = require('@expo/metro-config/babel-transformer');
-} catch {
-  baseTransformer = require('metro-react-native-babel-transformer');
-}
-
-module.exports.transform = async function transform(props) {
-  if (props.filename && props.filename.endsWith('.svg')) {
-    return svgTransformer.transform(props);
-  }
-
-  return baseTransformer.transform(props);
-};
+// The Expo entry point resolves Expo's Babel transformer even when npm installs
+// @expo/metro-config inside expo/node_modules rather than at the app root.
+// It handles both SVG assets and ordinary JavaScript/TypeScript modules.
+module.exports = require('react-native-svg-transformer/expo');
