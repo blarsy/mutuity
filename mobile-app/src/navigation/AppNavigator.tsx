@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from "../services/auth/AuthProvider";
 import { useCurrentAccount } from "../services/auth/useCurrentAccount";
 import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitives";
 import { AccountAvatar } from "../components/AccountAvatar";
-import { authenticateWithPassword, registerWithSocialIdentity } from "../services/graphql/auth";
+import { authenticateWithPassword, registerWithSocialIdentity, requestPasswordReset } from "../services/graphql/auth";
 import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
@@ -225,8 +225,8 @@ function AuthScreenShell({
   if (activeScreen === "forgotPassword") {
     return (
       <ForgotPasswordScreen
-        onSubmit={async () => {
-          onSwitchToSignIn();
+        onSubmit={async ({ email }) => {
+          await requestPasswordReset(email);
         }}
         onSwitchToSignIn={onSwitchToSignIn}
         onDismiss={onDismiss}

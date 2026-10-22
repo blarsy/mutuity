@@ -32,6 +32,14 @@ export const AUTH_CHANGE_PASSWORD_MUTATION = gql`
   }
 `;
 
+export const REQUEST_PASSWORD_RESET_MUTATION = gql`
+  mutation RequestPasswordReset($input: RequestPasswordResetInput!) {
+    requestPasswordReset(input: $input) {
+      boolean
+    }
+  }
+`;
+
 export const SEARCH_RESOURCES_QUERY = gql`
   query SearchResources(
     $first: Int

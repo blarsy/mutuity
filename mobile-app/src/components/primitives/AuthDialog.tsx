@@ -10,13 +10,12 @@ import { ScreenContainer } from "./ScreenContainer";
 
 export interface AuthDialogProps extends PropsWithChildren {
   title: string;
-  subtitle?: string;
   accessibilityLabel?: string;
   testID?: string;
   onDismiss?: () => void;
 }
 
-export function AuthDialog({ title, subtitle, accessibilityLabel, testID, onDismiss, children }: AuthDialogProps): React.JSX.Element {
+export function AuthDialog({ title, accessibilityLabel, testID, onDismiss, children }: AuthDialogProps): React.JSX.Element {
   const { t } = useTranslation("common");
 
   return (
@@ -42,11 +41,6 @@ export function AuthDialog({ title, subtitle, accessibilityLabel, testID, onDism
           <Text accessibilityRole="header" variant="titleLarge" style={styles.title}>
             {title}
           </Text>
-          {subtitle ? (
-            <Text variant="bodyMedium" style={styles.subtitle}>
-              {subtitle}
-            </Text>
-          ) : null}
           {children}
         </View>
       </ScrollView>

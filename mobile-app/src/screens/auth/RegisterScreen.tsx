@@ -33,7 +33,6 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
     <AuthDialog
       testID="auth-register-screen"
       title={t("registerTitle", { ns: "us1" })}
-      subtitle={t("restrictedSurfaceBody", { ns: "us1" })}
       accessibilityLabel={t("registerTitle", { ns: "us1" })}
       onDismiss={onDismiss}
     >

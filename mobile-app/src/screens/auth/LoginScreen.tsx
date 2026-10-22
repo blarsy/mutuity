@@ -29,7 +29,6 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
     <AuthDialog
       testID="auth-login-screen"
       title={t("loginTitle", { ns: "us1" })}
-      subtitle={t("restrictedSurfaceBody", { ns: "us1" })}
       accessibilityLabel={t("loginTitle", { ns: "us1" })}
       onDismiss={onDismiss}
     >

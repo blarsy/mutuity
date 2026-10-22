@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 import { apolloClient } from "./client";
-import { type AuthChangePasswordInput, type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs } from "./generated";
-import { ACCOUNT_BY_ID_QUERY, AUTH_CHANGE_PASSWORD_MUTATION } from "./operations";
+import { type AuthChangePasswordInput, type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs, type RequestPasswordResetInput } from "./generated";
+import { ACCOUNT_BY_ID_QUERY, AUTH_CHANGE_PASSWORD_MUTATION, REQUEST_PASSWORD_RESET_MUTATION } from "./operations";
 
 export type RegisterSocialIdentityInput = {
   identifier: string;
@@ -121,6 +121,26 @@ export async function changeAccountPassword(input: { currentPassword: string; ne
 
   await apolloClient.mutate({
     mutation: AUTH_CHANGE_PASSWORD_MUTATION,
+    variables
+  });
+}
+
+export async function requestPasswordReset(identifier: string): Promise<void> {
+  const variables: { input: RequestPasswordResetInput } = {
+    input: {
+      identifier: identifier.trim().toLowerCase(),
+      resetTtlMs: 60 * 60 * 1000,
+      throttleMs: 60 * 1000
+    }
+  };
+
+  // The backend intentionally returns the same successful response whether or
+  // not an eligible account exists, to avoid exposing account membership.
+  await apolloClient.mutate<
+    { requestPasswordReset?: Pick<Mutation, "requestPasswordReset">["requestPasswordReset"] },
+    { input: RequestPasswordResetInput }
+  >({
+    mutation: REQUEST_PASSWORD_RESET_MUTATION,
     variables
   });
 }

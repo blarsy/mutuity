@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button } from "react-native-paper";
+import { Button, Snackbar } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AuthDialog, FormTextInput } from "../../components/primitives";
@@ -18,12 +18,12 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onDismiss }: 
   const { t } = useTranslation(["common", "us1"]);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<"success" | "error" | null>(null);
 
   return (
     <AuthDialog
       testID="auth-forgot-password-screen"
       title={t("forgotPasswordTitle", { ns: "us1" })}
-      subtitle={t("restrictedSurfaceBody", { ns: "us1" })}
       accessibilityLabel={t("forgotPasswordTitle", { ns: "us1" })}
       onDismiss={onDismiss}
     >
@@ -52,9 +52,17 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onDismiss }: 
           style={styles.mainButton}
           accessibilityLabel={t("sendResetLink", { ns: "us1" })}
           loading={submitting}
-          onPress={() => {
+          onPress={async () => {
             setSubmitting(true);
-            void Promise.resolve(onSubmit({ email })).finally(() => setSubmitting(false));
+            setFeedback(null);
+            try {
+              await onSubmit({ email: email.trim() });
+              setFeedback("success");
+            } catch {
+              setFeedback("error");
+            } finally {
+              setSubmitting(false);
+            }
           }}
           testID="auth-forgot-submit"
         >
@@ -65,6 +73,19 @@ export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onDismiss }: 
             {t("backToSignIn", { ns: "us1" })}
           </Button>
         ) : null}
+        <Snackbar
+          visible={feedback !== null}
+          onDismiss={() => setFeedback(null)}
+          {...(feedback === "success" && onSwitchToSignIn
+            ? { action: { label: t("backToSignIn", { ns: "us1" }), onPress: onSwitchToSignIn } }
+            : {})}
+        >
+          {feedback === "success"
+            ? t("forgotPasswordSuccessMessage", { ns: "us1" })
+            : feedback === "error"
+              ? t("forgotPasswordErrorMessage", { ns: "us1" })
+              : ""}
+        </Snackbar>
     </AuthDialog>
   );
 }
