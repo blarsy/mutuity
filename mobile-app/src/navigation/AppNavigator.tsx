@@ -1061,7 +1061,7 @@ function RootNavigator(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <StatusBar backgroundColor={designTokens.colors.primary} barStyle="light-content" />
-      <SafeAreaView edges={["top", "right", "left"]} style={styles.rootSafeArea}>
+      <SafeAreaView edges={["top", "right", "bottom", "left"]} style={styles.rootSafeArea}>
         <Appbar.Header mode="center-aligned" statusBarHeight={0} style={styles.header}>
           <View style={styles.headerLeadingActions}>
             <Appbar.Action
