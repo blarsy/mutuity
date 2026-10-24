@@ -13,8 +13,8 @@ interface ExternalAppSettings {
   diagnostic: boolean;
 }
 
-const APP_VERSION = "1.0.0";
-const APP_VERSION_CODE = 175;
+const APP_VERSION = "1.0.2";
+const APP_VERSION_CODE = 177;
 
 function resolveTargetEnv(value: string | undefined): TargetEnv {
   const normalized = value?.toLowerCase();

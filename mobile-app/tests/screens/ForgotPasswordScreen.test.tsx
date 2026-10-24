@@ -9,6 +9,19 @@ jest.mock("react-i18next", () => ({
 }));
 
 describe("ForgotPasswordScreen", () => {
+  it("prefills the email carried from login and submits it without re-entry", async () => {
+    const onSubmit = jest.fn().mockResolvedValue(undefined);
+    const screen = render(
+      <PaperProvider>
+        <ForgotPasswordScreen initialEmail="person@example.com" onSubmit={onSubmit} onDismiss={() => undefined} />
+      </PaperProvider>
+    );
+
+    expect(screen.getByTestId("auth-forgot-password-email")).toHaveProp("value", "person@example.com");
+    fireEvent.press(screen.getByTestId("auth-forgot-submit"));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ email: "person@example.com" }));
+  });
+
   it("submits the email and shows snackbar feedback with a sign-in action", async () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
     const onSwitchToSignIn = jest.fn();

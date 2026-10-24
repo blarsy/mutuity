@@ -93,6 +93,7 @@ interface SocialRegistrationContext {
 interface AuthEntryState {
   screen: AuthEntryScreen;
   returnTo: MainRouteName;
+  resetEmail?: string;
   socialRegistrationContext?: SocialRegistrationContext;
 }
 
@@ -129,13 +130,14 @@ interface MyHubScreenProps extends MainTabScreenProps {
 
 interface AuthScreenShellProps {
   activeScreen: AuthEntryScreen;
+  resetEmail: string;
   socialRegistrationContext?: SocialRegistrationContext | undefined;
   onCompleteLogin: (credentials: { email: string; password: string }) => Promise<void> | void;
   onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
   onCompleteRegister: (account: { fullName: string; email: string; password: string; confirmPassword: string }, socialContext?: SocialRegistrationContext | undefined) => Promise<void> | void;
   onSwitchToSignIn: () => void;
   onSwitchToRegister: () => void;
-  onSwitchToForgotPassword: () => void;
+  onSwitchToForgotPassword: (email: string) => void;
   onDismiss: () => void;
 }
 
@@ -163,21 +165,6 @@ function LoadingScreen(): React.JSX.Element {
   );
 }
 
-function PlaceholderScreen({ title }: { title: string }): React.JSX.Element {
-  const { t } = useTranslation(["common", "us1"]);
-
-  return (
-    <ScreenContainer>
-      <AppCard accessibilityLabel={title}>
-        <Text accessibilityRole="header" variant="headlineMedium">
-          {title}
-        </Text>
-        <Text variant="bodyMedium">{t("mainNavigation", { ns: "us1" })}</Text>
-        <Text variant="bodySmall">{t("screenComingSoon", { defaultValue: "This screen is not implemented yet." })}</Text>
-      </AppCard>
-    </ScreenContainer>
-  );
-}
 
 function RestrictedTabPlaceholderScreen({ tabLabel, onSignIn, onCreateAccount }: RestrictedTabPlaceholderScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
@@ -199,6 +186,7 @@ function RestrictedTabPlaceholderScreen({ tabLabel, onSignIn, onCreateAccount }:
 
 function AuthScreenShell({
   activeScreen,
+  resetEmail,
   socialRegistrationContext,
   onCompleteLogin,
   onSocialSignIn,
@@ -225,6 +213,7 @@ function AuthScreenShell({
   if (activeScreen === "forgotPassword") {
     return (
       <ForgotPasswordScreen
+        initialEmail={resetEmail}
         onSubmit={async ({ email }) => {
           await requestPasswordReset(email);
         }}
@@ -1152,13 +1141,14 @@ function RootNavigator(): React.JSX.Element {
         ) : authEntry ? (
           <AuthScreenShell
             activeScreen={authEntry.screen}
+            resetEmail={authEntry.resetEmail ?? ""}
             {...(authEntry.socialRegistrationContext ? { socialRegistrationContext: authEntry.socialRegistrationContext } : {})}
             onCompleteLogin={completeLoginAuth}
             onSocialSignIn={handleSocialSignIn}
             onCompleteRegister={completeRegisterAuth}
             onSwitchToSignIn={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "login" } : previous))}
             onSwitchToRegister={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "register" } : previous))}
-            onSwitchToForgotPassword={() => setAuthEntry((previous) => (previous ? { ...previous, screen: "forgotPassword" } : previous))}
+            onSwitchToForgotPassword={(email) => setAuthEntry((previous) => (previous ? { ...previous, screen: "forgotPassword", resetEmail: email } : previous))}
             onDismiss={() => setAuthEntry(null)}
           />
         ) : (

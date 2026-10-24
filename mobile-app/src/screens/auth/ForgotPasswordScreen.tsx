@@ -9,14 +9,15 @@ import { designTokens } from "../../theme/tokens";
 const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
 
 export interface ForgotPasswordScreenProps {
+  initialEmail?: string;
   onSubmit: (value: { email: string }) => Promise<void> | void;
   onSwitchToSignIn?: () => void;
   onDismiss: () => void;
 }
 
-export function ForgotPasswordScreen({ onSubmit, onSwitchToSignIn, onDismiss }: ForgotPasswordScreenProps): React.JSX.Element {
+export function ForgotPasswordScreen({ initialEmail = "", onSubmit, onSwitchToSignIn, onDismiss }: ForgotPasswordScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<"success" | "error" | null>(null);
 

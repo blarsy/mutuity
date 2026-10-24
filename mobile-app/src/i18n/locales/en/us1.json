@@ -41,6 +41,8 @@
   "myHubAccountGroup": "Account",
   "notificationsLabel": "Notifications",
   "passwordLabel": "Password",
+  "passwordResetRequiredMessage": "Your account was migrated to the new Tope-là. To sign in, you need to reset your password. Tap Reset password to request a reset link by email, then follow the link to choose a new password.",
+  "passwordResetRequiredButton": "Reset password",
   "registerTitle": "Create account",
   "restrictedSurfaceBody": "You can browse Explore now. Sign in or create an account to access this tab.",
   "restrictedSurfaceTitle": "Sign in to continue",

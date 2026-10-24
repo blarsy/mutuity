@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Slider from "@react-native-community/slider";
-import { Checkbox, Chip, Divider, Icon, IconButton, Snackbar, Text, TextInput } from "react-native-paper";
+import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {

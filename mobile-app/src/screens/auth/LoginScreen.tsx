@@ -4,6 +4,7 @@ import { Button, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AuthDialog, FormTextInput } from "../../components/primitives";
+import { isPasswordResetRequiredError } from "../../services/auth/errors";
 import { designTokens } from "../../theme/tokens";
 import { SocialAuthButtons, type SocialProvider } from "./SocialAuthButtons";
 
@@ -13,7 +14,7 @@ export interface LoginScreenProps {
   onSubmit: (value: { email: string; password: string }) => Promise<void> | void;
   onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
   onSwitchToRegister: () => void;
-  onSwitchToForgotPassword: () => void;
+  onSwitchToForgotPassword: (email: string) => void;
   onDismiss: () => void;
 }
 
@@ -24,6 +25,7 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
   const [submitting, setSubmitting] = useState(false);
   const [socialProviderLoading, setSocialProviderLoading] = useState<SocialProvider | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [passwordResetRequired, setPasswordResetRequired] = useState(false);
 
   return (
     <AuthDialog
@@ -36,6 +38,7 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
           loadingProvider={socialProviderLoading}
           onPress={onSocialSignIn ? async (provider) => {
             setSubmitError(null);
+            setPasswordResetRequired(false);
             setSocialProviderLoading(provider);
 
             try {
@@ -51,6 +54,7 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
           value={email}
           onChangeText={(value) => {
             setSubmitError(null);
+            setPasswordResetRequired(false);
             setEmail(value);
           }}
           autoCapitalize="none"
@@ -70,6 +74,7 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
           value={password}
           onChangeText={(value) => {
             setSubmitError(null);
+            setPasswordResetRequired(false);
             setPassword(value);
           }}
           secureTextEntry
@@ -92,14 +97,22 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
           accessibilityLabel={t("signIn", { ns: "us1" })}
           loading={submitting}
           disabled={submitting || socialProviderLoading !== null}
-          onPress={() => {
+          onPress={async () => {
             setSubmitError(null);
+            setPasswordResetRequired(false);
             setSubmitting(true);
-            void Promise.resolve(onSubmit({ email, password }))
-              .catch(() => {
+            try {
+              await onSubmit({ email, password });
+            } catch (error) {
+              if (isPasswordResetRequiredError(error)) {
+                setPasswordResetRequired(true);
+                setSubmitError(t("passwordResetRequiredMessage", { ns: "us1" }));
+              } else {
                 setSubmitError(t("authFailedMessage", { ns: "us1", defaultValue: "Sign in failed. Please verify your credentials and try again." }));
-              })
-              .finally(() => setSubmitting(false));
+              }
+            } finally {
+              setSubmitting(false);
+            }
           }}
           testID="auth-login-submit"
         >
@@ -110,10 +123,22 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
             {submitError}
           </Text>
         ) : null}
+        {passwordResetRequired ? (
+          <Button
+            mode="contained"
+            icon="lock-reset"
+            buttonColor="#fef0e3"
+            textColor="#111111"
+            onPress={() => onSwitchToForgotPassword(email.trim())}
+            testID="auth-login-reset-password"
+          >
+            {t("passwordResetRequiredButton", { ns: "us1" })}
+          </Button>
+        ) : null}
         <Button mode="text" icon="account-plus-outline" textColor="#ffffff" onPress={onSwitchToRegister}>
           {t("createAccount", { ns: "us1" })}
         </Button>
-        <Button mode="text" icon="lock-reset" textColor="#ffffff" onPress={onSwitchToForgotPassword}>
+        <Button mode="text" icon="lock-reset" textColor="#ffffff" onPress={() => onSwitchToForgotPassword(email.trim())}>
           {t("forgotPassword", { ns: "us1" })}
         </Button>
     </AuthDialog>
