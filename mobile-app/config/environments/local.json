@@ -3,5 +3,13 @@
   "apiUrl": "http://localhost:5050",
   "graphQlApiUrl": "http://localhost:5050/graphql",
   "subscriptionsUrl": "ws://localhost:5050/graphql",
-  "diagnostic": true
+  "diagnostic": true,
+  "googleMaps": {
+    "androidApiKey": "AIzaSyCb_E1hXF5HANif_hPxmtsLNB3X0EqaVY0",
+    "iosApiKey": "AIzaSyCKwNnpcaDQYRZcInD2-Ve3mrvlx-59ufc"
+  },
+  "cloudinary": {
+    "cloud": "dsgfeclck",
+    "uploadPreset": "ecibpquo"
+  }
 }

@@ -11,10 +11,18 @@ interface ExternalAppSettings {
   graphQlApiUrl: string;
   subscriptionsUrl: string;
   diagnostic: boolean;
+  googleMaps: {
+    androidApiKey: string;
+    iosApiKey: string;
+  };
+  cloudinary: {
+    cloud: string;
+    uploadPreset: string;
+  };
 }
 
-const APP_VERSION = "1.0.2";
-const APP_VERSION_CODE = 177;
+const APP_VERSION = "1.0.3";
+const APP_VERSION_CODE = 178;
 
 function resolveTargetEnv(value: string | undefined): TargetEnv {
   const normalized = value?.toLowerCase();
@@ -61,6 +69,19 @@ function assertValidAppSettings(value: unknown, filePath: string): asserts value
     missingKeys.push("diagnostic");
   }
 
+  // Empty strings explicitly disable optional integrations; missing/malformed fields fail the build.
+  for (const [section, keys] of [
+    ["googleMaps", ["androidApiKey", "iosApiKey"]],
+    ["cloudinary", ["cloud", "uploadPreset"]]
+  ] as const) {
+    const settings = config[section];
+    for (const key of keys) {
+      if (!settings || typeof settings !== "object" || typeof (settings as Record<string, unknown>)[key] !== "string") {
+        missingKeys.push(`${section}.${key}`);
+      }
+    }
+  }
+
   if (missingKeys.length > 0) {
     throw new Error(`Invalid app settings in ${filePath}: missing or invalid ${missingKeys.join(", ")}.`);
   }
@@ -93,12 +114,18 @@ function loadAppSettings(targetEnv: TargetEnv): ExternalAppSettings {
 
   assertValidAppSettings(parsed, filePath);
 
+  if (parsed.targetEnv !== targetEnv) {
+    throw new Error(`Invalid app settings in ${filePath}: targetEnv must match ${targetEnv}.`);
+  }
+
   return parsed;
 }
 
 export default function appConfig(_: ConfigContext): ExpoConfig {
   const targetEnv = resolveTargetEnv(process.env.TARGET_ENV);
-  const appSettings = loadAppSettings(targetEnv);
+  const { googleMaps, ...appSettings } = loadAppSettings(targetEnv);
+  const iosGoogleMapsApiKey = googleMaps.iosApiKey.trim();
+  const androidGoogleMapsApiKey = googleMaps.androidApiKey.trim();
 
   return {
     name: "Tope Là",
@@ -118,10 +145,10 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
           "Tope-là would like to access your photos so you can choose images for your needs and resources.",
         NSCameraUsageDescription:
           "Tope-là would like to access your camera so you can take photos for your needs and resources.",
-        GMSApiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY ?? ""
+        GMSApiKey: iosGoogleMapsApiKey
       },
       config: {
-        googleMapsApiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY
+        googleMapsApiKey: iosGoogleMapsApiKey
       }
     },
     android: {
@@ -129,7 +156,7 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
       versionCode: APP_VERSION_CODE,
       config: {
         googleMaps: {
-          apiKey: process.env.EXPO_GOOGLE_MAPS_API_KEY
+          apiKey: androidGoogleMapsApiKey
         }
       }
     },

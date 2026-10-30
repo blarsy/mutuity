@@ -94,13 +94,11 @@ Slowest path due to App Store Connect / Play Console review.
    repository root:
    ```bash
    cd mobile-app
-   npx eas-cli build --local --profile production --platform all
-   ```
-   Or build a single platform:
-   ```bash
    npx eas-cli build --local --profile production --platform android
    npx eas-cli build --local --profile production --platform ios
    ```
+   Local EAS builds require a separate command per platform (`--platform all`
+   is not supported).
    The CLI reports the local artifact paths: an Android App Bundle (`.aab`)
    and/or an iOS store package (`.ipa`). Local builds require the relevant
    platform toolchain (Android SDK/JDK for Android; macOS with Xcode for iOS)
@@ -119,8 +117,8 @@ Slowest path due to App Store Connect / Play Console review.
    run/install a development build and do not replace the store artifacts.
 
    The EAS profile sets `TARGET_ENV=review` itself; do not override it to
-   `prod` for a candidate. The optional public upload/maps configuration must
-   also be available to the build environment if those features are needed.
+   `prod` for a candidate. Fill in the Maps and Cloudinary fields in
+   `mobile-app/config/environments/review.json` before building (see below).
 3. Deploy/migrate the review stack and confirm it is healthy. Set
    `REVIEW_CANDIDATE_VERSION` to the exact `APP_VERSION` using
    `bash scripts/set-review-candidate-version.sh <version>`. Verify this version
@@ -172,6 +170,62 @@ mobile users update lazily) vs **breaking** (the sequence above is mandatory and
 the floor is the failsafe).
 
 ## Mobile review and backend cutover
+
+### Build-time public configuration
+
+`TARGET_ENV` selects `mobile-app/config/environments/<TARGET_ENV>.json` for
+both local and hosted builds. This JSON is the source of truth for API URLs,
+diagnostics, Google Maps keys, and Cloudinary uploads; no local `.env` or EAS
+environment variables are needed for these integrations. Legacy
+`EXPO_*GOOGLE_MAPS_API_KEY` and `EXPO_PUBLIC_CLOUDINARY_*` variables no longer
+override the JSON configuration.
+
+Each environment file contains these public integration fields:
+
+```json
+{
+   "googleMaps": {
+      "androidApiKey": "",
+      "iosApiKey": ""
+   },
+   "cloudinary": {
+      "cloud": "",
+      "uploadPreset": ""
+   }
+}
+```
+
+Replace empty strings with the actual public values before using maps/uploads.
+Empty strings leave an integration unconfigured; image uploads fail with an
+explicit configuration error. Missing or non-string fields fail config
+validation. Maps keys are injected into native platform configuration, not
+duplicated in `extra.appSettings`. Cloudinary settings are bundled in
+`extra.appSettings` for runtime uploads. Restrict Google keys by application
+(Android package and signing certificate, iOS bundle identifier) and API. Use a
+restricted **unsigned** Cloudinary upload preset; never commit or bundle a
+Cloudinary API secret or other server credentials.
+
+The EAS `production` profile selects `TARGET_ENV=review`. Its JSON values stay
+embedded after promotion: routing changes the backend, not Maps keys,
+Cloudinary destinations, or diagnostics. Configure review's public integrations
+to remain suitable for the released production app; promotion does not load
+`prod.json`. Review uploads to a separate Cloudinary cloud would continue there
+after promotion.
+
+Preview the selected configuration from `mobile-app` before packaging:
+
+```bash
+TARGET_ENV=review npx expo config --type public
+```
+
+Verify native Maps keys, `extra.appSettings.cloudinary`, URLs, diagnostics, and
+version/build numbers, then smoke-test maps and image uploads in the signed
+release build. Native key changes require rebuilding native projects/binaries;
+when using existing local generated projects, regenerate/sync them with Expo
+prebuild before compiling. The ignored `.env` may still configure optional
+tooling (for example schema generation), but does not select runtime settings.
+
+### Version-aware routing and promotion
 
 The app keeps a stable API hostname per build, while routing selection is
 version-aware. `TARGET_ENV=prod` uses `www.tope-la.com`; `TARGET_ENV=review` uses

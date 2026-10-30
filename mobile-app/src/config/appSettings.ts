@@ -8,6 +8,10 @@ export interface AppSettings {
   graphQlApiUrl: string;
   subscriptionsUrl: string;
   diagnostic: boolean;
+  cloudinary: {
+    cloud: string;
+    uploadPreset: string;
+  };
 }
 
 function assertString(value: unknown, key: keyof AppSettings): string {
@@ -47,13 +51,21 @@ export function getAppSettings(): AppSettings {
   const graphQlApiUrl = assertString(rawSettings.graphQlApiUrl, "graphQlApiUrl");
   const subscriptionsUrl = assertString(rawSettings.subscriptionsUrl, "subscriptionsUrl");
   const diagnostic = assertBoolean(rawSettings.diagnostic, "diagnostic");
+  const cloudinary = rawSettings.cloudinary as Record<string, unknown> | undefined;
+  if (!cloudinary || typeof cloudinary.cloud !== "string" || typeof cloudinary.uploadPreset !== "string") {
+    throw new Error("Invalid app settings: cloudinary.cloud and cloudinary.uploadPreset must be strings.");
+  }
 
   return {
     targetEnv,
     apiUrl,
     graphQlApiUrl,
     subscriptionsUrl,
-    diagnostic
+    diagnostic,
+    cloudinary: {
+      cloud: cloudinary.cloud.trim(),
+      uploadPreset: cloudinary.uploadPreset.trim()
+    }
   };
 }
 

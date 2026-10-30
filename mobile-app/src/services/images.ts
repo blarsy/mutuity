@@ -1,4 +1,5 @@
 import { File } from "expo-file-system";
+import { appSettings } from "../config/appSettings";
 
 /** Picker URIs are device-local; only uploaded HTTP(S) URLs may be persisted. */
 export async function uploadListingImages(imageUris: string[]): Promise<string[]> {
@@ -11,8 +12,7 @@ export async function uploadListingImages(imageUris: string[]): Promise<string[]
       throw new Error("Unsupported image URI. Please choose the image again.");
     }
 
-    const cloud = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD;
-    const preset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    const { cloud, uploadPreset: preset } = appSettings.cloudinary;
     if (!cloud || !preset) {
       throw new Error("Image uploads are not configured for this app.");
     }

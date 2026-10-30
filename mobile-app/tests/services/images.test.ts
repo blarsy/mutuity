@@ -1,5 +1,10 @@
 import * as FileSystem from "expo-file-system";
+import { appSettings } from "../../src/config/appSettings";
 import { uploadListingImages } from "../../src/services/images";
+
+jest.mock("../../src/config/appSettings", () => ({
+  appSettings: { cloudinary: { cloud: "test-cloud", uploadPreset: "test-preset" } }
+}));
 
 jest.mock("expo-file-system", () => ({
   File: jest.fn().mockImplementation(() => ({
@@ -9,22 +14,16 @@ jest.mock("expo-file-system", () => ({
 
 describe("listing image uploads", () => {
   const originalFetch = global.fetch;
-  const originalCloud = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD;
-  const originalPreset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD = "test-cloud";
-    process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET = "test-preset";
+    appSettings.cloudinary.cloud = "test-cloud";
+    appSettings.cloudinary.uploadPreset = "test-preset";
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ secure_url: "https://example.com/uploaded.jpg" }) });
   });
 
   afterAll(() => {
     global.fetch = originalFetch;
-    if (originalCloud === undefined) delete process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD;
-    else process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD = originalCloud;
-    if (originalPreset === undefined) delete process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-    else process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET = originalPreset;
   });
 
   it("uploads local picker files and preserves existing public URLs in order", async () => {
@@ -33,6 +32,10 @@ describe("listing image uploads", () => {
     expect(FileSystem.File).toHaveBeenCalledWith("file:///cache/picked.jpg");
     expect(jest.mocked(FileSystem.File).mock.results[0]?.value.base64).toHaveBeenCalledTimes(1);
     expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.cloudinary.com/v1_1/test-cloud/image/upload",
+      expect.objectContaining({ method: "POST", body: expect.any(FormData) })
+    );
   });
 
   it("does not upload images already hosted publicly", async () => {
@@ -41,7 +44,7 @@ describe("listing image uploads", () => {
   });
 
   it("fails before persisting local paths when uploads are not configured", async () => {
-    delete process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD;
+    appSettings.cloudinary.cloud = "";
     await expect(uploadListingImages(["file:///cache/image.jpg"])).rejects.toThrow("not configured");
     expect(global.fetch).not.toHaveBeenCalled();
   });
