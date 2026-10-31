@@ -5,6 +5,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Button, IconButton, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import { getCurrentAppVersion } from "../../services/app/versionGate";
 import { designTokens } from "../../theme/tokens";
 import { FormTextInput } from "./FormTextInput";
 import { ThemedDialog } from "./ThemedDialog";
@@ -60,6 +61,8 @@ const DEFAULT_MAP_REGION = {
   longitudeDelta: 6
 } as const;
 
+const SUGGESTIONS_REQUEST_TIMEOUT_MS = 8000;
+
 const mapProviderProps: { provider?: typeof PROVIDER_GOOGLE } =
   Platform.OS === "android" ? { provider: PROVIDER_GOOGLE } : {};
 
@@ -96,12 +99,31 @@ function formatReverseGeocodedLabel(address: ReverseGeocodedAddress | undefined)
     .join(", ");
 }
 
-async function searchLocationSuggestions(query: string): Promise<LocationSuggestion[]> {
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => reject(new Error("Operation timed out")), timeoutMs);
+    promise.then(
+      (result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      },
+      (error: unknown) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      }
+    );
+  });
+}
+
+async function searchLocationSuggestions(query: string, signal: AbortSignal): Promise<LocationSuggestion[]> {
   const response = await fetch(
     `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`,
     {
+      signal,
       headers: {
-        Accept: "application/json"
+        Accept: "application/json",
+        // Nominatim's usage policy rejects/throttles generic UAs such as Android's default "okhttp/x.y".
+        "User-Agent": `com.topela/${getCurrentAppVersion()} (${Platform.OS}; https://www.tope-la.com)`
       }
     }
   );
@@ -111,7 +133,7 @@ async function searchLocationSuggestions(query: string): Promise<LocationSuggest
   }
 
   const payload = (await response.json()) as NominatimSearchResult[];
-  return payload
+  const suggestions = payload
     .map((entry) => {
       const latitude = entry.lat ? Number(entry.lat) : Number.NaN;
       const longitude = entry.lon ? Number(entry.lon) : Number.NaN;
@@ -127,6 +149,21 @@ async function searchLocationSuggestions(query: string): Promise<LocationSuggest
       } satisfies LocationSuggestion;
     })
     .filter((entry): entry is LocationSuggestion => entry !== null);
+
+  return dedupeSuggestionsByLabel(suggestions);
+}
+
+// OSM often returns several objects (e.g. street segments) sharing one display name.
+function dedupeSuggestionsByLabel(suggestions: LocationSuggestion[]): LocationSuggestion[] {
+  const deduped = new Map<string, LocationSuggestion>();
+  suggestions.forEach((suggestion) => {
+    const key = suggestion.label.trim().toLowerCase();
+    if (!deduped.has(key)) {
+      deduped.set(key, suggestion);
+    }
+  });
+
+  return Array.from(deduped.values());
 }
 
 async function searchLocationSuggestionsFallback(query: string): Promise<LocationSuggestion[]> {
@@ -263,10 +300,15 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
     const requestId = searchRequestId.current + 1;
     searchRequestId.current = requestId;
 
+    const abortController = new AbortController();
+    let requestTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
     const timeoutId = setTimeout(() => {
       setSuggestionsLoading(true);
+      // React Native's Android HTTP client has no read timeout, so a stalled request would never settle.
+      requestTimeoutId = setTimeout(() => abortController.abort(), SUGGESTIONS_REQUEST_TIMEOUT_MS);
 
-      void searchLocationSuggestions(nextQuery)
+      void searchLocationSuggestions(nextQuery, abortController.signal)
         .then((suggestions) => {
           if (searchRequestId.current === requestId) {
             suggestionsCache.current.set(nextQuery.toLowerCase(), suggestions);
@@ -279,7 +321,10 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
           }
 
           try {
-            const fallbackSuggestions = await searchLocationSuggestionsFallback(nextQuery);
+            const fallbackSuggestions = await withTimeout(
+              searchLocationSuggestionsFallback(nextQuery),
+              SUGGESTIONS_REQUEST_TIMEOUT_MS
+            );
             if (searchRequestId.current === requestId) {
               suggestionsCache.current.set(nextQuery.toLowerCase(), fallbackSuggestions);
               setLocationSuggestions(fallbackSuggestions);
@@ -298,6 +343,7 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
           }
         })
         .finally(() => {
+          clearTimeout(requestTimeoutId);
           if (searchRequestId.current === requestId) {
             setSuggestionsLoading(false);
           }
@@ -306,6 +352,10 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
 
     return () => {
       clearTimeout(timeoutId);
+      clearTimeout(requestTimeoutId);
+      abortController.abort();
+      // Invalidate this request so a late result can't overwrite newer state.
+      searchRequestId.current += 1;
     };
   }, [draftLocationLabel, showEditorDialog]);
 
