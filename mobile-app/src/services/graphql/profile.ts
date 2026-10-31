@@ -2,17 +2,15 @@ import { apolloClient } from "./client";
 import { uploadListingImages } from "../images";
 import {
   type AccountPatch,
-  type Mutation,
   type Query,
-  type QueryAccountByIdArgs,
-  type UpdateAccountByIdInput
+  type QueryAccountByIdArgs
 } from "./generated";
+import { UpdateAccountProfileDocument, type UpdateAccountProfileMutationVariables } from "./operations.generated";
 import {
   ACCOUNT_PROFILE_QUERY,
   CURRENT_ACCOUNT_EMAIL_QUERY,
   DELETE_MY_ACCOUNT_MUTATION,
-  REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION,
-  UPDATE_ACCOUNT_PROFILE_MUTATION
+  REQUEST_ACCOUNT_EMAIL_CHANGE_MUTATION
 } from "./operations";
 import type {
   MyProfileRecord,
@@ -47,10 +45,6 @@ interface AccountProfileQueryResult {
       intensity?: NeedIntensity | null;
     }> | null;
   } | null;
-}
-
-interface UpdateAccountProfileMutationResult {
-  updateAccountById: Pick<Mutation, "updateAccountById">["updateAccountById"];
 }
 
 function normalizeProfileLinks(value: unknown): PublicProfileLink[] {
@@ -177,7 +171,7 @@ function normalizePublicNeeds(value: unknown): PublicProfileNeed[] {
 }
 
 function toProfileRecord(
-  account: NonNullable<AccountProfileQueryResult["accountById"]>,
+  account: Pick<NonNullable<AccountProfileQueryResult["accountById"]>, "id" | "displayName" | "avatarUrl" | "location" | "latitude" | "longitude" | "bio" | "profileLinks">,
   allResources: unknown = [],
   allNeeds: unknown = []
 ): MyProfileRecord {
@@ -229,23 +223,21 @@ export async function updateMyProfile(
   const avatarPatch: Pick<AccountPatch, "avatarUrl"> = profilePatch.avatarUrl === undefined
     ? {}
     : { avatarUrl: profilePatch.avatarUrl ? (await uploadListingImages([profilePatch.avatarUrl]))[0] ?? null : null };
-  const variables: { input: UpdateAccountByIdInput } = {
-    input: {
-      id: accountId,
-      accountPatch: {
-        displayName: profilePatch.displayName,
-        location: locationValue?.label ?? null,
-        latitude: locationValue?.latitude ?? null,
-        longitude: locationValue?.longitude ?? null,
-        bio: profilePatch.bio,
-        profileLinks: profilePatch.profileLinks ?? [],
-        ...avatarPatch
-      } satisfies AccountPatch
+  const variables: UpdateAccountProfileMutationVariables = {
+    id: accountId,
+    accountPatch: {
+      displayName: profilePatch.displayName,
+      location: locationValue?.label ?? null,
+      latitude: locationValue?.latitude ?? null,
+      longitude: locationValue?.longitude ?? null,
+      bio: profilePatch.bio,
+      profileLinks: profilePatch.profileLinks ?? [],
+      ...avatarPatch
     }
   };
 
-  const { data } = await apolloClient.mutate<UpdateAccountProfileMutationResult, { input: UpdateAccountByIdInput }>({
-    mutation: UPDATE_ACCOUNT_PROFILE_MUTATION,
+  const { data } = await apolloClient.mutate({
+    mutation: UpdateAccountProfileDocument,
     variables
   });
 
