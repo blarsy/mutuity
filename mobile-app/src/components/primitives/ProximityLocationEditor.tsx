@@ -63,6 +63,12 @@ const DEFAULT_MAP_REGION = {
 
 const SUGGESTIONS_REQUEST_TIMEOUT_MS = 8000;
 
+const NOMINATIM_HEADERS = {
+  Accept: "application/json",
+  // Nominatim's usage policy rejects/throttles generic UAs such as Android's default "okhttp/x.y".
+  "User-Agent": `com.topela/${getCurrentAppVersion()} (${Platform.OS}; https://www.tope-la.com)`
+};
+
 const mapProviderProps: { provider?: typeof PROVIDER_GOOGLE } =
   Platform.OS === "android" ? { provider: PROVIDER_GOOGLE } : {};
 
@@ -120,11 +126,7 @@ async function searchLocationSuggestions(query: string, signal: AbortSignal): Pr
     `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`,
     {
       signal,
-      headers: {
-        Accept: "application/json",
-        // Nominatim's usage policy rejects/throttles generic UAs such as Android's default "okhttp/x.y".
-        "User-Agent": `com.topela/${getCurrentAppVersion()} (${Platform.OS}; https://www.tope-la.com)`
-      }
+      headers: NOMINATIM_HEADERS
     }
   );
 
@@ -195,6 +197,44 @@ async function searchLocationSuggestionsFallback(query: string): Promise<Locatio
   return Array.from(deduped.values());
 }
 
+// Unlike expo-location on Android, this needs no location permission.
+async function reverseGeocodeWithNominatim(latitude: number, longitude: number): Promise<string> {
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), SUGGESTIONS_REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+      { signal: abortController.signal, headers: NOMINATIM_HEADERS }
+    );
+    if (!response.ok) {
+      throw new LocationSuggestionSearchError("Reverse geocoding failed", response.status);
+    }
+
+    const payload = (await response.json()) as NominatimSearchResult;
+    return payload.display_name ?? "";
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function reverseGeocodeLabel(latitude: number, longitude: number): Promise<string> {
+  try {
+    const label = await reverseGeocodeWithNominatim(latitude, longitude);
+    if (label) {
+      return label;
+    }
+  } catch {
+    // Fall through to the device geocoder.
+  }
+
+  const reverseGeocoded = await withTimeout(
+    ExpoLocation.reverseGeocodeAsync({ latitude, longitude }),
+    SUGGESTIONS_REQUEST_TIMEOUT_MS
+  );
+  return formatReverseGeocodedLabel(reverseGeocoded[0] as ReverseGeocodedAddress | undefined);
+}
+
 export function ProximityLocationEditor({ value, onChange }: ProximityLocationEditorProps): React.JSX.Element {
   const { t } = useTranslation();
   const [showEditorDialog, setShowEditorDialog] = useState(false);
@@ -207,6 +247,7 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
   const [editorLoading, setEditorLoading] = useState(false);
   const [editorError, setEditorError] = useState<string | null>(null);
   const searchRequestId = useRef(0);
+  const mapPressRequestId = useRef(0);
   const suggestionsCache = useRef<Map<string, LocationSuggestion[]>>(new Map());
 
   const [resolvedCoordinates, setResolvedCoordinates] = useState<{ latitude?: number; longitude?: number }>(
@@ -367,25 +408,33 @@ export function ProximityLocationEditor({ value, onChange }: ProximityLocationEd
   };
 
   const resolveCoordinatesToLabel = async (latitude: number, longitude: number): Promise<void> => {
+    const requestId = mapPressRequestId.current + 1;
+    mapPressRequestId.current = requestId;
+    setDraftCoordinates({ latitude, longitude });
+    setLocationSuggestions([]);
     setEditorLoading(true);
     setEditorError(null);
 
     try {
-      const reverseGeocoded = await ExpoLocation.reverseGeocodeAsync({ latitude, longitude });
-      const resolved = reverseGeocoded[0] as ReverseGeocodedAddress | undefined;
-      const nextLabel = formatReverseGeocodedLabel(resolved);
+      const nextLabel = await reverseGeocodeLabel(latitude, longitude);
+      if (mapPressRequestId.current !== requestId) {
+        return;
+      }
 
       setDraftLocationLabel(nextLabel || t("currentLocationLabel", { defaultValue: "Current location" }));
-      setDraftCoordinates({ latitude, longitude });
       setLocationSuggestions([]);
     } catch {
-      setEditorError(
-        t("locationLookupFailedLabel", {
-          defaultValue: "Unable to retrieve location details right now."
-        })
-      );
+      if (mapPressRequestId.current === requestId) {
+        setEditorError(
+          t("locationLookupFailedLabel", {
+            defaultValue: "Unable to retrieve location details right now."
+          })
+        );
+      }
     } finally {
-      setEditorLoading(false);
+      if (mapPressRequestId.current === requestId) {
+        setEditorLoading(false);
+      }
     }
   };
 
