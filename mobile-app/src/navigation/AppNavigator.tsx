@@ -13,6 +13,8 @@ import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitive
 import { AccountAvatar } from "../components/AccountAvatar";
 import { authenticateWithPassword, registerWithSocialIdentity, requestPasswordReset } from "../services/graphql/auth";
 import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
+import { confirmPendingSocialLink } from "../services/socialAuth/confirmLink";
+import type { SocialAuthNotice } from "../screens/auth/LoginScreen";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
 import { ResourceDetailScreen } from "../screens/resources/ResourceDetailScreen";
@@ -94,6 +96,8 @@ interface AuthEntryState {
   screen: AuthEntryScreen;
   returnTo: MainRouteName;
   resetEmail?: string;
+  socialAuthNotice?: SocialAuthNotice;
+  pendingLinkToken?: string;
   socialRegistrationContext?: SocialRegistrationContext;
 }
 
@@ -131,6 +135,7 @@ interface MyHubScreenProps extends MainTabScreenProps {
 interface AuthScreenShellProps {
   activeScreen: AuthEntryScreen;
   resetEmail: string;
+  socialAuthNotice?: SocialAuthNotice | undefined;
   socialRegistrationContext?: SocialRegistrationContext | undefined;
   onCompleteLogin: (credentials: { email: string; password: string }) => Promise<void> | void;
   onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
@@ -187,6 +192,7 @@ function RestrictedTabPlaceholderScreen({ tabLabel, onSignIn, onCreateAccount }:
 function AuthScreenShell({
   activeScreen,
   resetEmail,
+  socialAuthNotice,
   socialRegistrationContext,
   onCompleteLogin,
   onSocialSignIn,
@@ -225,6 +231,8 @@ function AuthScreenShell({
 
   return (
     <LoginScreen
+      initialEmail={resetEmail}
+      socialAuthNotice={socialAuthNotice}
       onSubmit={async (value) => {
         await onCompleteLogin(value);
       }}
@@ -888,6 +896,9 @@ function RootNavigator(): React.JSX.Element {
     }
 
     const { accountId } = await authenticateWithPassword(credentials);
+    if (authEntry.socialAuthNotice?.status === "link_confirmation_required") {
+      await confirmPendingSocialLink(authEntry.pendingLinkToken ?? "");
+    }
     await signIn(accountId);
     setActiveRouteName(authEntry.returnTo);
     setMainNavigatorVersion((previous) => previous + 1);
@@ -990,7 +1001,13 @@ function RootNavigator(): React.JSX.Element {
             : payload.nextDestination === "Notifications"
               ? "Notifications"
               : "Explore";
-      setAuthEntry({ screen: "login", returnTo: nextRoute });
+      setAuthEntry({
+        screen: "login",
+        returnTo: nextRoute,
+        resetEmail: payload.email ?? "",
+        pendingLinkToken: payload.pendingLinkToken ?? "",
+        socialAuthNotice: { status: payload.status, provider: payload.provider, email: payload.email ?? "" }
+      });
       return;
     }
 
@@ -1004,8 +1021,22 @@ function RootNavigator(): React.JSX.Element {
             : payload.nextDestination === "Notifications"
               ? "Notifications"
               : "Explore";
-      setAuthEntry({ screen: "forgotPassword", returnTo: nextRoute });
+      setAuthEntry({
+        screen: "login",
+        returnTo: nextRoute,
+        resetEmail: payload.email ?? "",
+        socialAuthNotice: { status: payload.status, provider: payload.provider, email: payload.email ?? "" }
+      });
       return;
+    }
+
+    if (payload.status === "error" || payload.status === "cancelled") {
+      const status = payload.status;
+      setAuthEntry((previous) => ({
+        screen: "login",
+        returnTo: previous?.returnTo ?? "Explore",
+        socialAuthNotice: { status, provider: payload.provider, email: "" }
+      }));
     }
   }, [signIn]);
 
@@ -1142,6 +1173,7 @@ function RootNavigator(): React.JSX.Element {
           <AuthScreenShell
             activeScreen={authEntry.screen}
             resetEmail={authEntry.resetEmail ?? ""}
+            socialAuthNotice={authEntry.socialAuthNotice}
             {...(authEntry.socialRegistrationContext ? { socialRegistrationContext: authEntry.socialRegistrationContext } : {})}
             onCompleteLogin={completeLoginAuth}
             onSocialSignIn={handleSocialSignIn}

@@ -34,6 +34,35 @@ describe("LoginScreen password reset guidance", () => {
     await i18n.changeLanguage("en");
   });
 
+  it.each(["en", "fr"])("shows localized social-link guidance when a callback updates an already-open login in %s", async (language) => {
+    await i18n.changeLanguage(language);
+    const props = {
+      onSubmit: jest.fn(),
+      onSwitchToForgotPassword: jest.fn(),
+      onSwitchToRegister: jest.fn(),
+      onDismiss: jest.fn()
+    };
+    const screen = render(<PaperProvider><LoginScreen {...props} /></PaperProvider>);
+    fireEvent.changeText(screen.getByTestId("auth-login-password"), "stale-password");
+    screen.rerender(<PaperProvider><LoginScreen {...props} initialEmail="person@example.com" socialAuthNotice={{ status: "link_confirmation_required", provider: "apple", email: "person@example.com" }} /></PaperProvider>);
+    expect(screen.getByTestId("auth-social-notice")).toHaveTextContent(i18n.t("socialLinkRequiredMessage", { ns: "us1", provider: "Apple", email: "person@example.com" }));
+    expect(screen.getByTestId("auth-login-email")).toHaveProp("value", "person@example.com");
+    expect(screen.getByTestId("auth-login-password")).toHaveProp("value", "");
+  });
+
+  it("shows a recoverable error when opening the provider browser fails", async () => {
+    const screen = render(<PaperProvider><LoginScreen
+      onSubmit={jest.fn()}
+      onSocialSignIn={jest.fn().mockRejectedValue(new Error("cannot open URL"))}
+      onSwitchToForgotPassword={jest.fn()}
+      onSwitchToRegister={jest.fn()}
+      onDismiss={jest.fn()}
+    /></PaperProvider>);
+    fireEvent.press(screen.getByTestId("auth-social-google"));
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(en.socialAuthErrorMessage));
+    expect(screen.getByTestId("auth-login-submit")).not.toBeDisabled();
+  });
+
   it.each([["en", en], ["fr", fr]] as const)("explains migrated-account recovery in %s and forwards the email", async (language, copy) => {
     await i18n.changeLanguage(language);
     const onSubmit = jest.fn().mockRejectedValue(resetRequiredError());

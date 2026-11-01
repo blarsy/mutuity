@@ -84,7 +84,7 @@ describe("US5 social password-reset-required acceptance", () => {
     });
   });
 
-  it("routes users into the forgot-password flow for a password_reset_required callback", async () => {
+  it("explains password-reset-required before opening recovery with the provider email prefilled", async () => {
     const mockUrlHandler = { current: null as ((event: { url: string }) => void) | null };
 
     mockLinkingUrlListener(mockUrlHandler);
@@ -107,10 +107,13 @@ describe("US5 social password-reset-required acceptance", () => {
 
     fireEvent.press(screen.getByTestId("auth-social-google"));
 
-    mockUrlHandler.current?.({ url: "topela://auth/google/callback?status=password_reset_required&provider=google&next=%2Fmy-hub&error=password-reset-required" });
+    mockUrlHandler.current?.({ url: "topela://auth/google/callback?status=password_reset_required&provider=google&next=%2Fmy-hub&email=person%40example.com" });
 
     await waitFor(() => {
-      expect(screen.getByTestId("auth-forgot-password-screen")).toBeTruthy();
+      expect(screen.getByTestId("auth-social-notice")).toHaveTextContent(/Your account was migrated/);
+      expect(screen.getByTestId("auth-login-email")).toHaveProp("value", "person@example.com");
     });
+    fireEvent.press(screen.getByTestId("auth-login-reset-password"));
+    expect(screen.getByTestId("auth-forgot-password-email")).toHaveProp("value", "person@example.com");
   });
 });

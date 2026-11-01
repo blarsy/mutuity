@@ -1,16 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { isPasswordResetRequiredError } from "../../services/auth/errors";
+import { SocialLinkConfirmationError } from "../../services/socialAuth/confirmLink";
 import { designTokens } from "../../theme/tokens";
 import { SocialAuthButtons, type SocialProvider } from "./SocialAuthButtons";
 
 const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
 
+export interface SocialAuthNotice {
+  status: "link_confirmation_required" | "password_reset_required" | "error" | "cancelled";
+  provider: SocialProvider;
+  email: string;
+}
+
 export interface LoginScreenProps {
+  initialEmail?: string;
+  socialAuthNotice?: SocialAuthNotice | undefined;
   onSubmit: (value: { email: string; password: string }) => Promise<void> | void;
   onSocialSignIn?: ((provider: SocialProvider) => Promise<void> | void) | undefined;
   onSwitchToRegister: () => void;
@@ -18,14 +27,29 @@ export interface LoginScreenProps {
   onDismiss: () => void;
 }
 
-export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSwitchToForgotPassword, onDismiss }: LoginScreenProps): React.JSX.Element {
+export function LoginScreen({ initialEmail = "", socialAuthNotice, onSubmit, onSocialSignIn, onSwitchToRegister, onSwitchToForgotPassword, onDismiss }: LoginScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [socialProviderLoading, setSocialProviderLoading] = useState<SocialProvider | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [passwordResetRequired, setPasswordResetRequired] = useState(false);
+
+  useEffect(() => {
+    setEmail(initialEmail);
+    setPassword("");
+    setSubmitError(null);
+    setPasswordResetRequired(false);
+  }, [initialEmail, socialAuthNotice]);
+
+  const noticeKey = socialAuthNotice?.status === "link_confirmation_required"
+    ? "socialLinkRequiredMessage"
+    : socialAuthNotice?.status === "password_reset_required"
+      ? "passwordResetRequiredMessage"
+      : socialAuthNotice?.status === "cancelled"
+        ? "socialAuthCancelledMessage"
+        : "socialAuthErrorMessage";
 
   return (
     <AuthDialog
@@ -34,6 +58,15 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
       accessibilityLabel={t("loginTitle", { ns: "us1" })}
       onDismiss={onDismiss}
     >
+        {socialAuthNotice ? (
+          <Text accessibilityRole="alert" style={styles.errorText} testID="auth-social-notice">
+            {t(noticeKey, {
+              ns: "us1",
+              provider: socialAuthNotice.provider === "apple" ? "Apple" : "Google",
+              email: socialAuthNotice.email || t("socialLinkRequiredNoEmail", { ns: "us1" })
+            })}
+          </Text>
+        ) : null}
         <SocialAuthButtons
           loadingProvider={socialProviderLoading}
           onPress={onSocialSignIn ? async (provider) => {
@@ -43,6 +76,8 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
 
             try {
               await onSocialSignIn(provider);
+            } catch {
+              setSubmitError(t("socialAuthErrorMessage", { ns: "us1" }));
             } finally {
               setSocialProviderLoading(null);
             }
@@ -107,6 +142,8 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
               if (isPasswordResetRequiredError(error)) {
                 setPasswordResetRequired(true);
                 setSubmitError(t("passwordResetRequiredMessage", { ns: "us1" }));
+              } else if (error instanceof SocialLinkConfirmationError) {
+                setSubmitError(t("socialLinkFailedMessage", { ns: "us1" }));
               } else {
                 setSubmitError(t("authFailedMessage", { ns: "us1", defaultValue: "Sign in failed. Please verify your credentials and try again." }));
               }
@@ -123,7 +160,7 @@ export function LoginScreen({ onSubmit, onSocialSignIn, onSwitchToRegister, onSw
             {submitError}
           </Text>
         ) : null}
-        {passwordResetRequired ? (
+        {passwordResetRequired || socialAuthNotice?.status === "password_reset_required" ? (
           <Button
             mode="contained"
             icon="lock-reset"
