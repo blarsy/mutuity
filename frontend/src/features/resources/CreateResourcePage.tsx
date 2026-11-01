@@ -16,6 +16,7 @@ import { Form, Formik } from "formik";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useAuth } from "../auth/AuthProvider";
 import { useRequireAuth } from "../auth/requireAuth";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
 import { ImageUploadField } from "../../components/ImageUploadField";
@@ -40,9 +41,10 @@ import {
   type CreateResourceValues
 } from "./createResource.validation";
 import { RESOURCE_INTENSITY_OPTIONS, type ResourceCategoryOption } from "./types";
-import type { LinkableResourceCampaignOptionsQuery, PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
+import type { AccountProfileQuery, LinkableResourceCampaignOptionsQuery, PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
 
 function normalizeOptionalInteger(value: number | "") {
   if (value === "") {
@@ -52,13 +54,13 @@ function normalizeOptionalInteger(value: number | "") {
   return Number.isFinite(Number(value)) ? Number(value) : undefined;
 }
 
-function normalizeOptionalCoordinate(value: number | "") {
-  if (value === "") {
-    return undefined;
+function normalizeOptionalCoordinate(value: number | string | null | undefined): number | "" {
+  if (value === "" || value == null) {
+    return "";
   }
 
   const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : undefined;
+  return Number.isFinite(numeric) ? numeric : "";
 }
 
 function fromGraphQLResourceIntensity(value: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION") {
@@ -97,6 +99,8 @@ function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
 export default function CreateResourcePage() {
   const router = useRouter();
   const { t, i18n } = useTranslation("resources");
+  const { session } = useAuth();
+  const accountId = session.account?.id ?? null;
   const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
   const isEditMode = Boolean(resourceId);
   const [publishResource, { loading, error }] = useMutation<
@@ -127,6 +131,13 @@ export default function CreateResourcePage() {
     }
   });
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const {
+    data: accountProfileData,
+    loading: loadingAccountProfile
+  } = useQuery<AccountProfileQuery>(ACCOUNT_PROFILE_QUERY, {
+    skip: !router.isReady || isEditMode || !accountId,
+    variables: { accountId: accountId ?? "" }
+  });
   const errorMessage = getUserFacingGraphQLErrorMessage(error)
     ?? getUserFacingGraphQLErrorMessage(createCampaignResourceError)
     ?? getUserFacingGraphQLErrorMessage(deleteCampaignResourceError);
@@ -145,7 +156,14 @@ export default function CreateResourcePage() {
 
   const initialValues = useMemo<CreateResourceValues>(() => {
     if (!editResource) {
-      return createResourceInitialValues;
+      const profile = accountProfileData?.accountById;
+      const hasProfileLocation = Boolean(profile?.location?.trim());
+      return {
+        ...createResourceInitialValues,
+        location: hasProfileLocation ? profile?.location ?? "" : "",
+        latitude: hasProfileLocation ? normalizeOptionalCoordinate(profile?.latitude) : "",
+        longitude: hasProfileLocation ? normalizeOptionalCoordinate(profile?.longitude) : ""
+      };
     }
 
     return {
@@ -167,7 +185,7 @@ export default function CreateResourcePage() {
       canBeDelivered: editResource.canBeDelivered,
       expiresAt: toDateTimeLocalValue(editResource.expiresAt)
     };
-  }, [currentCampaignId, editResource]);
+  }, [accountProfileData?.accountById, currentCampaignId, editResource]);
 
   const submit = async (values: CreateResourceValues) => {
     const result = await publishResource({
@@ -292,7 +310,9 @@ export default function CreateResourcePage() {
           </Alert>
         ) : null}
 
-        <Formik
+        {!router.isReady || (!isEditMode && accountId && loadingAccountProfile) ? (
+          <Alert severity="info">{t("form.loading")}</Alert>
+        ) : <Formik
           enableReinitialize
           initialValues={initialValues}
           validationSchema={createResourceValidationSchema}
@@ -380,8 +400,8 @@ export default function CreateResourcePage() {
                 <LocationPicker
                   value={{
                     address: values.location,
-                    latitude: Number(values.latitude) || 50.6072,
-                    longitude: Number(values.longitude) || 3.3889,
+                    latitude: values.latitude,
+                    longitude: values.longitude
                   }}
                   onChange={(loc) => {
                     void setFieldValue("location", loc.address);
@@ -561,7 +581,7 @@ export default function CreateResourcePage() {
               </Stack>
             </Form>
           )}
-        </Formik>
+        </Formik>}
       </Box>
     </PageContainer>
   );

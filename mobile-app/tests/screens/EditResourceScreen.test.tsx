@@ -3,6 +3,7 @@ import { act, fireEvent, render, within } from "@testing-library/react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { EditResourceScreen } from "../../src/screens/resources/EditResourceScreen";
+import { fetchMyProfile } from "../../src/services/graphql/profile";
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -26,6 +27,29 @@ jest.mock("../../src/services/graphql/campaigns", () => ({
   ])
 }));
 
+jest.mock("../../src/services/graphql/profile", () => ({
+  fetchMyProfile: jest.fn().mockResolvedValue(null)
+}));
+
+jest.mock("../../src/components/primitives/ProximityLocationEditor", () => ({
+  ProximityLocationEditor: ({
+    value,
+    onChange
+  }: {
+    value: { label: string; latitude?: number; longitude?: number } | null;
+    onChange: (value: { label: string } | null) => void;
+  }) => {
+    const { TextInput } = require("react-native");
+    return (
+      <TextInput
+        accessibilityLabel="Location"
+        value={value?.label ?? ""}
+        onChangeText={(label: string) => onChange({ label })}
+      />
+    );
+  }
+}));
+
 jest.mock("../../src/services/network/useNetworkStatus", () => ({
   useNetworkStatus: () => ({ isConnected: true, isInternetReachable: true })
 }));
@@ -33,6 +57,48 @@ jest.mock("../../src/services/network/useNetworkStatus", () => ({
 const renderWithPaper = (ui: React.ReactElement) => render(ui, { wrapper: PaperProvider });
 
 describe("EditResourceScreen", () => {
+  beforeEach(() => {
+    jest.mocked(fetchMyProfile).mockResolvedValue(null);
+  });
+
+  it("defaults a new resource to the profile location", async () => {
+    const profileLocation = { label: "Tournai", latitude: 50.6056, longitude: 3.3878 };
+    let resolveProfile!: (profile: Awaited<ReturnType<typeof fetchMyProfile>>) => void;
+    const profileRequest = new Promise<Awaited<ReturnType<typeof fetchMyProfile>>>((resolve) => {
+      resolveProfile = resolve;
+    });
+    jest.mocked(fetchMyProfile).mockReturnValue(profileRequest);
+    const profile = {
+      accountId: "00000000-0000-0000-0000-000000000111",
+      displayName: "",
+      email: "",
+      avatarUrl: null,
+      location: profileLocation,
+      bio: "",
+      profileLinks: [],
+      resources: [],
+      needs: []
+    };
+
+    const screen = renderWithPaper(
+      <EditResourceScreen
+        creatorAccountId="00000000-0000-0000-0000-000000000111"
+        initialResource={null}
+        categories={[]}
+        campaigns={[]}
+        onBack={() => undefined}
+        onSaved={() => undefined}
+      />
+    );
+
+    await act(async () => {
+      resolveProfile(profile);
+      await profileRequest;
+    });
+    expect(screen.getByLabelText("Location").props.value).toBe("Tournai");
+    expect(fetchMyProfile).toHaveBeenCalledWith("00000000-0000-0000-0000-000000000111");
+  });
+
   it("shows validation errors inline only after the first submit attempt", () => {
     const screen = renderWithPaper(
       <EditResourceScreen

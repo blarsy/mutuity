@@ -14,7 +14,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { APIProvider, Map, Marker, useMapsLibrary, useMarkerRef } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, Marker, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -25,7 +25,7 @@ export interface LocationValue {
 }
 
 interface LocationPickerProps {
-  value: LocationValue;
+  value: { address: string; latitude: number | ""; longitude: number | "" };
   onChange: (value: LocationValue) => void;
   onBlur?: () => void;
   addressLabel?: string;
@@ -117,10 +117,17 @@ function AddressAutocomplete({
     const { place } = await raw.fetchFields({
       fields: ["formattedAddress", "location"],
     });
+    const latitude = place.location?.lat();
+    const longitude = place.location?.lng();
+    if (latitude === undefined || longitude === undefined) {
+      setSuggestions([]);
+      return;
+    }
+
     onLocationResolved({
       address: place.formattedAddress ?? inputValue,
-      latitude: place.location?.lat() ?? 0,
-      longitude: place.location?.lng() ?? 0,
+      latitude,
+      longitude,
     });
     setSuggestions([]);
   };
@@ -174,31 +181,31 @@ interface PickerMapProps {
 }
 
 function PickerMap({ latitude, longitude, onMapClick }: PickerMapProps) {
-  const [markerRef, marker] = useMarkerRef();
+  const map = useMap();
 
   useEffect(() => {
-    if (marker) {
-      marker
-        .getMap()
-        ?.setOptions({ center: { lat: latitude, lng: longitude } });
+    if (map) {
+      map.panTo({ lat: latitude, lng: longitude });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latitude, longitude]);
+  }, [latitude, longitude, map]);
 
   return (
     <Map
       style={{ width: "100%", height: "100%" }}
-      center={{ lat: latitude, lng: longitude }}
       defaultCenter={{ lat: latitude, lng: longitude }}
       defaultZoom={15}
-      disableDefaultUI
+      gestureHandling="greedy"
+      zoomControl
+      mapTypeControl={false}
+      streetViewControl={false}
+      fullscreenControl={false}
       onClick={(e) => {
         if (e.detail.latLng) {
           onMapClick(e.detail.latLng.lat, e.detail.latLng.lng);
         }
       }}
     >
-      <Marker ref={markerRef} position={{ lat: latitude, lng: longitude }} />
+      <Marker position={{ lat: latitude, lng: longitude }} />
     </Map>
   );
 }
@@ -217,6 +224,9 @@ export function LocationPicker({
   required,
 }: LocationPickerProps) {
   const { t } = useTranslation("common");
+  const hasCoordinates =
+    typeof value.latitude === "number" && Number.isFinite(value.latitude) &&
+    typeof value.longitude === "number" && Number.isFinite(value.longitude);
 
   const handleMapClick = (lat: number, lng: number) => {
     // Reverse-geocode click → update address label via Places API
@@ -245,20 +255,22 @@ export function LocationPicker({
           onBlur={onBlur}
           onLocationResolved={onChange}
         />
-        <Box
-          sx={{
-            borderRadius: 1,
-            aspectRatio: "1 / 1",
-            overflow: "hidden",
-            width: "100%"
-          }}
-        >
-          <PickerMap
-            latitude={value.latitude || 50.6072}
-            longitude={value.longitude || 3.3889}
-            onMapClick={handleMapClick}
-          />
-        </Box>
+        {hasCoordinates ? (
+          <Box
+            sx={{
+              borderRadius: 1,
+              aspectRatio: "1 / 1",
+              overflow: "hidden",
+              width: "100%"
+            }}
+          >
+            <PickerMap
+              latitude={value.latitude as number}
+              longitude={value.longitude as number}
+              onMapClick={handleMapClick}
+            />
+          </Box>
+        ) : null}
         {(coordinatesError && coordinatesHelperText) ? (
           <Typography color="error" variant="caption">
             {coordinatesHelperText}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Icon, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,7 @@ import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
+import { fetchMyProfile } from "../../services/graphql/profile";
 
 export interface EditNeedScreenProps {
   creatorAccountId: string | null;
@@ -79,6 +80,7 @@ export function EditNeedScreen({
   const [requiredPeopleCountText, setRequiredPeopleCountText] = useState(
     initialNeed?.requiredPeopleCount ? String(initialNeed.requiredPeopleCount) : ""
   );
+  const locationWasManuallyChanged = useRef(false);
   const [campaignId, setCampaignId] = useState(initialNeed?.campaignId ?? initialCampaignId ?? "");
   const [campaigns, setCampaigns] = useState<LinkableCampaignItem[]>(injectedCampaigns ?? []);
   const [showCampaignDialog, setShowCampaignDialog] = useState(false);
@@ -88,6 +90,31 @@ export function EditNeedScreen({
   const [saving, setSaving] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialNeed || !creatorAccountId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    void fetchMyProfile(creatorAccountId)
+      .then((profile) => {
+        if (isMounted && !locationWasManuallyChanged.current && profile?.location) {
+          setLocation(profile.location);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [creatorAccountId, initialNeed]);
+
+  const handleLocationChange = (nextLocation: ProximityLocationValue | null): void => {
+    locationWasManuallyChanged.current = true;
+    setLocation(nextLocation);
+  };
 
   const withRequiredMark = (label: string): string => `${label} *`;
 
@@ -277,7 +304,7 @@ export function EditNeedScreen({
         <FormFieldLabel>
           {withRequiredMark(t("needLocationLabel", { ns: "us2", defaultValue: "Location" }))}
         </FormFieldLabel>
-        <ProximityLocationEditor value={location} onChange={setLocation} />
+        <ProximityLocationEditor value={location} onChange={handleLocationChange} />
 
         <PriceSetter
           label={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}

@@ -1,22 +1,39 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { EditNeedScreen } from "../../src/screens/needs/EditNeedScreen";
 import { createNeedForAccount, updateNeedById, type NeedItem } from "../../src/services/graphql/needs";
 import { NeedIntensity } from "../../src/services/graphql/generated";
+import { fetchMyProfile } from "../../src/services/graphql/profile";
 
 jest.mock("../../src/services/graphql/needs", () => ({
   createNeedForAccount: jest.fn().mockResolvedValue(undefined),
   updateNeedById: jest.fn().mockResolvedValue(undefined)
 }));
 
+jest.mock("../../src/services/graphql/profile", () => ({
+  fetchMyProfile: jest.fn().mockResolvedValue(null)
+}));
+
 // Native image/SVG loading is unrelated to form validation.
 jest.mock("../../src/components/primitives/PicturesField", () => ({ PicturesField: () => null }));
 jest.mock("../../src/components/primitives/ProximityLocationEditor", () => ({
-  ProximityLocationEditor: ({ onChange }: { onChange: (value: { label: string }) => void }) => {
+  ProximityLocationEditor: ({
+    value,
+    onChange
+  }: {
+    value: { label: string; latitude?: number; longitude?: number } | null;
+    onChange: (value: { label: string } | null) => void;
+  }) => {
     const { TextInput } = require("react-native");
-    return <TextInput accessibilityLabel="Location" onChangeText={(label: string) => onChange({ label })} />;
+    return (
+      <TextInput
+        accessibilityLabel="Location"
+        value={value?.label ?? ""}
+        onChangeText={(label: string) => onChange({ label })}
+      />
+    );
   }
 }));
 
@@ -35,6 +52,48 @@ jest.mock("../../src/services/graphql/campaigns", () => ({
 }));
 
 describe("EditNeedScreen", () => {
+  beforeEach(() => {
+    jest.mocked(fetchMyProfile).mockResolvedValue(null);
+  });
+
+  it("defaults a new need to the profile location", async () => {
+    const profileLocation = { label: "Tournai", latitude: 50.6056, longitude: 3.3878 };
+    let resolveProfile!: (profile: Awaited<ReturnType<typeof fetchMyProfile>>) => void;
+    const profileRequest = new Promise<Awaited<ReturnType<typeof fetchMyProfile>>>((resolve) => {
+      resolveProfile = resolve;
+    });
+    jest.mocked(fetchMyProfile).mockReturnValue(profileRequest);
+    const profile = {
+      accountId: "00000000-0000-0000-0000-000000000111",
+      displayName: "",
+      email: "",
+      avatarUrl: null,
+      location: profileLocation,
+      bio: "",
+      profileLinks: [],
+      resources: [],
+      needs: []
+    };
+
+    const screen = render(
+      <EditNeedScreen
+        creatorAccountId="00000000-0000-0000-0000-000000000111"
+        initialNeed={null}
+        campaigns={[]}
+        onBack={() => undefined}
+        onSaved={() => undefined}
+      />,
+      { wrapper: PaperProvider }
+    );
+
+    await act(async () => {
+      resolveProfile(profile);
+      await profileRequest;
+    });
+    expect(screen.getByLabelText("Location").props.value).toBe("Tournai");
+    expect(fetchMyProfile).toHaveBeenCalledWith("00000000-0000-0000-0000-000000000111");
+  });
+
   it("shows validation errors only after the first submit attempt", () => {
     const screen = render(
       <EditNeedScreen

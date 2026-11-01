@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Chip, Divider, Icon, IconButton, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -18,7 +18,6 @@ import {
 } from "../../components/primitives";
 import {
   createResourceForAccount,
-  deleteResourceById,
   fetchResourceCategories,
   type MyResourceItem,
   type ResourceCategoryItem,
@@ -27,6 +26,7 @@ import {
 import { useNetworkStatus } from "../../services/network/useNetworkStatus";
 import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
+import { fetchMyProfile } from "../../services/graphql/profile";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -82,6 +82,7 @@ export function EditResourceScreen({
     canBeDelivered: initialResource?.canBeDelivered ?? false
   });
   const [location, setLocation] = useState<ProximityLocationValue | null>(initialResource?.location ?? null);
+  const locationWasManuallyChanged = useRef(false);
   const [saving, setSaving] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
@@ -89,6 +90,31 @@ export function EditResourceScreen({
   const withRequiredMark = (label: string): string => `${label} *`;
 
   const isOffline = !isConnected || !isInternetReachable;
+
+  useEffect(() => {
+    if (initialResource || !creatorAccountId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    void fetchMyProfile(creatorAccountId)
+      .then((profile) => {
+        if (isMounted && !locationWasManuallyChanged.current && profile?.location) {
+          setLocation(profile.location);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [creatorAccountId, initialResource]);
+
+  const handleLocationChange = (nextLocation: ProximityLocationValue | null): void => {
+    locationWasManuallyChanged.current = true;
+    setLocation(nextLocation);
+  };
 
   const parsedTokenAmount = useMemo(() => Math.max(0, Math.round(tokenAmount)), [tokenAmount]);
   const categoryItems = useMemo(
@@ -397,7 +423,7 @@ export function EditResourceScreen({
             ? withRequiredMark(t("addressLabel", { defaultValue: "Address" }))
             : t("addressLabel", { defaultValue: "Address" })}
         </FormFieldLabel>
-        <ProximityLocationEditor value={location} onChange={setLocation} />
+        <ProximityLocationEditor value={location} onChange={handleLocationChange} />
 
         {hasAttemptedSubmit && validationErrors.length > 0 ? (
           <View style={styles.validationZone}>

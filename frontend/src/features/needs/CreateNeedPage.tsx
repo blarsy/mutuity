@@ -15,6 +15,7 @@ import {
 import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
+import { useAuth } from "../auth/AuthProvider";
 import { useRequireAuth } from "../auth/requireAuth";
 import { ImageUploadField } from "../../components/ImageUploadField";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
@@ -36,9 +37,19 @@ import {
   NEED_EDIT_DETAIL_QUERY,
   UPDATE_NEED_MUTATION
 } from "./needs.queries";
-import type { CreateNeedMutation, CreateNeedMutationVariables, UpdateNeedMutation, UpdateNeedMutationVariables, LinkableCampaignOptionsQuery, NeedEditDetailQuery, NeedEditDetailQueryVariables } from "../../graphql/generated";
+import type { AccountProfileQuery, CreateNeedMutation, CreateNeedMutationVariables, UpdateNeedMutation, UpdateNeedMutationVariables, LinkableCampaignOptionsQuery, NeedEditDetailQuery, NeedEditDetailQueryVariables } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
+
+function normalizeOptionalCoordinate(value: number | string | null | undefined): number | "" {
+  if (value === "" || value == null) {
+    return "";
+  }
+
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : "";
+}
 
 function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   const startAt = new Date(startAtIso);
@@ -50,6 +61,8 @@ function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
 export default function EditNeedPage() {
   const router = useRouter();
   const { t } = useTranslation("needs");
+  const { session } = useAuth();
+  const accountId = session.account?.id ?? null;
   const needId = typeof router.query.needId === "string" ? router.query.needId : null;
   const isEditMode = Boolean(needId);
   const [createNeed, { loading, error }] = useMutation<CreateNeedMutation, CreateNeedMutationVariables>(
@@ -78,6 +91,13 @@ export default function EditNeedPage() {
   });
 
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const {
+    data: accountProfileData,
+    loading: loadingAccountProfile
+  } = useQuery<AccountProfileQuery>(ACCOUNT_PROFILE_QUERY, {
+    skip: !router.isReady || isEditMode || !accountId,
+    variables: { accountId: accountId ?? "" }
+  });
 
   const errorMessage = getUserFacingGraphQLErrorMessage(error)
     ?? getUserFacingGraphQLErrorMessage(updateError)
@@ -100,7 +120,14 @@ export default function EditNeedPage() {
     const editNeed = editNeedData?.needById;
 
     if (!editNeed) {
-      return createNeedInitialValues;
+      const profile = accountProfileData?.accountById;
+      const hasProfileLocation = Boolean(profile?.location?.trim());
+      return {
+        ...createNeedInitialValues,
+        location: hasProfileLocation ? profile?.location ?? "" : "",
+        latitude: hasProfileLocation ? normalizeOptionalCoordinate(profile?.latitude) : "",
+        longitude: hasProfileLocation ? normalizeOptionalCoordinate(profile?.longitude) : ""
+      };
     }
 
     return {
@@ -108,8 +135,8 @@ export default function EditNeedPage() {
       description: editNeed.description ?? "",
       imageUrls: (editNeed.imageUrls ?? []).filter((u): u is string => u != null),
       location: editNeed.location,
-      latitude: editNeed.latitude ?? 50.6072,
-      longitude: editNeed.longitude ?? 3.3889,
+      latitude: normalizeOptionalCoordinate(editNeed.latitude),
+      longitude: normalizeOptionalCoordinate(editNeed.longitude),
       intensity: editNeed.intensity,
       proposedTopesAmount: editNeed.proposedTopesAmount ?? "",
       objectRequired: editNeed.objectRequired,
@@ -122,7 +149,7 @@ export default function EditNeedPage() {
       campaignId: editNeed.campaignNeedsByNeedId.nodes[0]?.campaignId ?? "",
       expiresAt: editNeed.expiresAt ? new Date(editNeed.expiresAt).toISOString().slice(0, 16) : ""
     };
-  }, [editNeedData?.needById]);
+  }, [accountProfileData?.accountById, editNeedData?.needById]);
 
   const submit = async (values: CreateNeedValues) => {
     const normalizedVariables = {
@@ -130,8 +157,8 @@ export default function EditNeedPage() {
       description: values.description.trim() || undefined,
       imageUrls: values.imageUrls,
       location: values.location.trim(),
-      latitude: Number(values.latitude),
-      longitude: Number(values.longitude),
+      latitude: values.latitude === "" ? undefined : Number(values.latitude),
+      longitude: values.longitude === "" ? undefined : Number(values.longitude),
       intensity: values.intensity as unknown as NeedIntensity,
       proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
       objectRequired: values.objectRequired,
@@ -232,7 +259,9 @@ export default function EditNeedPage() {
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
         {campaignOptionsErrorMessage ? <Alert severity="error">{campaignOptionsErrorMessage}</Alert> : null}
 
-        <Formik
+        {!router.isReady || (!isEditMode && accountId && loadingAccountProfile) ? (
+          <Alert severity="info">{t("form.loading")}</Alert>
+        ) : <Formik
           enableReinitialize
           initialValues={initialValues}
           onSubmit={async (values, helpers) => {
@@ -286,8 +315,8 @@ export default function EditNeedPage() {
                 <LocationPicker
                   value={{
                     address: values.location,
-                    latitude: Number(values.latitude) || 50.6072,
-                    longitude: Number(values.longitude) || 3.3889,
+                    latitude: values.latitude,
+                    longitude: values.longitude
                   }}
                   onChange={(loc) => {
                     void setFieldValue("location", loc.address);
@@ -462,7 +491,7 @@ export default function EditNeedPage() {
               </Stack>
             </Form>
           )}
-        </Formik>
+        </Formik>}
       </Box>
     </PageContainer>
   );
