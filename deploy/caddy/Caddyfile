@@ -5,6 +5,18 @@
 {$PRODUCTION_HOSTS} {
 	encode zstd gzip
 
+	# Provider callbacks (code/state or Apple's POST) belong to the API, but
+	# processed GET results belong to Next.js, even on a shared web/API host.
+	@webOAuthResult {
+		method GET
+		path /auth/google/callback /auth/apple/callback
+		query status=*
+	}
+
+	handle @webOAuthResult {
+		reverse_proxy {$PRODUCTION_FRONTEND_UPSTREAM}
+	}
+
 	@mobileApi {
 		path /graphql /graphql/* /health /auth /auth/*
 	}
@@ -26,6 +38,17 @@
 
 review.tope-la.com {
 	encode zstd gzip
+
+	# Result pages must take precedence over every versioned OAuth API route.
+	@webOAuthResult {
+		method GET
+		path /auth/google/callback /auth/apple/callback
+		query status=*
+	}
+
+	handle @webOAuthResult {
+		reverse_proxy {$REVIEW_FRONTEND_UPSTREAM}
+	}
 
 	@reviewCandidateApi {
 		path /graphql /graphql/* /health

@@ -18,6 +18,7 @@
     "guard:admin-boundaries": "node ./scripts/check-admin-boundaries.mjs",
     "test:security-boundaries": "npm run guard:admin-boundaries && npm --workspace backend test -- --runInBand tests/integration/authorization-boundary-verification.spec.ts tests/integration/admin-scoped-user-access.spec.ts tests/integration/claim-chat-write-boundaries.spec.ts tests/integration/campaign-link-email-access.spec.ts",
     "guard:sql-plpgsql": "bash ./scripts/check-plpgsql-quality.sh",
+    "test:oauth-ingress": "node --test scripts/tests/oauth-ingress.test.mjs",
     "e2e:seed": "node ./e2e/scripts/seed-smoke-users.mjs",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",

@@ -5,6 +5,17 @@
 test.tope-la.com {
 	encode zstd gzip
 
+	# Do not send processed OAuth results back through the provider handler.
+	@webOAuthResult {
+		method GET
+		path /auth/google/callback /auth/apple/callback
+		query status=*
+	}
+
+	handle @webOAuthResult {
+		reverse_proxy {$TEST_FRONTEND_UPSTREAM}
+	}
+
 	@mobileApi {
 		path /graphql /graphql/* /health /auth /auth/*
 	}

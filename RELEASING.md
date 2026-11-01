@@ -437,6 +437,16 @@ by default and mail delivery is disabled by default.
   The production/review server uses `docker-compose.ingress.yml` plus
   `.env.ingress`; the dedicated test server uses
   `docker-compose.test-ingress.yml` plus `.env.test-ingress`.
+- OAuth routing on shared web/API hosts distinguishes the provider callback
+   from its processed result: `/auth/google/callback?code=...&state=...` and
+   Apple's callback POST go to the backend; GET `/auth/{google,apple}/callback`
+   with `status=...` goes to the frontend. Keep the result-page match before
+   all `/auth/*` API matches, including review version routing. Otherwise even
+   a successful sign-in is reprocessed as a callback missing `code`/`state`,
+   and the resulting error URL redirects to itself. After ingress updates,
+   verify the Google `status=error` result URL returns HTTP 200 with recovery
+   actions, not HTTP 302 to itself. Run `npm run test:oauth-ingress` locally
+   for isolated Caddy routing regressions (requires Docker; no app/DB needed).
 - To stop an environment without deleting data, use `docker compose ... stop` or
   `down` without `-v`. Named Postgres and Caddy volumes are persistent state;
   back them up before host migration or destructive cleanup.

@@ -18,10 +18,20 @@ test("@smoke @spec-012-social-google registration-required callback redirects to
 });
 
 test("@smoke @spec-012-social-apple callback error keeps explicit recovery actions visible", async ({ page }) => {
-  await page.goto("/auth/apple/callback?error=Provider%20callback%20failed&next=%2Fneeds");
+  await page.goto("/auth/apple/callback?status=error&error=Provider%20callback%20failed&next=%2Fneeds");
 
   await expect(page).toHaveURL(/\/auth\/apple\/callback/);
   await expect(page.getByRole("alert").first()).toContainText(/provider callback failed/i);
   await expect(page.getByRole("link", { name: /back to sign in|retour a la connexion|retour à la connexion|^back$|^retour$/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /complete registration|finaliser l'inscription/i })).toBeVisible();
+});
+
+test("@smoke @spec-012-social-google missing callback parameters renders an error without looping", async ({ page }) => {
+  const callbackPath = "/auth/google/callback?status=error&next=%2F&error=Missing+OAuth+callback+parameters";
+  const response = await page.goto(callbackPath);
+
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveURL(new RegExp("/auth/google/callback\\?status=error"));
+  await expect(page.getByRole("alert").first()).toContainText("Missing OAuth callback parameters");
+  await expect(page.getByRole("link", { name: /back to sign in|retour a la connexion|retour à la connexion|^back$|^retour$/i })).toBeVisible();
 });
