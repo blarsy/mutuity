@@ -8,6 +8,27 @@ import {
 import { buildSocialAuthStartUrl } from "../src/services/socialAuth/start";
 
 describe("social auth callback parsing", () => {
+  it.each([
+    "exp://127.0.0.1:8081",
+    "topela://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081",
+    "topela://",
+    "topela://resources/123?status=error",
+    "topela:///auth/google/start",
+    "https://example.com/login?status=error&provider=google",
+    "topela:///auth/google/callback/other?status=error",
+    "not a URL"
+  ])("ignores non-callback app URLs: %s", (url) => {
+    expect(parseSocialCallbackPayloadFromUrl(url)).toBeNull();
+  });
+
+  it.each([
+    "topela://auth/apple/callback",
+    "topela:///auth/apple/callback",
+    "https://example.com/auth/apple/callback"
+  ])("still surfaces malformed OAuth callbacks on the actual route: %s", (url) => {
+    expect(parseSocialCallbackPayloadFromUrl(url)).toMatchObject({ status: "error", provider: "apple" });
+  });
+
   it("parses success callbacks and preserves the session token", () => {
     const payload = parseSocialCallbackPayload({
       provider: "google",

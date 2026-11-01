@@ -76,6 +76,21 @@ describe("US5 social link-required acceptance", () => {
     jest.restoreAllMocks();
   });
 
+  it("does not show social errors on normal startup or unrelated deep links", async () => {
+    jest.mocked(Linking.getInitialURL).mockResolvedValue("topela://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081");
+    const handler = { current: null as ((event: { url: string }) => void) | null };
+    mockLinkingUrlListener(handler);
+    const screen = render(React.createElement(App));
+    await waitFor(() => expect(screen.getByLabelText("Main navigation")).toBeTruthy());
+    expect(screen.queryByTestId("auth-login-screen")).toBeNull();
+    fireEvent.press(screen.getAllByRole("button", { name: "Sign in" })[0]);
+    expect(screen.queryByTestId("auth-social-notice")).toBeNull();
+    fireEvent.changeText(screen.getByTestId("auth-login-email"), "person@example.com");
+    act(() => handler.current?.({ url: "topela://resources/123?status=error" }));
+    expect(screen.queryByTestId("auth-social-notice")).toBeNull();
+    expect(screen.getByTestId("auth-login-email")).toHaveProp("value", "person@example.com");
+  });
+
   it.each(["google", "apple"])("explains and completes %s linking after password login, preserving context through recovery", async (provider) => {
     const mockUrlHandler = { current: null as ((event: { url: string }) => void) | null };
 

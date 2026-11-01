@@ -78,9 +78,18 @@ export function parseSocialCallbackPayload(input?: Partial<SocialCallbackPayload
 export function parseSocialCallbackPayloadFromUrl(url: string): SocialCallbackPayload | null {
   try {
     const parsedUrl = new URL(url);
+    // Native app launch URLs and unrelated deep links are not OAuth outcomes.
+    // topela://auth/... puts "auth" in the host, whereas the backend's
+    // topela:///auth/... puts it in the path. Accept both callback forms.
+    const callbackPath = parsedUrl.protocol === "topela:" && parsedUrl.hostname === "auth"
+      ? `/auth${parsedUrl.pathname}`
+      : parsedUrl.pathname;
+    const callbackRoute = /^\/auth\/(google|apple)\/callback\/?$/.exec(callbackPath);
+    if (!callbackRoute || !["topela:", "https:", "http:"].includes(parsedUrl.protocol)) {
+      return null;
+    }
     const params = parsedUrl.searchParams;
-    const pathProvider = parsedUrl.pathname.includes("/apple/") || parsedUrl.pathname.includes("/apple") ? "apple" : parsedUrl.pathname.includes("/google/") || parsedUrl.pathname.includes("/google") ? "google" : null;
-    const provider = params.get("provider") === "apple" ? "apple" : params.get("provider") === "google" ? "google" : pathProvider ?? "google";
+    const provider = callbackRoute[1] === "apple" ? "apple" : "google";
     const status = params.get("status") ?? "error";
     const next = params.get("next") ?? "/";
 
