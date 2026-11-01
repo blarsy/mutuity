@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
 import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import { InlineHtml } from "../../components/InlineHtml";
 import {
   NavigationBackHeader,
   DateTimePickerField,
@@ -38,6 +39,19 @@ function plainTextFromRichText(value: string): string {
     .trim();
 }
 
+function formatDateTime(value: string, locale: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
 export function CampaignDetailScreen({
   campaign,
   creatorAccountId,
@@ -47,7 +61,7 @@ export function CampaignDetailScreen({
   onBack,
   onSaved
 }: CampaignDetailScreenProps): React.JSX.Element {
-  const { t } = useTranslation(["common", "us3"]);
+  const { t, i18n } = useTranslation(["common", "us3"]);
   const [title, setTitle] = useState(campaign.title);
   const [theme, setTheme] = useState(campaign.theme ?? "");
   const [description, setDescription] = useState(campaign.description);
@@ -251,6 +265,11 @@ export function CampaignDetailScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {!isNew && (
+          <Text variant="bodySmall" testID="campaign-created-at">
+            {t("labels.created", { ns: "us3", defaultValue: "Created" })}: {formatDateTime(campaign.createdAt, i18n.language)}
+          </Text>
+        )}
         {(isCreator || isNew) && (isPending || isNew) ? (
           <>
             <FormTextInput
@@ -352,13 +371,31 @@ export function CampaignDetailScreen({
             />
           </>
         ) : (
-          <View style={styles.nonEditableOverlay}>
-            <Text style={styles.nonEditableText}>
-              {t("campaignIsNotEditable", {
-                ns: "us3",
-                defaultValue: "This campaign is not editable because its status is not pending or approved."
-              })}
-            </Text>
+          <View style={styles.detailsBlock} testID="campaign-details">
+            {campaign.imageUrl ? (
+              <Image
+                source={{ uri: campaign.imageUrl }}
+                accessibilityLabel={campaign.title}
+                style={styles.campaignImage}
+                resizeMode="cover"
+              />
+            ) : null}
+            <FormFieldLabel>
+              {t("campaignDescriptionLabel", { ns: "us3", defaultValue: "Description" })}
+            </FormFieldLabel>
+            <InlineHtml
+              html={campaign.description}
+              emptyFallback={t("campaignDescriptionEmpty", { ns: "us3", defaultValue: "No description." })}
+            />
+            {[
+              [t("campaignStartDateLabel", { ns: "us3", defaultValue: "Start date" }), formatDateTime(campaign.startAt, i18n.language)],
+              [t("campaignEndDateLabel", { ns: "us3", defaultValue: "End date" }), formatDateTime(campaign.endAt, i18n.language)],
+              [t("campaignAirdropDateLabel", { ns: "us3", defaultValue: "Airdrop date" }), formatDateTime(campaign.airdropAt, i18n.language)],
+              [t("campaignAirdropAmountLabel", { ns: "us3", defaultValue: "Airdrop amount" }), campaign.airdropAmount ?? "—"],
+              [t("campaignRewardsMultiplierLabel", { ns: "us3", defaultValue: "Rewards multiplier" }), campaign.rewardsMultiplier ?? "—"]
+            ].map(([label, value]) => (
+              <Text key={label} variant="bodySmall">{label}: {value}</Text>
+            ))}
           </View>
         )}
 
@@ -511,18 +548,13 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.general,
     fontSize: 12
   },
-  nonEditableOverlay: {
-    backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.md,
-    padding: designTokens.spacing.sm,
-    marginTop: designTokens.spacing.md,
-    alignItems: "center",
-    justifyContent: "center"
+  detailsBlock: {
+    gap: designTokens.spacing.sm
   },
-  nonEditableText: {
-    color: designTokens.colors.primary,
-    fontFamily: appFontFamilies.general,
-    fontSize: 14,
-    textAlign: "center"
+  campaignImage: {
+    width: "100%",
+    maxWidth: 320,
+    aspectRatio: 1,
+    borderRadius: designTokens.radius.md
   }
 });

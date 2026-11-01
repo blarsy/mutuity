@@ -52,6 +52,8 @@ type PublicCampaignDetailData = {
     startAt: string;
     airdropAt: string;
     endAt: string;
+    airdropAmount: number;
+    rewardsMultiplier: number;
     accountByCreatorAccountId: {
       id: string;
       displayName: string | null;
@@ -719,6 +721,10 @@ export default function PublicCampaignDetailPage({
                       <Typography variant="body2">{t("labels.start")}: {formattedDates.startAt}</Typography>
                       <Typography variant="body2">{t("labels.airdrop")}: {formattedDates.airdropAt}</Typography>
                       <Typography variant="body2">{t("labels.end")}: {formattedDates.endAt}</Typography>
+                    </Stack>
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
+                      <Typography variant="body2">{t("create.fields.airdropAmount")}: {campaign.airdropAmount}</Typography>
+                      <Typography variant="body2">{t("create.fields.rewardsMultiplier")}: {campaign.rewardsMultiplier}</Typography>
                     </Stack>
                   </Stack>
                 </CardContent>

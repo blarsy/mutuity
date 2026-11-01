@@ -25,6 +25,7 @@ import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
 import { getUserFacingGraphQLErrorMessage } from "../../../services/graphql/errorMessages";
+import { formatPublicDateTime } from "../../../features/shared/publicDateTime";
 import {
   createCampaignValidationSchema,
   type CreateCampaignValues
@@ -173,7 +174,7 @@ function resourceNodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resour
 export default function CampaignModerationPage() {
   const router = useRouter();
   const { campaignId } = router.query;
-  const { t } = useTranslation("campaigns");
+  const { t, i18n } = useTranslation("campaigns");
   const [editOpen, setEditOpen] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
@@ -367,6 +368,36 @@ export default function CampaignModerationPage() {
 
         {!loading && !detailsErrorMessage && campaign ? (
           <Stack spacing={2}>
+            <Typography component="h2" variant="subtitle1">
+              {t("create.fields.description")}
+            </Typography>
+            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+              {campaign.description ?? "—"}
+            </Typography>
+            <Box
+              component="dl"
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "max-content 1fr" },
+                columnGap: 3,
+                rowGap: 1,
+                m: 0
+              }}
+            >
+              {[
+                [t("labels.created"), formatPublicDateTime(campaign.createdAt, i18n.language)],
+                [t("create.fields.startDatetime"), formatPublicDateTime(campaign.startAt, i18n.language)],
+                [t("create.fields.endDatetime"), formatPublicDateTime(campaign.endAt, i18n.language)],
+                [t("create.fields.airdropDatetime"), formatPublicDateTime(campaign.airdropAt, i18n.language)],
+                [t("create.fields.airdropAmount"), campaign.airdropAmount],
+                [t("create.fields.rewardsMultiplier"), campaign.rewardsMultiplier]
+              ].map(([label, value]) => (
+                <Box key={label} sx={{ display: "contents" }}>
+                  <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{label}</Typography>
+                  <Typography component="dd" variant="body2" sx={{ m: 0 }}>{value}</Typography>
+                </Box>
+              ))}
+            </Box>
             {isApprovedOrLater ? (
               <>
                 <Typography variant="h6">{t("resourceTriage.sectionTitle")}</Typography>

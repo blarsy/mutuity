@@ -123,6 +123,8 @@ export const PUBLIC_CAMPAIGN_DETAIL_QUERY = gql`
       startAt
       airdropAt
       endAt
+      airdropAmount
+      rewardsMultiplier
       accountByCreatorAccountId {
         id
         displayName

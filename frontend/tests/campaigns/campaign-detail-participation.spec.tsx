@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { useQuery } from "@apollo/client/react";
+import { print } from "graphql";
 
 import PublicCampaignDetailPage from "../../src/pages/campaigns/[campaignId]/index";
+import { PUBLIC_CAMPAIGN_DETAIL_QUERY } from "../../src/features/campaigns/campaigns.queries";
 import { resolveCampaignParticipationState } from "../../src/features/campaigns/campaignParticipation";
 import en from "../../src/locales/en/campaigns.json";
 import fr from "../../src/locales/fr/campaigns.json";
@@ -34,6 +36,8 @@ const campaign = {
   startAt: "2026-10-12T12:00:00Z",
   airdropAt: "2026-10-13T12:00:00Z",
   endAt: "2026-10-14T12:00:00Z",
+  airdropAmount: 3500,
+  rewardsMultiplier: 7,
   accountByCreatorAccountId: null
 };
 const formattedDates = { startAt: "October 12", airdropAt: "October 13", endAt: "October 14" };
@@ -100,6 +104,20 @@ describe("campaign participation state", () => {
 });
 
 describe("campaign detail listing layout and visibility", () => {
+  it("requests the campaign reward fields from GraphQL", () => {
+    const query = print(PUBLIC_CAMPAIGN_DETAIL_QUERY);
+    expect(query).toMatch(/\bairdropAmount\b/);
+    expect(query).toMatch(/\brewardsMultiplier\b/);
+  });
+
+  it("displays the actual campaign airdrop amount and rewards multiplier", () => {
+    const html = renderCampaign();
+    expect(html).toContain("create.fields.airdropAmount");
+    expect(html).toContain("create.fields.rewardsMultiplier");
+    expect(html).toMatch(/create.fields.airdropAmount[^<]*3500/);
+    expect(html).toMatch(/create.fields.rewardsMultiplier[^<]*7/);
+  });
+
   it("renders both standard listing cards, headers, token visuals and responsive grids while running", () => {
     const html = renderCampaign();
     expect(html).toContain('data-testid="resource-card"');

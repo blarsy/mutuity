@@ -44,6 +44,8 @@ export const mockCampaignDetail = {
   startAt: "2026-04-01T08:00:00.000Z",
   airdropAt: "2026-05-01T08:00:00.000Z",
   endAt: "2026-07-01T08:00:00.000Z",
+  airdropAmount: 3500,
+  rewardsMultiplier: 7,
   accountByCreatorAccountId: creator
 };
 

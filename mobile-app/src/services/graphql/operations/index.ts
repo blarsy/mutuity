@@ -246,6 +246,8 @@ export const MY_CAMPAIGNS_QUERY = gql`
         startAt
         airdropAt
         endAt
+        rewardsMultiplier
+        airdropAmount
         campaignResourcesByCampaignId {
           totalCount
         }
@@ -352,6 +354,8 @@ export const CAMPAIGN_BY_ID_QUERY = gql`
       theme
       description
       imageUrl
+      createdAt
+      creatorAccountId
       moderationStatus
       startAt
       airdropAt
@@ -1317,12 +1321,16 @@ export const INSPIRATION_CAMPAIGNS_QUERY = gql`
         id
         title
         theme
+        description
         imageUrl
         moderationStatus
         startAt
         airdropAt
         endAt
         createdAt
+        creatorAccountId
+        rewardsMultiplier
+        airdropAmount
       }
     }
   }

@@ -46,5 +46,41 @@ describe("CampaignDetailScreen", () => {
     fireEvent.press(screen.getByRole("button", { name: "Create campaign" }));
 
     expect(screen.getAllByText("This field is required.").length).toBeGreaterThan(0);
+    expect(screen.queryByTestId("campaign-created-at")).toBeNull();
+  });
+
+  it.each([CampaignModerationStatus.Approved, CampaignModerationStatus.Pending])(
+    "shows all saved campaign details for a non-editable %s campaign",
+    moderationStatus => {
+      const campaign = {
+        ...newCampaign,
+        id: "campaign-1",
+        title: "Community garden",
+        description: "Grow together in our neighbourhood.",
+        imageUrl: "https://example.com/campaign.jpg",
+        moderationStatus
+      };
+      const screen = render(<CampaignDetailScreen campaign={campaign} creatorAccountId={null} />);
+      const format = (value: string) => new Intl.DateTimeFormat("en", {
+        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+      }).format(new Date(value));
+
+      expect(screen.getByText(`Created: ${format(campaign.createdAt)}`)).toBeTruthy();
+      expect(screen.getByText(`Start date: ${format(campaign.startAt)}`)).toBeTruthy();
+      expect(screen.getByText(`End date: ${format(campaign.endAt)}`)).toBeTruthy();
+      expect(screen.getByText(`Airdrop date: ${format(campaign.airdropAt)}`)).toBeTruthy();
+      expect(screen.getByText("Airdrop amount: 3000")).toBeTruthy();
+      expect(screen.getByText("Rewards multiplier: 5")).toBeTruthy();
+      expect(screen.getByText(campaign.description)).toBeTruthy();
+      expect(screen.getByLabelText(campaign.title).props.source).toEqual({ uri: campaign.imageUrl });
+    }
+  );
+
+  it("shows the saved creation datetime alongside the pending campaign editor", () => {
+    const screen = render(
+      <CampaignDetailScreen campaign={newCampaign} creatorAccountId={newCampaign.creatorAccountId} />
+    );
+    expect(screen.getByTestId("campaign-created-at")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Save campaign" })).toBeTruthy();
   });
 });
