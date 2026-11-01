@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { MyProfileScreen, type MyProfileRecord } from "../../src/screens/profile/MyProfileScreen";
@@ -75,6 +76,23 @@ describe("MyProfileScreen", () => {
         ]
       })
     );
+  });
+
+  it("labels link types and bolds only the selected caption", () => {
+    const screen = renderWithPaper(<MyProfileScreen profile={{ ...invalidProfile, displayName: "Alex" }} />);
+    fireEvent.press(screen.getByTestId("profile-link-add"));
+
+    expect(screen.getByText("Link type")).toBeTruthy();
+    for (const label of ["Website", "Facebook", "Instagram", "X"]) {
+      expect(screen.getByText(label)).toBeTruthy();
+    }
+    expect(screen.getByRole("button", { name: "Website", selected: true })).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByText("Website").props.style).fontWeight).toBe("bold");
+
+    fireEvent.press(screen.getByRole("button", { name: "Instagram" }));
+    expect(screen.getByRole("button", { name: "Instagram", selected: true })).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByText("Instagram").props.style).fontWeight).toBe("bold");
+    expect(StyleSheet.flatten(screen.getByText("Website").props.style).fontWeight).not.toBe("bold");
   });
 
   it("confirms before deleting a profile link", () => {

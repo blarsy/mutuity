@@ -208,7 +208,13 @@
   "isServiceLabel": "Service",
   "lessInfoLabel": "Less info",
   "linkTitleLabel": "Title",
-  "linkTypeLabel": "Type",
+  "linkTypeLabel": "Link type",
+  "linkType": {
+    "website": "Website",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "x": "X"
+  },
   "linkUrlLabel": "URL",
   "linksLabel": "Links",
   "loading": "Loading...",

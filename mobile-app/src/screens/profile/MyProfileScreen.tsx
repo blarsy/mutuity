@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Checkbox, IconButton, Snackbar, Text } from "react-native-paper";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Checkbox, Icon, IconButton, Snackbar, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -68,6 +68,13 @@ const PROFILE_LINK_TYPE_ICONS: Record<PublicProfileLink["type"], string> = {
   x: "twitter"
 };
 
+const PROFILE_LINK_TYPE_LABELS: Record<PublicProfileLink["type"], string> = {
+  website: "Website",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  x: "X"
+};
+
 const EMPTY_PROFILE_LINK_DRAFT: PublicProfileLink = {
   type: "website",
   label: "",
@@ -112,6 +119,7 @@ export function MyProfileScreen({
   onBackToHub
 }: MyProfileScreenProps): React.JSX.Element {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { refreshSession, signOut } = useAuth();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(false);
@@ -720,20 +728,30 @@ export function MyProfileScreen({
         onDismiss={closeLinkEditor}
         content={(
           <View style={styles.linkEditorContent}>
+            <FormFieldLabel>{t("linkTypeLabel", { defaultValue: "Link type" })}</FormFieldLabel>
             <View style={styles.linkTypeRow}>
               {PROFILE_LINK_TYPES.map((type) => {
                 const isSelected = profileLinkDraft.type === type;
+                const label = t(`linkType.${type}`, { defaultValue: PROFILE_LINK_TYPE_LABELS[type] });
 
                 return (
-                  <IconButton
+                  <Pressable
                     key={type}
-                    icon={PROFILE_LINK_TYPE_ICONS[type]}
-                    mode={isSelected ? "contained" : "outlined"}
-                    accessibilityLabel={t(`linkType.${type}`, { defaultValue: type })}
+                    style={styles.linkTypeOption}
+                    accessibilityRole="button"
+                    accessibilityLabel={label}
+                    accessibilityState={{ selected: isSelected }}
                     onPress={() => {
                       setProfileLinkDraft((current) => ({ ...current, type }));
                     }}
-                  />
+                  >
+                    <View style={[styles.linkTypeIcon, isSelected && styles.linkTypeIconSelected, isSelected && { borderColor: theme.colors.onSurface }]}>
+                      <Icon source={PROFILE_LINK_TYPE_ICONS[type]} size={24} color={theme.colors.onSurface} />
+                    </View>
+                    <Text style={[styles.linkTypeCaption, isSelected && styles.linkTypeCaptionSelected]}>
+                      {label}
+                    </Text>
+                  </Pressable>
                 );
               })}
             </View>
@@ -965,8 +983,35 @@ const styles = StyleSheet.create({
   },
   linkTypeRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 2
+  },
+  linkTypeOption: {
+    flex: 1,
+    alignItems: "center",
+    gap: designTokens.spacing.xs
+  },
+  linkTypeIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: designTokens.colors.secondary,
+    borderWidth: 1,
+    borderColor: "transparent"
+  },
+  linkTypeIconSelected: {
+    backgroundColor: "transparent"
+  },
+  linkTypeCaption: {
+    fontFamily: appFontFamilies.general,
+    textAlign: "center",
+    fontSize: 12
+  },
+  linkTypeCaptionSelected: {
+    fontFamily: appFontFamilies.altGeneral,
+    fontWeight: "bold"
   },
   actionsZone: {
     gap: designTokens.spacing.sm,

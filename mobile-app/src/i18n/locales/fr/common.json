@@ -209,7 +209,13 @@
   "isServiceLabel": "Service",
   "lessInfoLabel": "Moins d'infos",
   "linkTitleLabel": "Titre",
-  "linkTypeLabel": "Type",
+  "linkTypeLabel": "Type de lien",
+  "linkType": {
+    "website": "Site web",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "x": "X"
+  },
   "linkUrlLabel": "URL",
   "linksLabel": "Liens",
   "loading": "Chargement...",
