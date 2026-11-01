@@ -88,10 +88,14 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        NEXT_PUBLIC_GRAPHQL_URL: http://localhost:5050/graphql
-        NEXT_PUBLIC_GRAPHQL_WS_URL: ws://localhost:5050/graphql
-        NEXT_PUBLIC_BACKEND_URL: http://localhost:5050
-        NEXT_PUBLIC_DEFAULT_LOCALE: fr
+        NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL:-http://localhost:5050/graphql}
+        NEXT_PUBLIC_GRAPHQL_WS_URL: ${NEXT_PUBLIC_GRAPHQL_WS_URL:-ws://localhost:5050/graphql}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:5050}
+        NEXT_PUBLIC_DEFAULT_LOCALE: ${NEXT_PUBLIC_DEFAULT_LOCALE:-fr}
+        NEXT_PUBLIC_CLOUDINARY_CLOUD: ${NEXT_PUBLIC_CLOUDINARY_CLOUD:-}
+        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:-}
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+        NEXT_PUBLIC_TOKEN_BALANCE_POLL_INTERVAL_MS: ${NEXT_PUBLIC_TOKEN_BALANCE_POLL_INTERVAL_MS:-}
     container_name: mutuity-frontend
     depends_on:
       backend:
