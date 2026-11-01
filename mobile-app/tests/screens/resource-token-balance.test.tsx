@@ -1,5 +1,5 @@
 import React from "react";
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
 import { PaperProvider } from "react-native-paper";
 import { ResourceDetailScreen } from "../../src/screens/resources/ResourceDetailScreen";
 import type { ResourceDetailItem } from "../../src/services/graphql/resources";
@@ -37,6 +37,10 @@ it("subscribes only while the bid dialog is open and validates the latest hook b
   await screen.findByTestId("bid-token-balance");
   expect(useTokenBalance).toHaveBeenLastCalledWith("bidder", true);
   expect(screen.getByTestId("bid-token-balance")).toHaveTextContent("Available balance: 20");
+  const amountGroup = within(screen.getByTestId("bid-token-amount-group"));
+  expect(amountGroup.getByLabelText("Tope amount")).toBeTruthy();
+  expect(amountGroup.getByTestId("bid-token-balance")).toBeTruthy();
+  expect(amountGroup.queryByLabelText("Valid for (hours)")).toBeNull();
   (useTokenBalance as jest.Mock).mockReturnValue({ balance: 5, loading: false, error: null, refresh: jest.fn() });
   screen.rerender(<ResourceDetailScreen {...props} />);
   expect(screen.getByTestId("bid-token-balance")).toHaveTextContent("Available balance: 5");
@@ -53,7 +57,7 @@ it("displays unknown/error as a dash rather than zero and defers balance enforce
   fireEvent.press(screen.getByLabelText("Send bid"));
   await screen.findByTestId("bid-token-balance");
   expect(screen.getByTestId("bid-token-balance")).toHaveTextContent("Available balance: —");
-  expect(screen.getByText("We could not load contribution details.")).toBeTruthy();
+  expect(screen.getByText("We could not update your balance.")).toBeTruthy();
   await act(async () => { fireEvent.press(screen.getByText("Send bid")); });
   expect(submitResourceBid).toHaveBeenCalledWith({ resourceId: "resource", proposedTokenAmount: 12, validHours: 12, message: null });
   expect(useTokenBalance).toHaveBeenLastCalledWith("bidder", false);

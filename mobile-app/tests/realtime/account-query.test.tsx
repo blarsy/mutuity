@@ -4,7 +4,7 @@ import { AuthContext, type AuthContextValue } from "../../src/services/auth/Auth
 import { fetchCurrentTokenBalance } from "../../src/services/graphql/economics";
 import { fetchUnreadNotificationsCount } from "../../src/services/graphql/notifications";
 import { AccountEventSubscriptionProvider, signalAccountRefresh } from "../../src/services/realtime/accountEvents";
-import { useTokenBalance } from "../../src/services/realtime/useTokenBalance";
+import { TokenBalanceProvider, useTokenBalance } from "../../src/services/realtime/useTokenBalance";
 import { useUnreadNotificationsCount } from "../../src/services/realtime/useUnreadNotificationsCount";
 
 jest.mock("@react-native-community/netinfo", () => ({
@@ -28,7 +28,7 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function wrapperFor(identity: { accountId: string | null }) {
+function wrapperFor(identity: { accountId: string | null }, sharedBalance = false) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     const value: AuthContextValue = {
       session: { accountId: identity.accountId, authenticated: Boolean(identity.accountId),
@@ -37,7 +37,9 @@ function wrapperFor(identity: { accountId: string | null }) {
       changeLanguage: jest.fn(), refreshSession: jest.fn()
     };
     return <AuthContext.Provider value={value}>
-      <AccountEventSubscriptionProvider>{children}</AccountEventSubscriptionProvider>
+      <AccountEventSubscriptionProvider>
+        {sharedBalance ? <TokenBalanceProvider>{children}</TokenBalanceProvider> : children}
+      </AccountEventSubscriptionProvider>
     </AuthContext.Provider>;
   };
 }
@@ -182,4 +184,101 @@ it("disabled token balance neither fetches nor responds to realtime and discards
   signalAccountRefresh(); await flushSignals();
   expect(result.current.balance).toBeNull(); expect(result.current.loading).toBe(false);
   expect(fetchCurrentTokenBalance).toHaveBeenCalledTimes(1);
+});
+
+describe("app-wide token balance", () => {
+  it("shares one fetch across consumers and retains the balance when menus/forms reopen", async () => {
+    const fetch = jest.mocked(fetchCurrentTokenBalance);
+    fetch.mockReset().mockResolvedValue(3115);
+    const identity = { accountId: "alice" as string | null };
+    const { result, rerender } = renderHook(({ open }: { open: boolean }) => [
+      useTokenBalance(identity.accountId),
+      useTokenBalance(identity.accountId, open),
+      useTokenBalance(identity.accountId, open)
+    ], { initialProps: { open: false }, wrapper: wrapperFor(identity, true) });
+    await act(async () => { await Promise.resolve(); });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(result.current[0]!.balance).toBe(3115);
+    rerender({ open: true });
+    expect(result.current.map(value => value.balance)).toEqual([3115, 3115, 3115]);
+    expect(result.current.every(value => !value.loading)).toBe(true);
+    rerender({ open: false });
+    rerender({ open: true });
+    expect(result.current.map(value => value.balance)).toEqual([3115, 3115, 3115]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await flushSignals();
+    fetch.mockClear();
+    fetch.mockResolvedValue(42);
+    act(() => { signalAccountRefresh(); signalAccountRefresh(); });
+    await flushSignals();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(result.current.map(value => value.balance)).toEqual([42, 42, 42]);
+  });
+
+  it("refreshes from the GraphQL subscription with all on-demand consumers closed", async () => {
+    let nextEvent!: () => void;
+    const { apolloClient } = jest.requireMock("../../src/services/graphql/client");
+    apolloClient.subscribe.mockImplementation(() => ({ subscribe: (observer: { next: () => void }) => {
+      nextEvent = observer.next;
+      return { unsubscribe: jest.fn() };
+    } }));
+    const fetch = jest.mocked(fetchCurrentTokenBalance);
+    fetch.mockReset().mockResolvedValue(20);
+    const identity = { accountId: "alice" as string | null };
+    const { result, rerender } = renderHook(({ open }: { open: boolean }) => useTokenBalance(identity.accountId, open), {
+      initialProps: { open: false }, wrapper: wrapperFor(identity, true)
+    });
+    await flushSignals();
+    fetch.mockClear(); fetch.mockResolvedValue(25);
+    act(() => nextEvent()); await flushSignals();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    rerender({ open: true });
+    expect(result.current.balance).toBe(25);
+    expect(result.current.loading).toBe(false);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(apolloClient.subscribe).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves shared data after an offline failure and recovers to zero", async () => {
+    const fetch = jest.mocked(fetchCurrentTokenBalance);
+    fetch.mockReset().mockResolvedValue(12);
+    const identity = { accountId: "alice" as string | null };
+    const { result } = renderHook(() => [useTokenBalance(identity.accountId), useTokenBalance(identity.accountId)], {
+      wrapper: wrapperFor(identity, true)
+    });
+    await flushSignals();
+    const error = new Error("offline");
+    fetch.mockRejectedValue(error);
+    act(() => signalAccountRefresh()); await flushSignals();
+    expect(result.current.map(value => value.balance)).toEqual([12, 12]);
+    expect(result.current.every(value => value.error === error)).toBe(true);
+    fetch.mockResolvedValue(0);
+    act(() => signalAccountRefresh()); await flushSignals();
+    expect(result.current.map(value => value.balance)).toEqual([0, 0]);
+    expect(result.current.every(value => value.error === null)).toBe(true);
+  });
+
+  it("clears shared data on account changes/logout and rejects late old-account requests", async () => {
+    const fetch = jest.mocked(fetchCurrentTokenBalance);
+    fetch.mockReset().mockResolvedValue(12);
+    const identity = { accountId: "alice" as string | null };
+    const { result, rerender } = renderHook(() => [useTokenBalance(identity.accountId), useTokenBalance("alice")], {
+      wrapper: wrapperFor(identity, true)
+    });
+    await flushSignals();
+    const pending = deferred();
+    fetch.mockReturnValueOnce(pending.promise).mockResolvedValue(4);
+    act(() => signalAccountRefresh()); await flushSignals();
+    identity.accountId = "bob"; rerender({});
+    expect(result.current.map(value => value.balance)).toEqual([null, null]);
+    await act(async () => { await Promise.resolve(); });
+    expect(result.current.map(value => value.balance)).toEqual([4, null]);
+    await act(async () => { pending.resolve(999); await Promise.resolve(); });
+    expect(result.current.map(value => value.balance)).toEqual([4, null]);
+    identity.accountId = null; rerender({});
+    expect(result.current.map(value => value.balance)).toEqual([null, null]);
+    const calls = fetch.mock.calls.length;
+    act(() => signalAccountRefresh()); await flushSignals();
+    expect(fetch).toHaveBeenCalledTimes(calls);
+  });
 });

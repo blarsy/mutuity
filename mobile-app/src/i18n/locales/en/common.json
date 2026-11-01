@@ -95,6 +95,10 @@
   "contributionHowItWorksLabel": "Show me how it works",
   "contributionLabel": "Contribution",
   "contributionLoadError": "We could not load contribution details.",
+  "tokenBalanceLabel": "Token balance",
+  "tokenBalanceAvailableLabel": "Available balance: {{balance}}",
+  "tokenBalanceLoadingLabel": "Loading token balance...",
+  "tokenBalanceLoadError": "We could not update your balance.",
   "contributionLoading": "Loading contribution details...",
   "createAccount": "Create account",
   "howToGetTokens": {

@@ -96,6 +96,10 @@
   "contributionHowItWorksLabel": "Montre-moi comment ça marche",
   "contributionLabel": "Contribution",
   "contributionLoadError": "Impossible de charger les détails de contribution.",
+  "tokenBalanceLabel": "Solde de Topes",
+  "tokenBalanceAvailableLabel": "Solde disponible : {{balance}}",
+  "tokenBalanceLoadingLabel": "Chargement du solde de Topes...",
+  "tokenBalanceLoadError": "Impossible de mettre à jour votre solde.",
   "contributionLoading": "Chargement des détails de contribution...",
   "createAccount": "Créer un compte",
   "howToGetTokens": {

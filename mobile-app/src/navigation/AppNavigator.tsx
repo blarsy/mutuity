@@ -3,7 +3,7 @@ import { Dimensions, Linking, Pressable, StatusBar, StyleSheet, View } from "rea
 import { NavigationContainer, DefaultTheme, useNavigationContainerRef } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Appbar, Menu, Portal, Snackbar, Text } from "react-native-paper";
+import { Appbar, Divider, Menu, Portal, Snackbar, Text } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from "../services/auth/AuthProvider";
 import { useCurrentAccount } from "../services/auth/useCurrentAccount";
 import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitives";
 import { AccountAvatar } from "../components/AccountAvatar";
+import { TokenBalanceInfo } from "../components/contribution/TokenBalanceInfo";
 import { authenticateWithPassword, registerWithSocialIdentity, requestPasswordReset } from "../services/graphql/auth";
 import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
 import { confirmPendingSocialLink } from "../services/socialAuth/confirmLink";
@@ -60,6 +61,7 @@ import type { ChatConversationKind } from "../services/graphql/chat";
 import { openBidChat, openClaimChat, sendWorkspaceFirstMessage, type WorkspaceConversation } from "../services/graphql/workspaceChat";
 import { AccountEventSubscriptionProvider, subscribeToAccountEvents } from "../services/realtime/accountEvents";
 import { useUnreadNotificationsCount } from "../services/realtime/useUnreadNotificationsCount";
+import { TokenBalanceProvider, useTokenBalance } from "../services/realtime/useTokenBalance";
 import { designTokens } from "../theme/tokens";
 import { appFontFamilies } from "../theme/fonts";
 import { US2ExploreScreen } from "./US2Navigator";
@@ -749,6 +751,7 @@ function RootNavigator(): React.JSX.Element {
   const [activeRouteName, setActiveRouteName] = useState<MainRouteName>("Explore");
   const [mainNavigatorVersion, setMainNavigatorVersion] = useState(0);
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
+  const menuBalance = useTokenBalance(authenticated ? accountId : null, authenticated);
   const [showSupport, setShowSupport] = useState(false);
   const [activeChatConversation, setActiveChatConversation] = useState<ActiveChatConversation | null>(null);
   const [displayedChatConversationId, setDisplayedChatConversationId] = useState<string | null>(null);
@@ -1118,6 +1121,16 @@ function RootNavigator(): React.JSX.Element {
                 </Pressable>
               )}
             >
+              <View style={styles.accountMenuBalance}>
+                <TokenBalanceInfo
+                  summary
+                  balance={menuBalance.balance}
+                  loading={menuBalance.loading}
+                  error={menuBalance.error}
+                  testID="account-menu-token-balance"
+                />
+              </View>
+              <Divider />
               <Menu.Item
                 title={t("myHubDrawerProfile", { ns: "us1", defaultValue: "Profile" })}
                 style={styles.accountMenuItem}
@@ -1352,7 +1365,9 @@ export function AppNavigator(): React.JSX.Element {
   return (
     <AuthProvider>
       <AccountEventSubscriptionProvider>
-        <RootNavigator />
+        <TokenBalanceProvider>
+          <RootNavigator />
+        </TokenBalanceProvider>
       </AccountEventSubscriptionProvider>
     </AuthProvider>
   );
@@ -1413,6 +1428,11 @@ const styles = StyleSheet.create({
   accountMenuItem: {
     minWidth: 180,
     backgroundColor: designTokens.colors.secondary
+  },
+  accountMenuBalance: {
+    minWidth: 180,
+    paddingHorizontal: 16,
+    paddingVertical: 12
   },
   accountMenuItemTitle: {
     color: "#000000",

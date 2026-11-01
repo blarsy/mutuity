@@ -19,6 +19,7 @@ import ChatIcon from "../../assets/img/CHAT.svg";
 
 import { NavigationBackHeader, FormTextInput, ThemedDialog } from "../../components/primitives";
 import { TokenAmount } from "../../components/TokenAmount";
+import { TokenBalanceInfo } from "../../components/contribution/TokenBalanceInfo";
 import { submitResourceBid } from "../../services/graphql/bids";
 import { useTokenBalance } from "../../services/realtime/useTokenBalance";
 import { fetchResourceById, type ResourceDetailItem } from "../../services/graphql/resources";
@@ -634,16 +635,24 @@ export function ResourceDetailScreen({
               })}
             </Text>
 
-            <FormTextInput
-              label={t("amountOfTokenLabel", { defaultValue: "Tope amount" })}
-              accessibilityLabel={t("amountOfTokenLabel", { defaultValue: "Tope amount" })}
-              value={bidAmountValue}
-              onChangeText={(value) => {
-                setBidAmountValue(value);
-                setBidErrorMessage(null);
-              }}
-              keyboardType="number-pad"
-            />
+            <View testID="bid-token-amount-group">
+              <FormTextInput
+                label={t("amountOfTokenLabel", { defaultValue: "Tope amount" })}
+                accessibilityLabel={t("amountOfTokenLabel", { defaultValue: "Tope amount" })}
+                value={bidAmountValue}
+                onChangeText={(value) => {
+                  setBidAmountValue(value);
+                  setBidErrorMessage(null);
+                }}
+                keyboardType="number-pad"
+              />
+              <TokenBalanceInfo
+                balance={currentTokenBalance}
+                loading={loadingTokenBalance}
+                error={tokenBalance === undefined ? balanceState.error : null}
+                testID="bid-token-balance"
+              />
+            </View>
 
             <FormTextInput
               label={t("hoursValidLabel", { defaultValue: "Valid for (hours)" })}
@@ -666,25 +675,6 @@ export function ResourceDetailScreen({
               }}
               multiline
             />
-
-            {loadingTokenBalance ? (
-              <Text variant="bodySmall" style={styles.bidDialogHintText}>
-                {t("tokenBalanceLoadingLabel", { defaultValue: "Loading Tope balance..." })}
-              </Text>
-            ) : null}
-
-            <Text variant="bodySmall" style={styles.bidDialogHintText} testID="bid-token-balance">
-              {t("tokenBalanceAvailableLabel", {
-                defaultValue: "Available balance: {{balance}}",
-                balance: typeof currentTokenBalance === "number" ? currentTokenBalance : "—"
-              })}
-            </Text>
-
-            {tokenBalance === undefined && balanceState.error ? (
-              <Text variant="bodySmall" style={styles.bidDialogHintText}>
-                {t("contributionLoadError", { defaultValue: "We could not load contribution details." })}
-              </Text>
-            ) : null}
 
             {bidErrorMessage ? (
               <Text variant="bodySmall" style={styles.bidDialogErrorText}>
@@ -901,10 +891,6 @@ const styles = StyleSheet.create({
   bidDialogInfoText: {
     fontFamily: appFontFamilies.general,
     color: "#000000"
-  },
-  bidDialogHintText: {
-    color: "#333333",
-    fontFamily: appFontFamilies.general
   },
   bidDialogErrorText: {
     color: designTokens.colors.primary,

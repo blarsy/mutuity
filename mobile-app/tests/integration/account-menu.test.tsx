@@ -4,6 +4,7 @@ import { AppNavigator, MyHubScreen } from "../../src/navigation/AppNavigator";
 import type { MyHubSection } from "../../src/screens/hub/MyHubDashboardScreen";
 import { designTokens } from "../../src/theme/tokens";
 import { appFontFamilies } from "../../src/theme/fonts";
+import { useTokenBalance } from "../../src/services/realtime/useTokenBalance";
 
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 const mockNavigate = jest.fn();
@@ -20,7 +21,12 @@ function mockSpoke(title: string, props: any) {
 }
 
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key })
+  useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key, i18n: { language: "en" } })
+}));
+jest.mock("../../src/assets/img/TOKENS.svg", () => () => null);
+jest.mock("../../src/services/realtime/useTokenBalance", () => ({
+  useTokenBalance: jest.fn(),
+  TokenBalanceProvider: ({ children }: { children: React.ReactNode }) => children
 }));
 jest.mock("../../src/i18n", () => ({ __esModule: true, default: {} }));
 jest.mock("../../src/services/auth/AuthProvider", () => ({
@@ -105,7 +111,39 @@ jest.mock("@react-navigation/bottom-tabs", () => {
   }) };
 });
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.mocked(useTokenBalance).mockReturnValue({ balance: 3115, loading: false, error: null, refresh: jest.fn() });
+});
+
+it("shows the app-wide read-only balance without toggling its subscription with the menu", () => {
+  const screen = render(<AppNavigator />);
+  expect(useTokenBalance).toHaveBeenLastCalledWith(mockAccountId, true);
+  fireEvent.press(screen.getByLabelText("Account"));
+  expect(useTokenBalance).toHaveBeenLastCalledWith(mockAccountId, true);
+  const menu = within(screen.getByTestId("account-menu"));
+  expect(menu.getByText("Token balance")).toBeTruthy();
+  expect(menu.getByTestId("account-menu-token-balance")).toHaveTextContent("3,115");
+  expect(menu.getAllByRole("button").map(button => button.props.accessibilityLabel))
+    .toEqual(["Profile", "Contribution", "Preferences", "Log out"]);
+  fireEvent.press(menu.getByTestId("account-menu-token-balance"));
+  expect(screen.getByTestId("account-menu")).toBeTruthy();
+  expect(mockNavigate).not.toHaveBeenCalled();
+
+  jest.mocked(useTokenBalance).mockReturnValue({ balance: 0, loading: false, error: null, refresh: jest.fn() });
+  screen.rerender(<AppNavigator />);
+  expect(menu.getByTestId("account-menu-token-balance")).toHaveTextContent("0");
+  fireEvent.press(menu.getByRole("button", { name: "Profile" }));
+  expect(useTokenBalance).toHaveBeenLastCalledWith(mockAccountId, true);
+});
+
+it("does not invent a zero balance when offline", () => {
+  jest.mocked(useTokenBalance).mockReturnValue({ balance: null, loading: false, error: new Error("offline"), refresh: jest.fn() });
+  const screen = render(<AppNavigator />);
+  fireEvent.press(screen.getByLabelText("Account"));
+  expect(screen.getByTestId("account-menu-token-balance")).toHaveTextContent("—");
+  expect(screen.getByText("We could not update your balance.")).toBeTruthy();
+});
 
 it.each([
   ["Profile", "Profile screen"],

@@ -26,10 +26,14 @@ import { designTokens } from "../../theme/tokens";
 import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import { fetchMyProfile } from "../../services/graphql/profile";
+import { useTokenBalance } from "../../services/realtime/useTokenBalance";
+import { TokenBalanceInfo } from "../../components/contribution/TokenBalanceInfo";
 
 export interface EditNeedScreenProps {
   creatorAccountId: string | null;
   initialNeed: NeedItem | null;
+  /** Optional balance for isolated stories/tests; null means unknown. */
+  tokenBalance?: number | null;
   campaigns?: LinkableCampaignItem[];
   initialCampaignId?: string | null;
   onBack: () => void;
@@ -59,6 +63,7 @@ function NatureToggleRow({ label, selected, onPress }: NatureToggleRowProps): Re
 export function EditNeedScreen({
   creatorAccountId,
   initialNeed,
+  tokenBalance,
   campaigns: injectedCampaigns,
   initialCampaignId,
   onBack,
@@ -66,6 +71,7 @@ export function EditNeedScreen({
   onOpenCampaign
 }: EditNeedScreenProps): React.JSX.Element {
   const { t } = useTranslation(["common", "us2"]);
+  const balanceState = useTokenBalance(creatorAccountId, tokenBalance === undefined && Boolean(creatorAccountId));
   const [title, setTitle] = useState(initialNeed?.title ?? "");
   const [description, setDescription] = useState(initialNeed?.description ?? "");
   const [imageUrls, setImageUrls] = useState<string[]>(initialNeed?.imageUrls ?? []);
@@ -306,12 +312,20 @@ export function EditNeedScreen({
         </FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={handleLocationChange} />
 
-        <PriceSetter
-          label={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}
-          accessibilityLabel={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}
-          value={tokenAmount}
-          onChange={setTokenAmount}
-        />
+        <View testID="need-token-amount-group">
+          <PriceSetter
+            label={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}
+            accessibilityLabel={t("needTokenAmountLabel", { ns: "us2", defaultValue: "Tope amount" })}
+            value={tokenAmount}
+            onChange={setTokenAmount}
+          />
+          <TokenBalanceInfo
+            balance={tokenBalance !== undefined ? tokenBalance : balanceState.balance}
+            loading={tokenBalance === undefined && balanceState.loading}
+            error={tokenBalance === undefined ? balanceState.error : null}
+            testID="need-token-balance"
+          />
+        </View>
 
         <View style={styles.intensityBlock}>
           <FormFieldLabel>

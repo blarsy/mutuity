@@ -9,6 +9,7 @@ import { bootstrapSession } from "../../src/services/auth/session";
 import { apolloClient } from "../../src/services/graphql/client";
 import { fetchUnreadNotificationsCount } from "../../src/services/graphql/notifications";
 import { fetchUnreadChatConversationCount } from "../../src/services/graphql/chat";
+import { fetchCurrentTokenBalance } from "../../src/services/graphql/economics";
 import { signalAccountRefresh } from "../../src/services/realtime/accountEvents";
 
 let mockAuth: AuthContextValue;
@@ -34,6 +35,7 @@ jest.mock("../../src/services/graphql/client", () => ({
 }));
 jest.mock("../../src/services/graphql/chat", () => ({ fetchChatConversations: jest.fn().mockResolvedValue([]), fetchUnreadChatConversationCount: jest.fn() }));
 jest.mock("../../src/services/graphql/notifications", () => ({ fetchUnreadNotificationsCount: jest.fn() }));
+jest.mock("../../src/services/graphql/economics", () => ({ fetchCurrentTokenBalance: jest.fn() }));
 jest.mock("../../src/services/app/versionGate", () => ({
   fetchAppVersionFloor: jest.fn().mockResolvedValue(null), getCurrentAppVersion: () => "999.0.0"
 }));
@@ -87,6 +89,7 @@ beforeEach(() => {
   jest.useFakeTimers(); jest.clearAllMocks();
   (bootstrapSession as jest.Mock).mockResolvedValue({ token: `mock:${ALICE}`, accountId: ALICE, language: null });
   (fetchUnreadNotificationsCount as jest.Mock).mockReset().mockResolvedValue(3);
+  (fetchCurrentTokenBalance as jest.Mock).mockReset().mockResolvedValue(3115);
   (fetchUnreadChatConversationCount as jest.Mock).mockReset().mockResolvedValue(2);
   unsubscribe = jest.fn();
   (apolloClient.subscribe as jest.Mock).mockImplementation(() => ({ subscribe: (observer: { next: () => void }) => {

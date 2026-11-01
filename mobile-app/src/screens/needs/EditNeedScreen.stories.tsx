@@ -49,6 +49,7 @@ const meta = {
     onBack: () => undefined,
     onSaved: () => undefined,
     initialNeed: null,
+    tokenBalance: 3115,
     campaigns: SAMPLE_CAMPAIGNS
   }
 } satisfies Meta<typeof EditNeedScreen>;
