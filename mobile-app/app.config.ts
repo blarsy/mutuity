@@ -21,8 +21,8 @@ interface ExternalAppSettings {
   };
 }
 
-const APP_VERSION = "1.0.6";
-const APP_VERSION_CODE = 181;
+const APP_VERSION = "1.0.7";
+const APP_VERSION_CODE = 182;
 
 function resolveTargetEnv(value: string | undefined): TargetEnv {
   const normalized = value?.toLowerCase();

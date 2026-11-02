@@ -195,10 +195,13 @@ export default function ManageNeedsPage() {
     <PageContainer>
       <Box sx={{ py: 6 }}>
         <Stack spacing={3}>
-          <Box>
-            <Typography component="h1" gutterBottom variant="h4">
+          <Box sx={{ alignItems: "center", display: "flex", flexWrap: "wrap", gap: 2, justifyContent: "space-between" }}>
+            <Typography component="h1" variant="h4">
               {t("manage.title")}
             </Typography>
+            <Button component={NextLink} href="/app/needs/create" variant="contained">
+              {t("manage.addButton")}
+            </Button>
           </Box>
 
           {loading ? <Alert severity="info">{t("manage.loading")}</Alert> : null}
@@ -293,19 +296,6 @@ export default function ManageNeedsPage() {
         </DialogActions>
       </Dialog>
 
-      <Button
-        component={NextLink}
-        href="/app/needs/create"
-        sx={{
-          bottom: 24,
-          position: "fixed",
-          right: 24,
-          zIndex: theme => theme.zIndex.speedDial
-        }}
-        variant="contained"
-      >
-        {t("manage.addButton")}
-      </Button>
     </PageContainer>
   );
 }
