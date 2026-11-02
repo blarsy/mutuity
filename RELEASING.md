@@ -35,6 +35,35 @@ Because an already-shipped binary cannot be edited, **any** breaking change that
 depends on a newer app must raise the floor **in the same migration** that
 introduces the break.
 
+## Tope-là 0.13 → 1.0 production cutover
+
+The shipped 0.13 app does not understand `/health` or `APP_UPDATE_REQUIRED`.
+At startup it POSTs `query GetMinimumClientVersion { getMinimumClientVersion }`
+to `https://www.tope-la.com/v0_13/graphql`. The isolated retirement endpoint
+returns HTTP 200 with `{"data":{"getMinimumClientVersion":"1.0.0"}}`, causing
+the existing app to show its mandatory-update screen and store button.
+
+- Deploy the backend **and** the production Caddyfile at cutover. The test
+   Caddyfile exposes the same endpoint for testing; review version routing is
+   unchanged. Do not redirect this URL to the website or the modern GraphQL API.
+- The endpoint is intentionally independent of database/session availability,
+   needs no authentication or app-version headers, and sends `Cache-Control:
+   no-store`. The retirement floor stays at `1.0.0`, independently of future
+   per-platform version-policy changes.
+- Legacy client-log mutations are acknowledged and discarded. Other legacy
+   operations receive GraphQL errors; no old sessions or business writes are
+   supported, and nothing is forwarded to the current API.
+- Make the replacement downloadable in **both existing store listings** before
+   activation (Android `com.topela`, iOS store ID `6470202780`); verify signing,
+   upgrade eligibility and each platform's store button on real 0.13 installs.
+- Test both logged-out and previously logged-in 0.13 installs against the new
+   stack. Cold startup should show the update screen after the splash (at least
+   three seconds). An already-running/backgrounded app does not recheck until
+   restarted. Offline/failed version checks fail open in the old binary.
+- Keep this small endpoint available for dormant installations after cutover.
+   Verify the exact public URL returns the successful GraphQL response above,
+   not HTML, a redirect or an `APP_UPDATE_REQUIRED` error.
+
 ## The four scenarios
 
 ### 1. Backend only (services + database)

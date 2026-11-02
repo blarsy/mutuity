@@ -8,6 +8,7 @@ import path from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { setTimeout as delay } from "node:timers/promises";
 
 // Run the real Caddyfiles against disposable, labelled HTTP upstreams.
 // Nothing reaches the application stacks, database, Google, or production.
@@ -53,6 +54,23 @@ before(async () => {
     ]);
     const { stdout } = await exec("docker", ["port", containerName, "80/tcp"]);
     ports[name] = Number(stdout.trim().split(":").at(-1));
+    // A published container port can accept/reset sockets before Caddy has
+    // loaded its config. Wait for a real upstream response, not just docker run.
+    const host = name === "shared" ? "production.test" : "test.tope-la.com";
+    const expected = name === "shared" ? "production-api" : "test-api";
+    const deadline = Date.now() + 15_000;
+    for (;;) {
+      try {
+        assert.deepEqual(await request(name, host, "/health"), { status: 200, body: expected });
+        break;
+      } catch (error) {
+        if (Date.now() >= deadline) {
+          const { stdout: logs, stderr } = await exec("docker", ["logs", containerName]);
+          throw new Error(`Caddy did not become ready: ${logs}${stderr}`, { cause: error });
+        }
+        await delay(50);
+      }
+    }
   }
 });
 
@@ -103,6 +121,13 @@ for (const [stack, host, environment] of [
       assert.equal((await request(stack, host, url)).body, `${environment}-api`);
     }
   });
+  if (environment !== "review") {
+    test(`${host}: legacy 0.13 startup POST reaches the API without a redirect`, async () => {
+      for (const url of ["/v0_13/graphql", "/v0_13/graphql/"]) {
+        assert.deepEqual(await request(stack, host, url, "POST"), { status: 200, body: `${environment}-api` });
+      }
+    });
+  }
 }
 
 test("review: processed results take precedence over candidate/production version routing", async () => {

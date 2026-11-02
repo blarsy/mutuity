@@ -34,6 +34,7 @@ import {
 import { createAuthSessionMiddleware, createSessionForAccount, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../auth/session.js";
 import { logWebApiError, logWebApiInfo } from "../logging/operationalLogger.js";
 import { createAuthGraphqlPlugin } from "./authGraphqlPlugin.js";
+import { createLegacyAppUpdateRouter } from "./legacyAppUpdate.js";
 import { getAppVersionFloor, isVersionBelowFloor, type AppPlatform } from "./version.js";
 
 const app = express();
@@ -471,6 +472,10 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
   const callbackBaseUrl = input.context === "mobile" ? mobileAppBaseUrl : frontendBaseUrl;
   return buildMobileSocialCallbackUrl(provider, input, callbackBaseUrl);
 }
+
+// Retired mobile clients must learn about the update even with stale cookies
+// or when the application database is unavailable.
+app.use("/v0_13/graphql", createLegacyAppUpdateRouter());
 
 app.use(cookieParser(sessionSecret));
 app.use(createAuthSessionMiddleware(pool));

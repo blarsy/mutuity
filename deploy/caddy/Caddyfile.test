@@ -17,7 +17,7 @@ test.tope-la.com {
 	}
 
 	@mobileApi {
-		path /graphql /graphql/* /health /auth /auth/*
+		path /graphql /graphql/* /v0_13/graphql /v0_13/graphql/ /health /auth /auth/*
 	}
 
 	handle @mobileApi {
