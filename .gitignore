@@ -9,6 +9,9 @@ coverage/
 .env.ingress
 .env.test
 .env.test-ingress
+.env.monitoring
+.monitoring-artifacts/
+frontend/.monitoring-artifacts/
 frontend/tsconfig.tsbuildinfo
 .vscode/
 .DS_Store

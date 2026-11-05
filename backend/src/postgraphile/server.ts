@@ -1,4 +1,7 @@
-import "dotenv/config";
+import "../monitoring/instrument.js";
+import { flushMonitoring } from "../monitoring/instrument.js";
+import { reportExpressError, reportGraphqlError } from "../monitoring/errors.js";
+import { createDatabasePing, createReadinessHandler } from "./readiness.js";
 
 import { createServer } from "node:http";
 import cookieParser from "cookie-parser";
@@ -477,6 +480,7 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
 // or when the application database is unavailable.
 app.use("/v0_13/graphql", createLegacyAppUpdateRouter());
 
+app.get("/ready", createReadinessHandler(createDatabasePing(pool)));
 app.use(cookieParser(sessionSecret));
 app.use(createAuthSessionMiddleware(pool));
 
@@ -879,7 +883,11 @@ const postgraphileMiddleware = postgraphile(
         });
       }
 
-      return errors.map(e => sanitizeGraphQLError(e, req));
+      return errors.map(error => {
+        const sanitized = sanitizeGraphQLError(error, req);
+        reportGraphqlError(error, sanitized.extensions?.code);
+        return sanitized;
+      });
     },
     pgSettings: req => {
       const session = (
@@ -1053,9 +1061,28 @@ app.get("/health", async (_req, res) => {
   res.status(200).json({ status: "ok", appVersionPolicy: floor });
 });
 
+app.use(reportExpressError);
+
 // Upgrade the HTTP server to handle WebSocket connections for GraphQL subscriptions.
 const httpServer = createServer(app);
 enhanceHttpServerWithSubscriptions(httpServer, postgraphileMiddleware);
+
+let shuttingDown = false;
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    const deadline = setTimeout(() => { void flushMonitoring().finally(() => process.exit(1)); }, 5000);
+    deadline.unref();
+    httpServer.close(() => {
+      void pool.end().finally(async () => {
+        await flushMonitoring();
+        clearTimeout(deadline);
+        process.exit(0);
+      });
+    });
+  });
+}
 
 httpServer.listen(port, () => {
   // Keep logs concise for local bootstrap.

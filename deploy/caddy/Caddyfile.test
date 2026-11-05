@@ -37,3 +37,11 @@ test.tope-la.com {
 
 	reverse_proxy {$TEST_FRONTEND_UPSTREAM}
 }
+
+{$MONITORING_HOST:errors.test.tope-la.com} {
+	encode gzip
+	request_body {
+		max_size 20MB
+	}
+	reverse_proxy {$TEST_GLITCHTIP_UPSTREAM:glitchtip-test:8000}
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Mutuity database recovery point
+
+[Timer]
+OnCalendar=*-*-* 02:00:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=mutuity-backup.service
+
+[Install]
+WantedBy=timers.target

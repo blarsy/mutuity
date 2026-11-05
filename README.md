@@ -1,3 +1,8 @@
+# Operations
+
+- [Self-hosted monitoring deployment](docs/MONITORING.md): separate-server GlitchTip, application errors, sampled performance and uptime alerts.
+- [Encrypted PostgreSQL backups and recovery](docs/BACKUPS.md): daily production dumps to private R2 and isolated restore drills.
+
 # Mutuity
 
 Monorepo for Mutuity frontend, backend (PostGraphile + Graphile Worker), and PostgreSQL schema.

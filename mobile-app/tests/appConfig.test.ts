@@ -58,6 +58,31 @@ describe("build-time environment configuration", () => {
     expect(() => appConfig(context)).toThrow("cloudinary.uploadPreset");
   });
 
+  it("keeps monitoring opt-in and does not add native upload hooks without a DSN", () => {
+    mockSettings();
+    delete process.env.EXPO_PUBLIC_GLITCHTIP_DSN;
+    const config = appConfig(context);
+    expect(config.extra?.monitoring).toEqual({ dsn: "", storybook: false });
+    expect(JSON.stringify(config.plugins)).not.toContain("@sentry/react-native");
+  });
+
+  it("exposes only public monitoring settings and directs native artifact uploads to GlitchTip", () => {
+    mockSettings();
+    process.env.EXPO_PUBLIC_GLITCHTIP_DSN = "https://public-key@errors.example.com/1";
+    process.env.SENTRY_ORG = "mutuity";
+    process.env.SENTRY_PROJECT = "mobile";
+    process.env.SENTRY_AUTH_TOKEN = "private-build-token";
+    process.env.EXPO_PUBLIC_STORYBOOK_ENABLED = "true";
+    const config = appConfig(context);
+    expect(config.extra?.monitoring).toEqual({
+      dsn: "https://public-key@errors.example.com/1", storybook: true
+    });
+    expect(config.plugins).toContainEqual(["@sentry/react-native/expo", {
+      url: "https://errors.example.com/", organization: "mutuity", project: "mobile"
+    }]);
+    expect(JSON.stringify(config)).not.toContain("private-build-token");
+  });
+
   it("rejects missing integration settings", () => {
     const settings = mockSettings();
     Reflect.deleteProperty(settings, "googleMaps");

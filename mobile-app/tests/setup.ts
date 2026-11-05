@@ -1,6 +1,17 @@
 import "@testing-library/jest-native/extend-expect";
 import "../src/i18n";
 
+// Never load native Sentry bindings or create a telemetry transport in Jest.
+jest.mock("@sentry/react-native", () => ({
+	init: jest.fn(),
+	captureException: jest.fn(),
+	wrap: jest.fn(component => component),
+	reactNavigationIntegration: jest.fn(() => ({
+		name: "ReactNavigation",
+		registerNavigationContainer: jest.fn()
+	}))
+}));
+
 jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper", () => ({}), {
 	virtual: true
 });

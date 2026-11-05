@@ -126,6 +126,15 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
   const { googleMaps, ...appSettings } = loadAppSettings(targetEnv);
   const iosGoogleMapsApiKey = googleMaps.iosApiKey.trim();
   const androidGoogleMapsApiKey = googleMaps.androidApiKey.trim();
+  // Config executes in Node; destructuring avoids Expo's client env transform in Jest.
+  const { EXPO_PUBLIC_GLITCHTIP_DSN, EXPO_PUBLIC_STORYBOOK_ENABLED } = process.env;
+  const glitchtipDsn = EXPO_PUBLIC_GLITCHTIP_DSN?.trim() ?? "";
+  // Only public runtime settings belong in extra. Never expose SENTRY_AUTH_TOKEN.
+  const monitoring = {
+    dsn: glitchtipDsn,
+    storybook: EXPO_PUBLIC_STORYBOOK_ENABLED === "true"
+  };
+  const sentryUrl = glitchtipDsn ? new URL(glitchtipDsn).origin : undefined;
 
   return {
     name: "Tope Là",
@@ -174,11 +183,17 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
         }
       ],
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      ...(sentryUrl ? [["@sentry/react-native/expo", {
+        url: `${sentryUrl}/`,
+        organization: process.env.SENTRY_ORG ?? "",
+        project: process.env.SENTRY_PROJECT ?? ""
+      }] as [string, Record<string, string>]] : [])
     ],
     extra: {
       targetEnv,
       appSettings,
+      monitoring,
       eas: {
         projectId: "484b7ec5-78c2-47e0-bc80-4f9182b4916a"
       }

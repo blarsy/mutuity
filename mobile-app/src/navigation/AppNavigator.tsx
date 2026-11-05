@@ -8,6 +8,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { AuthProvider, useAuth } from "../services/auth/AuthProvider";
+import { registerMonitoringNavigation } from "../services/monitoring/sentry";
 import { useCurrentAccount } from "../services/auth/useCurrentAccount";
 import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitives";
 import { AccountAvatar } from "../components/AccountAvatar";
@@ -1198,7 +1199,7 @@ function RootNavigator(): React.JSX.Element {
           />
         ) : (
           <View accessible accessibilityLabel={t("mainNavigation", { ns: "us1", defaultValue: "Main navigation" })} style={styles.fill}>
-            <NavigationContainer ref={navigationRef} theme={navigationTheme}>
+            <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={() => registerMonitoringNavigation(navigationRef)}>
               <Tab.Navigator
                 key={mainNavigatorVersion}
                 initialRouteName={activeRouteName}

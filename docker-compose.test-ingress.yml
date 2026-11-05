@@ -6,6 +6,8 @@ services:
       CADDY_EMAIL: ${CADDY_EMAIL:?Set CADDY_EMAIL in .env.test-ingress}
       TEST_FRONTEND_UPSTREAM: ${TEST_FRONTEND_UPSTREAM:-frontend-test:3000}
       TEST_API_UPSTREAM: ${TEST_API_UPSTREAM:-backend-test:5050}
+      MONITORING_HOST: ${MONITORING_HOST:-errors.test.tope-la.com}
+      TEST_GLITCHTIP_UPSTREAM: ${TEST_GLITCHTIP_UPSTREAM:-glitchtip-test:8000}
     ports:
       - "80:80"
       - "443:443"

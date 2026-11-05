@@ -1,0 +1,87 @@
+# Test VPS deployment; shares Test's external edge network, never its app database.
+# Review full-version image pins before upgrades; never use :latest.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:16.13-alpine@sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50
+    restart: unless-stopped
+    mem_limit: 128m
+    memswap_limit: 128m
+    command: ["postgres", "-c", "shared_buffers=16MB", "-c", "work_mem=1MB", "-c", "maintenance_work_mem=16MB", "-c", "max_connections=20", "-c", "max_locks_per_transaction=512"]
+    environment:
+      POSTGRES_DB: glitchtip
+      POSTGRES_USER: glitchtip
+      POSTGRES_PASSWORD: ${GLITCHTIP_DB_PASSWORD:?Set GLITCHTIP_DB_PASSWORD}
+    volumes:
+      - monitoring_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip -d glitchtip"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    networks: [database]
+    logging: *logging
+
+  glitchtip:
+    image: glitchtip/glitchtip:6.2.6@sha256:a3d8eb1b36c1e1603d55ab32711ea3dd8115874742a781a57391a62a16e0dff6
+    restart: unless-stopped
+    mem_limit: 320m
+    memswap_limit: 320m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://glitchtip:${GLITCHTIP_DB_PASSWORD:?Set GLITCHTIP_DB_PASSWORD}@postgres:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?Set GLITCHTIP_SECRET_KEY}
+      GLITCHTIP_DOMAIN: https://${MONITORING_HOST:?Set MONITORING_HOST}
+      ALLOWED_HOSTS: ${MONITORING_HOST}
+      CSRF_TRUSTED_ORIGINS: https://${MONITORING_HOST}
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL:?Set GLITCHTIP_EMAIL_URL}
+      DEFAULT_FROM_EMAIL: ${GLITCHTIP_FROM_EMAIL:?Set GLITCHTIP_FROM_EMAIL}
+      SERVER_ROLE: all_in_one
+      VALKEY_URL: ""
+      GRANIAN_WORKERS: "1"
+      VTASKS_CONCURRENCY: "2"
+      DATABASE_POOL_MAX_SIZE: "4"
+      ENABLE_USER_REGISTRATION: "false"
+      ENABLE_SOCIAL_APPS_USER_REGISTRATION: "false"
+      ENABLE_ORGANIZATION_CREATION: "false"
+      ENABLE_ADMIN: "false"
+      ENABLE_OPENAPI: "false"
+      GLITCHTIP_ENABLE_MCP: "false"
+      GLITCHTIP_ENABLE_DUCKDB: "false"
+      GLITCHTIP_ENABLE_LOGS: "false"
+      GLITCHTIP_ENABLE_UPTIME: "true"
+      GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS: "false"
+      GLITCHTIP_RETENTION_DAYS: "14"
+      GLITCHTIP_TRANSACTION_RETENTION_DAYS: "7"
+    volumes:
+      - monitoring_uploads:/code/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/_health/',headers={'Host':os.environ['ALLOWED_HOSTS']}); assert urllib.request.urlopen(r,timeout=3).status==200"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+    networks:
+      database: {}
+      edge:
+        aliases:
+          - ${MONITORING_EDGE_ALIAS:-glitchtip-test}
+    logging: *logging
+
+volumes:
+  monitoring_db:
+  monitoring_uploads:
+
+networks:
+  database:
+    internal: true
+  edge:
+    external: true
+    name: ${EDGE_NETWORK_NAME:-mutuity-test-edge}

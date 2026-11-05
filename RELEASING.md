@@ -353,8 +353,16 @@ use the production/review ingress Caddyfile or its Caddy volumes.
 6. Verify `https://test.tope-la.com/health`, GraphQL, WebSocket subscriptions,
    OAuth callbacks (if configured), frontend health, and worker logs. For future
    test deployments, migrate first, then rebuild/restart only the affected
-   backend/worker/frontend services. The test environment remains a single
-   stack; no review candidate routing is configured there.
+   backend/worker/frontend services. The Test application is one isolated app
+   stack; it has no review candidate routing.
+7. To run GlitchTip on this same Test VPS, follow [the monitoring guide](docs/MONITORING.md).
+   It attaches to `mutuity-test-edge` without publishing ports; Test Caddy remains
+   the only ingress. Point `errors.test.tope-la.com` DNS at this Test VPS, set
+   `MONITORING_HOST` and `TEST_GLITCHTIP_UPSTREAM` in `.env.test-ingress`, and
+   restart the test ingress Caddy after changing its mounted Caddyfile. Then
+   start the separate `mutuity-monitoring` Compose project using `.env.monitoring`.
+   Optional Test application DSNs are configured in `.env.test` and use
+   `SENTRY_ENVIRONMENT=test`.
 
 ### B. Production/review host: initial setup and production
 

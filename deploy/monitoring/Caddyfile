@@ -1,0 +1,11 @@
+{
+	email {$CADDY_EMAIL}
+}
+
+{$MONITORING_HOST} {
+	encode gzip
+	request_body {
+		max_size 20MB
+	}
+	reverse_proxy glitchtip:8000
+}

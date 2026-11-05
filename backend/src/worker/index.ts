@@ -1,9 +1,11 @@
-import "dotenv/config";
+import "../monitoring/instrument.js";
+import { captureUnexpectedError, flushMonitoring } from "../monitoring/instrument.js";
 
 import fs from "node:fs";
 import { run } from "graphile-worker";
 import { logWorkerError, logWorkerInfo } from "../logging/operationalLogger.js";
 import { taskList } from "./taskList.js";
+import { monitorTasks } from "./monitorTasks.js";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -17,7 +19,7 @@ async function main() {
 
   const runner = await run({
     connectionString: DATABASE_URL,
-    taskList,
+    taskList: monitorTasks(taskList),
     concurrency: Number(process.env.WORKER_CONCURRENCY ?? 5),
     pollInterval: Number(process.env.WORKER_POLL_INTERVAL ?? 2000),
     crontabFile
@@ -30,17 +32,29 @@ async function main() {
     crontabFile: crontabFile ?? null
   });
 
+  let shuttingDown = false;
   const shutdown = async () => {
-    await runner.stop();
-    process.exit(0);
+    if (shuttingDown) return;
+    shuttingDown = true;
+    const deadline = setTimeout(() => { void flushMonitoring().finally(() => process.exit(1)); }, 5000);
+    deadline.unref();
+    try {
+      await runner.stop();
+    } finally {
+      await flushMonitoring();
+      clearTimeout(deadline);
+      process.exit(0);
+    }
   };
 
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
   console.error(error);
   void logWorkerError("Graphile Worker bootstrap failed", error);
+  captureUnexpectedError(error);
+  await flushMonitoring();
   process.exit(1);
 });

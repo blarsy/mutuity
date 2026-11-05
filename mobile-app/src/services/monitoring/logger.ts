@@ -1,3 +1,5 @@
+import { captureAppError } from "./sentry";
+
 export interface AppLogEntry {
   level: "debug" | "info" | "warn" | "error";
   message: string;
@@ -8,6 +10,7 @@ export function logAppEvent(entry: AppLogEntry): void {
   const prefix = `[mobile:${entry.level}]`;
 
   if (entry.level === "error") {
+    captureAppError(entry.message, entry.details);
     console.error(prefix, entry.message, entry.details ?? "");
     return;
   }

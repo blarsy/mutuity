@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/prepare-monitoring-artifacts.mjs",
     "start": "next start",
     "graphql:schema": "graphql-codegen --config codegen.schema.cjs",
     "graphql:codegen": "graphql-codegen --config codegen.cjs",
@@ -23,6 +23,7 @@
     "@mui/icons-material": "^5.18.0",
     "@mui/lab": "^9.0.0-beta.2",
     "@mui/material": "^5.15.15",
+    "@sentry/nextjs": "^11.10.0",
     "@tiptap/extension-link": "^3.22.5",
     "@tiptap/extension-placeholder": "^3.22.5",
     "@tiptap/react": "^3.22.5",
