@@ -3,7 +3,8 @@ type TransactionEvent = Event & { type: "transaction" };
 type SpanJSON = NonNullable<Event["spans"]>[number];
 
 // Keep in sync with backend/src/monitoring/privacy.ts. Rebuild payloads instead
-// of enumerating request secrets; never send URLs, users, extras or breadcrumbs.
+// of enumerating request secrets; never send request data, users, extras or
+// breadcrumbs. Message redaction is best-effort, not a user-content classifier.
 const REDACTED_MESSAGE = "Application error (details removed)";
 function safeErrorType(value: string | undefined): string {
   return value && /^[A-Za-z_$][\w$]{0,99}$/.test(value) && safeMessage(value) === value ? value : "Error";
@@ -18,13 +19,15 @@ export function safeMessage(value: string): string {
   if (!text) return REDACTED_MESSAGE;
   text = text
     .replace(/\b(SQL|statement|query document|GraphQL document|variables|parameters|payload|request body|response body|message body|body|DETAIL|CONTEXT)\s*[:=].*$/i, "$1: [payload removed]")
-    .replace(/^(?:SELECT\b.+\bFROM\b|INSERT\s+INTO\b|UPDATE\b.+\bSET\b|DELETE\s+FROM\b|(?:query|mutation|subscription)\b\s*(?:[\w$]+\s*)?[({]).*$/i, "[query removed]")
-    .replace(/\{.*$|<\/?[A-Za-z][^>]*>.*$/, "[payload removed]")
+    .replace(/\b(?:SELECT\b.+\bFROM\b|INSERT\s+INTO\b|UPDATE\b.+\bSET\b|DELETE\s+FROM\b|(?:query|mutation|subscription)\b\s*(?:[\w$]+\s*)?[({]).*$/i, "[query removed]")
+    .replace(/\bKey\s*\([^)]*\)\s*=.*$/i, "Key [values removed]")
+    .replace(/\{.*$|\[\s*(?:["'{]|\d[\d\s.]*[,\]]).*$/g, "[payload removed]")
+    .replace(/<\/?[A-Za-z][^>]*>.*$/, "[payload removed]")
     .replace(/\b(?:https?|wss?|postgres(?:ql)?|redis|rediss|ftp):\/\/[^\s"'`]+/gi, "[url]")
     .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[email]")
     .replace(/\b(?:Bearer|Basic)\s+[A-Za-z0-9+/_.=-]+/gi, "[authorization removed]")
     .replace(/\b(?:authorization|cookie|set-cookie)\s*[:=].*$/gi, "[credentials removed]")
-    .replace(/\b(password|passwd|secret|(?:access|refresh|id)[_-]?token|token|api[_-]?key|client[_-]?secret|session(?:[_-]?id)?|account[_-]?id|user[_-]?id|email|phone)\s*[:=]\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;]+)/gi, "$1=[redacted]")
+    .replace(/\b(password|passwd|secret|(?:access|refresh|id)[_-]?token|token|api[_-]?key|client[_-]?secret|session(?:[_-]?id)?|account[_-]?id|user[_-]?id|email|phone)["']?\s*[:=]\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;]+)/gi, "$1=[redacted]")
     .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, "[identifier]")
     .replace(/\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b/g, "[address]")
     .replace(/\[?[0-9a-f]*:[0-9a-f:]*:[0-9a-f:]+\]?(?::\d+)?/gi, "[address]")
