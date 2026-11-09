@@ -102,10 +102,11 @@ Do not enable native telemetry on existing binaries without validating the SDK.
 
 ## Data minimization and performance scope
 
-Exception events use allowlists: request bodies/headers/queries, cookies, user,
-extras, breadcrumbs, source context, GraphQL variables, SQL and arbitrary error
-text are not forwarded. Recognizable safe runtime diagnostics, stack coordinates,
-release and validated sourcemap debug IDs remain. No replay/screenshots/profiling,
+Event fields use allowlists: request bodies/headers/queries, cookies, user,
+extras, breadcrumbs, source context, GraphQL variables and SQL payloads are not
+forwarded. Web/backend error messages preserve technical explanations with
+targeted, best-effort redaction (see below), alongside stack coordinates,
+release and validated sourcemap debug IDs. No replay/screenshots/profiling,
 session tracking or console log firehose. Native crash events do not pass through
 JS privacy hooks; validate native envelopes before enabling production.
 IP addresses remain observable at the network/proxy layer even if absent from
@@ -114,31 +115,45 @@ retention/privacy notice and avoid putting sensitive data in exception messages.
 
 ### Troubleshooting sanitized web/API/worker errors
 
-Web and backend events now report fixed diagnostic summaries rather than dropping
-every unfamiliar runtime message. Examples include `Network error: ECONNRESET`,
-`HTTP request failed: 503`, `Database unique constraint violated`, GraphQL
-validation failures, React hydration/hook/render-loop failures, DOM operations
-and JavaScript chunk/syntax/property-access failures. Minified React error numbers
-are retained so operators can look up the React error reference; decoder URLs
-and arguments are dropped. Private
-addresses, response bodies, property names, SQL identifiers and variable values
-are never copied into these summaries. Exception classes use an explicit allowlist
-(including Apollo's `CombinedGraphQLErrors`); unknown names become `Error`.
+Web/API/worker messages no longer require a recognized error category. They retain
+the original first-line technical explanation (up to 1,000 characters), including
+unfamiliar application failures, error/status codes, static property/function
+names and schema identifiers. For example:
 
-Unrecognized application text still cannot safely be forwarded. Instead, its
-event summary includes the error class and most recent application stack frame,
-for example `TypeError at /_next/static/chunks/page.js:42 (message removed; see stack trace)`.
-Known route templates are retained on error events as well as transactions;
-raw routes/IDs/query strings are not. In GlitchTip, inspect the exception stack,
-route, environment and release to locate the failure. Upload matching private
-source maps (below) to resolve minified bundle locations back to source. The
-summary's filename is a bundle location, not a symbolicated source location.
+- `Cannot read properties of undefined (reading 'account')` remains intact.
+- `duplicate key value violates unique constraint "account_email_key"` remains
+  intact; the following PostgreSQL DETAIL containing the email value is dropped.
+- `ListingHeader requires a resource identifier` remains intact even though it
+  does not match a predefined runtime-error template.
+- `Variable "$password" got invalid value "personal"; Expected type "String".`
+  becomes `Variable "$password" got invalid value [value]; Expected type "String".`
+
+URLs, email/IP addresses, common credential assignments, UUIDs, long opaque
+identifiers and personal home-directory names are redacted. Ordinary quoted
+values are removed; quoted identifiers in technical positions such as `reading`,
+`constraint`, `field` and `type` can remain. Explicit payload/SQL/variables/body
+suffixes, JSON/HTML dumps and subsequent lines are removed. Custom exception
+classes are accepted as bounded code identifiers, not arbitrary text. Existing
+empty/already-removed messages can still fall back to a stack-location summary.
+
+**This intentionally replaces fail-closed message allowlisting with best-effort
+redaction. It cannot identify every unquoted name, address, user sentence or
+dynamic value that resembles a code identifier.** Do not throw/log user content
+as an error message, or concatenate response bodies. Use developer-written
+explanations and stable diagnostic codes; keep dynamic payloads out of exception
+text. Review production envelopes, instance-side scrubbing, restricted operator
+access and retention accordingly. Client-facing GraphQL/auth error sanitization
+is unchanged; these diagnostics are for operator telemetry only.
+
+Known route templates are retained; raw routes/IDs/query strings are not. Inspect
+the exception message, stack, route, environment and release in GlitchTip. Upload
+matching private source maps (below) to resolve minified stack locations to source.
 
 This changes only new events after rebuilding/redeploying frontend, backend and
 worker; previously removed messages cannot be recovered from GlitchTip. Mobile
-keeps its separate stricter privacy policy. For an unclassified recurring error,
-add a tested diagnostic template or an explicitly reviewed static error class;
-do not enable raw exception messages or request payload collection.
+keeps its separate stricter privacy policy. Add targeted redaction regressions
+when introducing diagnostics with dynamic values; request payload collection
+remains disabled.
 
 Browser timing groups static Next page templates. Backend timing groups safe
 registered HTTP routes; `/graphql` is intentionally aggregated, not labeled with
@@ -336,10 +351,11 @@ Do not enable native telemetry on existing binaries without validating the SDK.
 
 ## Data minimization and performance scope
 
-Exception events use allowlists: request bodies/headers/queries, cookies, user,
-extras, breadcrumbs, source context, GraphQL variables, SQL and arbitrary error
-text are not forwarded. Recognizable safe runtime diagnostics, stack coordinates,
-release and validated sourcemap debug IDs remain. No replay/screenshots/profiling,
+Event fields use allowlists: request bodies/headers/queries, cookies, user,
+extras, breadcrumbs, source context, GraphQL variables and SQL payloads are not
+forwarded. Web/backend messages retain technical explanations with best-effort
+targeted redaction, as described in "Troubleshooting sanitized web/API/worker
+errors" above. Stack coordinates, release and debug IDs remain. No replay/screenshots/profiling,
 session tracking or console log firehose. Native crash events do not pass through
 JS privacy hooks; validate native envelopes before enabling production.
 IP addresses remain observable at the network/proxy layer even if absent from

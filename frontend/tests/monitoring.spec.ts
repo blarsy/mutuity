@@ -12,36 +12,49 @@ import type { NextPageContext } from "next";
 
 const messageFixtures: [string, string][] = require("../../scripts/tests/monitoring-message-fixtures.json");
 
-it.each(messageFixtures)("summarizes diagnostics without private text: %s", (input, expected) => {
+it.each(messageFixtures)("preserves technical text with targeted redaction: %s", (input, expected) => {
   expect(safeMessage(input)).toBe(expected);
-  expect(safeMessage(input)).not.toContain("private");
+  expect(safeMessage(input)).not.toContain("personal");
 });
 
-it("uses error class and latest application stack location for unknown messages", () => {
-  const event = sanitizeEvent({ type: undefined, message: "private", transaction: "/resources/[resourceId]",
-    exception: { values: [{ type: "CombinedGraphQLErrors", value: "private", stacktrace: { frames: [
+it("keeps unfamiliar explanations alongside the application stack", () => {
+  const event = sanitizeEvent({ type: undefined, message: "ListingHeader requires a resource identifier", transaction: "/resources/[resourceId]",
+    exception: { values: [{ type: "ResourcePublishingError", value: "ListingHeader requires a resource identifier", stacktrace: { frames: [
       { filename: "/_next/old.js", lineno: 1, in_app: true },
       { filename: "https://app.example/_next/page.js?token=private", lineno: 42, in_app: true },
       { filename: "/_next/vendor.js", lineno: 99, in_app: false }
     ] } }] } });
-  expect(event.exception?.values?.[0]).toMatchObject({ type: "CombinedGraphQLErrors",
-    value: "CombinedGraphQLErrors at /_next/page.js:42 (message removed; see stack trace)" });
+  expect(event.exception?.values?.[0]).toMatchObject({ type: "ResourcePublishingError",
+    value: "ListingHeader requires a resource identifier" });
   expect(event.message).toBe(event.exception?.values?.[0].value);
   expect(event.transaction).toBe("/resources/[resourceId]");
   expect(JSON.stringify(event)).not.toMatch(/private|app\.example/);
 });
 
-it("does not allow arbitrary exception names or raw error routes", () => {
-  const event = sanitizeEvent({ type: undefined, message: "private", transaction: "/accounts/private",
-    exception: { values: [{ type: "privateConversationError", value: "private" }] } });
-  expect(event.exception?.values?.[0]).toMatchObject({ type: "Error", value: "Error (message removed; see stack trace)" });
+it("rejects data-bearing exception names and raw error routes", () => {
+  const event = sanitizeEvent({ type: undefined, message: "Unexpected account state", transaction: "/accounts/private",
+    exception: { values: [{ type: "private@example.com", value: "Unexpected account state" }] } });
+  expect(event.exception?.values?.[0]).toMatchObject({ type: "Error", value: "Unexpected account state" });
   expect(event.transaction).toBe("application.request");
   expect(JSON.stringify(event)).not.toContain("private");
 });
 
-it("uses the exception diagnostic when the root message is private", () => {
-  expect(sanitizeEvent({ type: undefined, message: "private", exception: { values: [{ type: "Error", value: "read ECONNRESET private" }] } }).message)
-    .toBe("Network error: ECONNRESET (address removed)");
+it("uses the exception diagnostic when the root message was already removed", () => {
+  expect(sanitizeEvent({ type: undefined, message: "Application error (details removed)", exception: { values: [{ type: "Error", value: "read ECONNRESET" }] } }).message)
+    .toBe("read ECONNRESET");
+});
+
+it("limits messages and removes oversized quoted values", () => {
+  expect(safeMessage(`Validation failed: "${"personal ".repeat(2000)}"`)).not.toContain("personal");
+  const message = safeMessage("Unexpected account state. ".repeat(100));
+  expect(message.length).toBeLessThanOrEqual(1000);
+  expect(message).toContain("[truncated]");
+});
+
+it("retains the original technical explanation after repeated sanitization", () => {
+  const event = { type: undefined, message: "Cannot read properties of undefined (reading 'account')",
+    exception: { values: [{ type: "AccountStateError", value: "Expected ACTIVE account; received SUSPENDED" }] } };
+  expect(sanitizeEvent(sanitizeEvent(event))).toEqual(sanitizeEvent(event));
 });
 
 it("keeps validated debug images but no arbitrary image metadata or credential-bearing URLs", () => {
@@ -88,13 +101,13 @@ it("strips sensitive errors, requests, source context and trace data", () => {
     request: { url: "https://example.com?session=secret", data: "secret", headers: { authorization: "secret" } },
     user: { email: "secret@example.com" }, extra: { variables: "secret" }, breadcrumbs: [{ message: "secret" }],
     spans: [{ trace_id: "trace", span_id: "span", start_timestamp: 1, timestamp: 2, status: "ok", description: "secret", data: { query: "secret" } }],
-    exception: { values: [{ type: "TypeError", value: "Cannot read properties of undefined (reading 'secret')", stacktrace: { frames: [{ filename: "https://example.com/chunk.js?token=secret", function: "render", lineno: 12, context_line: "secret", vars: { secret: true } }] } }] }
+    exception: { values: [{ type: "TypeError", value: "Cannot read properties of undefined (reading 'account')", stacktrace: { frames: [{ filename: "https://example.com/chunk.js?token=secret", function: "render", lineno: 12, context_line: "secret", vars: { secret: true } }] } }] }
   });
   expect(JSON.stringify(event)).not.toContain("secret");
   expect(JSON.stringify(event)).not.toContain("example.com");
   expect(event.exception?.values?.[0].value).toContain("Cannot read properties");
   expect(event.exception?.values?.[0].stacktrace?.frames?.[0].filename).toBe("/chunk.js");
-  expect(safeMessage("arbitrary private conversation contents")).toBe("Application error (details removed)");
+  expect(safeMessage("Failed to send message body: arbitrary private conversation contents")).toBe("Failed to send message body: [payload removed]");
 });
 
 it("disables automatic integrations, log events, PII and breadcrumbs by default", () => {

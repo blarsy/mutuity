@@ -12,33 +12,44 @@ import { monitorTasks } from "../../src/worker/monitorTasks";
 const messageFixtures: [string, string][] = require("../../../scripts/tests/monitoring-message-fixtures.json");
 
 describe("monitoring privacy and configuration", () => {
-  it.each(messageFixtures)("summarizes diagnostics without private text: %s", (input, expected) => {
+  it.each(messageFixtures)("preserves technical text with targeted redaction: %s", (input, expected) => {
     expect(safeMessage(input)).toBe(expected);
-    expect(safeMessage(input)).not.toContain("private");
+    expect(safeMessage(input)).not.toContain("personal");
   });
-  it("uses error class and latest application stack location for unknown messages", () => {
-    const event = sanitizeEvent({ type: undefined, message: "private", transaction: "POST /graphql",
-      exception: { values: [{ type: "CombinedGraphQLErrors", value: "private", stacktrace: { frames: [
+  it("keeps unfamiliar explanations alongside the application stack", () => {
+    const event = sanitizeEvent({ type: undefined, message: "ListingHeader requires a resource identifier", transaction: "POST /graphql",
+      exception: { values: [{ type: "ResourcePublishingError", value: "ListingHeader requires a resource identifier", stacktrace: { frames: [
         { filename: "/dist/old.js", lineno: 1, in_app: true },
         { filename: "https://app.example/dist/resolver.js?token=private", lineno: 42, in_app: true },
         { filename: "/dist/vendor.js", lineno: 99, in_app: false }
       ] } }] } });
-    expect(event.exception?.values?.[0]).toMatchObject({ type: "CombinedGraphQLErrors",
-      value: "CombinedGraphQLErrors at /dist/resolver.js:42 (message removed; see stack trace)" });
+    expect(event.exception?.values?.[0]).toMatchObject({ type: "ResourcePublishingError",
+      value: "ListingHeader requires a resource identifier" });
     expect(event.message).toBe(event.exception?.values?.[0].value);
     expect(event.transaction).toBe("/graphql");
     expect(JSON.stringify(event)).not.toMatch(/private|app\.example/);
   });
-  it("does not allow arbitrary exception names or raw error routes", () => {
-    const event = sanitizeEvent({ type: undefined, message: "private", transaction: "/accounts/private",
-      exception: { values: [{ type: "privateConversationError", value: "private" }] } });
-    expect(event.exception?.values?.[0]).toMatchObject({ type: "Error", value: "Error (message removed; see stack trace)" });
+  it("rejects data-bearing exception names and raw error routes", () => {
+    const event = sanitizeEvent({ type: undefined, message: "Unexpected account state", transaction: "/accounts/private",
+      exception: { values: [{ type: "private@example.com", value: "Unexpected account state" }] } });
+    expect(event.exception?.values?.[0]).toMatchObject({ type: "Error", value: "Unexpected account state" });
     expect(event.transaction).toBe("application.request");
     expect(JSON.stringify(event)).not.toContain("private");
   });
-  it("uses the exception diagnostic when the root message is private", () => {
-    expect(sanitizeEvent({ type: undefined, message: "private", exception: { values: [{ type: "Error", value: "read ECONNRESET private" }] } }).message)
-      .toBe("Network error: ECONNRESET (address removed)");
+  it("uses the exception diagnostic when the root message was already removed", () => {
+    expect(sanitizeEvent({ type: undefined, message: "Application error (details removed)", exception: { values: [{ type: "Error", value: "read ECONNRESET" }] } }).message)
+      .toBe("read ECONNRESET");
+  });
+  it("limits messages and removes oversized quoted values", () => {
+    expect(safeMessage(`Validation failed: "${"personal ".repeat(2000)}"`)).not.toContain("personal");
+    const message = safeMessage("Unexpected account state. ".repeat(100));
+    expect(message.length).toBeLessThanOrEqual(1000);
+    expect(message).toContain("[truncated]");
+  });
+  it("retains the original technical explanation after repeated sanitization", () => {
+    const event = { type: undefined, message: "Cannot read properties of undefined (reading 'account')",
+      exception: { values: [{ type: "AccountStateError", value: "Expected ACTIVE account; received SUSPENDED" }] } };
+    expect(sanitizeEvent(sanitizeEvent(event))).toEqual(sanitizeEvent(event));
   });
   it("retains only validated sourcemap debug images and their exact asset identity", () => {
     const image = { type: "sourcemap" as const, debug_id: "12345678-1234-4234-8234-123456789abc", code_file: "https://app.example/_next/static/chunks/123-abcd.js" };
@@ -87,7 +98,7 @@ describe("monitoring privacy and configuration", () => {
       user: { id: "secret", email: "secret@example.com" }, extra: { session: "secret" },
       breadcrumbs: [{ message: "secret" }], tags: { secret: "secret" },
       contexts: { app: { secret: "secret" } },
-      exception: { values: [{ type: "TypeError", value: "Cannot read properties of undefined (reading 'secret')", stacktrace: { frames: [{
+      exception: { values: [{ type: "TypeError", value: "Cannot read properties of undefined (reading 'account')", stacktrace: { frames: [{
         filename: "https://app.example/_next/chunk.js?token=secret", function: "renderPage", lineno: 12,
         vars: { secret: "secret" }, pre_context: ["secret"], context_line: "secret"
       }] } }] }
@@ -98,7 +109,7 @@ describe("monitoring privacy and configuration", () => {
     expect(serialized).toContain("TypeError");
     expect(serialized).toContain("Cannot read properties of undefined");
     expect(event.exception?.values?.[0].stacktrace?.frames?.[0]).toMatchObject({ filename: "/_next/chunk.js", function: "renderPage", lineno: 12 });
-    expect(safeMessage("private unquoted conversation contents")).toBe("Application error (details removed)");
+    expect(safeMessage("Failed to send message body: private unquoted conversation contents")).toBe("Failed to send message body: [payload removed]");
     expect(safeMessage("select password from app_private.account")).not.toContain("account");
   });
   it("strips transaction and span data as well as root metadata", () => {

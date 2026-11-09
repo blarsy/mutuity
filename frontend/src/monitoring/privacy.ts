@@ -5,72 +5,41 @@ type SpanJSON = NonNullable<Event["spans"]>[number];
 // Keep in sync with backend/src/monitoring/privacy.ts. Rebuild payloads instead
 // of enumerating request secrets; never send URLs, users, extras or breadcrumbs.
 const REDACTED_MESSAGE = "Application error (details removed)";
-const SAFE_ERROR_TYPES = new Set([
-  "Error", "TypeError", "ReferenceError", "SyntaxError", "RangeError", "URIError",
-  "EvalError", "AggregateError", "InternalError", "DOMException", "AbortError",
-  "TimeoutError", "NetworkError", "FetchError", "ChunkLoadError", "ApolloError",
-  "CombinedGraphQLErrors", "GraphQLError", "ServerError", "ServerParseError",
-  "DatabaseError", "ValidationError", "AssertionError", "InvariantError"
-]);
-
 function safeErrorType(value: string | undefined): string {
-  return value && SAFE_ERROR_TYPES.has(value) ? value : "Error";
+  return value && /^[A-Za-z_$][\w$]{0,99}$/.test(value) && safeMessage(value) === value ? value : "Error";
 }
 
-// Emit diagnostic templates, NOT cleaned arbitrary text: an exception can be an
-// entire user message/response. Only fixed categories and validated enums escape.
+// Preserve technical prose, not just recognized categories. This is best-effort
+// redaction, not a guarantee for arbitrary user text: never throw user content.
 // Keep this logic in sync with backend/src/monitoring/privacy.ts.
 export function safeMessage(value: string): string {
-  if (SAFE_ERROR_TYPES.has(value)) return value;
-  const text = value.slice(0, 4096);
-  const property = /^(?:TypeError: )?Cannot (read|set) properties of (undefined|null)(?: \(.*\))?$/.exec(text);
-  if (property) return `Cannot ${property[1]} properties of ${property[2]} (property removed)`;
-  const legacyProperty = /^(?:TypeError: )?(undefined|null) is not an object\b/.exec(text);
-  if (legacyProperty) return `${legacyProperty[1]} is not an object (expression removed)`;
-  if (/^(?:ReferenceError: )?(?:Can't find variable: .+|.+ is not defined)$/.test(text)) return "Reference is not defined (identifier removed)";
-  if (/^(?:TypeError: )?.+ is not a function$/.test(text)) return "Value is not a function (expression removed)";
-  if (/^(?:TypeError: )?.+ is not iterable\b/.test(text)) return "Value is not iterable (expression removed)";
-  if (/^(?:RangeError: )?(?:Maximum call stack size exceeded|too much recursion)$/.test(text)) return "Maximum call stack size exceeded";
-  if (/^(?:RangeError: )?Invalid (?:array length|time value)$/.test(text)) return text.replace(/^RangeError: /, "");
-  if (/^(?:SyntaxError: )?(?:Unexpected (?:token|end)|Expected property name|JSON\.parse:)/.test(text)) return "JSON or JavaScript syntax error (input removed)";
-  if (/^(?:URIError: )?URI malformed$/.test(text)) return "URI malformed";
-  const react = /^Minified React error #([1-9]\d{0,2});/.exec(text);
-  if (react) return `React error #${react[1]} (decoder arguments removed)`;
-  if (/^Maximum update depth exceeded\b/.test(text)) return "React maximum update depth exceeded";
-  if (/^Too many re-renders\b/.test(text)) return "React too many re-renders";
-  if (/^Rendered (?:more|fewer) hooks\b/.test(text)) return "React hook order changed between renders";
-  if (/^(?:Hydration failed|Text content does not match server-rendered HTML|There was an error while hydrating)\b/.test(text)) return "React hydration failed (content removed)";
-  const dom = /^Failed to execute '(appendChild|removeChild|insertBefore|replaceChild|querySelector|setAttribute)' on '(?:Node|Element|Document)':/.exec(text);
-  if (dom) return `DOM ${dom[1]} failed (details removed)`;
-  if (/^(?:(?:TypeError|FetchError|NetworkError): )?(?:fetch failed|Failed to fetch|Load failed|Network request failed|NetworkError when attempting to fetch resource\.?)(?:$|\n)/i.test(text)) return "Network request failed";
-  const network = /^(?:(?:Error|TypeError): )?(?:(?:connect|read|write|getaddrinfo) )?(ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|EPIPE|ENETUNREACH|EHOSTUNREACH)\b/.exec(text);
-  if (network) return `Network error: ${network[1]} (address removed)`;
-  const tls = /^(?:Error: )?(CERT_HAS_EXPIRED|DEPTH_ZERO_SELF_SIGNED_CERT|UNABLE_TO_VERIFY_LEAF_SIGNATURE|ERR_TLS_CERT_ALTNAME_INVALID)\b/.exec(text);
-  if (tls) return `TLS error: ${tls[1]} (certificate details removed)`;
-  if (/^(?:ChunkLoadError: )?(?:Loading chunk .+ failed|Failed to fetch dynamically imported module)/.test(text)) return "JavaScript chunk loading failed (asset removed)";
-  if (/^(?:AbortError: )?(?:The operation was aborted|This operation was aborted|The user aborted a request)\b/.test(text)) return "Operation aborted";
-  if (/^(?:TimeoutError: )?(?:The operation was aborted due to timeout|The operation timed out|timeout exceeded)\b/i.test(text)) return "Operation timed out";
-  const http = /^(?:Response not successful: Received status code|Request failed with status code|Server returned) ([45]\d{2})\b/.exec(text);
-  if (http) return `HTTP request failed: ${http[1]} (response removed)`;
-  if (/^(?:GraphQLError: )?(?:Cannot query field|Unknown argument|Unknown type|Variable .+ (?:got invalid value|of required type|of type)|Syntax Error:)/.test(text)) return "GraphQL validation failed (document and variables removed)";
-  const databaseDiagnostics: [RegExp, string][] = [
-    [/^duplicate key value violates unique constraint\b/i, "Database unique constraint violated"],
-    [/^insert or update on table .+ violates foreign key constraint\b/i, "Database foreign key constraint violated"],
-    [/^null value in column .+ violates not-null constraint\b/i, "Database not-null constraint violated"],
-    [/^new row for relation .+ violates check constraint\b/i, "Database check constraint violated"],
-    [/^permission denied for (?:table|schema|function|relation|sequence)\b/i, "Database permission denied"],
-    [/^new row violates row-level security policy\b/i, "Database row-level security denied write"],
-    [/^relation .+ does not exist\b/i, "Database relation does not exist"],
-    [/^column .+ does not exist\b/i, "Database column does not exist"],
-    [/^deadlock detected\b/i, "Database deadlock detected"],
-    [/^could not serialize access\b/i, "Database serialization failure"],
-    [/^canceling statement due to statement timeout\b/i, "Database statement timeout"],
-    [/^remaining connection slots are reserved\b|^sorry, too many clients already\b/i, "Database connection limit reached"]
-  ];
-  for (const [pattern, diagnostic] of databaseDiagnostics) {
-    if (pattern.test(text)) return diagnostic;
-  }
-  return REDACTED_MESSAGE;
+  // Drop multiline SQL DETAIL/CONTEXT, React rendered diffs and response dumps.
+  let text = value.slice(0, 8192).split(/[\r\n\u2028\u2029]/)[0].trim();
+  if (!text) return REDACTED_MESSAGE;
+  text = text
+    .replace(/\b(SQL|statement|query document|GraphQL document|variables|parameters|payload|request body|response body|message body|body|DETAIL|CONTEXT)\s*[:=].*$/i, "$1: [payload removed]")
+    .replace(/^(?:SELECT\b.+\bFROM\b|INSERT\s+INTO\b|UPDATE\b.+\bSET\b|DELETE\s+FROM\b|(?:query|mutation|subscription)\b\s*(?:[\w$]+\s*)?[({]).*$/i, "[query removed]")
+    .replace(/\{.*$|<\/?[A-Za-z][^>]*>.*$/, "[payload removed]")
+    .replace(/\b(?:https?|wss?|postgres(?:ql)?|redis|rediss|ftp):\/\/[^\s"'`]+/gi, "[url]")
+    .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[email]")
+    .replace(/\b(?:Bearer|Basic)\s+[A-Za-z0-9+/_.=-]+/gi, "[authorization removed]")
+    .replace(/\b(?:authorization|cookie|set-cookie)\s*[:=].*$/gi, "[credentials removed]")
+    .replace(/\b(password|passwd|secret|(?:access|refresh|id)[_-]?token|token|api[_-]?key|client[_-]?secret|session(?:[_-]?id)?|account[_-]?id|user[_-]?id|email|phone)\s*[:=]\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;]+)/gi, "$1=[redacted]")
+    .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, "[identifier]")
+    .replace(/\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b/g, "[address]")
+    .replace(/\[?[0-9a-f]*:[0-9a-f:]*:[0-9a-f:]+\]?(?::\d+)?/gi, "[address]")
+    .replace(/\+\d[\d ()-]{7,}\d\b|\b\d{10,}\b/g, "[identifier]")
+    .replace(/\b[A-Za-z0-9_=-]{32,}\b/g, "[identifier]")
+    .replace(/(?:\/Users\/|\/home\/)[^/\s]+/g, "/[user]")
+    .replace(/\b(getaddrinfo\s+(?:ENOTFOUND|EAI_AGAIN))\s+\S+/g, "$1 [address]");
+  // Only quoted values in code/schema positions are retained as identifiers.
+  // A plain quoted string, even a single word, may be user content.
+  text = text.replace(/(?<![\w])(["'`])((?:\\.|(?!\1)[^\\])*?)(?:\1|$)/g, (quoted, quote: string, content: string, offset: number) => {
+    const prefix = text.slice(0, offset);
+    const codePosition = /(?:\b(?:reading|setting|evaluating|execute|on|field|type|argument|constraint|table|column|relation|schema|function|sequence|variable)\s+)$/i.test(prefix);
+    return quoted.endsWith(quote) && codePosition && /^\$?[A-Za-z_$][\w$.[\]()!]{0,99}$/.test(content) ? quoted : "[value]";
+  });
+  return text.length > 1000 ? `${text.slice(0, 980)} [truncated]` : text;
 }
 
 function safeExceptionMessage(value: string | undefined, type: string | undefined,
