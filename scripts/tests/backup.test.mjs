@@ -113,8 +113,8 @@ async function fixture(t, scenario = '') {
   };
   await writeFile(config, Object.entries(settings).map(([k, v]) => `${k}='${v}'`).join('\n'), { mode: 0o600 });
   const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, MUTUITY_BACKUP_CONFIG: config, FIXTURE: dir, SCENARIO: scenario };
-  function run(args = []) {
-    const child = spawn('bash', [script, ...args], { env });
+  function run(args = [], executable = script) {
+    const child = spawn('bash', [executable, ...args], { env });
     let output = '';
     child.stdout.on('data', data => { output += data; });
     child.stderr.on('data', data => { output += data; });
@@ -131,6 +131,43 @@ async function fixture(t, scenario = '') {
 test('Bash syntax is valid', () => {
   const result = spawnSync('bash', ['-n', script], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('both services use the installed script independently of the checkout', async () => {
+  for (const [name, suffix] of [
+    ['mutuity-backup.service', ''],
+    ['mutuity-backup-failure.service', ' --failure-signal'],
+  ]) {
+    const unit = await readFile(path.join(root, 'deploy/backup', name), 'utf8');
+    assert.equal(unit.match(/^ExecStart=.+$/m)?.[0],
+      `ExecStart=/bin/bash /usr/local/libexec/mutuity/backup.sh${suffix}`);
+    assert.doesNotMatch(unit, /\/opt\/mutuity|\/srv\/mutuity/);
+  }
+  const config = await readFile(path.join(root, 'deploy/backup/backup.env.example'), 'utf8');
+  assert.match(config, /^REPO_DIR=\/srv\/mutuity$/m);
+  assert.doesNotMatch(config, /^COMPOSE_(?:FILE|ENV_FILE)=/m);
+});
+
+test('installed script derives Compose paths from REPO_DIR and handles a checkout containing spaces', async t => {
+  const f = await fixture(t);
+  const checkout = path.join(f.dir, 'deployment checkout');
+  await mkdir(checkout);
+  await writeFile(path.join(checkout, 'docker-compose.prod.yml'), 'services: {}\n');
+  await writeFile(path.join(checkout, '.env.prod'), 'SECRET=not-logged\n', { mode: 0o600 });
+  const config = await readFile(f.config, 'utf8');
+  await writeFile(f.config, config
+    .replace(/^REPO_DIR=.*$/m, `REPO_DIR='${checkout}'`)
+    .replace(/^COMPOSE_(?:FILE|ENV_FILE)=.*\n/gm, ''));
+  const installed = path.join(f.dir, 'installed-backup.sh');
+  await writeFile(installed, await readFile(script), { mode: 0o700 });
+  const result = await f.run([], installed).done;
+  assert.equal(result.code, 0, result.output);
+  for (const event of (await f.events()).filter(e => e.tool === 'docker')) {
+    assert.equal(event.args[event.args.indexOf('--project-directory') + 1], checkout);
+    assert.equal(event.args[event.args.indexOf('--env-file') + 1], path.join(checkout, '.env.prod'));
+    assert.equal(event.args[event.args.indexOf('-f') + 1], path.join(checkout, 'docker-compose.prod.yml'));
+  }
+  assert.equal((await f.run(['--failure-signal'], installed).done).code, 0);
 });
 
 test('backup timer runs every six hours UTC with bounded execution and matching heartbeat guidance', async () => {

@@ -5,7 +5,8 @@
 This is **implemented tooling, not a disaster-tested recovery claim**. A Linux host
 systemd oneshot runs every six hours against the **existing** production PostgreSQL container;
 there is no backup container, Docker socket mount, or continuously running agent.
-Defaults: `/opt/mutuity`, Compose project `mutuity-prod`,
+Set `REPO_DIR` to the deployment checkout (`/srv/mutuity` in the example config;
+the script falls back to `/opt/mutuity` when unset). Other defaults: Compose project `mutuity-prod`,
 `docker-compose.prod.yml`, `.env.prod`, service `postgres`, PostgreSQL **16**.
 The host needs Docker CLI + Compose v2, Bash, GNU coreutils, util-linux `flock`,
 tar, age, curl and AWS CLI v2. Pin/update trusted packages through host management.
@@ -42,10 +43,13 @@ Review [backup.sh](../deploy/backup/backup.sh), then install from the repository
 
 ```sh
 sudo install -d -o root -g root -m 0700 /etc/mutuity
+sudo install -d -o root -g root -m 0755 /usr/local/libexec/mutuity
+sudo install -o root -g root -m 0755 deploy/backup/backup.sh /usr/local/libexec/mutuity/backup.sh
 sudo install -o root -g root -m 0600 deploy/backup/backup.env.example /etc/mutuity/backup.env
 sudoedit /etc/mutuity/backup.env
-sudo chown root:root /opt/mutuity/.env.prod
-sudo chmod 0600 /opt/mutuity/.env.prod
+# Use your configured COMPOSE_ENV_FILE, or REPO_DIR/.env.prod by default.
+sudo chown root:root /srv/mutuity/.env.prod
+sudo chmod 0600 /srv/mutuity/.env.prod
 sudo install -o root -g root -m 0644 deploy/backup/mutuity-backup.service deploy/backup/mutuity-backup-failure.service deploy/backup/mutuity-backup.timer /etc/systemd/system/
 sudo systemd-analyze verify /etc/systemd/system/mutuity-backup.service /etc/systemd/system/mutuity-backup-failure.service /etc/systemd/system/mutuity-backup.timer
 sudo systemctl daemon-reload
@@ -59,8 +63,13 @@ Configuration is trusted Bash, sourced only after checking owner and mode
 (`root:root`, 0600 or 0400). All parent directories, repository, script and Compose
 inputs must be root-controlled, not writable by app/deploy users; root executing
 a writable script/config is root compromise. The service deliberately runs as root
-(Docker access is root-equivalent). Adjust **both** config and unit paths if the
-checkout is elsewhere. Do not put it under `/home` (units use `ProtectHome=true`).
+(Docker access is root-equivalent). Both services invoke the installed copy at
+`/usr/local/libexec/mutuity/backup.sh`, independently of the checkout location.
+Set `REPO_DIR` once in `/etc/mutuity/backup.env`; `COMPOSE_FILE` and
+`COMPOSE_ENV_FILE` default to paths beneath it. Remove stale explicit Compose
+path settings from older configs, or update them if intentional overrides are
+needed. No service edits or repository move are required. Do not put the checkout
+under `/home` (units use `ProtectHome=true`).
 Do not install an environment file in systemd with secrets as command arguments.
 The script loads `/etc/mutuity/backup.env`; `MUTUITY_BACKUP_CONFIG` is an explicit
 operator/test override. Keep AWS configuration files, debug logging and unrelated
@@ -133,8 +142,12 @@ than silently extending them into the next slot. Root can manually start the
 service after resolving a failure. A lock contender fails without a success signal.
 Configure alert grace around measured duration, not an extra day.
 
-When upgrading an existing installation, reinstall the service and timer units
-from this checkout using the Host installation command above, run
+When upgrading an existing installation, refresh the installed script and the
+service/timer units from this checkout using the Host installation commands above.
+**Keep the existing protected configuration and credentials**: do not copy the
+example over `/etc/mutuity/backup.env`. Instead edit `REPO_DIR` and remove/update
+any stale `COMPOSE_FILE`/`COMPOSE_ENV_FILE` overrides. Install the script before
+reloading the services, then run
 `systemctl daemon-reload`, then `systemctl restart mutuity-backup.timer` and
 `systemctl list-timers mutuity-backup.timer` as root. An already-running backup
 is not restarted by this timer update; schedule the update while the service is
