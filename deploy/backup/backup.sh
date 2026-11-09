@@ -5,20 +5,25 @@ set -Eeuo pipefail
 umask 077
 exec 3>&2 2>/dev/null
 stage=configuration
+reason=
 work=
 cleanup() {
   local result=$?
   trap - EXIT
   if [[ -n "$work" ]]; then rm -rf -- "$work"; fi
-  if (( result != 0 )); then printf 'mutuity backup failed (%s)\n' "$stage" >&3; fi
+  if (( result != 0 )); then
+    printf 'mutuity backup failed (%s)%s\n' "$stage" "${reason:+: $reason}" >&3
+  fi
   exit "$result"
 }
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
-die() { exit 1; }
+die() { reason=${1:-}; exit 1; }
 private_file() {
-  [[ -f "$1" && ! -L "$1" && $(stat -c %u "$1") == "$EUID" ]] || die
-  [[ $(stat -c %a "$1") == 600 || $(stat -c %a "$1") == 400 ]] || die
+  local label=${2:-configuration file}
+  [[ -f "$1" && ! -L "$1" ]] || die "$label must exist as a regular non-symlink file"
+  [[ $(stat -c %u "$1") == "$EUID" ]] || die "$label must be owned by the executing user (root under systemd)"
+  [[ $(stat -c %a "$1") == 600 || $(stat -c %a "$1") == 400 ]] || die "$label must have mode 0600 or 0400"
 }
 https() { [[ "$1" == https://* && "$1" != *$'\n'* && "$1" != *$'\r'* ]]; }
 config=${MUTUITY_BACKUP_CONFIG:-/etc/mutuity/backup.env}
@@ -42,27 +47,36 @@ if [[ ${1:-} == --failure-signal && $# == 1 ]]; then
     --retry 2 --output /dev/null "$FAILURE_HEARTBEAT_URL"
   exit 0
 fi
-[[ $# == 0 ]] || die
+[[ $# == 0 || ( $# == 1 && $1 == --check ) ]] || die 'unsupported arguments'
 stage=preflight
 for executable in docker age aws curl tar sha256sum stat flock mktemp date od tr rm mkdir; do
-  command -v "$executable" >/dev/null || die
+  command -v "$executable" >/dev/null || die "required command not found in PATH: $executable"
 done
-: "${AGE_RECIPIENT:?}" "${R2_ENDPOINT:?}" "${R2_BUCKET:?}" "${AWS_ACCESS_KEY_ID:?}" "${AWS_SECRET_ACCESS_KEY:?}" "${SUCCESS_HEARTBEAT_URL:?}"
-[[ "$AGE_RECIPIENT" == age1* && "$AGE_RECIPIENT" != *[[:space:]]* ]] || die
-https "$R2_ENDPOINT" && https "$SUCCESS_HEARTBEAT_URL" || die
-[[ "$R2_ENDPOINT" =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?/?$ ]] || die
-[[ "$R2_BUCKET" =~ ^[a-z0-9][a-z0-9.-]+[a-z0-9]$ ]] || die
+for setting in AGE_RECIPIENT R2_ENDPOINT R2_BUCKET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY SUCCESS_HEARTBEAT_URL; do
+  [[ -n ${!setting:-} ]] || die "required setting is empty or unset: $setting"
+done
+[[ "$AGE_RECIPIENT" == age1* && "$AGE_RECIPIENT" != *[[:space:]]* ]] || die 'AGE_RECIPIENT must be an age public recipient without whitespace'
+https "$R2_ENDPOINT" || die 'R2_ENDPOINT must use HTTPS without line breaks'
+https "$SUCCESS_HEARTBEAT_URL" || die 'SUCCESS_HEARTBEAT_URL must use HTTPS without line breaks'
+[[ "$R2_ENDPOINT" =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?/?$ ]] || die 'R2_ENDPOINT must be an HTTPS host, not a bucket/object URL'
+[[ "$R2_BUCKET" =~ ^[a-z0-9][a-z0-9.-]+[a-z0-9]$ ]] || die 'R2_BUCKET has an invalid bucket name format'
 REPO_DIR=${REPO_DIR:-/opt/mutuity}
 COMPOSE_PROJECT=${COMPOSE_PROJECT:-mutuity-prod}
 COMPOSE_FILE=${COMPOSE_FILE:-$REPO_DIR/docker-compose.prod.yml}
 COMPOSE_ENV_FILE=${COMPOSE_ENV_FILE:-$REPO_DIR/.env.prod}
 STATE_DIR=${STATE_DIR:-/var/lib/mutuity-backup}
 R2_PREFIX=${R2_PREFIX:-postgres}
-[[ "$R2_PREFIX" =~ ^[a-zA-Z0-9][a-zA-Z0-9/_-]*$ && "$STATE_DIR" == /* ]] || die
-[[ -d "$REPO_DIR" && -f "$COMPOSE_FILE" ]] || die
-private_file "$COMPOSE_ENV_FILE"
-mkdir -p -- "$STATE_DIR"
-[[ ! -L "$STATE_DIR" && $(stat -c %u "$STATE_DIR") == "$EUID" && $(stat -c %a "$STATE_DIR") == 700 ]] || die
+[[ "$R2_PREFIX" =~ ^[a-zA-Z0-9][a-zA-Z0-9/_-]*$ ]] || die 'R2_PREFIX has an invalid object prefix format'
+[[ "$STATE_DIR" == /* ]] || die 'STATE_DIR must be an absolute path'
+[[ -d "$REPO_DIR" ]] || die 'REPO_DIR does not point to an accessible directory'
+[[ -f "$COMPOSE_FILE" ]] || die 'COMPOSE_FILE does not point to an accessible file; check REPO_DIR and stale overrides'
+private_file "$COMPOSE_ENV_FILE" COMPOSE_ENV_FILE
+mkdir -p -- "$STATE_DIR" || die 'cannot create STATE_DIR; check permissions and systemd ReadWritePaths'
+[[ ! -L "$STATE_DIR" && $(stat -c %u "$STATE_DIR") == "$EUID" && $(stat -c %a "$STATE_DIR") == 700 ]] || die 'STATE_DIR must be a non-symlink directory owned by the executing user with mode 0700'
+if [[ ${1:-} == --check ]]; then
+  printf 'mutuity backup local preflight checks passed (no dump, upload or heartbeat performed)\n' >&3
+  exit 0
+fi
 stage=lock
 exec 9>"$STATE_DIR/backup.lock"
 flock -n 9 || die

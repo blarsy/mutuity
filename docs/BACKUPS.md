@@ -103,6 +103,31 @@ and actual restore in drills supply stronger verification. No ETag-as-SHA claim.
 
 ## Monitoring
 
+### Diagnosing local startup failures
+
+Failures include the stage and a safe check-specific reason, such as a missing
+`age`/`aws` command, an unset setting, inaccessible Compose paths, or incorrect
+file ownership/mode. Setting names are logged, never their values. Child command
+diagnostics remain suppressed because they may contain credentials.
+
+After refreshing the installed script from the checkout, run on the Production
+host:
+
+```sh
+sudo install -o root -g root -m 0755 deploy/backup/backup.sh /usr/local/libexec/mutuity/backup.sh
+sudo /bin/bash /usr/local/libexec/mutuity/backup.sh --check
+sudo systemctl start mutuity-backup.service
+sudo journalctl -u mutuity-backup.service -n 30 --no-pager
+```
+
+`--check` validates local dependencies/configuration/permissions and may create
+the state directory; it performs no database calls, upload or heartbeat. It does
+not prove Docker/PostgreSQL/R2 connectivity or reproduce the systemd sandbox/PATH;
+the actual service run remains necessary. Do not enable shell tracing or paste
+the protected configuration, environment, credentials or heartbeat URLs into chat.
+
+### Heartbeat settings
+
 In GlitchTip, create or edit **one Heartbeat monitor** named "Production PostgreSQL
 backup", associate it with a project (for example `mutuity-backups`) with email
 alerts/recipients configured, and set **Interval = 25200 seconds (7 hours)**.
@@ -130,7 +155,7 @@ With GlitchTip, rely on missed-heartbeat alerts plus independent systemd alerts.
 HTTP uses HTTPS/TLS verification, bounded retries/timeouts and no redirects.
 Provider endpoints must accept GET. Test both notification and missing-ping
 alerts; failure ping cannot work when host/network is gone. Check journal and
-systemd failed-unit alerts independently. Logs contain generic stage names only,
+systemd failed-unit alerts independently. Logs contain stage names and safe local validation reasons only,
 not child diagnostics, credentials or signed heartbeat URLs. Diagnose privately
 without publishing command output that contains secrets.
 

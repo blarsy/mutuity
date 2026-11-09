@@ -133,6 +133,52 @@ test('Bash syntax is valid', () => {
   assert.equal(result.status, 0, result.stderr);
 });
 
+test('local check validates configuration without dump, upload or heartbeat', async t => {
+  const f = await fixture(t);
+  const result = await f.run(['--check']).done;
+  assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /local preflight checks passed/);
+  assert.equal((await f.events()).some(e => ['docker', 'aws', 'age', 'curl'].includes(e.tool)), false);
+  assert.deepEqual(await readdir(f.state), []);
+});
+
+for (const [setting, value, message] of [
+  ['REPO_DIR', '/missing/SECRET_CHECKOUT', 'REPO_DIR does not point to an accessible directory'],
+  ['COMPOSE_FILE', '/missing/SECRET_COMPOSE', 'COMPOSE_FILE does not point to an accessible file'],
+  ['SUCCESS_HEARTBEAT_URL', 'http://monitor.invalid/SECRET_SUCCESS', 'SUCCESS_HEARTBEAT_URL must use HTTPS'],
+  ['AWS_SECRET_ACCESS_KEY', '', 'required setting is empty or unset: AWS_SECRET_ACCESS_KEY'],
+]) {
+  test(`preflight identifies invalid ${setting} without logging its value`, async t => {
+    const f = await fixture(t);
+    await writeFile(f.config, (await readFile(f.config, 'utf8'))
+      .replace(new RegExp(`^${setting}=.*$`, 'm'), `${setting}='${value}'`));
+    const result = await f.run(['--check']).done;
+    assert.notEqual(result.code, 0);
+    assert.ok(result.output.includes(message), result.output);
+    assert.doesNotMatch(result.output, /SECRET_CHECKOUT|SECRET_COMPOSE|SECRET_SUCCESS|\bSECRET_ACCESS\b|SENSITIVE_CHILD/);
+    assert.equal((await f.events()).some(e => ['docker', 'aws', 'age', 'curl'].includes(e.tool)), false);
+  });
+}
+
+test('preflight identifies a missing dependency in the service PATH', async t => {
+  const f = await fixture(t);
+  await writeFile(f.config, `${await readFile(f.config, 'utf8')}\nPATH=/nonexistent\n`);
+  const result = await f.run(['--check']).done;
+  assert.notEqual(result.code, 0);
+  assert.match(result.output, /required command not found in PATH: docker/);
+  assert.doesNotMatch(result.output, /SECRET|SENSITIVE/);
+});
+
+test('preflight identifies insecure Compose env permissions without exposing contents', async t => {
+  const f = await fixture(t);
+  const { chmod } = await import('node:fs/promises');
+  await chmod(path.join(f.dir, 'production.env'), 0o644);
+  const result = await f.run(['--check']).done;
+  assert.notEqual(result.code, 0);
+  assert.match(result.output, /COMPOSE_ENV_FILE must have mode 0600 or 0400/);
+  assert.doesNotMatch(result.output, /SECRET|not-logged/);
+});
+
 test('both services use the installed script independently of the checkout', async () => {
   for (const [name, suffix] of [
     ['mutuity-backup.service', ''],
