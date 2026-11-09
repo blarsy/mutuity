@@ -133,6 +133,21 @@ test('Bash syntax is valid', () => {
   assert.equal(result.status, 0, result.stderr);
 });
 
+test('backup timer runs every six hours UTC with bounded execution and matching heartbeat guidance', async () => {
+  const timer = await readFile(path.join(root, 'deploy/backup/mutuity-backup.timer'), 'utf8');
+  const service = await readFile(path.join(root, 'deploy/backup/mutuity-backup.service'), 'utf8');
+  const config = await readFile(path.join(root, 'deploy/backup/backup.env.example'), 'utf8');
+  assert.deepEqual(timer.match(/^OnCalendar=.+$/gm), [2, 8, 14, 20].map(hour =>
+    `OnCalendar=*-*-* ${String(hour).padStart(2, '0')}:00:00 UTC`));
+  assert.match(timer, /^Persistent=true$/m);
+  assert.match(timer, /^AccuracySec=1min$/m);
+  assert.match(timer, /^Unit=mutuity-backup\.service$/m);
+  assert.match(service, /^TimeoutStartSec=1h$/m);
+  assert.match(service, /^OnFailure=mutuity-backup-failure\.service$/m);
+  assert.match(config, /interval 25200 seconds \(7h\)/);
+  assert.match(config, /^FAILURE_HEARTBEAT_URL=$/m);
+});
+
 test('complete encrypted archive uploaded uniquely, HEAD checked before success; cleanup and permissions', async t => {
   const f = await fixture(t);
   const result = await f.run().done;

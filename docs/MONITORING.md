@@ -172,11 +172,15 @@ Create GET monitors with expected status 200 for:
 1. Production website `/` (frontend + external HTTPS/ingress reachability).
 2. Production `/api/ready` (API + a bounded PostgreSQL ping).
 3. Optional review website/readiness checks, only while review is expected up.
-4. A heartbeat monitor for daily backup success, using its generated URL in the
-   protected backup configuration. Configure cadence/grace around the daily
-   02:00 UTC timer and measured job duration. GlitchTip supports missed-heartbeat
-   alerts; no generic `/fail` URL is assumed. The optional failure URL is only for
-   providers that explicitly support it. Success comes after upload verification.
+4. One **Heartbeat** monitor for PostgreSQL backup success, associated with a
+  project such as `mutuity-backups` with email alerts configured. Set its
+  **Interval to 25200 seconds (7 hours)** for the backups scheduled at **02:00,
+  08:00, 14:00 and 20:00 UTC**. This fits GlitchTip's 32767-second UI limit and
+  allows roughly one hour of completion-time variation. Put its generated URL
+  in `SUCCESS_HEARTBEAT_URL` in the protected backup configuration and leave
+  `FAILURE_HEARTBEAT_URL` empty: GlitchTip has no documented `/fail` endpoint.
+  Success comes only after upload verification. Update existing monitors in the
+  GlitchTip UI; repository/timer updates do not provision monitor settings.
 
 `/health` still supplies the mobile version policy and intentionally fails open
 on policy lookup errors: do **not** use it to prove database readiness. The new
@@ -188,7 +192,8 @@ Associate every monitor with a project and configure project email alerts and
 recipients. Test down **and recovery** messages. A stopped backup should trigger
 missing-success alerts even if its own host cannot report an explicit failure.
 Alert on job duration/failure immediately via systemd operational supervision;
-a daily heartbeat alone cannot guarantee a 24h recovery-point objective.
+a heartbeat alone cannot guarantee the 24h recovery-point objective. Each backup
+has a one-hour execution limit; measure duration and investigate failures/timeouts.
 
 ## Source maps and debug symbols
 
@@ -379,11 +384,15 @@ Create GET monitors with expected status 200 for:
 1. Production website `/` (frontend + external HTTPS/ingress reachability).
 2. Production `/api/ready` (API + a bounded PostgreSQL ping).
 3. Optional review website/readiness checks, only while review is expected up.
-4. A heartbeat monitor for daily backup success, using its generated URL in the
-   protected backup configuration. Configure cadence/grace around the daily
-   02:00 UTC timer and measured job duration. GlitchTip supports missed-heartbeat
-   alerts; no generic `/fail` URL is assumed. The optional failure URL is only for
-   providers that explicitly support it. Success comes after upload verification.
+4. One **Heartbeat** monitor for PostgreSQL backup success, associated with a
+  project such as `mutuity-backups` with email alerts configured. Set its
+  **Interval to 25200 seconds (7 hours)** for the backups scheduled at **02:00,
+  08:00, 14:00 and 20:00 UTC**. This fits GlitchTip's 32767-second UI limit and
+  allows roughly one hour of completion-time variation. Put its generated URL
+  in `SUCCESS_HEARTBEAT_URL` in the protected backup configuration and leave
+  `FAILURE_HEARTBEAT_URL` empty: GlitchTip has no documented `/fail` endpoint.
+  Success comes only after upload verification. Update existing monitors in the
+  GlitchTip UI; repository/timer updates do not provision monitor settings.
 
 `/health` still supplies the mobile version policy and intentionally fails open
 on policy lookup errors: do **not** use it to prove database readiness. The new
@@ -395,7 +404,8 @@ Associate every monitor with a project and configure project email alerts and
 recipients. Test down **and recovery** messages. A stopped backup should trigger
 missing-success alerts even if its own host cannot report an explicit failure.
 Alert on job duration/failure immediately via systemd operational supervision;
-a daily heartbeat alone cannot guarantee a 24h recovery-point objective.
+a heartbeat alone cannot guarantee the 24h recovery-point objective. Each backup
+has a one-hour execution limit; measure duration and investigate failures/timeouts.
 
 ## Source maps and debug symbols
 

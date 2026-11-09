@@ -3,7 +3,7 @@
 ## Contract and limits
 
 This is **implemented tooling, not a disaster-tested recovery claim**. A Linux host
-systemd daily oneshot runs against the **existing** production PostgreSQL container;
+systemd oneshot runs every six hours against the **existing** production PostgreSQL container;
 there is no backup container, Docker socket mount, or continuously running agent.
 Defaults: `/opt/mutuity`, Compose project `mutuity-prod`,
 `docker-compose.prod.yml`, `.env.prod`, service `postgres`, PostgreSQL **16**.
@@ -29,8 +29,9 @@ installed extensions before recovery; provision matching PG16 extension packages
 and approved isolated tablespace paths. Plain `postgres:16` suffices only when
 it contains all required extensions.
 
-**Target RPO: 24 hours; no PITR/WAL archiving.** A daily schedule alone does not
-guarantee that target: monitor backup age, duration and failures; alert before
+**Target RPO: 24 hours; no PITR/WAL archiving.** Recovery points are scheduled
+six hours apart; scheduling alone does not guarantee that target. Monitor backup
+age, duration and failures; alert before
 24h since last verified success. RTO is unmeasured until a drill. File size is
 limited to 5,000,000,000 encrypted bytes (single atomic S3 PUT); fail and alert
 above that threshold, then redesign/test multipart handling rather than truncate.
@@ -93,6 +94,18 @@ and actual restore in drills supply stronger verification. No ETag-as-SHA claim.
 
 ## Monitoring
 
+In GlitchTip, create or edit **one Heartbeat monitor** named "Production PostgreSQL
+backup", associate it with a project (for example `mutuity-backups`) with email
+alerts/recipients configured, and set **Interval = 25200 seconds (7 hours)**.
+This fits the UI's 32767-second maximum and allows roughly one hour of normal
+completion-time variation between six-hourly jobs. This interval is the entire
+allowed gap between success pings, not an additional seven-hour grace period.
+Copy its generated URL into `SUCCESS_HEARTBEAT_URL`; leave
+`FAILURE_HEARTBEAT_URL` empty. Existing monitors must be updated in GlitchTip:
+changing the systemd timer does not change the monitor's settings. Test missed
+heartbeat and recovery notifications with a separate short-interval test monitor,
+not by manually pinging the production success URL.
+
 Use a private external heartbeat monitor, for example GlitchTip or Healthchecks,
 with independent notification delivery and missed-heartbeat alerts. Set the protected
 success URL supplied by the provider. **GlitchTip needs only its success heartbeat
@@ -112,10 +125,26 @@ systemd failed-unit alerts independently. Logs contain generic stage names only,
 not child diagnostics, credentials or signed heartbeat URLs. Diagnose privately
 without publishing command output that contains secrets.
 
-The timer runs at 02:00 UTC, with persistent catch-up after downtime, no random
-delay, no automatic retry storm, and a six-hour execution limit. Root can manually
-start the service after resolving a failure. A lock contender fails without a
-success signal. Configure alert grace around measured duration, not an extra day.
+The timer runs at **02:00, 08:00, 14:00 and 20:00 UTC**, with persistent catch-up
+after downtime (one catch-up run, not a replay of every missed slot), no random
+delay, no automatic retry storm, and a **one-hour execution limit**. Confirm that
+normal backup duration is comfortably below an hour; investigate timeouts rather
+than silently extending them into the next slot. Root can manually start the
+service after resolving a failure. A lock contender fails without a success signal.
+Configure alert grace around measured duration, not an extra day.
+
+When upgrading an existing installation, reinstall the service and timer units
+from this checkout using the Host installation command above, run
+`systemctl daemon-reload`, then `systemctl restart mutuity-backup.timer` and
+`systemctl list-timers mutuity-backup.timer` as root. An already-running backup
+is not restarted by this timer update; schedule the update while the service is
+idle. Update the GlitchTip interval separately as described above.
+
+These are full snapshots, not incremental backups: four runs per day mean roughly
+four times the daily dump/upload work and retained storage compared with daily
+backups. The unchanged seven-day lifecycle/lock policy retains approximately
+**28 objects instead of 7** (plus manual/catch-up runs and asynchronous expiry).
+Check storage quotas/costs, host load and deployment windows accordingly.
 
 ## R2 provisioning: off-server administrator only
 

@@ -1,8 +1,11 @@
 [Unit]
-Description=Daily Mutuity database recovery point
+Description=Mutuity database recovery point every six hours
 
 [Timer]
 OnCalendar=*-*-* 02:00:00 UTC
+OnCalendar=*-*-* 08:00:00 UTC
+OnCalendar=*-*-* 14:00:00 UTC
+OnCalendar=*-*-* 20:00:00 UTC
 Persistent=true
 AccuracySec=1min
 Unit=mutuity-backup.service
