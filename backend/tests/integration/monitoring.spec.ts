@@ -9,7 +9,37 @@ import { monitoringConfig, safeMessage, sanitizeEvent, sanitizeSpan } from "../.
 import { reportGraphqlError } from "../../src/monitoring/errors";
 import { monitorTasks } from "../../src/worker/monitorTasks";
 
+const messageFixtures: [string, string][] = require("../../../scripts/tests/monitoring-message-fixtures.json");
+
 describe("monitoring privacy and configuration", () => {
+  it.each(messageFixtures)("summarizes diagnostics without private text: %s", (input, expected) => {
+    expect(safeMessage(input)).toBe(expected);
+    expect(safeMessage(input)).not.toContain("private");
+  });
+  it("uses error class and latest application stack location for unknown messages", () => {
+    const event = sanitizeEvent({ type: undefined, message: "private", transaction: "POST /graphql",
+      exception: { values: [{ type: "CombinedGraphQLErrors", value: "private", stacktrace: { frames: [
+        { filename: "/dist/old.js", lineno: 1, in_app: true },
+        { filename: "https://app.example/dist/resolver.js?token=private", lineno: 42, in_app: true },
+        { filename: "/dist/vendor.js", lineno: 99, in_app: false }
+      ] } }] } });
+    expect(event.exception?.values?.[0]).toMatchObject({ type: "CombinedGraphQLErrors",
+      value: "CombinedGraphQLErrors at /dist/resolver.js:42 (message removed; see stack trace)" });
+    expect(event.message).toBe(event.exception?.values?.[0].value);
+    expect(event.transaction).toBe("/graphql");
+    expect(JSON.stringify(event)).not.toMatch(/private|app\.example/);
+  });
+  it("does not allow arbitrary exception names or raw error routes", () => {
+    const event = sanitizeEvent({ type: undefined, message: "private", transaction: "/accounts/private",
+      exception: { values: [{ type: "privateConversationError", value: "private" }] } });
+    expect(event.exception?.values?.[0]).toMatchObject({ type: "Error", value: "Error (message removed; see stack trace)" });
+    expect(event.transaction).toBe("application.request");
+    expect(JSON.stringify(event)).not.toContain("private");
+  });
+  it("uses the exception diagnostic when the root message is private", () => {
+    expect(sanitizeEvent({ type: undefined, message: "private", exception: { values: [{ type: "Error", value: "read ECONNRESET private" }] } }).message)
+      .toBe("Network error: ECONNRESET (address removed)");
+  });
   it("retains only validated sourcemap debug images and their exact asset identity", () => {
     const image = { type: "sourcemap" as const, debug_id: "12345678-1234-4234-8234-123456789abc", code_file: "https://app.example/_next/static/chunks/123-abcd.js" };
     const invalid = [

@@ -112,6 +112,34 @@ IP addresses remain observable at the network/proxy layer even if absent from
 SDK payloads. Limit operator access, configure instance-side scrubbing, review
 retention/privacy notice and avoid putting sensitive data in exception messages.
 
+### Troubleshooting sanitized web/API/worker errors
+
+Web and backend events now report fixed diagnostic summaries rather than dropping
+every unfamiliar runtime message. Examples include `Network error: ECONNRESET`,
+`HTTP request failed: 503`, `Database unique constraint violated`, GraphQL
+validation failures, React hydration/hook/render-loop failures, DOM operations
+and JavaScript chunk/syntax/property-access failures. Minified React error numbers
+are retained so operators can look up the React error reference; decoder URLs
+and arguments are dropped. Private
+addresses, response bodies, property names, SQL identifiers and variable values
+are never copied into these summaries. Exception classes use an explicit allowlist
+(including Apollo's `CombinedGraphQLErrors`); unknown names become `Error`.
+
+Unrecognized application text still cannot safely be forwarded. Instead, its
+event summary includes the error class and most recent application stack frame,
+for example `TypeError at /_next/static/chunks/page.js:42 (message removed; see stack trace)`.
+Known route templates are retained on error events as well as transactions;
+raw routes/IDs/query strings are not. In GlitchTip, inspect the exception stack,
+route, environment and release to locate the failure. Upload matching private
+source maps (below) to resolve minified bundle locations back to source. The
+summary's filename is a bundle location, not a symbolicated source location.
+
+This changes only new events after rebuilding/redeploying frontend, backend and
+worker; previously removed messages cannot be recovered from GlitchTip. Mobile
+keeps its separate stricter privacy policy. For an unclassified recurring error,
+add a tested diagnostic template or an explicitly reviewed static error class;
+do not enable raw exception messages or request payload collection.
+
 Browser timing groups static Next page templates. Backend timing groups safe
 registered HTTP routes; `/graphql` is intentionally aggregated, not labeled with
 untrusted client operation names or documents. Mobile measures root navigation
