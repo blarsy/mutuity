@@ -39,6 +39,29 @@ above that threshold, then redesign/test multipart handling rather than truncate
 
 ## Host installation
 
+The backup host must have the `age` executable installed (along with the other
+tools listed above). On Debian or Ubuntu, install it with:
+
+```sh
+sudo apt update && sudo apt install age
+```
+
+On other distributions, install the equivalent `age` package. Verify it is on
+the system `PATH` with `command -v age`. Install only the executable on the
+backup host; keep the private age identity off-server, as described below.
+
+AWS CLI **version 2** is also required. Install it system-wide on Linux using
+AWS's official installer (or follow the [official AWS CLI v2 installation
+instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)):
+
+```sh
+curl -fsSL https://awscli.amazonaws.com/v2/install.sh | sudo bash -s -- --system
+```
+
+Verify with `aws --version`; the output must begin with `aws-cli/2.`. The
+system-wide installer places `aws` in `/usr/local/bin`, which is available to
+the backup service's standard system `PATH`.
+
 Review [backup.sh](../deploy/backup/backup.sh), then install from the repository:
 
 ```sh
@@ -147,13 +170,15 @@ URL**: it has no documented `/fail` endpoint; never invent one by appending a pa
 Leave `FAILURE_HEARTBEAT_URL` empty/unset for GlitchTip. Configure that optional URL
 only when the provider explicitly supports failure pings (for example Healthchecks).
 Success is sent **only after**
-PUT and matching HEAD. A failed success ping also fails the service. No heartbeat
+PUT and matching HEAD. The GlitchTip success URL is called with an empty-body
+**POST** request, as required by its Heartbeat monitor. A failed success ping also fails the service. No heartbeat
 is sent by the main script on earlier failures; `OnFailure` invokes the separate
 failure unit, including on systemd timeout. That unit sends only an explicitly
 configured failure URL; without one it exits successfully without network calls.
 With GlitchTip, rely on missed-heartbeat alerts plus independent systemd alerts.
-HTTP uses HTTPS/TLS verification, bounded retries/timeouts and no redirects.
-Provider endpoints must accept GET. Test both notification and missing-ping
+Heartbeat requests use HTTPS/TLS verification, bounded retries/timeouts and no redirects.
+The optional `FAILURE_HEARTBEAT_URL` uses GET and must only be configured for a
+provider whose documented failure endpoint accepts that method. Test both notification and missing-ping
 alerts; failure ping cannot work when host/network is gone. Check journal and
 systemd failed-unit alerts independently. Logs contain stage names and safe local validation reasons only,
 not child diagnostics, credentials or signed heartbeat URLs. Diagnose privately

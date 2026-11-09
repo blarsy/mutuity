@@ -179,7 +179,8 @@ Create GET monitors with expected status 200 for:
   allows roughly one hour of completion-time variation. Put its generated URL
   in `SUCCESS_HEARTBEAT_URL` in the protected backup configuration and leave
   `FAILURE_HEARTBEAT_URL` empty: GlitchTip has no documented `/fail` endpoint.
-  Success comes only after upload verification. Update existing monitors in the
+  The backup sends the success URL an empty-body **POST** as required by
+  GlitchTip. Success comes only after upload verification. Update existing monitors in the
   GlitchTip UI; repository/timer updates do not provision monitor settings.
 
 `/health` still supplies the mobile version policy and intentionally fails open
@@ -391,7 +392,8 @@ Create GET monitors with expected status 200 for:
   allows roughly one hour of completion-time variation. Put its generated URL
   in `SUCCESS_HEARTBEAT_URL` in the protected backup configuration and leave
   `FAILURE_HEARTBEAT_URL` empty: GlitchTip has no documented `/fail` endpoint.
-  Success comes only after upload verification. Update existing monitors in the
+  The backup sends the success URL an empty-body **POST** as required by
+  GlitchTip. Success comes only after upload verification. Update existing monitors in the
   GlitchTip UI; repository/timer updates do not provision monitor settings.
 
 `/health` still supplies the mobile version policy and intentionally fails open

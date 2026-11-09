@@ -122,6 +122,6 @@ remote=$(aws --endpoint-url "$R2_ENDPOINT" --region auto s3api head-object \
 read -r remote_size remote_checksum extra <<<"$remote"
 [[ "$remote_size" == "$size" && "$remote_checksum" == "$checksum" && -z "$extra" ]] || die
 stage=success-heartbeat
-curl --silent --fail --proto '=https' --tlsv1.2 --connect-timeout 10 --max-time 30 \
+curl --silent --fail --request POST --proto '=https' --tlsv1.2 --connect-timeout 10 --max-time 30 \
   --retry 2 --output /dev/null "$SUCCESS_HEARTBEAT_URL"
 printf 'mutuity backup completed (verified upload)\n' >&3
