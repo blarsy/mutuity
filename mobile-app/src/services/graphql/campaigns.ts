@@ -7,6 +7,7 @@ import {
   type CampaignPatch,
   type Query
 } from "./generated";
+import { uploadListingImages } from "../images";
 import { CAMPAIGN_BY_ID_QUERY, CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "./operations";
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -70,6 +71,13 @@ export interface UpsertCampaignInput {
   rewardsMultiplier?: number;
   airdropAmount?: number;
   managerNoteFromCreator?: string;
+}
+
+async function prepareCampaignImageUrl(imageUrl: string | null | undefined): Promise<string | null | undefined> {
+  if (imageUrl == null || /^https?:\/\//i.test(imageUrl)) {
+    return imageUrl;
+  }
+  return (await uploadListingImages([imageUrl]))[0];
 }
 
 interface MyCampaignsQueryResult {
@@ -197,6 +205,7 @@ export async function createCampaignForAccount(
   creatorAccountId: string,
   input: UpsertCampaignInput
 ): Promise<CampaignItem | null> {
+  const imageUrl = await prepareCampaignImageUrl(input.imageUrl);
   const variables: { input: CreateCampaignInput } = {
     input: {
       title: input.title.trim(),
@@ -208,7 +217,7 @@ export async function createCampaignForAccount(
       ...(typeof input.rewardsMultiplier === "number" && { rewardsMultiplier: input.rewardsMultiplier }),
       ...(typeof input.airdropAmount === "number" && { airdropAmount: input.airdropAmount }),
       ...(input.managerNoteFromCreator?.trim() && { managerNoteFromCreator: input.managerNoteFromCreator.trim() }),
-      ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl })
+      ...(imageUrl !== undefined && { imageUrl })
     }
   };
 
@@ -230,6 +239,7 @@ export async function updateCampaignById(
   campaignId: string,
   input: UpsertCampaignInput
 ): Promise<CampaignItem | null> {
+  const imageUrl = await prepareCampaignImageUrl(input.imageUrl);
   const variables: { id: string; campaignPatch: CampaignPatch } = {
     id: campaignId,
     campaignPatch: {
@@ -242,7 +252,7 @@ export async function updateCampaignById(
       ...(typeof input.rewardsMultiplier === "number" && { rewardsMultiplier: input.rewardsMultiplier }),
       ...(typeof input.airdropAmount === "number" && { airdropAmount: input.airdropAmount }),
       ...(input.managerNoteFromCreator?.trim() && { managerNoteFromCreator: input.managerNoteFromCreator.trim() }),
-      ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl })
+      ...(imageUrl !== undefined && { imageUrl })
     }
   };
 
