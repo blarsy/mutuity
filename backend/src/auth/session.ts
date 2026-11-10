@@ -76,8 +76,21 @@ export function getSessionCookieOptions(): CookieOptions {
 export function getSessionTokenFromRequest(req: {
   signedCookies?: Record<string, string | undefined>;
   cookies?: Record<string, string | undefined>;
+  headers?: { authorization?: string | string[] | undefined };
 }) {
-  return req.signedCookies?.[SESSION_COOKIE_NAME] ?? req.cookies?.[SESSION_COOKIE_NAME] ?? null;
+  // Keep cookie-based web/password sessions authoritative. Native social login
+  // receives an opaque session token, not the OAuth browser's session cookie.
+  const cookieToken = req.signedCookies?.[SESSION_COOKIE_NAME] ?? req.cookies?.[SESSION_COOKIE_NAME];
+  if (cookieToken) {
+    return cookieToken;
+  }
+
+  const authorization = req.headers?.authorization;
+  if (typeof authorization !== "string") {
+    return null;
+  }
+
+  return /^Bearer[\t ]+([^\s,]+)[\t ]*$/i.exec(authorization)?.[1] ?? null;
 }
 
 export async function getSessionFromToken(pool: Pool, sessionToken: string) {

@@ -855,7 +855,7 @@ const postgraphileMiddleware = postgraphile(
     graphileBuildOptions: {
       pgSubscriptionPrefix: ""
     },
-    // Subscriptions share the same session/cookie middleware as HTTP requests.
+    // Subscriptions share HTTP's cookie/Bearer session authentication.
     websocketMiddlewares: [
       cookieParser(sessionSecret),
       createAuthSessionMiddleware(pool)
