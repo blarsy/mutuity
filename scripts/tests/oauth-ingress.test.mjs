@@ -23,8 +23,9 @@ before(async () => {
   directory = await mkdtemp(path.join(tmpdir(), "mutuity-oauth-ingress-"));
   const env = { PRODUCTION_HOSTS: "http://production.test", REVIEW_CANDIDATE_VERSION: "1.2.3" };
   for (const label of ["production-api", "production-frontend", "review-api", "review-frontend", "test-api", "test-frontend"]) {
-    const server = http.createServer((_request, response) => {
-      response.writeHead(200, { "Content-Type": "text/plain" });
+    const server = http.createServer((request, response) => {
+      // APIs have no /api mount: ingress must strip the browser base path.
+      response.writeHead(request.url.startsWith("/api/") ? 404 : 200, { "Content-Type": "text/plain" });
       response.end(label);
     });
     servers.push(server);
@@ -116,10 +117,20 @@ for (const [stack, host, environment] of [
   });
   test(`${host}: start/API endpoints are not mistaken for result pages`, async () => {
     for (const url of ["/auth/google/start?status=error", "/graphql", "/health", "/api/auth/google/callback?code=test&state=test"]) {
-      // Review only exposes unprefixed API routes; /api is a web/test scheme.
-      if (environment === "review" && url.startsWith("/api/")) continue;
-      assert.equal((await request(stack, host, url)).body, `${environment}-api`);
+      assert.deepEqual(await request(stack, host, url), { status: 200, body: `${environment}-api` });
     }
+  });
+  test(`${host}: browser API paths strip the prefix and reach the local API`, async () => {
+    for (const url of [
+      "/api/auth/google/start?next=%2Fapp&context=web",
+      "/api/auth/apple/start?next=%2Fapp&context=web",
+      "/api/graphql", "/api/health",
+    ]) {
+      for (const headers of [{}, { "X-App-Version": "1.0.0" }]) {
+        assert.deepEqual(await request(stack, host, url, "GET", headers), { status: 200, body: `${environment}-api` });
+      }
+    }
+    assert.equal((await request(stack, host, "/api")).status, 308);
   });
   if (environment !== "review") {
     test(`${host}: legacy 0.13 startup POST reaches the API without a redirect`, async () => {

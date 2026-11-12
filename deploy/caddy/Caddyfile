@@ -101,6 +101,14 @@ review.tope-la.com {
 		reverse_proxy {$REVIEW_API_UPSTREAM}
 	}
 
+	# Browser builds use the same /api base path as production. These requests
+	# always target review; unprefixed mobile routes retain version routing.
+	handle_path /api/* {
+		reverse_proxy {$REVIEW_API_UPSTREAM}
+	}
+
+	redir /api /api/ 308
+
 	handle {
 		reverse_proxy {$REVIEW_FRONTEND_UPSTREAM}
 	}
