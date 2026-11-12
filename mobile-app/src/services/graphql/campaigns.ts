@@ -4,11 +4,11 @@ import {
   CampaignModerationStatus,
   type Mutation,
   type Campaign,
-  type CampaignPatch,
+  type UpdateCampaignForModerationInput,
   type Query
 } from "./generated";
 import { uploadListingImages } from "../images";
-import { CAMPAIGN_BY_ID_QUERY, CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "./operations";
+import { CAMPAIGN_BY_ID_QUERY, CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION } from "./operations";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -73,6 +73,15 @@ export interface UpsertCampaignInput {
   managerNoteFromCreator?: string;
 }
 
+export interface CampaignUpdateInput extends UpsertCampaignInput {
+  theme: string;
+  airdropAt: string;
+  imageUrl: string | null;
+  rewardsMultiplier: number;
+  airdropAmount: number;
+  managerNoteFromCreator: string;
+}
+
 async function prepareCampaignImageUrl(imageUrl: string | null | undefined): Promise<string | null | undefined> {
   if (imageUrl == null || /^https?:\/\//i.test(imageUrl)) {
     return imageUrl;
@@ -106,8 +115,8 @@ interface CreateCampaignMutationResult {
   createCampaign: Pick<Mutation, "createCampaign">["createCampaign"];
 }
 
-interface UpdateCampaignByIdMutationResult {
-  updateCampaignById: Pick<Mutation, "updateCampaignById">["updateCampaignById"];
+interface UpdateCampaignForModerationMutationResult {
+  updateCampaignForModeration: Pick<Mutation, "updateCampaignForModeration">["updateCampaignForModeration"];
 }
 
 function normalizeCampaign(campaign: Campaign, _creatorAccountId?: string): CampaignItem | null {
@@ -237,32 +246,31 @@ export async function createCampaignForAccount(
 
 export async function updateCampaignById(
   campaignId: string,
-  input: UpsertCampaignInput
+  input: CampaignUpdateInput
 ): Promise<CampaignItem | null> {
   const imageUrl = await prepareCampaignImageUrl(input.imageUrl);
-  const variables: { id: string; campaignPatch: CampaignPatch } = {
-    id: campaignId,
-    campaignPatch: {
-      title: input.title.trim(),
-      ...(input.theme?.trim() && { theme: input.theme.trim() }),
-      ...(input.description.trim() && { description: input.description.trim() }),
-      startAt: input.startAt,
-      ...(input.airdropAt && { airdropAt: input.airdropAt }),
-      endAt: input.endAt,
-      ...(typeof input.rewardsMultiplier === "number" && { rewardsMultiplier: input.rewardsMultiplier }),
-      ...(typeof input.airdropAmount === "number" && { airdropAmount: input.airdropAmount }),
-      ...(input.managerNoteFromCreator?.trim() && { managerNoteFromCreator: input.managerNoteFromCreator.trim() }),
-      ...(imageUrl !== undefined && { imageUrl })
+  const variables: { input: UpdateCampaignForModerationInput } = {
+    input: {
+      pCampaignId: campaignId,
+      pTitle: input.title.trim(),
+      pTheme: input.theme.trim(),
+      pDescription: input.description.trim(),
+      pStartAt: input.startAt,
+      pAirdropAt: input.airdropAt,
+      pEndAt: input.endAt,
+      pRewardsMultiplier: input.rewardsMultiplier,
+      pAirdropAmount: input.airdropAmount,
+      pManagerNoteFromCreator: input.managerNoteFromCreator.trim(),
+      pImageUrl: imageUrl ?? null
     }
   };
 
-  const { data } = await apolloClient.mutate<UpdateCampaignByIdMutationResult, { id: string; campaignPatch: CampaignPatch }
-  >({
-    mutation: UPDATE_CAMPAIGN_BY_ID_MUTATION,
+  const { data } = await apolloClient.mutate<UpdateCampaignForModerationMutationResult, { input: UpdateCampaignForModerationInput }>({
+    mutation: UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION,
     variables
   });
 
-  const updatedCampaign = data?.updateCampaignById?.campaign;
+  const updatedCampaign = data?.updateCampaignForModeration?.campaign;
   if (!updatedCampaign?.id) {
     return null;
   }

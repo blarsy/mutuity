@@ -1,5 +1,5 @@
 import { CampaignModerationStatus } from "../../src/services/graphql/generated";
-import { CREATE_CAMPAIGN_MUTATION, UPDATE_CAMPAIGN_BY_ID_MUTATION } from "../../src/services/graphql/operations";
+import { CREATE_CAMPAIGN_MUTATION, UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION } from "../../src/services/graphql/operations";
 import { normalizeCampaignPayload } from "../../src/services/graphql/campaigns";
 
 describe("US3 campaign contract", () => {
@@ -8,7 +8,7 @@ describe("US3 campaign contract", () => {
   });
 
   it("exports the update campaign mutation document", () => {
-    expect(UPDATE_CAMPAIGN_BY_ID_MUTATION).toBeDefined();
+    expect(UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION).toBeDefined();
   });
 
   it("normalizes campaign payload with pending status", () => {

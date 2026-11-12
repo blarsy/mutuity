@@ -248,6 +248,7 @@ export const MY_CAMPAIGNS_QUERY = gql`
         endAt
         rewardsMultiplier
         airdropAmount
+        managerNoteFromCreator
         campaignResourcesByCampaignId {
           totalCount
         }
@@ -362,6 +363,7 @@ export const CAMPAIGN_BY_ID_QUERY = gql`
       endAt
       rewardsMultiplier
       airdropAmount
+      managerNoteFromCreator
     }
   }
 `;
@@ -569,14 +571,24 @@ export const UPDATE_NEED_BY_ID_MUTATION = gql`
   }
 `;
 
-export const UPDATE_CAMPAIGN_BY_ID_MUTATION = gql`
-  mutation UpdateCampaignById($id: UUID!, $campaignPatch: CampaignPatch!) {
-    updateCampaignById(input: { id: $id, campaignPatch: $campaignPatch }) {
+export const UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION = gql`
+  mutation UpdateCampaignForModeration($input: UpdateCampaignForModerationInput!) {
+    updateCampaignForModeration(input: $input) {
       campaign {
         id
         title
+        theme
         description
+        imageUrl
+        createdAt
+        creatorAccountId
         moderationStatus
+        startAt
+        airdropAt
+        endAt
+        rewardsMultiplier
+        airdropAmount
+        managerNoteFromCreator
       }
     }
   }

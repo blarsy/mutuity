@@ -100,6 +100,8 @@ export function CampaignDetailScreen({
   const isCreator = creatorAccountId === campaign.creatorAccountId;
   const isApproved = campaign.moderationStatus === CampaignModerationStatus.Approved;
   const isPending = campaign.moderationStatus === CampaignModerationStatus.Pending;
+  const isAwaitingAdaptation = campaign.moderationStatus === CampaignModerationStatus.AwaitingAdaptation;
+  const canEditCampaign = isCreator && (isPending || isAwaitingAdaptation);
   const pendingEntries = campaign.pendingEntries ?? [];
 
   const validationError = useMemo(() => {
@@ -171,7 +173,7 @@ export function CampaignDetailScreen({
       return;
     }
 
-    if (!isCreator && !isNew) {
+    if (!canEditCampaign && !isNew) {
       setSnackbarMessage(
         t("campaignCannotEditOthers", { ns: "us3", defaultValue: "You can only edit your own campaigns." })
       );
@@ -191,7 +193,7 @@ export function CampaignDetailScreen({
         rewardsMultiplier: Number(rewardsMultiplier),
         airdropAmount: Number(airdropAmount),
         imageUrl: imageUri,
-        ...(managerNoteFromCreator.trim() && { managerNoteFromCreator: managerNoteFromCreator.trim() })
+        managerNoteFromCreator: managerNoteFromCreator.trim()
       };
 
       if (isNew) {
@@ -270,7 +272,7 @@ export function CampaignDetailScreen({
             {t("labels.created", { ns: "us3", defaultValue: "Created" })}: {formatDateTime(campaign.createdAt, i18n.language)}
           </Text>
         )}
-        {(isCreator || isNew) && (isPending || isNew) ? (
+        {(canEditCampaign || isNew) ? (
           <>
             <FormTextInput
               label={withRequiredMark(t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" }))}

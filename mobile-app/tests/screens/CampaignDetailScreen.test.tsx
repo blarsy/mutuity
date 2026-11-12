@@ -83,4 +83,34 @@ describe("CampaignDetailScreen", () => {
     expect(screen.getByTestId("campaign-created-at")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Save campaign" })).toBeTruthy();
   });
+
+  it("allows the creator to edit a campaign awaiting adaptation", () => {
+    const campaign = {
+      ...newCampaign,
+      id: "campaign-adaptation",
+      title: "Community garden",
+      moderationStatus: CampaignModerationStatus.AwaitingAdaptation
+    };
+    const screen = render(
+      <CampaignDetailScreen campaign={campaign} creatorAccountId={campaign.creatorAccountId} />
+    );
+
+    expect(screen.getByRole("button", { name: "Save campaign" })).toBeTruthy();
+    expect(screen.getByLabelText("Title").props.value).toBe("Community garden");
+  });
+
+  it("keeps an approved campaign read-only for its creator", () => {
+    const campaign = {
+      ...newCampaign,
+      id: "campaign-approved",
+      title: "Community garden",
+      moderationStatus: CampaignModerationStatus.Approved
+    };
+    const screen = render(
+      <CampaignDetailScreen campaign={campaign} creatorAccountId={campaign.creatorAccountId} />
+    );
+
+    expect(screen.queryByRole("button", { name: "Save campaign" })).toBeNull();
+    expect(screen.getByTestId("campaign-details")).toBeTruthy();
+  });
 });

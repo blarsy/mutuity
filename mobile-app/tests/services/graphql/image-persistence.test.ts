@@ -3,7 +3,7 @@ import { uploadListingImages } from "../../../src/services/images";
 import { createResourceForAccount, updateResourceById, type UpsertResourceInput } from "../../../src/services/graphql/resources";
 import { updateMyProfile } from "../../../src/services/graphql/profile";
 import { sendClaimMessage, sendResourceMessage, startNeedConversation, startResourceConversation } from "../../../src/services/graphql/chat";
-import { createCampaignForAccount, updateCampaignById, type UpsertCampaignInput } from "../../../src/services/graphql/campaigns";
+import { createCampaignForAccount, updateCampaignById, type CampaignUpdateInput, type UpsertCampaignInput } from "../../../src/services/graphql/campaigns";
 
 jest.mock("../../../src/services/graphql/client", () => ({ apolloClient: { mutate: jest.fn(), query: jest.fn() } }));
 jest.mock("../../../src/services/images", () => ({ uploadListingImages: jest.fn() }));
@@ -19,6 +19,15 @@ const resource: UpsertResourceInput = {
 const campaign: UpsertCampaignInput = {
   title: "Campaign", description: "Description", imageUrl: local,
   startAt: "2026-01-01T00:00:00Z", endAt: "2026-02-01T00:00:00Z"
+};
+const campaignUpdate: CampaignUpdateInput = {
+  ...campaign,
+  theme: "Theme",
+  airdropAt: "2026-01-15T00:00:00Z",
+  imageUrl: local,
+  rewardsMultiplier: 5,
+  airdropAmount: 3000,
+  managerNoteFromCreator: ""
 };
 
 describe("cross-client image persistence", () => {
@@ -39,28 +48,26 @@ describe("cross-client image persistence", () => {
 
   it.each(["create", "edit"])("uploads campaign images before %s", async mode => {
     if (mode === "create") await createCampaignForAccount("account", campaign);
-    else await updateCampaignById("campaign", campaign);
+    else await updateCampaignById("campaign", campaignUpdate);
     expect(uploadListingImages).toHaveBeenCalledWith([local]);
     const variables = (apolloClient.mutate as jest.Mock).mock.calls[0][0].variables;
-    expect((variables.input ?? variables.campaignPatch).imageUrl).toBe(hosted);
+    expect(mode === "create" ? variables.input.imageUrl : variables.input.pImageUrl).toBe(hosted);
   });
 
   it.each(["create", "edit"])("preserves campaign image URL semantics on %s", async mode => {
     const save = mode === "create"
-      ? (input: UpsertCampaignInput) => createCampaignForAccount("account", input)
-      : (input: UpsertCampaignInput) => updateCampaignById("campaign", input);
-    await save({ ...campaign, imageUrl: "https://cdn.example.com/campaign.jpg" });
-    await save({ ...campaign, imageUrl: null });
-    await save({ ...campaign, imageUrl: undefined });
-    const imageFields = (apolloClient.mutate as jest.Mock).mock.calls.map(([call]) => {
-      const input = call.variables.input ?? call.variables.campaignPatch;
-      return { present: Object.hasOwn(input, "imageUrl"), value: input.imageUrl };
-    });
-    expect(imageFields).toEqual([
-      { present: true, value: "https://cdn.example.com/campaign.jpg" },
-      { present: true, value: null },
-      { present: false, value: undefined }
-    ]);
+      ? async (imageUrl: string | null): Promise<void> => {
+          await createCampaignForAccount("account", { ...campaign, imageUrl });
+        }
+      : async (imageUrl: string | null): Promise<void> => {
+          await updateCampaignById("campaign", { ...campaignUpdate, imageUrl });
+        };
+    await save("https://cdn.example.com/campaign.jpg");
+    await save(null);
+    const imageValues = (apolloClient.mutate as jest.Mock).mock.calls.map(([call]) =>
+      mode === "create" ? call.variables.input.imageUrl : call.variables.input.pImageUrl
+    );
+    expect(imageValues).toEqual(["https://cdn.example.com/campaign.jpg", null]);
     expect(uploadListingImages).not.toHaveBeenCalled();
   });
 
@@ -103,7 +110,7 @@ describe("cross-client image persistence", () => {
       () => updateResourceById("resource", resource),
       () => updateMyProfile("account", { displayName: "Name", location: null, bio: "", avatarUrl: local }),
       () => createCampaignForAccount("account", campaign),
-      () => updateCampaignById("campaign", campaign),
+      () => updateCampaignById("campaign", campaignUpdate),
       () => sendResourceMessage("conversation", "sender", "Hi", local),
       () => sendClaimMessage("conversation", "sender", "Hi", local),
       () => startNeedConversation({ needId: "need", messageText: "Hi", imageUrl: local }),
