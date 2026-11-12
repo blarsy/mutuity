@@ -55,6 +55,39 @@ else
   fi
 fi
 
+# Discover the deployed ingress by its Compose labels rather than assuming it
+# was originally started with -p mutuity-ingress. Never stop another service
+# merely because it owns a public port.
+ingress_project="mutuity-ingress"
+ingress_container=""
+running_containers="$(docker ps -q)"
+for container in $running_containers; do
+  labels="$(docker inspect --format '{{ index .Config.Labels "com.docker.compose.project" }}|{{ index .Config.Labels "com.docker.compose.service" }}|{{ index .Config.Labels "com.docker.compose.project.config_files" }}' "$container")"
+  IFS='|' read -r project service config_files <<< "$labels"
+  if [[ "$service" == "caddy" && ",$config_files," == *",$repo_root/docker-compose.ingress.yml,"* ]]; then
+    if [[ -n "$ingress_container" ]]; then
+      echo "Multiple running ingress containers found; resolve the ambiguity before changing routing." >&2
+      exit 1
+    fi
+    ingress_project="$project"
+    ingress_container="$container"
+  fi
+done
+
+for container in $running_containers; do
+  if [[ "$container" == "$ingress_container" ]]; then
+    continue
+  fi
+  bindings="$(docker inspect --format '{{range $ports := .NetworkSettings.Ports}}{{range $ports}}{{println .HostPort}}{{end}}{{end}}' "$container")"
+  if grep -Eq '^(80|443)$' <<< "$bindings"; then
+    name="$(docker inspect --format '{{.Name}}' "$container")"
+    echo "Container ${name#/} ($container) already publishes port 80 or 443; no changes made." >&2
+    echo "If this is the old per-stack Caddy, stop only that container after confirming the ingress migration; otherwise resolve the port conflict first." >&2
+    exit 1
+  fi
+done
+echo "Using ingress Compose project: $ingress_project"
+
 tmp_file="$(mktemp "${TMPDIR:-/tmp}/mutuity-ingress.XXXXXX")"
 trap 'rm -f "$tmp_file"' EXIT
 
@@ -71,14 +104,14 @@ if ! awk -v version="$candidate_version" '
   exit 1
 fi
 
-compose=(docker compose -p mutuity-ingress -f docker-compose.ingress.yml --env-file "$tmp_file")
+compose=(docker compose -p "$ingress_project" -f docker-compose.ingress.yml --env-file "$tmp_file")
 "${compose[@]}" run --rm --no-deps caddy caddy validate \
   --config /etc/caddy/Caddyfile --adapter caddyfile
 
 mv "$tmp_file" "$env_file"
 trap - EXIT
 
-compose=(docker compose -p mutuity-ingress -f docker-compose.ingress.yml --env-file "$env_file")
+compose=(docker compose -p "$ingress_project" -f docker-compose.ingress.yml --env-file "$env_file")
 "${compose[@]}" up -d --force-recreate caddy
 
 if [[ -n "$candidate_version" ]]; then

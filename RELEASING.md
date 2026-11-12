@@ -437,7 +437,11 @@ by default and mail delivery is disabled by default.
    ```
 3. Set the candidate route. The script requires its version to equal
    `APP_VERSION` and be newer than `PRODUCTION_APP_VERSION`; it validates Caddy
-   before recreating ingress:
+   before recreating ingress. It reuses the running ingress's Compose project
+   for this checkout, even if it was started with a different project name.
+   If another container publishes port 80 or 443, it exits without changing
+   the environment file; confirm whether this is the old per-stack Caddy and
+   stop only that container before retrying (never stop unrelated services):
    ```bash
    bash scripts/set-review-candidate-version.sh <APP_VERSION>
    ```
