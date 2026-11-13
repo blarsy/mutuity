@@ -27,7 +27,11 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
     return <Alert severity="error">{errorMessage}</Alert>;
   }
 
-  const events = data?.campaignModerationEvents?.nodes ?? [];
+  const events = [...(data?.campaignModerationEvents?.nodes ?? [])].sort((a, b) => {
+    const aCreatedAt = Date.parse(String(a.createdAt ?? ""));
+    const bCreatedAt = Date.parse(String(b.createdAt ?? ""));
+    return (Number.isFinite(bCreatedAt) ? bCreatedAt : 0) - (Number.isFinite(aCreatedAt) ? aCreatedAt : 0);
+  });
 
   if (events.length === 0) {
     return (
@@ -38,35 +42,33 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
   }
 
   return (
-    <List sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
+    <List>
       {events.map((event, index) => (
         <ListItem key={`${event.eventType}-${event.createdAt}-${index}`} divider>
           <ListItemText
             primary={
-              event.eventType === "campaign_created"
-                ? t("moderationNotes.campaignCreatedEvent")
-                : event.eventType === "moderation_note_received"
-                  ? t("moderationNotes.noteReceivedEvent")
-                  : event.eventType === "campaign_modified_by_creator"
-                    ? t("moderationNotes.creatorModifiedEvent")
-                    : event.eventType === "campaign_approved"
-                      ? t("moderationNotes.approvedEvent")
-                    : t("moderationNotes.unknownEvent")
+              <>
+                {t("moderationNotes.eventMeta", {
+                  createdAt: new Date(event.createdAt).toLocaleString()
+                })}{" "}
+                •{" "}
+                {event.eventType === "campaign_created"
+                  ? t("moderationNotes.campaignCreatedEvent")
+                  : event.eventType === "moderation_note_received"
+                    ? t("moderationNotes.noteReceivedEvent")
+                    : event.eventType === "campaign_modified_by_creator"
+                      ? t("moderationNotes.creatorModifiedEvent")
+                      : event.eventType === "campaign_approved"
+                        ? t("moderationNotes.approvedEvent")
+                        : t("moderationNotes.unknownEvent")}
+              </>
             }
             secondary={
-              <>
-                {event.body ? (
-                  <Typography component="div" sx={{ whiteSpace: "pre-wrap" }}>
-                    {event.body}
-                  </Typography>
-                ) : null}
-                <Typography color="text.secondary" variant="caption">
-                  {t("moderationNotes.eventMeta", {
-                    actorAccountId: event.actorAccountId ?? "-",
-                    createdAt: new Date(event.createdAt).toLocaleString()
-                  })}
+              event.body ? (
+                <Typography component="div" sx={{ whiteSpace: "pre-wrap" }}>
+                  {event.body}
                 </Typography>
-              </>
+              ) : null
             }
           />
         </ListItem>

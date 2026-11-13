@@ -140,6 +140,8 @@
     "title": "Ajouter une note de modération",
     "journalTitle": "Journal de moderation",
     "historyTitle": "Historique de moderation",
+    "campaignDataTitle": "Données de la campagne",
+    "noImageProvided": "Aucune image fournie.",
     "openModeration": "Ouvrir la modération",
     "editCampaign": "Modifier la campagne",
     "noteLabel": "Note de modération",
@@ -151,7 +153,7 @@
     "noteReceivedEvent": "Note de modération reçue",
     "approvedEvent": "Campagne approuvée",
     "unknownEvent": "Événement de modération",
-    "eventMeta": "Compte {{actorAccountId}} • {{createdAt}}",
+    "eventMeta": "{{createdAt}}",
     "noteMeta": "Administrateur {{managerAccountId}} • {{createdAt}}",
     "updateSuccess": "Campagne mise à jour avec succès. Une notification a été envoyée au modérateur, et vous pouvez encore modifier la campagne ensuite si besoin."
   },

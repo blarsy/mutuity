@@ -47,7 +47,8 @@ const meta = {
   args: {
     creatorAccountId: "00000000-0000-0000-0000-000000000111",
     onAddCampaign: () => undefined,
-    onEditCampaign: () => undefined,
+    onOpenCampaign: () => undefined,
+    onModerateCampaign: () => undefined,
     injectedCampaigns: SAMPLE_CAMPAIGNS
   }
 } satisfies Meta<typeof MyCampaignsScreen>;

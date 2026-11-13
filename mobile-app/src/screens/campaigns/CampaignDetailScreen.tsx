@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Snackbar, Text } from "react-native-paper";
+import { Chip, Icon, Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { InlineHtml } from "../../components/InlineHtml";
@@ -22,6 +22,9 @@ export interface CampaignDetailScreenProps {
   campaign: CampaignItem;
   creatorAccountId: string | null;
   isNew?: boolean;
+  moderationMode?: boolean;
+  moderationJournal?: React.ReactNode;
+  moderationTriage?: React.ReactNode;
   onApprovePendingEntry?: (entryId: string) => Promise<void> | void;
   onRejectPendingEntry?: (entryId: string) => Promise<void> | void;
   onBack?: () => void;
@@ -52,10 +55,23 @@ function formatDateTime(value: string, locale: string): string {
   }).format(date);
 }
 
+function campaignStatusLabel(status: CampaignModerationStatus): { key: string; defaultValue: string } {
+  if (status === CampaignModerationStatus.Approved) {
+    return { key: "campaignStatusApproved", defaultValue: "Approved" };
+  }
+  if (status === CampaignModerationStatus.AwaitingAdaptation) {
+    return { key: "campaignStatusAwaitingAdaptation", defaultValue: "Awaiting Adaptation" };
+  }
+  return { key: "campaignStatusPending", defaultValue: "Pending" };
+}
+
 export function CampaignDetailScreen({
   campaign,
   creatorAccountId,
   isNew = false,
+  moderationMode = false,
+  moderationJournal,
+  moderationTriage,
   onApprovePendingEntry,
   onRejectPendingEntry,
   onBack,
@@ -95,6 +111,19 @@ export function CampaignDetailScreen({
   const [approvingEntries, setApprovingEntries] = useState<string[]>([]);
   const [rejectingEntries, setRejectingEntries] = useState<string[]>([]);
 
+  useEffect(() => {
+    setTitle(campaign.title);
+    setTheme(campaign.theme ?? "");
+    setDescription(campaign.description ?? "");
+    setStartAt(campaign.startAt ? new Date(campaign.startAt) : defaultStartAt);
+    setAirdropAt(campaign.airdropAt ? new Date(campaign.airdropAt) : defaultAirdropAt);
+    setEndAt(campaign.endAt ? new Date(campaign.endAt) : defaultEndAt);
+    setRewardsMultiplier(String(campaign.rewardsMultiplier ?? DEFAULT_REWARDS_MULTIPLIER));
+    setAirdropAmount(String(campaign.airdropAmount ?? DEFAULT_AIRDROP_AMOUNT));
+    setManagerNoteFromCreator(campaign.managerNoteFromCreator ?? "");
+    setImageUri(campaign.imageUrl ?? null);
+  }, [campaign, defaultAirdropAt, defaultEndAt, defaultStartAt]);
+
   const withRequiredMark = (label: string): string => `${label} *`;
 
   const isCreator = creatorAccountId === campaign.creatorAccountId;
@@ -102,6 +131,7 @@ export function CampaignDetailScreen({
   const isPending = campaign.moderationStatus === CampaignModerationStatus.Pending;
   const isAwaitingAdaptation = campaign.moderationStatus === CampaignModerationStatus.AwaitingAdaptation;
   const canEditCampaign = isCreator && (isPending || isAwaitingAdaptation);
+  const formDisabled = moderationMode && !canEditCampaign;
   const pendingEntries = campaign.pendingEntries ?? [];
 
   const validationError = useMemo(() => {
@@ -254,7 +284,7 @@ export function CampaignDetailScreen({
   };
 
   return (
-    <ScreenContainer testID="campaign-detail-screen" style={styles.root}>
+    <ScreenContainer testID={moderationMode ? "campaign-moderation-screen" : "campaign-detail-screen"} style={styles.root}>
       <NavigationBackHeader
         onBack={onBack}
         accessibilityLabel={t("backToMyHubLabel", { ns: "common", defaultValue: "Back" })}
@@ -264,21 +294,39 @@ export function CampaignDetailScreen({
         <Text accessibilityRole="header" variant="headlineSmall" style={styles.pageTitle}>
           {isNew ? t("newCampaignTitle", { ns: "us3", defaultValue: "New Campaign" }) : campaign.title}
         </Text>
+        {moderationMode ? (
+          <View style={styles.moderationStatusRow}>
+            <Text variant="labelSmall">{t("campaignModerationStatus", { ns: "us3", defaultValue: "Campaign status" })}</Text>
+            <Chip compact>{t(campaignStatusLabel(campaign.moderationStatus).key, { ns: "us3", defaultValue: campaignStatusLabel(campaign.moderationStatus).defaultValue })}</Chip>
+          </View>
+        ) : null}
       </View>
 
+      {moderationMode ? moderationJournal : null}
+
       <ScrollView contentContainerStyle={styles.content}>
-        {!isNew && (
+        {moderationMode && isApproved ? (
+          <View accessibilityRole="alert" style={styles.approvedAlert}>
+            <Icon source="information-outline" size={22} color={designTokens.colors.primary} />
+            <Text variant="bodySmall" style={styles.approvedAlertText}>
+              {t("campaignCanNoMoreBeModified", { ns: "us3", defaultValue: "This campaign has been approved and can no longer be modified." })}
+            </Text>
+          </View>
+        ) : null}
+        {!isNew && (!moderationMode || !isApproved) && (
           <Text variant="bodySmall" testID="campaign-created-at">
             {t("labels.created", { ns: "us3", defaultValue: "Created" })}: {formatDateTime(campaign.createdAt, i18n.language)}
           </Text>
         )}
-        {(canEditCampaign || isNew) ? (
+
+        {(moderationMode && !isApproved) || canEditCampaign || isNew ? (
           <>
             <FormTextInput
               label={withRequiredMark(t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" }))}
               accessibilityLabel={t("campaignTitleLabel", { ns: "us3", defaultValue: "Title" })}
               value={title}
               onChangeText={setTitle}
+              disabled={formDisabled}
             />
 
             <FormTextInput
@@ -288,6 +336,7 @@ export function CampaignDetailScreen({
               onChangeText={setTheme}
               multiline
               numberOfLines={3}
+              disabled={formDisabled}
             />
 
             <FormTextInput
@@ -297,6 +346,7 @@ export function CampaignDetailScreen({
               onChangeText={setDescription}
               multiline
               numberOfLines={4}
+              disabled={formDisabled}
             />
 
             <ImagePickerField
@@ -306,6 +356,7 @@ export function CampaignDetailScreen({
               onChange={setImageUri}
               addFromCameraLabel={t("addFromCameraLabel", { ns: "common", defaultValue: "Take photo" })}
               addFromLibraryLabel={t("addFromLibraryLabel", { ns: "common", defaultValue: "Pick from library" })}
+              disabled={formDisabled}
             />
 
             <DateTimePickerField
@@ -316,6 +367,7 @@ export function CampaignDetailScreen({
               }}
               testID="campaign-start-date"
               allowClear={false}
+              disabled={formDisabled}
             />
 
             <DateTimePickerField
@@ -326,6 +378,7 @@ export function CampaignDetailScreen({
               }}
               testID="campaign-airdrop-date"
               allowClear={false}
+              disabled={formDisabled}
             />
 
             <DateTimePickerField
@@ -336,6 +389,7 @@ export function CampaignDetailScreen({
               }}
               testID="campaign-end-date"
               allowClear={false}
+              disabled={formDisabled}
             />
 
             <FormTextInput
@@ -344,6 +398,7 @@ export function CampaignDetailScreen({
               value={rewardsMultiplier}
               onChangeText={setRewardsMultiplier}
               keyboardType="numeric"
+              disabled={formDisabled}
             />
 
             <FormTextInput
@@ -352,6 +407,7 @@ export function CampaignDetailScreen({
               value={airdropAmount}
               onChangeText={setAirdropAmount}
               keyboardType="numeric"
+              disabled={formDisabled}
             />
 
             <FormTextInput
@@ -361,18 +417,21 @@ export function CampaignDetailScreen({
               onChangeText={setManagerNoteFromCreator}
               multiline
               numberOfLines={3}
+              disabled={formDisabled}
             />
 
             {hasAttemptedSubmit && validationError ? <Text style={styles.warningText}>{validationError}</Text> : null}
 
-            <PrimaryButton
-              label={isNew ? t("createCampaignLabel", { ns: "us3", defaultValue: "Create campaign" }) : t("saveCampaignLabel", { ns: "us3", defaultValue: "Save campaign" })}
-              onPress={() => void saveCampaign()}
-              loading={saving}
-              disabled={saving}
-            />
+            {!formDisabled ? (
+              <PrimaryButton
+                label={isNew ? t("createCampaignLabel", { ns: "us3", defaultValue: "Create campaign" }) : t("saveCampaignLabel", { ns: "us3", defaultValue: "Save campaign" })}
+                onPress={() => void saveCampaign()}
+                loading={saving}
+                disabled={saving}
+              />
+            ) : null}
           </>
-        ) : (
+        ) : !moderationMode ? (
           <View style={styles.detailsBlock} testID="campaign-details">
             {campaign.imageUrl ? (
               <Image
@@ -399,7 +458,9 @@ export function CampaignDetailScreen({
               <Text key={label} variant="bodySmall">{label}: {value}</Text>
             ))}
           </View>
-        )}
+        ) : null}
+
+        {moderationMode ? moderationTriage : null}
 
         {isApproved && pendingEntries.length > 0 && (
           <View style={styles.moderationBlock}>
@@ -495,6 +556,24 @@ const styles = StyleSheet.create({
   headerTitleRow: {
     marginTop: 4,
     marginBottom: designTokens.spacing.md
+  },
+  moderationStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: designTokens.spacing.xs
+  },
+  approvedAlert: {
+    alignItems: "center",
+    backgroundColor: designTokens.colors.primaryContainer,
+    borderRadius: designTokens.radius.md,
+    flexDirection: "row",
+    gap: designTokens.spacing.xs,
+    padding: designTokens.spacing.sm
+  },
+  approvedAlertText: {
+    color: designTokens.colors.primary,
+    flex: 1
   },
   pageTitle: {
     fontFamily: appFontFamilies.title,

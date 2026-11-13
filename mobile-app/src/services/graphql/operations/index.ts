@@ -368,6 +368,88 @@ export const CAMPAIGN_BY_ID_QUERY = gql`
   }
 `;
 
+export const CAMPAIGN_MODERATION_HISTORY_QUERY = gql`
+  query CampaignModerationHistory($campaignId: UUID!) {
+    campaignModerationEvents(pCampaignId: $campaignId) {
+      nodes {
+        eventType
+        body
+        createdAt
+      }
+    }
+  }
+`;
+
+export const CAMPAIGN_NEED_TRIAGE_QUERY = gql`
+  query CampaignNeedTriage($campaignId: UUID) {
+    allCampaignNeeds(condition: { campaignId: $campaignId }, orderBy: [CREATED_AT_DESC]) {
+      nodes {
+        campaignId
+        needId
+        status
+        createdAt
+        campaignByCampaignId { title }
+        needByNeedId {
+          title
+          intensity
+          proposedTopesAmount
+        }
+      }
+    }
+  }
+`;
+
+export const CAMPAIGN_RESOURCE_TRIAGE_QUERY = gql`
+  query CampaignResourceTriage($campaignId: UUID) {
+    allCampaignResources(condition: { campaignId: $campaignId }, orderBy: [PRIMARY_KEY_DESC]) {
+      nodes {
+        campaignId
+        resourceId
+        status
+        createdAt
+        campaignByCampaignId { title }
+        resourceByResourceId {
+          title
+          location
+          defaultTokenAmount
+        }
+      }
+    }
+  }
+`;
+
+export const ACCEPT_CAMPAIGN_NEED_MUTATION = gql`
+  mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!) {
+    acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+      campaignNeed { campaignId needId status }
+    }
+  }
+`;
+
+export const REJECT_CAMPAIGN_NEED_MUTATION = gql`
+  mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!) {
+    rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+      campaignNeed { campaignId needId status }
+    }
+  }
+`;
+
+export const ACCEPT_CAMPAIGN_RESOURCE_MUTATION = gql`
+  mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
+    acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+      campaignResource { campaignId resourceId status }
+    }
+  }
+`;
+
+export const REJECT_CAMPAIGN_RESOURCE_MUTATION = gql`
+  mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
+    rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+      campaignResource { campaignId resourceId status }
+    }
+  }
+`;
+
 export const CREATE_RESOURCE_MUTATION = gql`
   mutation CreateResource($input: CreateResourceInput!) {
     createResource(input: $input) {

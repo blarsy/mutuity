@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
-import { Chip, Icon, Portal, Text } from "react-native-paper";
+import { Button, Chip, Icon, Portal, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";
@@ -17,8 +17,8 @@ export interface MyCampaignsScreenProps {
   creatorAccountId: string | null;
   refreshToken?: number;
   onAddCampaign: () => void;
-  onEditCampaign: (campaign: CampaignItem) => void;
   onOpenCampaign?: (campaign: CampaignItem) => void;
+  onModerateCampaign?: (campaign: CampaignItem) => void;
   injectedCampaigns?: CampaignItem[];
   injectedLoading?: boolean;
   injectedErrorMessage?: string | null;
@@ -51,8 +51,8 @@ export function MyCampaignsScreen({
   creatorAccountId,
   refreshToken = 0,
   onAddCampaign,
-  onEditCampaign,
   onOpenCampaign,
+  onModerateCampaign,
   injectedCampaigns,
   injectedLoading,
   injectedErrorMessage
@@ -153,91 +153,104 @@ export function MyCampaignsScreen({
   }
 
   const renderCampaignCard = ({ item: campaign }: { item: CampaignItem }): React.JSX.Element => {
-            const statusMeta = statusLabelMeta(campaign.moderationStatus);
+    const statusMeta = statusLabelMeta(campaign.moderationStatus);
     const active = isCampaignActive(now, campaign.startAt, campaign.endAt);
     const ended = isCampaignEnded(now, campaign.endAt);
 
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${campaign.title}. ${t("labels.status", { ns: "us3", defaultValue: "Status" })}: ${active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}.`}
-                onPress={() => onEditCampaign(campaign)}
-                style={styles.campaignCard}
-                testID={`campaign-card-${campaign.id}`}
-              >
-                <View style={styles.cardHeader}>
-                <Text variant="titleMedium" style={styles.campaignTitle} numberOfLines={1}>
-                    {campaign.title}
-                  </Text>
-                </View>
+    return (
+      <View style={styles.campaignCard}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${campaign.title}. ${t("labels.status", { ns: "us3", defaultValue: "Status" })}: ${active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}.`}
+          onPress={() => onOpenCampaign?.(campaign)}
+          style={styles.campaignCardContent}
+          testID={`campaign-card-${campaign.id}`}
+        >
+          <View style={styles.cardHeader}>
+            <Text variant="titleMedium" style={styles.campaignTitle} numberOfLines={1}>
+              {campaign.title}
+            </Text>
+          </View>
 
-        <View style={styles.chipRow}>
-          <Chip
-            compact
-            style={{ backgroundColor: active ? "#2e7d32" : ended ? "#9e9e9e" : "#1565c0" }}
-            textStyle={{ color: "#fff", fontSize: 11 }}
-          >
-            {active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}
-          </Chip>
-          <Chip
-            compact
-            style={{ backgroundColor: statusMeta.color }}
-            textStyle={{ color: "#fff", fontSize: 11 }}
-          >
-            {t(statusMeta.key, { ns: "us3", defaultValue: statusMeta.defaultValue })}
-          </Chip>
-                </View>
+          <View style={styles.chipRow}>
+            <Chip
+              compact
+              style={{ backgroundColor: active ? "#2e7d32" : ended ? "#9e9e9e" : "#1565c0" }}
+              textStyle={{ color: "#fff", fontSize: 11 }}
+            >
+              {active ? t("statuses.active", { ns: "us3", defaultValue: "Active" }) : ended ? t("statuses.ended", { ns: "us3", defaultValue: "Ended" }) : t("statuses.upcoming", { ns: "us3", defaultValue: "Upcoming" })}
+            </Chip>
+            <Chip
+              compact
+              style={{ backgroundColor: statusMeta.color }}
+              textStyle={{ color: "#fff", fontSize: 11 }}
+            >
+              {t(statusMeta.key, { ns: "us3", defaultValue: statusMeta.defaultValue })}
+            </Chip>
+          </View>
 
-        {campaign.description ? (
-          <Text variant="bodySmall" numberOfLines={2}>
-            {campaign.description}
-          </Text>
-        ) : null}
-
-        {campaign.theme ? (
-          <Text variant="bodySmall" numberOfLines={2} style={styles.themeText}>
-            {campaign.theme}
-          </Text>
-        ) : null}
-
-        <View style={styles.datesRow}>
-          <Text variant="labelSmall">
-            {t("labels.created", { ns: "us3", defaultValue: "Created" })}: {new Date(campaign.createdAt).toLocaleDateString()}
-          </Text>
-          <Text variant="labelSmall">
-            {t("labels.start", { ns: "us3", defaultValue: "Start" })}: {new Date(campaign.startAt).toLocaleDateString()}
-          </Text>
-          {campaign.airdropAt ? (
-            <Text variant="labelSmall">
-              {t("labels.airdrop", { ns: "us3", defaultValue: "Airdrop" })}: {new Date(campaign.airdropAt).toLocaleDateString()}
+          {campaign.description ? (
+            <Text variant="bodySmall" numberOfLines={2}>
+              {campaign.description}
             </Text>
           ) : null}
-          <Text variant="labelSmall">
-            {t("labels.end", { ns: "us3", defaultValue: "End" })}: {new Date(campaign.endAt).toLocaleDateString()}
-          </Text>
-        </View>
 
-        <View style={styles.countRow}>
-          <Text variant="labelSmall">
-            {t("campaignResourcesCount", {
-              ns: "us3",
-              defaultValue: "{{count}} resource",
-              count: campaign.resourceCount
-            })}
-          </Text>
-          <Text variant="labelSmall" style={styles.countSeparator}>
-            •
-          </Text>
-          <Text variant="labelSmall">
-            {t("campaignNeedsCount", {
-              ns: "us3",
-              defaultValue: "{{count}} need",
-              count: campaign.needCount
-            })}
-          </Text>
-        </View>
-      </Pressable>
-  );
+          {campaign.theme ? (
+            <Text variant="bodySmall" numberOfLines={2} style={styles.themeText}>
+              {campaign.theme}
+            </Text>
+          ) : null}
+
+          <View style={styles.datesRow}>
+            <Text variant="labelSmall">
+              {t("labels.created", { ns: "us3", defaultValue: "Created" })}: {new Date(campaign.createdAt).toLocaleDateString()}
+            </Text>
+            <Text variant="labelSmall">
+              {t("labels.start", { ns: "us3", defaultValue: "Start" })}: {new Date(campaign.startAt).toLocaleDateString()}
+            </Text>
+            {campaign.airdropAt ? (
+              <Text variant="labelSmall">
+                {t("labels.airdrop", { ns: "us3", defaultValue: "Airdrop" })}: {new Date(campaign.airdropAt).toLocaleDateString()}
+              </Text>
+            ) : null}
+            <Text variant="labelSmall">
+              {t("labels.end", { ns: "us3", defaultValue: "End" })}: {new Date(campaign.endAt).toLocaleDateString()}
+            </Text>
+          </View>
+
+          <View style={styles.countRow}>
+            <Text variant="labelSmall">
+              {t("campaignResourcesCount", {
+                ns: "us3",
+                defaultValue: "{{count}} resource",
+                count: campaign.resourceCount
+              })}
+            </Text>
+            <Text variant="labelSmall" style={styles.countSeparator}>
+              •
+            </Text>
+            <Text variant="labelSmall">
+              {t("campaignNeedsCount", {
+                ns: "us3",
+                defaultValue: "{{count}} need",
+                count: campaign.needCount
+              })}
+            </Text>
+          </View>
+        </Pressable>
+        {onModerateCampaign ? (
+          <Button
+            compact
+            icon="shield-edit-outline"
+            mode="outlined"
+            onPress={() => onModerateCampaign(campaign)}
+            testID={`campaign-card-moderation-${campaign.id}`}
+          >
+            {t("moderateCampaignLabel", { ns: "us3", defaultValue: "Moderation" })}
+          </Button>
+        ) : null}
+      </View>
+    );
   };
 
   return (
@@ -406,6 +419,9 @@ const styles = StyleSheet.create({
     backgroundColor: designTokens.colors.primaryContainer,
     borderRadius: designTokens.radius.md,
     padding: designTokens.spacing.sm,
+    gap: designTokens.spacing.xs
+  },
+  campaignCardContent: {
     gap: designTokens.spacing.xs
   },
   cardHeader: {

@@ -13,6 +13,7 @@ export interface DateTimePickerFieldProps {
   onChange: (nextValue: Date | undefined) => void;
   testID: string;
   allowClear?: boolean;
+  disabled?: boolean;
 }
 
 export function DateTimePickerField({
@@ -20,7 +21,8 @@ export function DateTimePickerField({
   value,
   onChange,
   testID,
-  allowClear = true
+  allowClear = true,
+  disabled = false
 }: DateTimePickerFieldProps): React.JSX.Element {
   const { t, i18n } = useTranslation("common");
   const [dateOpen, setDateOpen] = useState(false);
@@ -69,7 +71,7 @@ export function DateTimePickerField({
       <FormFieldLabel>{label}</FormFieldLabel>
 
       <View style={styles.row}>
-        {allowClear && (
+        {allowClear && !disabled && (
           <Pressable
             accessibilityRole="checkbox"
             accessibilityState={{ checked: !value }}
@@ -90,8 +92,10 @@ export function DateTimePickerField({
           testID={`${testID}:Button`}
           accessibilityRole="button"
           accessibilityLabel={label}
+          accessibilityState={{ disabled }}
+          disabled={disabled}
           onPress={() => setDateOpen(true)}
-          style={styles.dateButton}
+          style={[styles.dateButton, disabled && styles.disabled]}
         >
           <Text variant="bodyMedium" style={styles.dateText}>{displayValue}</Text>
           <Icon source="chevron-right" size={24} color="#000" />
@@ -146,5 +150,8 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontFamily: appFontFamilies.general
+  },
+  disabled: {
+    opacity: 0.55
   }
 });

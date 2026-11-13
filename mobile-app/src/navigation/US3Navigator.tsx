@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { MyCampaignsScreen } from "../screens/campaigns/MyCampaignsScreen";
 import { CampaignDetailScreen } from "../screens/campaigns/CampaignDetailScreen";
+import { CampaignModerationScreen } from "../screens/campaigns/CampaignModerationScreen";
 import { CampaignPublicInfoScreen } from "../screens/campaigns/CampaignPublicInfoScreen";
 import { CampaignModerationStatus } from "../services/graphql/generated";
 import { fetchCampaignById } from "../services/graphql/campaigns";
 import type { CampaignItem } from "../services/graphql/campaigns";
 
-type US3Screen = "list" | "detail" | "public";
+type US3Screen = "list" | "detail" | "public" | "moderation";
 
 export interface US3NavigatorProps {
   currentAccountId: string | null;
@@ -98,6 +99,20 @@ export function US3Navigator({ currentAccountId, pendingCampaignId, onConsumePen
     );
   }
 
+  if (activeScreen === "moderation" && selectedCampaign) {
+    return (
+      <CampaignModerationScreen
+        campaign={selectedCampaign}
+        creatorAccountId={currentAccountId}
+        onBack={() => {
+          setActiveScreen("list");
+          setSelectedCampaign(null);
+          setRefreshToken((prev) => prev + 1);
+        }}
+      />
+    );
+  }
+
   return (
     <MyCampaignsScreen
       creatorAccountId={currentAccountId}
@@ -123,14 +138,14 @@ export function US3Navigator({ currentAccountId, pendingCampaignId, onConsumePen
         });
         setActiveScreen("detail");
       }}
-      onEditCampaign={(campaign) => {
-        setIsNewCampaign(false);
-        setSelectedCampaign(campaign);
-        setActiveScreen("detail");
-      }}
       onOpenCampaign={(campaign) => {
         setSelectedCampaign(campaign);
         setActiveScreen("public");
+      }}
+      onModerateCampaign={(campaign) => {
+        setIsNewCampaign(false);
+        setSelectedCampaign(campaign);
+        setActiveScreen("moderation");
       }}
     />
   );

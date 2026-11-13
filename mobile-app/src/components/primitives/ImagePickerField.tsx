@@ -14,6 +14,7 @@ export interface ImagePickerFieldProps {
   onChange: (imageUri: string | null) => void;
   addFromCameraLabel: string;
   addFromLibraryLabel: string;
+  disabled?: boolean;
 }
 
 const PREVIEW_SIZE = 120;
@@ -24,7 +25,8 @@ export function ImagePickerField({
   imageUri,
   onChange,
   addFromCameraLabel,
-  addFromLibraryLabel
+  addFromLibraryLabel,
+  disabled = false
 }: ImagePickerFieldProps): React.JSX.Element {
   const { t } = useTranslation("common");
   const [busy, setBusy] = useState(false);
@@ -97,14 +99,14 @@ export function ImagePickerField({
               style={styles.preview}
               accessibilityLabel={label}
             />
-            <Pressable
+            {!disabled ? <Pressable
               onPress={handleRemove}
               style={styles.removeButton}
               accessibilityRole="button"
               accessibilityLabel={t("removeImage", { defaultValue: "Remove image" })}
             >
               <Icon source="close-circle" size={24} color={designTokens.colors.primary} />
-            </Pressable>
+            </Pressable> : null}
           </View>
         ) : (
           <View style={styles.placeholder}>
@@ -115,8 +117,8 @@ export function ImagePickerField({
         <View style={styles.actions}>
           <Pressable
             onPress={() => void handlePickFromLibrary()}
-            disabled={busy}
-            style={styles.actionButton}
+            disabled={busy || disabled}
+            style={[styles.actionButton, disabled && styles.disabled]}
             accessibilityRole="button"
             accessibilityLabel={addFromLibraryLabel}
           >
@@ -126,8 +128,8 @@ export function ImagePickerField({
 
           <Pressable
             onPress={() => void handleTakePicture()}
-            disabled={busy}
-            style={styles.actionButton}
+            disabled={busy || disabled}
+            style={[styles.actionButton, disabled && styles.disabled]}
             accessibilityRole="button"
             accessibilityLabel={addFromCameraLabel}
           >
@@ -184,5 +186,8 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontFamily: appFontFamilies.general,
     color: designTokens.colors.primary
+  },
+  disabled: {
+    opacity: 0.55
   }
 });

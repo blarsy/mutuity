@@ -374,7 +374,6 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
               <Box>
                 <Typography sx={{ mb: 1 }} variant="subtitle1">Content</Typography>
                 <Stack spacing={1.25}>
-                  {renderCampaignField("Title", campaign.title)}
                   {campaign.imageUrl ? (
                     <Box
                       sx={{
@@ -390,14 +389,19 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
                         component="img"
                         src={campaign.imageUrl}
                         sx={{
-                          aspectRatio: "16 / 9",
+                          aspectRatio: "1 / 1",
                           display: "block",
                           objectFit: "cover",
                           width: "100%"
                         }}
                       />
                     </Box>
-                  ) : null}
+                  ) : (
+                    <Alert severity="info" sx={{ maxWidth: 360 }}>
+                      No image provided.
+                    </Alert>
+                  )}
+                  {renderCampaignField("Title", campaign.title)}
                   <Box>
                     <Typography sx={{ mb: 1 }} variant="subtitle2">Theme</Typography>
                     <RichTextContent emptyFallback="No theme stored." html={campaign.theme} />

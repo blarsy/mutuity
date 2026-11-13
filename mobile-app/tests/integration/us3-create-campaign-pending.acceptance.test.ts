@@ -35,7 +35,6 @@ function CreateCampaignHarness(): React.JSX.Element {
         ...previous
       ]);
     },
-    onEditCampaign: () => undefined
   });
 }
 

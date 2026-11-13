@@ -2,9 +2,6 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Alert,
   Button,
   Chip,
@@ -20,7 +17,6 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
@@ -31,6 +27,7 @@ import {
   type CreateCampaignValues
 } from "../../../features/campaigns/createCampaign.validation";
 import { RichTextEditor } from "../../../components/richText/RichTextEditor";
+import { RichTextContent } from "../../../components/richText/RichTextContent";
 import { PageContainer } from "../../../components/PageContainer";
 import {
   CAMPAIGN_MODERATION_DETAILS_QUERY,
@@ -261,9 +258,6 @@ export default function CampaignModerationPage() {
 
   const canEdit = campaign?.moderationStatus === "PENDING" || campaign?.moderationStatus === "AWAITING_ADAPTATION";
   const isApprovedOrLater = campaign ? !canEdit : false;
-  const moderationSectionLabel = isApprovedOrLater
-    ? t("moderationNotes.historyTitle")
-    : t("moderationNotes.journalTitle");
 
   const needNodes = useMemo(() => needTriageData?.allCampaignNeeds?.nodes ?? [], [needTriageData?.allCampaignNeeds?.nodes]);
   const resourceNodes = useMemo(() => resourceTriageData?.allCampaignResources?.nodes ?? [], [resourceTriageData?.allCampaignResources?.nodes]);
@@ -358,9 +352,6 @@ export default function CampaignModerationPage() {
           <IconButton onClick={() => router.push("/campaigns")}>
             <ArrowBackIcon />
           </IconButton>
-          <Typography component="h1" variant="h4">
-            {campaign ? campaign.title : t("pending.title")}
-          </Typography>
         </Stack>
 
         {loading ? <CircularProgress size={20} /> : null}
@@ -368,36 +359,109 @@ export default function CampaignModerationPage() {
 
         {!loading && !detailsErrorMessage && campaign ? (
           <Stack spacing={2}>
-            <Typography component="h2" variant="subtitle1">
-              {t("create.fields.description")}
-            </Typography>
-            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-              {campaign.description ?? "—"}
-            </Typography>
-            <Box
-              component="dl"
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "max-content 1fr" },
-                columnGap: 3,
-                rowGap: 1,
-                m: 0
-              }}
-            >
-              {[
-                [t("labels.created"), formatPublicDateTime(campaign.createdAt, i18n.language)],
-                [t("create.fields.startDatetime"), formatPublicDateTime(campaign.startAt, i18n.language)],
-                [t("create.fields.endDatetime"), formatPublicDateTime(campaign.endAt, i18n.language)],
-                [t("create.fields.airdropDatetime"), formatPublicDateTime(campaign.airdropAt, i18n.language)],
-                [t("create.fields.airdropAmount"), campaign.airdropAmount],
-                [t("create.fields.rewardsMultiplier"), campaign.rewardsMultiplier]
-              ].map(([label, value]) => (
-                <Box key={label} sx={{ display: "contents" }}>
-                  <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{label}</Typography>
-                  <Typography component="dd" variant="body2" sx={{ m: 0 }}>{value}</Typography>
-                </Box>
-              ))}
+            <Box component="section" aria-labelledby="campaign-moderation-journal-title">
+              <Typography component="h1" id="campaign-moderation-journal-title" variant="h6" sx={{ mb: 1 }}>
+                {t("moderationNotes.journalTitle")}
+              </Typography>
+              <CampaignModerationHistory campaignId={campaignId as string} />
             </Box>
+
+            <Box component="section" aria-labelledby="campaign-data-title">
+              <Stack
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                direction={{ xs: "column", sm: "row" }}
+                justifyContent="space-between"
+                spacing={2}
+                sx={{ mb: 2 }}
+              >
+                <Typography component="h2" id="campaign-data-title" variant="h6">
+                  {t("moderationNotes.campaignDataTitle")}
+                </Typography>
+                <Stack alignItems="center" direction="row" spacing={1}>
+                  <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
+                  {canEdit ? (
+                    <Button
+                      onClick={() => setEditOpen(true)}
+                      size="small"
+                      variant="contained"
+                    >
+                      {t("moderationNotes.editCampaign")}
+                    </Button>
+                  ) : null}
+                </Stack>
+              </Stack>
+
+              {campaign.imageUrl ? (
+                <Box
+                  sx={{
+                    borderRadius: 1,
+                    maxWidth: 320,
+                    mb: 2,
+                    overflow: "hidden",
+                    width: "100%"
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <Box
+                    alt={campaign.title}
+                    component="img"
+                    src={campaign.imageUrl}
+                    sx={{
+                      aspectRatio: "1 / 1",
+                      display: "block",
+                      objectFit: "cover",
+                      width: "100%"
+                    }}
+                  />
+                </Box>
+              ) : (
+                <Alert severity="info" sx={{ mb: 2 }}>{t("moderationNotes.noImageProvided")}</Alert>
+              )}
+
+              <Box
+                component="dl"
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "max-content 1fr" },
+                  columnGap: 3,
+                  rowGap: 1,
+                  m: 0
+                }}
+              >
+                <Box sx={{ display: "contents" }}>
+                  <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{t("create.fields.title")}</Typography>
+                  <Typography component="dd" variant="body2" sx={{ m: 0 }}>{campaign.title}</Typography>
+                </Box>
+                <Box sx={{ display: "contents" }}>
+                  <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{t("create.fields.theme")}</Typography>
+                  <Box component="dd" sx={{ m: 0, overflowWrap: "anywhere" }}>
+                    <RichTextContent html={campaign.theme} emptyFallback="—" />
+                  </Box>
+                </Box>
+                <Box sx={{ display: "contents" }}>
+                  <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{t("create.fields.description")}</Typography>
+                  <Typography component="dd" variant="body2" sx={{ m: 0, overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}>{campaign.description || "—"}</Typography>
+                </Box>
+                <Box sx={{ display: "contents" }}>
+                  <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{t("create.fields.noteForManager")}</Typography>
+                  <Typography component="dd" variant="body2" sx={{ m: 0, overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}>{campaign.managerNoteFromCreator || "—"}</Typography>
+                </Box>
+                {[
+                  [t("labels.created"), formatPublicDateTime(campaign.createdAt, i18n.language)],
+                  [t("create.fields.startDatetime"), formatPublicDateTime(campaign.startAt, i18n.language)],
+                  [t("create.fields.airdropDatetime"), formatPublicDateTime(campaign.airdropAt, i18n.language)],
+                  [t("create.fields.endDatetime"), formatPublicDateTime(campaign.endAt, i18n.language)],
+                  [t("create.fields.airdropAmount"), campaign.airdropAmount],
+                  [t("create.fields.rewardsMultiplier"), campaign.rewardsMultiplier]
+                ].map(([label, value]) => (
+                  <Box key={label} sx={{ display: "contents" }}>
+                    <Typography component="dt" variant="body2" sx={{ fontWeight: 600 }}>{label}</Typography>
+                    <Typography component="dd" variant="body2" sx={{ m: 0 }}>{value}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+
             {isApprovedOrLater ? (
               <>
                 <Typography variant="h6">{t("resourceTriage.sectionTitle")}</Typography>
@@ -515,76 +579,6 @@ export default function CampaignModerationPage() {
                 })}
               </>
             ) : null}
-
-            {!isApprovedOrLater ? (
-              <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>
-                <Typography variant="subtitle1">{moderationSectionLabel}</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}>
-                  <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
-                  <Button
-                    disabled={!canEdit}
-                    onClick={() => {
-                      setEditOpen(true);
-                    }}
-                    size="small"
-                    variant="contained"
-                  >
-                    {t("moderationNotes.editCampaign")}
-                  </Button>
-                </Stack>
-              </Stack>
-            ) : null}
-
-            {campaign.imageUrl ? (
-              <Box
-                sx={{
-                  borderRadius: 1,
-                  maxWidth: 320,
-                  overflow: "hidden",
-                  width: "100%"
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <Box
-                  alt={campaign.title}
-                  component="img"
-                  src={campaign.imageUrl}
-                  sx={{
-                    aspectRatio: "1 / 1",
-                    display: "block",
-                    objectFit: "cover",
-                    width: "100%"
-                  }}
-                />
-              </Box>
-            ) : null}
-
-            {isApprovedOrLater ? (
-              <Accordion disableGutters>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Stack
-                    alignItems="center"
-                    direction="row"
-                    justifyContent="space-between"
-                    spacing={1}
-                    sx={{ width: "100%", pr: 1 }}
-                  >
-                    <Typography variant="subtitle2">{t("moderationNotes.historyTitle")}</Typography>
-                    <Stack alignItems="center" direction="row" spacing={1}>
-                      <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
-                      <Button disabled size="small" variant="contained">
-                        {t("moderationNotes.editCampaign")}
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <CampaignModerationHistory campaignId={campaignId as string} />
-                </AccordionDetails>
-              </Accordion>
-            ) : (
-              <CampaignModerationHistory campaignId={campaignId as string} />
-            )}
 
             {updateSuccess ? (
               <Alert severity="success">{t("moderationNotes.updateSuccess")}</Alert>
