@@ -36,11 +36,10 @@ import {
 import {
   createResourceInitialValues,
   createResourceValidationSchema,
-  getTokenRangeLabel,
+  normalizeOptionalResourceCoordinate,
   toGraphQLResourceIntensity,
   type CreateResourceValues
 } from "./createResource.validation";
-import { RESOURCE_INTENSITY_OPTIONS, type ResourceCategoryOption } from "./types";
 import type { AccountProfileQuery, LinkableResourceCampaignOptionsQuery, PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
@@ -52,15 +51,6 @@ function normalizeOptionalInteger(value: number | "") {
   }
 
   return Number.isFinite(Number(value)) ? Number(value) : undefined;
-}
-
-function normalizeOptionalCoordinate(value: number | string | null | undefined): number | "" {
-  if (value === "" || value == null) {
-    return "";
-  }
-
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : "";
 }
 
 function fromGraphQLResourceIntensity(value: "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION") {
@@ -161,8 +151,8 @@ export default function CreateResourcePage() {
       return {
         ...createResourceInitialValues,
         location: hasProfileLocation ? profile?.location ?? "" : "",
-        latitude: hasProfileLocation ? normalizeOptionalCoordinate(profile?.latitude) : "",
-        longitude: hasProfileLocation ? normalizeOptionalCoordinate(profile?.longitude) : ""
+        latitude: hasProfileLocation ? normalizeOptionalResourceCoordinate(profile?.latitude) ?? "" : "",
+        longitude: hasProfileLocation ? normalizeOptionalResourceCoordinate(profile?.longitude) ?? "" : ""
       };
     }
 
@@ -194,8 +184,8 @@ export default function CreateResourcePage() {
         title: values.title.trim(),
         description: values.description.trim() || undefined,
         location: values.location.trim() || undefined,
-        latitude: normalizeOptionalCoordinate(values.latitude),
-        longitude: normalizeOptionalCoordinate(values.longitude),
+        latitude: normalizeOptionalResourceCoordinate(values.latitude),
+        longitude: normalizeOptionalResourceCoordinate(values.longitude),
         intensity: toGraphQLResourceIntensity(values.intensity) as unknown as NeedIntensity,
         defaultTokenAmount: normalizeOptionalInteger(values.defaultTokenAmount),
         categoryCodes: values.categoryCodes.length > 0 ? values.categoryCodes : undefined,
@@ -285,12 +275,6 @@ export default function CreateResourcePage() {
             </Typography>
           </Box>
         </Stack>
-
-        {errorMessage ? (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {errorMessage}
-          </Alert>
-        ) : null}
 
         {categoryErrorMessage ? (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -578,6 +562,11 @@ export default function CreateResourcePage() {
                 <Button disabled={isSubmitting || loading || loadingCategories || loadingEditResource} type="submit" variant="contained">
                   {isEditMode ? t("form.saveButton") : t("form.addButton")}
                 </Button>
+                {errorMessage ? (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    {errorMessage}
+                  </Alert>
+                ) : null}
               </Stack>
             </Form>
           )}

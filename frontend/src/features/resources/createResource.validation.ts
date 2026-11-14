@@ -79,6 +79,17 @@ export function getTokenRangeLabel(intensity: ResourceIntensity) {
   }
 }
 
+export function normalizeOptionalResourceCoordinate(
+  value: number | string | null | undefined
+): number | undefined {
+  if (value == null || (typeof value === "string" && value.trim() === "")) {
+    return undefined;
+  }
+
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
+}
+
 export function toGraphQLResourceIntensity(intensity: ResourceIntensity) {
   switch (intensity) {
     case "leg_up":
