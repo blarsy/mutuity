@@ -173,6 +173,7 @@ const MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY = gql`
             campaignId
             submissionId
             submittedAt
+            actedAt
             rejectionNote
             isCurrent
             status
@@ -218,6 +219,7 @@ const MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY = gql`
             campaignId
             submissionId
             submittedAt
+            actedAt
             rejectionNote
             isCurrent
             status

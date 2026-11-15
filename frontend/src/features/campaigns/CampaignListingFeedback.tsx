@@ -11,17 +11,22 @@ export function CampaignListingFeedback({ relation, locked }: {
   const campaign = relation.campaignByCampaignId;
   const date = (value: string) => Number.isFinite(Date.parse(value))
     ? new Date(value).toLocaleString(i18n.language) : "—";
+  const dateValue = relation.status === "ACCEPTED" || relation.status === "REJECTED"
+    ? relation.actedAt : relation.submittedAt;
+  const dateKey = relation.status === "ACCEPTED" ? "listingLifecycle.acceptedAt"
+    : relation.status === "REJECTED" ? "listingLifecycle.rejectedAt" : "listingLifecycle.submittedAt";
   return (
     <Alert severity={relation.status === "REJECTED" ? "warning" : "info"}>
       <Stack spacing={0.5}>
         <Typography variant="subtitle2">
           {campaign?.title} — {t(`listingLifecycle.status.${relation.status}`)}
         </Typography>
-        <Typography variant="body2">{t("listingLifecycle.submittedAt", { date: date(relation.submittedAt) })}</Typography>
-        {campaign ? <Typography variant="body2">
-          {t("listingLifecycle.campaignDates", { start: date(campaign.startAt), end: date(campaign.endAt) })}
+        {dateValue ? <Typography variant="body2">
+          {t(dateKey, { date: date(dateValue) })}
         </Typography> : null}
-        {relation.rejectionNote ? <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{relation.rejectionNote}</Typography> : null}
+        {relation.status === "REJECTED" && relation.rejectionNote?.trim() ? <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+          {t("listingLifecycle.feedbackLabel")}: {relation.rejectionNote}
+        </Typography> : null}
         {relation.status === "REJECTED" ? <Typography variant="body2">{t("listingLifecycle.saveDoesNotResubmit")}</Typography> : null}
         {locked ? <Typography variant="body2">{t(relation.status === "ACCEPTED"
           ? "listingLifecycle.acceptedLocked" : "listingLifecycle.pendingLocked")}</Typography> : null}

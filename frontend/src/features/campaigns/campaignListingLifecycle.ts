@@ -6,6 +6,7 @@ export type CampaignListingRelation = {
   campaignId: string;
   submissionId: string;
   submittedAt: string;
+  actedAt: string | null;
   rejectionNote: string | null;
   isCurrent: boolean;
   status: `${CampaignNeedStatus}`;

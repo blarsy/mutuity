@@ -2,7 +2,9 @@
   "listingLifecycle": {
     "status": { "PENDING": "En attente de validation", "ACCEPTED": "Accepté", "REJECTED": "Refusé", "SUPERSEDED": "Remplacé" },
     "submittedAt": "Soumis le : {{date}}",
-    "campaignDates": "Campagne : du {{start}} au {{end}}",
+    "rejectedAt": "Refusé le : {{date}}",
+    "acceptedAt": "Accepté le : {{date}}",
+    "feedbackLabel": "Motif du refus",
     "saveDoesNotResubmit": "Enregistrer les modifications ne soumet pas à nouveau cette annonce. Utilisez Soumettre à nouveau pour demander une nouvelle validation dans cette campagne.",
     "acceptedLocked": "Une annonce acceptée reste rattachée à cette campagne jusqu’à sa fin.",
     "pendingLocked": "Vous pourrez changer de campagne après 24 heures d’attente. Vous ne pouvez pas quitter une campagne sans en choisir une autre.",

@@ -447,14 +447,21 @@ export default function CreateResourcePage() {
                   )}
                 </Box>
 
-                { campaignLocked ? (
-                  <>
-                    <Typography gutterBottom variant="subtitle1">
-                      {t("form.campaignLabel")}
-                    </Typography>
-                    <CampaignListingFeedback relation={relation} locked={campaignLocked} />
-                  </>
-                ) :
+                {campaignLocked ? <Typography gutterBottom variant="subtitle1">
+                  {t("form.campaignLabel")}
+                </Typography> : null}
+                <CampaignListingFeedback relation={relation} locked={campaignLocked} />
+                {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
+                    && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
+                    <Button type="button" variant="outlined" sx={{ alignSelf: "flex-start" }} disabled={isSubmitting || loading}
+                      onClick={async () => {
+                        resubmitRequested.current = true;
+                        try { await submitForm(); } finally { resubmitRequested.current = false; }
+                      }}>
+                      {t("listingLifecycle.resubmit", { ns: "campaigns" })}
+                    </Button>
+                  ) : null}
+                {!campaignLocked ?  
                   <TextField
                     select
                     name="campaignId"
@@ -473,19 +480,7 @@ export default function CreateResourcePage() {
                         {campaign.title}
                       </MenuItem>
                     ))}
-                  </TextField>
-                }
-
-                  {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
-                    && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
-                    <Button type="button" variant="outlined" disabled={isSubmitting || loading}
-                      onClick={async () => {
-                        resubmitRequested.current = true;
-                        try { await submitForm(); } finally { resubmitRequested.current = false; }
-                      }}>
-                      {t("listingLifecycle.resubmit", { ns: "campaigns" })}
-                    </Button>
-                  ) : null}
+                  </TextField>: null}
 
                 <TextField
                   name="expiresAt"

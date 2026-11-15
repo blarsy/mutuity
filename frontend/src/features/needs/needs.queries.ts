@@ -143,6 +143,7 @@ export const NEED_EDIT_DETAIL_QUERY = gql`
           campaignId
           submissionId
           submittedAt
+          actedAt
           rejectionNote
           isCurrent
           status

@@ -493,7 +493,7 @@ export default function EditNeedPage() {
 
                 {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
                   && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
-                  <Button type="button" variant="outlined" disabled={isSubmitting || loading || updateLoading}
+                  <Button type="button" variant="outlined" sx={{ alignSelf: "flex-start" }} disabled={isSubmitting || loading || updateLoading}
                     onClick={async () => {
                       resubmitRequested.current = true;
                       try { await submitForm(); } finally { resubmitRequested.current = false; }

@@ -12,7 +12,7 @@ const hour = 3_600_000;
 function relation(patch: Partial<CampaignListingRelation> = {}): CampaignListingRelation {
   return {
     campaignId: "campaign-a", submissionId: "submission-a", status: "PENDING", isCurrent: true,
-    submittedAt: new Date(now - hour).toISOString(), rejectionNote: null,
+    submittedAt: new Date(now - hour).toISOString(), actedAt: null, rejectionNote: null,
     campaignByCampaignId: { title: "Campaign A", startAt: "2026-11-01T00:00:00Z", endAt: "2026-12-01T00:00:00Z" },
     ...patch
   };

@@ -4,14 +4,17 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import EditNeedPage from "../../src/features/needs/CreateNeedPage";
 import CreateResourcePage from "../../src/features/resources/CreateResourcePage";
+import { CampaignListingFeedback } from "../../src/features/campaigns/CampaignListingFeedback";
 import type { CampaignListingRelation } from "../../src/features/campaigns/campaignListingLifecycle";
+import { NEED_EDIT_DETAIL_QUERY } from "../../src/features/needs/needs.queries";
+import { RESOURCE_EDIT_DETAIL_QUERY } from "../../src/features/resources/resources.queries";
 
 let mockKind: "need" | "resource" = "need";
 const mockPush = jest.fn();
 let mockForm: { initialValues: Record<string, unknown>; onSubmit: Function; children: Function };
 
 jest.mock("next/router", () => ({ useRouter: () => ({ isReady: true, query: { [`${mockKind}Id`]: "listing" }, push: mockPush }) }));
-jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }) }));
+jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string, values?: { date?: string }) => values?.date ? `${key}: ${values.date}` : key, i18n: { language: "en" } }) }));
 jest.mock("@apollo/client/react", () => ({ useQuery: jest.fn(), useMutation: jest.fn() }));
 jest.mock("formik", () => ({ Formik: (props: typeof mockForm) => { mockForm = props; return null; }, Form: () => null }));
 jest.mock("../../src/features/auth/AuthProvider", () => ({ useAuth: () => ({ session: { account: { id: "owner" } } }) }));
@@ -22,7 +25,7 @@ jest.mock("../../src/components/LocationPicker", () => ({ LocationPicker: () => 
 
 const relation: CampaignListingRelation = {
   campaignId: "campaign-a", submissionId: "submission-a", status: "REJECTED", isCurrent: false,
-  submittedAt: new Date().toISOString(), rejectionNote: "Please add details",
+  submittedAt: new Date().toISOString(), actedAt: "2026-11-15T10:30:00Z", rejectionNote: "Please add details",
   campaignByCampaignId: { title: "Campaign A", startAt: "2020-01-01", endAt: "2099-01-01" }
 };
 const listing = {
@@ -35,13 +38,39 @@ const listing = {
   campaignNeedsByNeedId: { nodes: [relation] }, campaignResourcesByResourceId: { nodes: [relation] }
 };
 
+describe("campaign listing feedback dates", () => {
+  const submittedAt = "2026-11-10T09:00:00Z";
+  const actedAt = "2026-11-15T10:30:00Z";
+  it.each([
+    ["PENDING", "submittedAt", submittedAt],
+    ["REJECTED", "rejectedAt", actedAt],
+    ["ACCEPTED", "acceptedAt", actedAt],
+    ["SUPERSEDED", "submittedAt", submittedAt]
+  ] as const)("shows only the %s status date", (status, key, expected) => {
+    const html = renderToStaticMarkup(<CampaignListingFeedback relation={{ ...relation, status, submittedAt, actedAt }} locked={false} />);
+    expect(html).toContain(`listingLifecycle.${key}: ${new Date(expected).toLocaleString("en")}`);
+    for (const other of ["submittedAt", "rejectedAt", "acceptedAt"].filter(value => value !== key)) {
+      expect(html).not.toContain(`listingLifecycle.${other}`);
+    }
+    expect(html).not.toContain("listingLifecycle.campaignDates");
+    expect(html).not.toContain(new Date(relation.campaignByCampaignId!.startAt).toLocaleString("en"));
+    expect(html).not.toContain(new Date(relation.campaignByCampaignId!.endAt).toLocaleString("en"));
+  });
+  it.each(["ACCEPTED", "REJECTED"] as const)("does not substitute the submission date for a missing %s decision date", status => {
+    const html = renderToStaticMarkup(<CampaignListingFeedback relation={{ ...relation, status, submittedAt, actedAt: null }} locked={false} />);
+    expect(html).not.toContain("listingLifecycle.submittedAt");
+    expect(html).not.toContain("listingLifecycle.acceptedAt");
+    expect(html).not.toContain("listingLifecycle.rejectedAt");
+  });
+});
+
 describe.each(["need", "resource"] as const)("%s editor campaign writes", kind => {
   let mutations: Record<string, jest.Mock>;
   let relations: CampaignListingRelation[];
   const renderEditor = () => renderToStaticMarkup(kind === "need" ? <EditNeedPage /> : <CreateResourcePage />);
   const helpers = () => ({ setStatus: jest.fn(), setSubmitting: jest.fn() });
   function controls(values = mockForm.initialValues, submitForm = jest.fn()) {
-    const elements: { props: Record<string, any> }[] = [];
+    const elements: { type: unknown; props: Record<string, any> }[] = [];
     function collect(nodes: ReactNode) {
       Children.forEach(nodes, node => {
         if (!isValidElement<Record<string, any>>(node)) return;
@@ -91,11 +120,35 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     const submitForm = jest.fn(() => mockForm.onSubmit(mockForm.initialValues, helpers()));
     const resubmit = controls(undefined, submitForm).find(node => node.props.children === "listingLifecycle.resubmit");
     expect(resubmit?.props.type).toBe("button");
+    expect(resubmit?.props.sx).toEqual({ alignSelf: "flex-start" });
     await resubmit!.props.onClick();
     expect(submitForm).toHaveBeenCalledTimes(1);
     expect(mutations[kind === "need" ? "CreateCampaignNeedLink" : "CreateCampaignResourceLink"]).toHaveBeenCalledWith({
       variables: { campaignId: "campaign-a", [`${kind}Id`]: "listing" }
     });
+  });
+
+  it("shows rejection feedback and its decision time in the editor", () => {
+    const feedback = controls().find(node => node.type === CampaignListingFeedback);
+    expect(feedback?.props.relation).toEqual(relation);
+    const html = renderToStaticMarkup(<CampaignListingFeedback relation={feedback!.props.relation} locked={false} />);
+    expect(html).toContain(`listingLifecycle.rejectedAt: ${new Date(relation.actedAt!).toLocaleString("en")}`);
+    expect(html).toContain("listingLifecycle.feedbackLabel");
+    expect(html).toContain("Please add details");
+    const query = kind === "need" ? NEED_EDIT_DETAIL_QUERY : RESOURCE_EDIT_DETAIL_QUERY;
+    expect(query.loc?.source.body).toMatch(/\bactedAt\b/);
+  });
+
+  it("does not invent a rejection date or display an empty note", () => {
+    const html = renderToStaticMarkup(<CampaignListingFeedback relation={{ ...relation, actedAt: null, rejectionNote: "  " }} locked={false} />);
+    expect(html).not.toContain("listingLifecycle.rejectedAt");
+    expect(html).not.toContain("listingLifecycle.feedbackLabel");
+  });
+
+  it("escapes rejection notes", () => {
+    const html = renderToStaticMarkup(<CampaignListingFeedback relation={{ ...relation, rejectionNote: "<script>bad</script>" }} locked={false} />);
+    expect(html).toContain("&lt;script&gt;bad&lt;/script&gt;");
+    expect(html).not.toContain("<script>");
   });
 
   it("does not leak resubmit intent into Save after form validation prevents submission", async () => {
@@ -109,8 +162,9 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     relations = [{ ...relation, status, isCurrent: true }];
     renderEditor();
     const elements = controls();
-    const picker = elements.find(node => node.props.name === "campaignId")!;
-    expect(picker.props.disabled).toBe(true);
+    const picker = elements.find(node => node.props.name === "campaignId");
+    if (kind === "need") expect(picker?.props.disabled).toBe(true);
+    else expect(picker).toBeUndefined();
     expect(elements.some(node => node.props.children === "form.noCampaign")).toBe(false);
     expect(elements.some(node => node.props.children === "listingLifecycle.resubmit")).toBe(false);
   });

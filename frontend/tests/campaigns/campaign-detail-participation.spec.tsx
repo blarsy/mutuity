@@ -17,7 +17,7 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     i18n: { language: "en" },
     t: (key: string, values?: Record<string, unknown>) =>
-      [key, values?.start, values?.end].filter(Boolean).join(" ")
+      [key, values?.date, values?.start, values?.end].filter(Boolean).join(" ")
   })
 }));
 jest.mock("../../src/features/auth/AuthProvider", () => ({
@@ -110,20 +110,25 @@ describe("campaign detail listing layout and visibility", () => {
   function submission(patch: Partial<CampaignListingRelation> = {}): CampaignListingRelation {
     return {
       campaignId: campaign.id, submissionId: "submission", submittedAt: new Date(now - 3_600_000).toISOString(),
-      status: "PENDING", isCurrent: true, rejectionNote: null,
+      status: "PENDING", isCurrent: true, actedAt: null, rejectionNote: null,
       campaignByCampaignId: { title: "Linked campaign", startAt: campaign.startAt, endAt: campaign.endAt }, ...patch
     };
   }
 
   it("offers explicit same-campaign resubmit and displays rejection feedback for both listing kinds", () => {
-    mockRelations = [submission({ status: "REJECTED", isCurrent: false, rejectionNote: "Add more details" })];
+    const actedAt = "2026-10-13T11:30:00Z";
+    mockRelations = [submission({ status: "REJECTED", isCurrent: false, actedAt, rejectionNote: "Add more details" })];
     const html = renderCampaign();
     const buttons = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) ?? [];
     const resubmit = buttons.filter(button => button.includes("listingLifecycle.resubmit"));
     expect(resubmit).toHaveLength(2);
     expect(resubmit.every(button => !button.includes("disabled="))).toBe(true);
     expect(html.match(/Add more details/g)).toHaveLength(2);
+    expect(html.split(`listingLifecycle.rejectedAt ${new Date(actedAt).toLocaleString("en")}`)).toHaveLength(3);
     expect(html.match(/listingLifecycle.saveDoesNotResubmit/g)).toHaveLength(2);
+    for (const [query] of jest.mocked(useQuery).mock.calls) {
+      expect(query.loc?.source.body).toMatch(/\bactedAt\b/);
+    }
   });
 
   it.each(["ACCEPTED", "PENDING"] as const)("prevents joining another campaign while the existing %s slot is locked", status => {

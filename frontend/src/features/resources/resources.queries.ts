@@ -218,6 +218,7 @@ export const RESOURCE_EDIT_DETAIL_QUERY = gql`
           campaignId
           submissionId
           submittedAt
+          actedAt
           rejectionNote
           isCurrent
           status

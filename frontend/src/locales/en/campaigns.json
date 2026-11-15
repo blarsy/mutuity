@@ -2,7 +2,9 @@
   "listingLifecycle": {
     "status": { "PENDING": "Pending review", "ACCEPTED": "Accepted", "REJECTED": "Rejected", "SUPERSEDED": "Replaced" },
     "submittedAt": "Submitted: {{date}}",
-    "campaignDates": "Campaign: {{start}} – {{end}}",
+    "rejectedAt": "Rejected: {{date}}",
+    "acceptedAt": "Accepted: {{date}}",
+    "feedbackLabel": "Rejection note",
     "saveDoesNotResubmit": "Saving edits does not resubmit this listing. Use Resubmit to request another review for this campaign.",
     "acceptedLocked": "An accepted listing stays in this campaign until the campaign ends.",
     "pendingLocked": "You can switch campaigns once this submission has been pending for 24 hours. You cannot leave without choosing another campaign.",
