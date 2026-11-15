@@ -40,7 +40,6 @@
     "imageUrlsLabel": "Image URLs",
     "imageUrlsHelper": "Optional. Paste one or more image URLs separated by commas or new lines.",
     "locationLabel": "Location label",
-    "locationHelper": "Shown to nearby people when they browse.",
     "latitudeLabel": "Latitude",
     "latitudeHelper": "For distance sorting",
     "longitudeLabel": "Longitude",

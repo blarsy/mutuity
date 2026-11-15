@@ -7,7 +7,6 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  MenuItem,
   Stack,
   TextField,
   Typography
@@ -46,6 +45,7 @@ import { DateTimePickerField } from "../../components/DateTimePickerField";
 import { toDateTimeLocalValue } from "../../components/dateTime";
 import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
 import { CampaignListingFeedback } from "../campaigns/CampaignListingFeedback";
+import { CampaignPicker } from "../campaigns/CampaignPicker";
 import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
 
 type ResourceEditorData = Omit<ResourceEditDetailQuery, "resourceById"> & {
@@ -399,7 +399,7 @@ export default function CreateResourcePage() {
                   addressHelperText={
                     touched.location && errors.location
                       ? errors.location
-                      : t("form.locationHelper")
+                      : undefined
                   }
                   coordinatesError={Boolean(
                     (touched.latitude && errors.latitude) ||
@@ -450,25 +450,19 @@ export default function CreateResourcePage() {
                     </Button>
                   ) : null}
                 {!campaignLocked ?  
-                  <TextField
-                    select
+                  <CampaignPicker
                     name="campaignId"
+                    compact
                     label={t("form.campaignLabel", { defaultValue: "Campaign (optional)" })}
-                    value={values.campaignId}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    options={campaignOptions}
+                    selected={values.campaignId ? [values.campaignId] : []}
+                    onChange={ids => { void setFieldValue("campaignId", ids[0] ?? ""); }}
+                    allowEmpty={!hasCurrentCampaign}
                     disabled={loadingCampaigns || campaignLocked || isSubmitting}
                     helperText={loadingCampaigns
                       ? t("form.loadingCampaigns", { defaultValue: "Loading campaigns..." })
                       : t("form.campaignHelper", { defaultValue: "Optionally join this resource to one campaign." })}
-                  >
-                    {!hasCurrentCampaign ? <MenuItem value="">{t("form.noCampaign", { defaultValue: "No campaign" })}</MenuItem> : null}
-                    {campaignOptions.map(campaign => (
-                      <MenuItem key={campaign.id} value={campaign.id}>
-                        {campaign.title}
-                      </MenuItem>
-                    ))}
-                  </TextField>: null}
+                  />: null}
 
                 <DateTimePickerField
                   name="expiresAt"

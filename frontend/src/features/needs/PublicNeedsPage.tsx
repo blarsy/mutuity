@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client/react";
 import {
   Alert,
-  Autocomplete,
   Box,
   Button,
   Card,
@@ -30,6 +29,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { getDisplayIntensityLabel } from "../shared/displayIntensity";
 import { isCampaignActive } from "../campaigns/PublicCampaignsPage";
+import { CampaignPicker } from "../campaigns/CampaignPicker";
 import { buildNeedSearchVariables, cycleTriStateFilter, describeTriStateFilter, type NeedSearchQueryVariables } from "./needFilters";
 import { NeedClaimDialog } from "./NeedClaimDialog";
 import { TOURNAI_CITY_CENTRE, TOURNAI_CENTRE_ADDRESS, getBrowserLocation } from "./locationFallback";
@@ -344,20 +344,12 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
                 }}
               />
 
-              <Autocomplete
+              <CampaignPicker
                 multiple
                 options={campaignOptions}
-                value={campaignOptions.filter(campaign => selectedCampaignIds.includes(campaign.id))}
-                getOptionLabel={campaign => campaign.title}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                onChange={(_event, campaigns) => setSelectedCampaignIds(campaigns.map(campaign => campaign.id))}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    label={t("browse.campaignsLabel", { defaultValue: "Campaigns" })}
-                    placeholder={t("browse.allCampaignsLabel", { defaultValue: "All campaigns" })}
-                  />
-                )}
+                selected={selectedCampaignIds}
+                onChange={setSelectedCampaignIds}
+                label={t("browse.campaignsLabel", { defaultValue: "Campaigns" })}
               />
 
               <Stack direction={{ xs: "column", sm: "row" }} flexWrap="wrap" gap={1}>

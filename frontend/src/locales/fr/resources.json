@@ -40,7 +40,6 @@
     "imageUrlsLabel": "URLs d’images",
     "imageUrlsHelper": "Optionnel. Collez une ou plusieurs URLs d’images séparées par des virgules ou des sauts de ligne.",
     "locationLabel": "Libellé de lieu",
-    "locationHelper": "Affiché aux personnes à proximité lors de la navigation.",
     "latitudeLabel": "Latitude",
     "latitudeHelper": "Pour le tri par distance",
     "longitudeLabel": "Longitude",

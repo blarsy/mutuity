@@ -1,4 +1,13 @@
 {
+  "picker": {
+    "title": "Choisir des campagnes",
+    "allCampaigns": "Toutes les campagnes",
+    "noCampaign": "Aucune campagne",
+    "empty": "Aucune campagne appropriée n’est disponible.",
+    "openCampaign": "Ouvrir la page publique de {{title}} dans une nouvelle fenêtre",
+    "cancel": "Annuler",
+    "confirm": "Appliquer"
+  },
   "listingLifecycle": {
     "status": { "PENDING": "En attente de validation", "ACCEPTED": "Accepté", "REJECTED": "Refusé", "SUPERSEDED": "Remplacé" },
     "submittedAt": "Soumis le : {{date}}",

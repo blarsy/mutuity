@@ -69,7 +69,7 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
   let relations: CampaignListingRelation[];
   const renderEditor = () => renderToStaticMarkup(kind === "need" ? <EditNeedPage /> : <CreateResourcePage />);
   const helpers = () => ({ setStatus: jest.fn(), setSubmitting: jest.fn() });
-  function controls(values = mockForm.initialValues, submitForm = jest.fn()) {
+  function controls(values = mockForm.initialValues, submitForm = jest.fn(), setFieldValue = jest.fn()) {
     const elements: { type: unknown; props: Record<string, any> }[] = [];
     function collect(nodes: ReactNode) {
       Children.forEach(nodes, node => {
@@ -78,7 +78,7 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
         collect(node.props.children);
       });
     }
-    collect(mockForm.children({ values, errors: {}, touched: {}, setFieldValue: jest.fn(), setFieldTouched: jest.fn(), submitForm }));
+    collect(mockForm.children({ values, errors: {}, touched: {}, setFieldValue, setFieldTouched: jest.fn(), submitForm }));
     return elements;
   }
   beforeEach(() => {
@@ -106,6 +106,18 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     expect(mutations[kind === "need" ? "UpdateNeed" : "PublishResource"]).toHaveBeenCalledTimes(1);
     expect(mutations[kind === "need" ? "CreateCampaignNeedLink" : "CreateCampaignResourceLink"]).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith(`/${kind}s/manage`);
+  });
+
+  it("passes the current campaign to the picker and writes the selected campaign back to the form", () => {
+    const setFieldValue = jest.fn();
+    const picker = controls(undefined, jest.fn(), setFieldValue).find(node => node.props.name === "campaignId")!;
+    expect(picker.props.compact).toBe(true);
+    expect(picker.props.selected).toEqual(["campaign-a"]);
+    expect(picker.props.options).toEqual(expect.arrayContaining([expect.objectContaining({ id: "campaign-a", title: "Campaign A" })]));
+    picker.props.onChange(["campaign-b"]);
+    expect(setFieldValue).toHaveBeenCalledWith("campaignId", "campaign-b");
+    picker.props.onChange([]);
+    expect(setFieldValue).toHaveBeenCalledWith("campaignId", "");
   });
 
   it("switches by linking directly, with no unlink operation", async () => {
@@ -165,7 +177,7 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     const picker = elements.find(node => node.props.name === "campaignId");
     if (kind === "need") expect(picker?.props.disabled).toBe(true);
     else expect(picker).toBeUndefined();
-    expect(elements.some(node => node.props.children === "form.noCampaign")).toBe(false);
+    if (picker) expect(picker.props.allowEmpty).toBe(false);
     expect(elements.some(node => node.props.children === "listingLifecycle.resubmit")).toBe(false);
   });
 
@@ -174,7 +186,7 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     renderEditor();
     const elements = controls();
     expect(elements.find(node => node.props.name === "campaignId")!.props.disabled).toBeFalsy();
-    expect(elements.some(node => node.props.children === "form.noCampaign")).toBe(false);
+    expect(elements.find(node => node.props.name === "campaignId")!.props.allowEmpty).toBe(false);
   });
 
   it("releases an ended accepted campaign for a new submission", async () => {
@@ -184,7 +196,7 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     expect(mockForm.initialValues.campaignId).toBe("");
     const elements = controls();
     expect(elements.find(node => node.props.name === "campaignId")!.props.disabled).toBeFalsy();
-    expect(elements.some(node => node.props.children === "form.noCampaign")).toBe(true);
+    expect(elements.find(node => node.props.name === "campaignId")!.props.allowEmpty).toBe(true);
     await mockForm.onSubmit({ ...mockForm.initialValues, campaignId: "campaign-b" }, helpers());
     expect(mutations[kind === "need" ? "CreateCampaignNeedLink" : "CreateCampaignResourceLink"]).toHaveBeenCalledWith({
       variables: { campaignId: "campaign-b", [`${kind}Id`]: "listing" }

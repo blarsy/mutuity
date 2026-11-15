@@ -7,7 +7,6 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  MenuItem,
   Stack,
   TextField,
   Typography
@@ -43,6 +42,7 @@ import { DateTimePickerField } from "../../components/DateTimePickerField";
 import { toDateTimeLocalValue } from "../../components/dateTime";
 import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
 import { CampaignListingFeedback } from "../campaigns/CampaignListingFeedback";
+import { CampaignPicker } from "../campaigns/CampaignPicker";
 import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
 
 type NeedEditorData = Omit<NeedEditDetailQuery, "needById"> & {
@@ -475,23 +475,17 @@ export default function EditNeedPage() {
                 ) : null}
 
                 <CampaignListingFeedback relation={relation} locked={campaignLocked} />
-                <TextField
-                  select
+                <CampaignPicker
                   name="campaignId"
+                  compact
                   label={t("form.campaignLabel")}
-                  value={values.campaignId}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
+                  options={activeCampaignOptions}
+                  selected={values.campaignId ? [values.campaignId] : []}
+                  onChange={ids => { void setFieldValue("campaignId", ids[0] ?? ""); }}
+                  allowEmpty={!hasCurrentCampaign}
                   disabled={campaignOptionsLoading || campaignLocked || isSubmitting}
                   helperText={campaignOptionsLoading ? t("form.loadingCampaigns") : t("form.campaignHelper")}
-                >
-                  {!hasCurrentCampaign ? <MenuItem value="">{t("form.noCampaign")}</MenuItem> : null}
-                  {activeCampaignOptions.map(campaign => (
-                    <MenuItem key={campaign.id} value={campaign.id}>
-                      {campaign.title}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                />
 
                 {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
                   && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (

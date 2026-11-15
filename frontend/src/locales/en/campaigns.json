@@ -1,4 +1,13 @@
 {
+  "picker": {
+    "title": "Select campaigns",
+    "allCampaigns": "All campaigns",
+    "noCampaign": "No campaign",
+    "empty": "No suitable campaigns are available.",
+    "openCampaign": "Open public page for {{title}} in a new window",
+    "cancel": "Cancel",
+    "confirm": "Apply"
+  },
   "listingLifecycle": {
     "status": { "PENDING": "Pending review", "ACCEPTED": "Accepted", "REJECTED": "Rejected", "SUPERSEDED": "Replaced" },
     "submittedAt": "Submitted: {{date}}",
