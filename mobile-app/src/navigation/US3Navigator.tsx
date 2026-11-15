@@ -13,6 +13,7 @@ type US3Screen = "list" | "detail" | "public" | "moderation";
 export interface US3NavigatorProps {
   currentAccountId: string | null;
   pendingCampaignId?: string | null;
+  pendingCampaignModeration?: boolean;
   onConsumePendingCampaign?: () => void;
 }
 
@@ -38,7 +39,7 @@ function buildDefaultCampaignDates() {
   };
 }
 
-export function US3Navigator({ currentAccountId, pendingCampaignId, onConsumePendingCampaign }: US3NavigatorProps): React.JSX.Element {
+export function US3Navigator({ currentAccountId, pendingCampaignId, pendingCampaignModeration = false, onConsumePendingCampaign }: US3NavigatorProps): React.JSX.Element {
   const [activeScreen, setActiveScreen] = useState<US3Screen>("list");
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignItem | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -57,14 +58,16 @@ export function US3Navigator({ currentAccountId, pendingCampaignId, onConsumePen
         return;
       }
       setSelectedCampaign(campaign);
-      setActiveScreen("public");
+      setActiveScreen(pendingCampaignModeration ? "moderation" : "public");
       onConsumePendingCampaign?.();
+    }).catch(() => {
+      if (!cancelled) onConsumePendingCampaign?.();
     });
 
     return () => {
       cancelled = true;
     };
-  }, [pendingCampaignId, onConsumePendingCampaign]);
+  }, [pendingCampaignId, pendingCampaignModeration, onConsumePendingCampaign]);
 
   if (activeScreen === "detail" && selectedCampaign) {
     return (

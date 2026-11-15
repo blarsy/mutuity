@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
-import { Button, Chip, Icon, Text } from "react-native-paper";
+import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
+import { Button, Chip, Divider, Icon, PaperProvider, Text, useTheme } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { LoadingState } from "../../components/state/LoadingState";
+import { FormTextInput, ThemedDialog } from "../../components/primitives";
+import { NeedSearchCard, ResourceSearchCard } from "../../components/listings/SearchListingCards";
 import { fetchCampaignById } from "../../services/graphql/campaigns";
 import {
   fetchCampaignModerationHistory,
@@ -11,6 +14,7 @@ import {
   fetchCampaignResourceTriage,
   triageCampaignNeed,
   triageCampaignResource,
+  isVisibleModerationRelation,
   type CampaignModerationEventItem,
   type CampaignNeedTriageItem,
   type CampaignResourceTriageItem
@@ -19,6 +23,10 @@ import type { CampaignItem } from "../../services/graphql/campaigns";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 import { CampaignDetailScreen } from "./CampaignDetailScreen";
+import { isCurrentCampaignRelation } from "../../services/graphql/campaignListing";
+import { ResourceDetailScreen } from "../resources/ResourceDetailScreen";
+import { NeedDetailScreen } from "../needs/NeedDetailScreen";
+import { ModerationListingGroup } from "./ModerationListingGroup";
 
 export interface CampaignModerationScreenProps {
   campaign: CampaignItem;
@@ -54,7 +62,8 @@ function statusLabel(status: CampaignNeedTriageItem["status"]): { key: string; d
   return { key: "campaignTriagePending", defaultValue: "Pending" };
 }
 
-function formatEventDate(value: string, locale: string): string {
+function formatEventDate(value: string | null | undefined, locale: string): string {
+  if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "—";
@@ -68,6 +77,7 @@ export function CampaignModerationScreen({
   onBack
 }: CampaignModerationScreenProps): React.JSX.Element {
   const { t, i18n } = useTranslation(["common", "us3"]);
+  const theme = useTheme();
   const { height: windowHeight } = useWindowDimensions();
   const [campaign, setCampaign] = useState(initialCampaign);
   const [journalExpanded, setJournalExpanded] = useState(true);
@@ -83,6 +93,13 @@ export function CampaignModerationScreen({
   const [resourceActionError, setResourceActionError] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [rejection, setRejection] = useState<
+    { type: "need"; item: CampaignNeedTriageItem } | { type: "resource"; item: CampaignResourceTriageItem } | null
+  >(null);
+  const [rejectionNote, setRejectionNote] = useState("");
+  const [preview, setPreview] = useState<{ kind: "resource" | "need"; id: string } | null>(null);
+  const visibleResources = resources.filter(isVisibleModerationRelation);
+  const visibleNeeds = needs.filter(isVisibleModerationRelation);
 
   const loadJournal = useCallback(async (): Promise<void> => {
     setJournalLoading(true);
@@ -124,11 +141,13 @@ export function CampaignModerationScreen({
     void loadTriage();
   }, [loadJournal, loadTriage, refreshToken]);
 
-  const handleTriageNeed = async (item: CampaignNeedTriageItem, action: "accept" | "reject"): Promise<void> => {
+  const handleTriageNeed = async (item: CampaignNeedTriageItem, action: "accept" | "reject", note?: string): Promise<void> => {
+    if (!isCurrentCampaignRelation(item) || item.status !== "PENDING") return;
     const key = `need:${item.needId}:${action}`;
     setBusyKey(key);
     try {
-      await triageCampaignNeed(campaign.id, item.needId, action);
+      await triageCampaignNeed(campaign.id, item.needId, action, item.submissionId, note);
+      setRejection(null);
       await loadTriage();
     } catch {
       setNeedActionError(true);
@@ -137,11 +156,13 @@ export function CampaignModerationScreen({
     }
   };
 
-  const handleTriageResource = async (item: CampaignResourceTriageItem, action: "accept" | "reject"): Promise<void> => {
+  const handleTriageResource = async (item: CampaignResourceTriageItem, action: "accept" | "reject", note?: string): Promise<void> => {
+    if (!isCurrentCampaignRelation(item) || item.status !== "PENDING") return;
     const key = `resource:${item.resourceId}:${action}`;
     setBusyKey(key);
     try {
-      await triageCampaignResource(campaign.id, item.resourceId, action);
+      await triageCampaignResource(campaign.id, item.resourceId, action, item.submissionId, note);
+      setRejection(null);
       await loadTriage();
     } catch {
       setResourceActionError(true);
@@ -214,41 +235,45 @@ export function CampaignModerationScreen({
         </Text>
       ) : null}
       {triageLoading ? <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} /> : null}
-      {!triageLoading && !resourceError && resources.length === 0 ? (
+      {!triageLoading && !resourceError && visibleResources.length === 0 ? (
         <Text style={styles.mutedText}>
           {t("campaignResourceTriageEmpty", { ns: "us3", defaultValue: "No resources linked to this campaign." })}
         </Text>
       ) : null}
-      {resources.map((item) => {
+      <ModerationListingGroup
+        items={visibleResources}
+        rejectedLabel={t("alsoShowRejectedResources", { ns: "us3", defaultValue: "Also show rejected resources" })}
+        testID="rejected-resources"
+        renderItem={(item, index) => {
         const acceptKey = `resource:${item.resourceId}:accept`;
         const rejectKey = `resource:${item.resourceId}:reject`;
         return (
-          <View key={item.resourceId} style={styles.triageCard}>
-            <View style={styles.triageCardHeader}>
-              <Text variant="titleSmall" style={styles.triageItemTitle}>
-                {item.title ?? t("campaignTriageResourceFallback", { ns: "us3", defaultValue: "Resource {{id}}", id: item.resourceId })}
+          <View key={item.resourceId} style={styles.triageEntry} testID={`resource-moderation-${item.resourceId}`}>
+            {index > 0 ? <Divider style={styles.triageDivider} testID={`resource-divider-${item.resourceId}`} /> : null}
+            <View style={styles.triageStatus} testID={`resource-moderation-info-${item.resourceId}`}>
+              <Chip compact mode="outlined" style={styles.statusChip} textStyle={styles.statusChipText}>{t(statusLabel(item.status).key, { ns: "us3", defaultValue: statusLabel(item.status).defaultValue })}</Chip>
+              <Text variant="bodySmall" style={styles.mutedText}>
+                {formatEventDate(item.status === "PENDING" ? item.submittedAt : item.actedAt, i18n.language)}
               </Text>
-              <Chip compact>{t(statusLabel(item.status).key, { ns: "us3", defaultValue: statusLabel(item.status).defaultValue })}</Chip>
             </View>
-            <Text variant="bodySmall" style={styles.mutedText}>
-              {t("campaignTriageLocation", { ns: "us3", defaultValue: "Location" })}: {item.location ?? "—"}
-            </Text>
-            <Text variant="bodySmall" style={styles.mutedText}>
-              {t("campaignTriageDefaultTokens", { ns: "us3", defaultValue: "Default tokens" })}: {item.defaultTokens ?? "—"}
-            </Text>
+            <ResourceSearchCard listing={{
+              ...item,
+              id: item.resourceId,
+              title: item.title ?? t("campaignTriageResourceFallback", { ns: "us3", defaultValue: "Resource {{id}}", id: item.resourceId })
+            }} onPress={() => setPreview({ kind: "resource", id: item.resourceId })} />
             {item.status === "PENDING" ? (
               <View style={styles.triageActions}>
                 <Button mode="contained" compact loading={busyKey === acceptKey} disabled={busyKey !== null} onPress={() => void handleTriageResource(item, "accept")}>
                   {t("approveLabel", { ns: "common", defaultValue: "Approve" })}
                 </Button>
-                <Button mode="outlined" compact loading={busyKey === rejectKey} disabled={busyKey !== null} onPress={() => void handleTriageResource(item, "reject")}>
+                <Button mode="outlined" compact loading={busyKey === rejectKey} disabled={busyKey !== null} onPress={() => { setRejectionNote(""); setRejection({ type: "resource", item }); }}>
                   {t("rejectLabel", { ns: "common", defaultValue: "Reject" })}
                 </Button>
               </View>
             ) : null}
           </View>
         );
-      })}
+      }} />
 
       <Text variant="titleMedium" style={[styles.sectionTitle, styles.needsTitle]}>
         {t("campaignNeedTriageTitle", { ns: "us3", defaultValue: "Needs" })}
@@ -263,46 +288,63 @@ export function CampaignModerationScreen({
           {t("campaignNeedTriageActionError", { ns: "us3", defaultValue: "Could not update this need." })}
         </Text>
       ) : null}
-      {!triageLoading && !needError && needs.length === 0 ? (
+      {!triageLoading && !needError && visibleNeeds.length === 0 ? (
         <Text style={styles.mutedText}>
           {t("campaignNeedTriageEmpty", { ns: "us3", defaultValue: "No needs linked to this campaign." })}
         </Text>
       ) : null}
-      {needs.map((item) => {
+      <ModerationListingGroup
+        items={visibleNeeds}
+        rejectedLabel={t("alsoShowRejectedNeeds", { ns: "us3", defaultValue: "Also show rejected needs" })}
+        testID="rejected-needs"
+        renderItem={(item, index) => {
         const acceptKey = `need:${item.needId}:accept`;
         const rejectKey = `need:${item.needId}:reject`;
         return (
-          <View key={item.needId} style={styles.triageCard}>
-            <View style={styles.triageCardHeader}>
-              <Text variant="titleSmall" style={styles.triageItemTitle}>
-                {item.title ?? t("campaignTriageNeedFallback", { ns: "us3", defaultValue: "Need {{id}}", id: item.needId })}
+          <View key={item.needId} style={styles.triageEntry} testID={`need-moderation-${item.needId}`}>
+            {index > 0 ? <Divider style={styles.triageDivider} testID={`need-divider-${item.needId}`} /> : null}
+            <View style={styles.triageStatus} testID={`need-moderation-info-${item.needId}`}>
+              <Chip compact mode="outlined" style={styles.statusChip} textStyle={styles.statusChipText}>{t(statusLabel(item.status).key, { ns: "us3", defaultValue: statusLabel(item.status).defaultValue })}</Chip>
+              <Text variant="bodySmall" style={styles.mutedText}>
+                {formatEventDate(item.status === "PENDING" ? item.submittedAt : item.actedAt, i18n.language)}
               </Text>
-              <Chip compact>{t(statusLabel(item.status).key, { ns: "us3", defaultValue: statusLabel(item.status).defaultValue })}</Chip>
             </View>
-            <Text variant="bodySmall" style={styles.mutedText}>
-              {t("campaignTriageCampaign", { ns: "us3", defaultValue: "Campaign" })}: {item.campaignTitle ?? campaign.title}
-            </Text>
-            {item.intensity ? <Text variant="bodySmall" style={styles.mutedText}>{t("campaignTriageIntensity", { ns: "us3", defaultValue: "Intensity" })}: {item.intensity}</Text> : null}
-            {item.proposedTokens !== null ? <Text variant="bodySmall" style={styles.mutedText}>{t("campaignTriageProposedTokens", { ns: "us3", defaultValue: "Proposed tokens" })}: {item.proposedTokens}</Text> : null}
+            <NeedSearchCard listing={{
+              ...item,
+              id: item.needId,
+              title: item.title ?? t("campaignTriageNeedFallback", { ns: "us3", defaultValue: "Need {{id}}", id: item.needId }),
+              proposedTokenAmount: item.proposedTokens
+            }} onPress={() => setPreview({ kind: "need", id: item.needId })} />
             {item.status === "PENDING" ? (
               <View style={styles.triageActions}>
                 <Button mode="contained" compact loading={busyKey === acceptKey} disabled={busyKey !== null} onPress={() => void handleTriageNeed(item, "accept")}>
                   {t("approveLabel", { ns: "common", defaultValue: "Approve" })}
                 </Button>
-                <Button mode="outlined" compact loading={busyKey === rejectKey} disabled={busyKey !== null} onPress={() => void handleTriageNeed(item, "reject")}>
+                <Button mode="outlined" compact loading={busyKey === rejectKey} disabled={busyKey !== null} onPress={() => { setRejectionNote(""); setRejection({ type: "need", item }); }}>
                   {t("rejectLabel", { ns: "common", defaultValue: "Reject" })}
                 </Button>
               </View>
             ) : null}
           </View>
         );
-      })}
+      }} />
     </View>
   ) : null;
 
   return (
+    <>
     <CampaignDetailScreen
-      campaign={campaign}
+      campaign={{
+        ...campaign,
+        ...(!resourceError && !triageLoading ? {
+          resourceCount: visibleResources.filter(item => item.status !== "REJECTED").length,
+          pendingResourceCount: visibleResources.filter(item => item.status === "PENDING").length
+        } : {}),
+        ...(!needError && !triageLoading ? {
+          needCount: visibleNeeds.filter(item => item.status !== "REJECTED").length,
+          pendingNeedCount: visibleNeeds.filter(item => item.status === "PENDING").length
+        } : {})
+      }}
       creatorAccountId={creatorAccountId}
       moderationMode
       moderationJournal={journalContent}
@@ -319,10 +361,63 @@ export function CampaignModerationScreen({
           .catch(() => undefined);
       }}
     />
+    {preview ? (
+      <Modal
+        visible
+        presentationStyle="fullScreen"
+        animationType="slide"
+        onRequestClose={() => setPreview(null)}
+        testID="campaign-listing-preview"
+      >
+        <SafeAreaProvider>
+          <PaperProvider theme={theme}>
+            <SafeAreaView style={[styles.preview, { backgroundColor: theme.colors.background }]}>
+              {preview.kind === "resource" ? (
+                <ResourceDetailScreen key={preview.id} resourceId={preview.id} onBack={() => setPreview(null)} />
+              ) : (
+                <NeedDetailScreen key={preview.id} needId={preview.id} onBack={() => setPreview(null)} />
+              )}
+            </SafeAreaView>
+          </PaperProvider>
+        </SafeAreaProvider>
+      </Modal>
+    ) : null}
+    <ThemedDialog
+      visible={rejection !== null}
+      testID="campaign-listing-rejection-dialog"
+      title={t("listingCampaignRejectTitle", { ns: "common" })}
+      onDismiss={() => { if (!busyKey) setRejection(null); }}
+      content={
+        <ScrollView keyboardShouldPersistTaps="handled">
+          <FormTextInput
+            label={t("listingCampaignRejectionNote", { ns: "common" })}
+            accessibilityLabel={t("listingCampaignRejectionNote", { ns: "common" })}
+            value={rejectionNote}
+            onChangeText={setRejectionNote}
+            multiline
+            numberOfLines={4}
+            maxLength={2000}
+            disabled={busyKey !== null}
+          />
+          {needActionError || resourceActionError ? <Text accessibilityRole="alert" style={styles.errorText}>{t("listingCampaignDecisionError", { ns: "common" })}</Text> : null}
+        </ScrollView>
+      }
+      actions={[
+          <Button key="cancel" disabled={busyKey !== null} onPress={() => setRejection(null)}>{t("cancel", { defaultValue: "Cancel" })}</Button>,
+          <Button key="reject" mode="contained" disabled={busyKey !== null} loading={busyKey !== null} onPress={() => {
+            if (rejection?.type === "need") void handleTriageNeed(rejection.item, "reject", rejectionNote);
+            if (rejection?.type === "resource") void handleTriageResource(rejection.item, "reject", rejectionNote);
+          }}>{t("rejectLabel", { defaultValue: "Reject" })}</Button>
+      ]}
+    />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  preview: {
+    flex: 1
+  },
   journalSection: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: designTokens.colors.secondary,
@@ -348,28 +443,31 @@ const styles = StyleSheet.create({
     paddingVertical: designTokens.spacing.sm
   },
   journalEventTitle: {
-    //color: designTokens.colors.primary,
     fontFamily: appFontFamilies.general
   },
   triageSection: {
     gap: designTokens.spacing.sm,
     marginTop: designTokens.spacing.md
   },
-  triageCard: {
-    backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.md,
+  triageEntry: {
     gap: designTokens.spacing.xs,
-    padding: designTokens.spacing.sm
+    marginBottom: designTokens.spacing.sm
   },
-  triageCardHeader: {
-    alignItems: "center",
+  triageStatus: {
     flexDirection: "row",
-    gap: designTokens.spacing.xs,
-    justifyContent: "space-between"
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  triageItemTitle: {
-    flex: 1,
-    fontFamily: appFontFamilies.altGeneral
+  statusChip: {
+    backgroundColor: "transparent",
+    borderColor: "#bbb"
+  },
+  statusChipText: {
+    color: "#555"
+  },
+  triageDivider: {
+    marginVertical: designTokens.spacing.sm,
   },
   triageActions: {
     flexDirection: "row",
@@ -381,7 +479,7 @@ const styles = StyleSheet.create({
     marginTop: designTokens.spacing.sm
   },
   mutedText: {
-    color: designTokens.colors.secondary
+    color: '#000'
   },
   errorText: {
     color: designTokens.colors.primary

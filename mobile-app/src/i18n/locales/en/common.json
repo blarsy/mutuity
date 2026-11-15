@@ -1,4 +1,16 @@
 {
+  "listingCampaignStatusPENDING": "Campaign application pending",
+  "listingCampaignStatusACCEPTED": "Accepted into campaign",
+  "listingCampaignStatusREJECTED": "Campaign application rejected",
+  "listingCampaignStatusSUPERSEDED": "Campaign application superseded",
+  "listingCampaignRejectedWithoutNote": "No rejection note was provided.",
+  "listingCampaignEditDoesNotResubmit": "Saving edits does not resubmit your application. Use Resubmit when ready.",
+  "listingCampaignAcceptedLock": "You cannot change campaigns until this campaign ends.",
+  "listingCampaignPendingLock": "You can switch campaigns once your application has been pending for 24 hours.",
+  "listingCampaignResubmit": "Resubmit",
+  "listingCampaignRejectTitle": "Reject listing application",
+  "listingCampaignRejectionNote": "Rejection note (optional)",
+  "listingCampaignDecisionError": "Could not save this decision. Refresh the queue before trying again.",
   "account": "Account",
   "actions": {
     "accept": "Accept",

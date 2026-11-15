@@ -15,6 +15,8 @@ const DEFAULT_PAGE_SIZE = 50;
 export interface LinkableCampaignItem {
   id: string;
   title: string;
+  startAt?: string;
+  endAt?: string;
 }
 
 export async function fetchLinkableCampaigns(): Promise<LinkableCampaignItem[]> {
@@ -31,7 +33,12 @@ export async function fetchLinkableCampaigns(): Promise<LinkableCampaignItem[]> 
     .filter((campaign): campaign is { id: unknown; title: string; startAt?: unknown; endAt?: unknown } =>
       campaign != null && campaign.id != null && typeof campaign.title === "string" && campaign.title.trim().length > 0
     )
-    .map((campaign) => ({ id: String(campaign.id), title: campaign.title }));
+    .map((campaign) => ({
+      id: String(campaign.id),
+      title: campaign.title,
+      ...(typeof campaign.startAt === "string" ? { startAt: campaign.startAt } : {}),
+      ...(typeof campaign.endAt === "string" ? { endAt: campaign.endAt } : {})
+    }));
 }
 
 export interface CampaignItem {
@@ -48,6 +55,8 @@ export interface CampaignItem {
   moderationStatus: CampaignModerationStatus;
   resourceCount: number;
   needCount: number;
+  pendingResourceCount?: number;
+  pendingNeedCount?: number;
   rewardsMultiplier?: number;
   airdropAmount?: number;
   managerNoteFromCreator?: string;
@@ -89,9 +98,16 @@ async function prepareCampaignImageUrl(imageUrl: string | null | undefined): Pro
   return (await uploadListingImages([imageUrl]))[0];
 }
 
+type CampaignWithStats = Campaign & {
+  acceptedResources?: { totalCount: number } | null;
+  pendingResources?: { totalCount: number } | null;
+  acceptedNeeds?: { totalCount: number } | null;
+  pendingNeeds?: { totalCount: number } | null;
+};
+
 interface MyCampaignsQueryResult {
   allCampaigns: {
-    nodes: Campaign[];
+    nodes: CampaignWithStats[];
     pageInfo: {
       hasNextPage: boolean;
       endCursor: string | null;
@@ -101,7 +117,7 @@ interface MyCampaignsQueryResult {
 
 interface InspirationCampaignsQueryResult {
   allCampaigns: {
-    nodes: Campaign[];
+    nodes: CampaignWithStats[];
   } | null;
 }
 
@@ -119,10 +135,13 @@ interface UpdateCampaignForModerationMutationResult {
   updateCampaignForModeration: Pick<Mutation, "updateCampaignForModeration">["updateCampaignForModeration"];
 }
 
-function normalizeCampaign(campaign: Campaign, _creatorAccountId?: string): CampaignItem | null {
+function normalizeCampaign(campaign: CampaignWithStats, _creatorAccountId?: string): CampaignItem | null {
   if (!campaign.id || !campaign.title) {
     return null;
   }
+
+  const pendingResourceCount = campaign.pendingResources?.totalCount ?? 0;
+  const pendingNeedCount = campaign.pendingNeeds?.totalCount ?? 0;
 
   return {
     id: String(campaign.id),
@@ -136,16 +155,18 @@ function normalizeCampaign(campaign: Campaign, _creatorAccountId?: string): Camp
     createdAt: campaign.createdAt == null ? "" : String(campaign.createdAt),
     creatorAccountId: typeof campaign.creatorAccountId === "string" ? campaign.creatorAccountId : null,
     moderationStatus: campaign.moderationStatus ?? CampaignModerationStatus.Pending,
-    resourceCount: (campaign as any).campaignResourcesByCampaignId?.totalCount ?? 0,
-    needCount: (campaign as any).campaignNeedsByCampaignId?.totalCount ?? 0,
-    ...(typeof (campaign as any).rewardsMultiplier === "number" && { rewardsMultiplier: (campaign as any).rewardsMultiplier }),
-    ...(typeof (campaign as any).airdropAmount === "number" && { airdropAmount: (campaign as any).airdropAmount }),
-    ...(typeof (campaign as any).managerNoteFromCreator === "string" && { managerNoteFromCreator: (campaign as any).managerNoteFromCreator })
+    resourceCount: (campaign.acceptedResources?.totalCount ?? 0) + pendingResourceCount,
+    needCount: (campaign.acceptedNeeds?.totalCount ?? 0) + pendingNeedCount,
+    pendingResourceCount,
+    pendingNeedCount,
+    ...(typeof campaign.rewardsMultiplier === "number" && { rewardsMultiplier: campaign.rewardsMultiplier }),
+    ...(typeof campaign.airdropAmount === "number" && { airdropAmount: campaign.airdropAmount }),
+    ...(typeof campaign.managerNoteFromCreator === "string" && { managerNoteFromCreator: campaign.managerNoteFromCreator })
   };
 }
 
 export function normalizeCampaignPayload(
-  payload: { campaign?: Campaign | null } | null | undefined
+  payload: { campaign?: CampaignWithStats | null } | null | undefined
 ): CampaignItem | null {
   if (!payload?.campaign) {
     return null;
@@ -200,7 +221,7 @@ export async function fetchInspirationCampaigns(): Promise<CampaignItem[]> {
 
 export async function fetchCampaignById(campaignId: string): Promise<CampaignItem | null> {
   const { data } = await apolloClient.query<{
-    campaignById?: Campaign | null;
+    campaignById?: CampaignWithStats | null;
   }, { id: string }>({
     query: CAMPAIGN_BY_ID_QUERY,
     variables: { id: campaignId },

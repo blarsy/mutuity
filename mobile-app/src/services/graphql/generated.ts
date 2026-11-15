@@ -36,6 +36,7 @@ export type AcceptCampaignNeedInput = {
    * payload verbatim. May be used to track mutations by the client.
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  expectedSubmissionId?: InputMaybe<Scalars['UUID']['input']>;
   needId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
@@ -74,6 +75,7 @@ export type AcceptCampaignResourceInput = {
    * payload verbatim. May be used to track mutations by the client.
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  expectedSubmissionId?: InputMaybe<Scalars['UUID']['input']>;
   resourceId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
@@ -113,6 +115,8 @@ export type Account = Node & {
   activationVerifiedAt: Maybe<Scalars['Datetime']['output']>;
   avatarUrl: Maybe<Scalars['String']['output']>;
   bio: Maybe<Scalars['String']['output']>;
+  /** Reads and enables pagination through a set of `CampaignListingSubmissionEvent`. */
+  campaignListingSubmissionEventsByActorAccountId: CampaignListingSubmissionEventsConnection;
   /** Reads and enables pagination through a set of `CampaignModerationAuditEvent`. */
   campaignModerationAuditEventsByActorAccountId: CampaignModerationAuditEventsConnection;
   /** Reads and enables pagination through a set of `CampaignModerationNote`. */
@@ -207,6 +211,17 @@ export type AccountAccountNotificationsByRecipientAccountIdArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<AccountNotificationsOrderBy>>;
+};
+
+
+export type AccountCampaignListingSubmissionEventsByActorAccountIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignListingSubmissionEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 
@@ -1263,6 +1278,8 @@ export type Campaign = Node & {
   accountByCreatorAccountId: Maybe<Account>;
   airdropAmount: Scalars['Int']['output'];
   airdropAt: Scalars['Datetime']['output'];
+  /** Reads and enables pagination through a set of `CampaignListingSubmissionEvent`. */
+  campaignListingSubmissionEventsByCampaignId: CampaignListingSubmissionEventsConnection;
   /** Reads and enables pagination through a set of `CampaignModerationAuditEvent`. */
   campaignModerationAuditEventsByCampaignId: CampaignModerationAuditEventsConnection;
   /** Reads and enables pagination through a set of `CampaignModerationNote`. */
@@ -1288,6 +1305,18 @@ export type Campaign = Node & {
   theme: Scalars['String']['output'];
   title: Scalars['String']['output'];
   updatedAt: Scalars['Datetime']['output'];
+};
+
+
+/** Campaign submitted by an account and moderated before going live. */
+export type CampaignCampaignListingSubmissionEventsByCampaignIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignListingSubmissionEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 
@@ -1366,6 +1395,121 @@ export type CampaignCondition = {
   /** Checks for equality with the object’s `startAt` field. */
   startAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
+
+export type CampaignListingSubmissionEvent = Node & {
+  __typename: 'CampaignListingSubmissionEvent';
+  /** Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  actedAt: Maybe<Scalars['Datetime']['output']>;
+  actorAccountId: Maybe<Scalars['UUID']['output']>;
+  /** Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  campaignId: Scalars['UUID']['output'];
+  createdAt: Scalars['Datetime']['output'];
+  id: Scalars['UUID']['output'];
+  /** Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`. */
+  needByNeedId: Maybe<Need>;
+  needId: Maybe<Scalars['UUID']['output']>;
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID']['output'];
+  rejectionNote: Maybe<Scalars['String']['output']>;
+  /** Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`. */
+  resourceByResourceId: Maybe<Resource>;
+  resourceId: Maybe<Scalars['UUID']['output']>;
+  status: CampaignNeedStatus;
+  submissionId: Scalars['UUID']['output'];
+  submittedAt: Scalars['Datetime']['output'];
+};
+
+/**
+ * A condition to be used against `CampaignListingSubmissionEvent` object types.
+ * All fields are tested for equality and combined with a logical ‘and.’
+ */
+export type CampaignListingSubmissionEventCondition = {
+  /** Checks for equality with the object’s `actorAccountId` field. */
+  actorAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `campaignId` field. */
+  campaignId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `needId` field. */
+  needId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `resourceId` field. */
+  resourceId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** An input for mutations affecting `CampaignListingSubmissionEvent` */
+export type CampaignListingSubmissionEventInput = {
+  actedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  actorAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  campaignId: Scalars['UUID']['input'];
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  needId?: InputMaybe<Scalars['UUID']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
+  resourceId?: InputMaybe<Scalars['UUID']['input']>;
+  status: CampaignNeedStatus;
+  submissionId: Scalars['UUID']['input'];
+  submittedAt: Scalars['Datetime']['input'];
+};
+
+/** Represents an update to a `CampaignListingSubmissionEvent`. Fields that are set will be updated. */
+export type CampaignListingSubmissionEventPatch = {
+  actedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  actorAccountId?: InputMaybe<Scalars['UUID']['input']>;
+  campaignId?: InputMaybe<Scalars['UUID']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  id?: InputMaybe<Scalars['UUID']['input']>;
+  needId?: InputMaybe<Scalars['UUID']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
+  resourceId?: InputMaybe<Scalars['UUID']['input']>;
+  status?: InputMaybe<CampaignNeedStatus>;
+  submissionId?: InputMaybe<Scalars['UUID']['input']>;
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
+};
+
+/** A connection to a list of `CampaignListingSubmissionEvent` values. */
+export type CampaignListingSubmissionEventsConnection = {
+  __typename: 'CampaignListingSubmissionEventsConnection';
+  /** A list of edges which contains the `CampaignListingSubmissionEvent` and cursor to aid in pagination. */
+  edges: Array<CampaignListingSubmissionEventsEdge>;
+  /** A list of `CampaignListingSubmissionEvent` objects. */
+  nodes: Array<CampaignListingSubmissionEvent>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `CampaignListingSubmissionEvent` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** A `CampaignListingSubmissionEvent` edge in the connection. */
+export type CampaignListingSubmissionEventsEdge = {
+  __typename: 'CampaignListingSubmissionEventsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `CampaignListingSubmissionEvent` at the end of the edge. */
+  node: CampaignListingSubmissionEvent;
+};
+
+/** Methods to use when ordering `CampaignListingSubmissionEvent`. */
+export enum CampaignListingSubmissionEventsOrderBy {
+  ActorAccountIdAsc = 'ACTOR_ACCOUNT_ID_ASC',
+  ActorAccountIdDesc = 'ACTOR_ACCOUNT_ID_DESC',
+  CampaignIdAsc = 'CAMPAIGN_ID_ASC',
+  CampaignIdDesc = 'CAMPAIGN_ID_DESC',
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  NeedIdAsc = 'NEED_ID_ASC',
+  NeedIdDesc = 'NEED_ID_DESC',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  ResourceIdAsc = 'RESOURCE_ID_ASC',
+  ResourceIdDesc = 'RESOURCE_ID_DESC'
+}
 
 export type CampaignModerationAuditEvent = Node & {
   __typename: 'CampaignModerationAuditEvent';
@@ -1581,12 +1725,16 @@ export type CampaignNeed = Node & {
   campaignByCampaignId: Maybe<Campaign>;
   campaignId: Scalars['UUID']['output'];
   createdAt: Scalars['Datetime']['output'];
+  isCurrent: Scalars['Boolean']['output'];
   /** Reads a single `Need` that is related to this `CampaignNeed`. */
   needByNeedId: Maybe<Need>;
   needId: Scalars['UUID']['output'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID']['output'];
+  rejectionNote: Maybe<Scalars['String']['output']>;
   status: CampaignNeedStatus;
+  submissionId: Scalars['UUID']['output'];
+  submittedAt: Scalars['Datetime']['output'];
 };
 
 /**
@@ -1600,8 +1748,14 @@ export type CampaignNeedCondition = {
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Checks for equality with the object’s `isCurrent` field. */
+  isCurrent?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `needId` field. */
   needId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `status` field. */
+  status?: InputMaybe<CampaignNeedStatus>;
+  /** Checks for equality with the object’s `submittedAt` field. */
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 /** An input for mutations affecting `CampaignNeed` */
@@ -1610,8 +1764,12 @@ export type CampaignNeedInput = {
   actedByAccountId?: InputMaybe<Scalars['UUID']['input']>;
   campaignId: Scalars['UUID']['input'];
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  isCurrent?: InputMaybe<Scalars['Boolean']['input']>;
   needId: Scalars['UUID']['input'];
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<CampaignNeedStatus>;
+  submissionId?: InputMaybe<Scalars['UUID']['input']>;
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 /** Represents an update to a `CampaignNeed`. Fields that are set will be updated. */
@@ -1620,14 +1778,19 @@ export type CampaignNeedPatch = {
   actedByAccountId?: InputMaybe<Scalars['UUID']['input']>;
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  isCurrent?: InputMaybe<Scalars['Boolean']['input']>;
   needId?: InputMaybe<Scalars['UUID']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<CampaignNeedStatus>;
+  submissionId?: InputMaybe<Scalars['UUID']['input']>;
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 export enum CampaignNeedStatus {
   Accepted = 'ACCEPTED',
   Pending = 'PENDING',
-  Rejected = 'REJECTED'
+  Rejected = 'REJECTED',
+  Superseded = 'SUPERSEDED'
 }
 
 /** A connection to a list of `CampaignNeed` values. */
@@ -1660,11 +1823,17 @@ export enum CampaignNeedsOrderBy {
   CampaignIdDesc = 'CAMPAIGN_ID_DESC',
   CreatedAtAsc = 'CREATED_AT_ASC',
   CreatedAtDesc = 'CREATED_AT_DESC',
+  IsCurrentAsc = 'IS_CURRENT_ASC',
+  IsCurrentDesc = 'IS_CURRENT_DESC',
   Natural = 'NATURAL',
   NeedIdAsc = 'NEED_ID_ASC',
   NeedIdDesc = 'NEED_ID_DESC',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
-  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  StatusAsc = 'STATUS_ASC',
+  StatusDesc = 'STATUS_DESC',
+  SubmittedAtAsc = 'SUBMITTED_AT_ASC',
+  SubmittedAtDesc = 'SUBMITTED_AT_DESC'
 }
 
 /** Represents an update to a `Campaign`. Fields that are set will be updated. */
@@ -1697,12 +1866,16 @@ export type CampaignResource = Node & {
   campaignByCampaignId: Maybe<Campaign>;
   campaignId: Scalars['UUID']['output'];
   createdAt: Scalars['Datetime']['output'];
+  isCurrent: Scalars['Boolean']['output'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID']['output'];
+  rejectionNote: Maybe<Scalars['String']['output']>;
   /** Reads a single `Resource` that is related to this `CampaignResource`. */
   resourceByResourceId: Maybe<Resource>;
   resourceId: Scalars['UUID']['output'];
   status: CampaignNeedStatus;
+  submissionId: Scalars['UUID']['output'];
+  submittedAt: Scalars['Datetime']['output'];
 };
 
 /**
@@ -1714,8 +1887,14 @@ export type CampaignResourceCondition = {
   actedByAccountId?: InputMaybe<Scalars['UUID']['input']>;
   /** Checks for equality with the object’s `campaignId` field. */
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `isCurrent` field. */
+  isCurrent?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `resourceId` field. */
   resourceId?: InputMaybe<Scalars['UUID']['input']>;
+  /** Checks for equality with the object’s `status` field. */
+  status?: InputMaybe<CampaignNeedStatus>;
+  /** Checks for equality with the object’s `submittedAt` field. */
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 /** An input for mutations affecting `CampaignResource` */
@@ -1724,8 +1903,12 @@ export type CampaignResourceInput = {
   actedByAccountId?: InputMaybe<Scalars['UUID']['input']>;
   campaignId: Scalars['UUID']['input'];
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  isCurrent?: InputMaybe<Scalars['Boolean']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
   resourceId: Scalars['UUID']['input'];
   status?: InputMaybe<CampaignNeedStatus>;
+  submissionId?: InputMaybe<Scalars['UUID']['input']>;
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 /** Represents an update to a `CampaignResource`. Fields that are set will be updated. */
@@ -1734,8 +1917,12 @@ export type CampaignResourcePatch = {
   actedByAccountId?: InputMaybe<Scalars['UUID']['input']>;
   campaignId?: InputMaybe<Scalars['UUID']['input']>;
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  isCurrent?: InputMaybe<Scalars['Boolean']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
   resourceId?: InputMaybe<Scalars['UUID']['input']>;
   status?: InputMaybe<CampaignNeedStatus>;
+  submissionId?: InputMaybe<Scalars['UUID']['input']>;
+  submittedAt?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 /** A connection to a list of `CampaignResource` values. */
@@ -1766,11 +1953,17 @@ export enum CampaignResourcesOrderBy {
   ActedByAccountIdDesc = 'ACTED_BY_ACCOUNT_ID_DESC',
   CampaignIdAsc = 'CAMPAIGN_ID_ASC',
   CampaignIdDesc = 'CAMPAIGN_ID_DESC',
+  IsCurrentAsc = 'IS_CURRENT_ASC',
+  IsCurrentDesc = 'IS_CURRENT_DESC',
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
   ResourceIdAsc = 'RESOURCE_ID_ASC',
-  ResourceIdDesc = 'RESOURCE_ID_DESC'
+  ResourceIdDesc = 'RESOURCE_ID_DESC',
+  StatusAsc = 'STATUS_ASC',
+  StatusDesc = 'STATUS_DESC',
+  SubmittedAtAsc = 'SUBMITTED_AT_ASC',
+  SubmittedAtDesc = 'SUBMITTED_AT_DESC'
 }
 
 /** A connection to a list of `Campaign` values. */
@@ -2616,6 +2809,47 @@ export type CreateCampaignInput = {
   startAt?: InputMaybe<Scalars['Datetime']['input']>;
   theme?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** All input for the create `CampaignListingSubmissionEvent` mutation. */
+export type CreateCampaignListingSubmissionEventInput = {
+  /** The `CampaignListingSubmissionEvent` to be created by this mutation. */
+  campaignListingSubmissionEvent: CampaignListingSubmissionEventInput;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our create `CampaignListingSubmissionEvent` mutation. */
+export type CreateCampaignListingSubmissionEventPayload = {
+  __typename: 'CreateCampaignListingSubmissionEventPayload';
+  /** Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  /** The `CampaignListingSubmissionEvent` that was created by this mutation. */
+  campaignListingSubmissionEvent: Maybe<CampaignListingSubmissionEvent>;
+  /** An edge for our `CampaignListingSubmissionEvent`. May be used by Relay 1. */
+  campaignListingSubmissionEventEdge: Maybe<CampaignListingSubmissionEventsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`. */
+  needByNeedId: Maybe<Need>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`. */
+  resourceByResourceId: Maybe<Resource>;
+};
+
+
+/** The output of our create `CampaignListingSubmissionEvent` mutation. */
+export type CreateCampaignListingSubmissionEventPayloadCampaignListingSubmissionEventEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 /** All input for the create `CampaignModerationAuditEvent` mutation. */
@@ -3858,6 +4092,58 @@ export type DeleteCampaignInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   /** The globally unique `ID` which will identify a single `Campaign` to be deleted. */
   nodeId: Scalars['ID']['input'];
+};
+
+/** All input for the `deleteCampaignListingSubmissionEventById` mutation. */
+export type DeleteCampaignListingSubmissionEventByIdInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `deleteCampaignListingSubmissionEvent` mutation. */
+export type DeleteCampaignListingSubmissionEventInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `CampaignListingSubmissionEvent` to be deleted. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our delete `CampaignListingSubmissionEvent` mutation. */
+export type DeleteCampaignListingSubmissionEventPayload = {
+  __typename: 'DeleteCampaignListingSubmissionEventPayload';
+  /** Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  /** The `CampaignListingSubmissionEvent` that was deleted by this mutation. */
+  campaignListingSubmissionEvent: Maybe<CampaignListingSubmissionEvent>;
+  /** An edge for our `CampaignListingSubmissionEvent`. May be used by Relay 1. */
+  campaignListingSubmissionEventEdge: Maybe<CampaignListingSubmissionEventsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  deletedCampaignListingSubmissionEventId: Maybe<Scalars['ID']['output']>;
+  /** Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`. */
+  needByNeedId: Maybe<Need>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`. */
+  resourceByResourceId: Maybe<Resource>;
+};
+
+
+/** The output of our delete `CampaignListingSubmissionEvent` mutation. */
+export type DeleteCampaignListingSubmissionEventPayloadCampaignListingSubmissionEventEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 /** All input for the `deleteCampaignModerationAuditEventById` mutation. */
@@ -5847,6 +6133,44 @@ export type LinkAccountExternalIdentityPayload = {
   string: Maybe<Scalars['String']['output']>;
 };
 
+/** All input for the `linkCampaignNeed` mutation. */
+export type LinkCampaignNeedInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
+  pNeedId?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+/** The output of our `linkCampaignNeed` mutation. */
+export type LinkCampaignNeedPayload = {
+  __typename: 'LinkCampaignNeedPayload';
+  /** Reads a single `Account` that is related to this `CampaignNeed`. */
+  accountByActedByAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignNeed`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  campaignNeed: Maybe<CampaignNeed>;
+  /** An edge for our `CampaignNeed`. May be used by Relay 1. */
+  campaignNeedEdge: Maybe<CampaignNeedsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `Need` that is related to this `CampaignNeed`. */
+  needByNeedId: Maybe<Need>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
+
+/** The output of our `linkCampaignNeed` mutation. */
+export type LinkCampaignNeedPayloadCampaignNeedEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignNeedsOrderBy>>;
+};
+
 /** All input for the `linkCampaignResource` mutation. */
 export type LinkCampaignResourceInput = {
   /**
@@ -6139,6 +6463,8 @@ export type Mutation = {
   /** Creates a single `AccountNotification`. */
   createAccountNotification: Maybe<CreateAccountNotificationPayload>;
   createCampaign: Maybe<CreateCampaignPayload>;
+  /** Creates a single `CampaignListingSubmissionEvent`. */
+  createCampaignListingSubmissionEvent: Maybe<CreateCampaignListingSubmissionEventPayload>;
   /** Creates a single `CampaignModerationAuditEvent`. */
   createCampaignModerationAuditEvent: Maybe<CreateCampaignModerationAuditEventPayload>;
   /** Creates a single `CampaignModerationNote`. */
@@ -6211,6 +6537,10 @@ export type Mutation = {
   deleteCampaign: Maybe<DeleteCampaignPayload>;
   /** Deletes a single `Campaign` using a unique key. */
   deleteCampaignById: Maybe<DeleteCampaignPayload>;
+  /** Deletes a single `CampaignListingSubmissionEvent` using its globally unique id. */
+  deleteCampaignListingSubmissionEvent: Maybe<DeleteCampaignListingSubmissionEventPayload>;
+  /** Deletes a single `CampaignListingSubmissionEvent` using a unique key. */
+  deleteCampaignListingSubmissionEventById: Maybe<DeleteCampaignListingSubmissionEventPayload>;
   /** Deletes a single `CampaignModerationAuditEvent` using its globally unique id. */
   deleteCampaignModerationAuditEvent: Maybe<DeleteCampaignModerationAuditEventPayload>;
   /** Deletes a single `CampaignModerationAuditEvent` using a unique key. */
@@ -6339,6 +6669,7 @@ export type Mutation = {
   getAccountDeliveryPreferences: Maybe<GetAccountDeliveryPreferencesPayload>;
   giftTokens: Maybe<GiftTokensPayload>;
   linkAccountExternalIdentity: Maybe<LinkAccountExternalIdentityPayload>;
+  linkCampaignNeed: Maybe<LinkCampaignNeedPayload>;
   linkCampaignResource: Maybe<LinkCampaignResourcePayload>;
   markAccountNotificationRead: Maybe<MarkAccountNotificationReadPayload>;
   markAllNotificationsRead: Maybe<MarkAllNotificationsReadPayload>;
@@ -6370,7 +6701,6 @@ export type Mutation = {
   setGrantTargetEmails: Maybe<SetGrantTargetEmailsPayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
-  unlinkCampaignResource: Maybe<UnlinkCampaignResourcePayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
   updateAccount: Maybe<UpdateAccountPayload>;
   /** Updates a single `Account` using a unique key and a patch. */
@@ -6390,6 +6720,10 @@ export type Mutation = {
   /** Updates a single `Campaign` using a unique key and a patch. */
   updateCampaignById: Maybe<UpdateCampaignPayload>;
   updateCampaignForModeration: Maybe<UpdateCampaignForModerationPayload>;
+  /** Updates a single `CampaignListingSubmissionEvent` using its globally unique id and a patch. */
+  updateCampaignListingSubmissionEvent: Maybe<UpdateCampaignListingSubmissionEventPayload>;
+  /** Updates a single `CampaignListingSubmissionEvent` using a unique key and a patch. */
+  updateCampaignListingSubmissionEventById: Maybe<UpdateCampaignListingSubmissionEventPayload>;
   /** Updates a single `CampaignModerationAuditEvent` using its globally unique id and a patch. */
   updateCampaignModerationAuditEvent: Maybe<UpdateCampaignModerationAuditEventPayload>;
   /** Updates a single `CampaignModerationAuditEvent` using a unique key and a patch. */
@@ -6666,6 +7000,12 @@ export type MutationCreateCampaignArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateCampaignListingSubmissionEventArgs = {
+  input: CreateCampaignListingSubmissionEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateCampaignModerationAuditEventArgs = {
   input: CreateCampaignModerationAuditEventInput;
 };
@@ -6884,6 +7224,18 @@ export type MutationDeleteCampaignArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteCampaignByIdArgs = {
   input: DeleteCampaignByIdInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteCampaignListingSubmissionEventArgs = {
+  input: DeleteCampaignListingSubmissionEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteCampaignListingSubmissionEventByIdArgs = {
+  input: DeleteCampaignListingSubmissionEventByIdInput;
 };
 
 
@@ -7284,6 +7636,12 @@ export type MutationLinkAccountExternalIdentityArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationLinkCampaignNeedArgs = {
+  input: LinkCampaignNeedInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationLinkCampaignResourceArgs = {
   input: LinkCampaignResourceInput;
 };
@@ -7458,12 +7816,6 @@ export type MutationSubmitResourceBidArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
-export type MutationUnlinkCampaignResourceArgs = {
-  input: UnlinkCampaignResourceInput;
-};
-
-
-/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateAccountArgs = {
   input: UpdateAccountInput;
 };
@@ -7520,6 +7872,18 @@ export type MutationUpdateCampaignByIdArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateCampaignForModerationArgs = {
   input: UpdateCampaignForModerationInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCampaignListingSubmissionEventArgs = {
+  input: UpdateCampaignListingSubmissionEventInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCampaignListingSubmissionEventByIdArgs = {
+  input: UpdateCampaignListingSubmissionEventByIdInput;
 };
 
 
@@ -7917,6 +8281,8 @@ export type Need = Node & {
   __typename: 'Need';
   /** Reads a single `Account` that is related to this `Need`. */
   accountByCreatorAccountId: Maybe<Account>;
+  /** Reads and enables pagination through a set of `CampaignListingSubmissionEvent`. */
+  campaignListingSubmissionEventsByNeedId: CampaignListingSubmissionEventsConnection;
   /** Reads and enables pagination through a set of `CampaignNeed`. */
   campaignNeedsByNeedId: CampaignNeedsConnection;
   /** Reads and enables pagination through a set of `ClaimConversation`. */
@@ -7948,6 +8314,18 @@ export type Need = Node & {
   title: Scalars['String']['output'];
   toolingRequired: Scalars['Boolean']['output'];
   updatedAt: Scalars['Datetime']['output'];
+};
+
+
+/** Need published by authenticated accounts with optional campaign link and moderation-aware constraints. */
+export type NeedCampaignListingSubmissionEventsByNeedIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignListingSubmissionEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 
@@ -8668,6 +9046,8 @@ export type Query = Node & {
   allAccountNotifications: Maybe<AccountNotificationsConnection>;
   /** Reads and enables pagination through a set of `Account`. */
   allAccounts: Maybe<AccountsConnection>;
+  /** Reads and enables pagination through a set of `CampaignListingSubmissionEvent`. */
+  allCampaignListingSubmissionEvents: Maybe<CampaignListingSubmissionEventsConnection>;
   /** Reads and enables pagination through a set of `CampaignModerationAuditEvent`. */
   allCampaignModerationAuditEvents: Maybe<CampaignModerationAuditEventsConnection>;
   /** Reads and enables pagination through a set of `CampaignModerationNote`. */
@@ -8731,6 +9111,9 @@ export type Query = Node & {
   /** Reads a single `Campaign` using its globally unique `ID`. */
   campaign: Maybe<Campaign>;
   campaignById: Maybe<Campaign>;
+  /** Reads a single `CampaignListingSubmissionEvent` using its globally unique `ID`. */
+  campaignListingSubmissionEvent: Maybe<CampaignListingSubmissionEvent>;
+  campaignListingSubmissionEventById: Maybe<CampaignListingSubmissionEvent>;
   /** Reads a single `CampaignModerationAuditEvent` using its globally unique `ID`. */
   campaignModerationAuditEvent: Maybe<CampaignModerationAuditEvent>;
   campaignModerationAuditEventById: Maybe<CampaignModerationAuditEvent>;
@@ -9038,6 +9421,18 @@ export type QueryAllAccountsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<AccountsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAllCampaignListingSubmissionEventsArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignListingSubmissionEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 
@@ -9406,6 +9801,18 @@ export type QueryCampaignArgs = {
 
 /** The root query type which gives access points into the data universe. */
 export type QueryCampaignByIdArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCampaignListingSubmissionEventArgs = {
+  nodeId: Scalars['ID']['input'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCampaignListingSubmissionEventByIdArgs = {
   id: Scalars['UUID']['input'];
 };
 
@@ -10056,7 +10463,9 @@ export type RejectCampaignNeedInput = {
    * payload verbatim. May be used to track mutations by the client.
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  expectedSubmissionId?: InputMaybe<Scalars['UUID']['input']>;
   needId?: InputMaybe<Scalars['UUID']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** The output of our `rejectCampaignNeed` mutation. */
@@ -10094,6 +10503,8 @@ export type RejectCampaignResourceInput = {
    * payload verbatim. May be used to track mutations by the client.
    */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  expectedSubmissionId?: InputMaybe<Scalars['UUID']['input']>;
+  rejectionNote?: InputMaybe<Scalars['String']['input']>;
   resourceId?: InputMaybe<Scalars['UUID']['input']>;
 };
 
@@ -10203,6 +10614,8 @@ export type Resource = Node & {
   __typename: 'Resource';
   /** Reads a single `Account` that is related to this `Resource`. */
   accountByCreatorAccountId: Maybe<Account>;
+  /** Reads and enables pagination through a set of `CampaignListingSubmissionEvent`. */
+  campaignListingSubmissionEventsByResourceId: CampaignListingSubmissionEventsConnection;
   /** Reads and enables pagination through a set of `CampaignResource`. */
   campaignResourcesByResourceId: CampaignResourcesConnection;
   canBeDelivered: Scalars['Boolean']['output'];
@@ -10234,6 +10647,17 @@ export type Resource = Node & {
   resourceConversationsByResourceId: ResourceConversationsConnection;
   title: Scalars['String']['output'];
   updatedAt: Scalars['Datetime']['output'];
+};
+
+
+export type ResourceCampaignListingSubmissionEventsByResourceIdArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  condition?: InputMaybe<CampaignListingSubmissionEventCondition>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 
@@ -11847,30 +12271,6 @@ export enum TriStateFilter {
   Unset = 'UNSET'
 }
 
-/** All input for the `unlinkCampaignResource` mutation. */
-export type UnlinkCampaignResourceInput = {
-  /**
-   * An arbitrary string value with no semantic meaning. Will be included in the
-   * payload verbatim. May be used to track mutations by the client.
-   */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  pCampaignId?: InputMaybe<Scalars['UUID']['input']>;
-  pResourceId?: InputMaybe<Scalars['UUID']['input']>;
-};
-
-/** The output of our `unlinkCampaignResource` mutation. */
-export type UnlinkCampaignResourcePayload = {
-  __typename: 'UnlinkCampaignResourcePayload';
-  boolean: Maybe<Scalars['Boolean']['output']>;
-  /**
-   * The exact same `clientMutationId` that was provided in the mutation input,
-   * unchanged and unused. May be used by a client to track mutations.
-   */
-  clientMutationId: Maybe<Scalars['String']['output']>;
-  /** Our root query field type. Allows us to run any query from our mutation payload. */
-  query: Maybe<Query>;
-};
-
 /** All input for the `updateAccountByExternalSubject` mutation. */
 export type UpdateAccountByExternalSubjectInput = {
   /** An object where the defined keys will be set on the `Account` being updated. */
@@ -12096,6 +12496,61 @@ export type UpdateCampaignInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   /** The globally unique `ID` which will identify a single `Campaign` to be updated. */
   nodeId: Scalars['ID']['input'];
+};
+
+/** All input for the `updateCampaignListingSubmissionEventById` mutation. */
+export type UpdateCampaignListingSubmissionEventByIdInput = {
+  /** An object where the defined keys will be set on the `CampaignListingSubmissionEvent` being updated. */
+  campaignListingSubmissionEventPatch: CampaignListingSubmissionEventPatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['UUID']['input'];
+};
+
+/** All input for the `updateCampaignListingSubmissionEvent` mutation. */
+export type UpdateCampaignListingSubmissionEventInput = {
+  /** An object where the defined keys will be set on the `CampaignListingSubmissionEvent` being updated. */
+  campaignListingSubmissionEventPatch: CampaignListingSubmissionEventPatch;
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** The globally unique `ID` which will identify a single `CampaignListingSubmissionEvent` to be updated. */
+  nodeId: Scalars['ID']['input'];
+};
+
+/** The output of our update `CampaignListingSubmissionEvent` mutation. */
+export type UpdateCampaignListingSubmissionEventPayload = {
+  __typename: 'UpdateCampaignListingSubmissionEventPayload';
+  /** Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`. */
+  accountByActorAccountId: Maybe<Account>;
+  /** Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`. */
+  campaignByCampaignId: Maybe<Campaign>;
+  /** The `CampaignListingSubmissionEvent` that was updated by this mutation. */
+  campaignListingSubmissionEvent: Maybe<CampaignListingSubmissionEvent>;
+  /** An edge for our `CampaignListingSubmissionEvent`. May be used by Relay 1. */
+  campaignListingSubmissionEventEdge: Maybe<CampaignListingSubmissionEventsEdge>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`. */
+  needByNeedId: Maybe<Need>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  /** Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`. */
+  resourceByResourceId: Maybe<Resource>;
+};
+
+
+/** The output of our update `CampaignListingSubmissionEvent` mutation. */
+export type UpdateCampaignListingSubmissionEventPayloadCampaignListingSubmissionEventEdgeArgs = {
+  orderBy?: InputMaybe<Array<CampaignListingSubmissionEventsOrderBy>>;
 };
 
 /** All input for the `updateCampaignModerationAuditEventById` mutation. */

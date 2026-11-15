@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 
-const databaseUrl = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/mutuity";
+const databaseUrl = process.env.TEST_DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/mutuity";
 
 describe.each(["identified_account", "admin"])("campaign linking and email self-service (%s)", role => {
   let client: Client;
@@ -38,17 +38,17 @@ describe.each(["identified_account", "admin"])("campaign linking and email self-
   afterEach(async () => { try { await client.query("rollback"); } finally { await client.end(); } });
 
   it("links only owned resources, starts pending, and preserves triaged status on retries", async () => {
-    expect((await client.query("select * from app_public.link_campaign_resource($1,$2)", [campaign,resource])).rows[0].status).toBe("pending");
+    const submission = (await client.query("select * from app_public.link_campaign_resource($1,$2)", [campaign,resource])).rows[0];
+    expect(submission.status).toBe("pending");
     await identity(outsider);
     await reject("select app_public.link_campaign_resource($1,$2)", [campaign,resource], "Only the resource creator");
-    await reject("select app_public.accept_campaign_resource($1,$2)", [campaign,resource], "Only the campaign creator");
+    await reject("select app_public.accept_campaign_resource($1,$2,$3)", [campaign,resource,submission.submission_id], "Only the campaign creator");
     await identity(campaignOwner);
-    await client.query("select app_public.accept_campaign_resource($1,$2)", [campaign,resource]);
+    await client.query("select app_public.accept_campaign_resource($1,$2,$3)", [campaign,resource,submission.submission_id]);
     await identity(owner);
     expect((await client.query("select * from app_public.link_campaign_resource($1,$2)", [campaign,resource])).rows[0].status).toBe("accepted");
     await reject("update app_public.campaign_resource set status='rejected' where resource_id=$1", [resource]);
-    expect((await client.query("select app_public.unlink_campaign_resource($1,$2) as removed", [campaign,resource])).rows[0].removed).toBe(true);
-    expect((await client.query("select app_public.unlink_campaign_resource($1,$2) as removed", [campaign,resource])).rows[0].removed).toBe(false);
+    await reject("delete from app_public.campaign_resource where resource_id=$1", [resource]);
   });
 
   it("rejects inactive/unapproved campaigns, inactive resources and absent identities", async () => {
@@ -65,15 +65,16 @@ describe.each(["identified_account", "admin"])("campaign linking and email self-
     await reject("select app_public.link_campaign_resource($1,$2)", [campaign,resource], "Authentication required");
   });
 
-  it("allows campaign-owner unlink and preserves explicit admin unlink without admin linking", async () => {
-    await client.query("select app_public.link_campaign_resource($1,$2)", [campaign,resource]);
+  it("removes unlink entirely and denies raw deletion even to either owner or an admin", async () => {
+    const submission = (await client.query("select * from app_public.link_campaign_resource($1,$2)", [campaign,resource])).rows[0];
+    expect((await client.query("select to_regprocedure('app_public.unlink_campaign_resource(uuid,uuid)') as fn")).rows[0].fn).toBeNull();
     await identity(outsider);
-    if (role === "admin") expect((await client.query("select app_public.unlink_campaign_resource($1,$2) as removed", [campaign,resource])).rows[0].removed).toBe(true);
-    else await reject("select app_public.unlink_campaign_resource($1,$2)", [campaign,resource], "Only campaign or resource creators");
+    await reject("delete from app_public.campaign_resource where resource_id=$1", [resource]);
     await identity(owner);
-    await client.query("select app_public.link_campaign_resource($1,$2)", [campaign,resource]);
+    await reject("delete from app_public.campaign_resource where resource_id=$1", [resource]);
     await identity(campaignOwner);
-    expect((await client.query("select app_public.unlink_campaign_resource($1,$2) as removed", [campaign,resource])).rows[0].removed).toBe(true);
+    await reject("delete from app_public.campaign_resource where resource_id=$1", [resource]);
+    expect((await client.query("select submission_id from app_public.campaign_resource where campaign_id=$1 and resource_id=$2", [campaign,resource])).rows[0].submission_id).toBe(submission.submission_id);
   });
 
   it("changes only the requesting account email using a valid one-use confirmation token", async () => {

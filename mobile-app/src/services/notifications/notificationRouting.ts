@@ -20,7 +20,7 @@ export type NotificationDestination =
   | { surface: "notifications" }
   | { surface: "explore" }
   | { surface: "chat" }
-  | { surface: "myHub"; drawer: NotificationDrawerDestination; needId?: string }
+  | { surface: "myHub"; drawer: NotificationDrawerDestination; needId?: string; editListing?: { kind: "need" | "resource"; id: string } }
   | { surface: "campaigns"; campaignId?: string; moderation?: boolean };
 
 function asText(value: unknown): string | null {
@@ -35,6 +35,16 @@ export function notificationDestinationForEvent(
   const needId = asText(payload.needId);
 
   switch (eventType) {
+    case "campaign_listing_pending":
+      return campaignId ? { surface: "campaigns", campaignId, moderation: true } : { surface: "campaigns", moderation: true };
+    case "campaign_listing_accepted":
+      return campaignId ? { surface: "campaigns", campaignId } : { surface: "campaigns" };
+    case "campaign_listing_rejected": {
+      const id = asText(payload.listingId);
+      const kind = payload.listingKind;
+      if (!id || (kind !== "need" && kind !== "resource")) return { surface: "notifications" };
+      return { surface: "myHub", drawer: kind === "need" ? "myNeeds" : "myResources", editListing: { kind, id } };
+    }
     case "claim_created":
     case "claim_withdrawn":
     case "need_expired_claims_declined":

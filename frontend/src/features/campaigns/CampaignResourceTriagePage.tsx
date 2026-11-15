@@ -25,8 +25,10 @@ import {
   CAMPAIGN_RESOURCE_TRIAGE_QUERY,
   REJECT_CAMPAIGN_RESOURCE_MUTATION
 } from "./campaignResourceTriage.queries";
+import { CampaignListingRejectionDialog } from "./CampaignListingRejectionDialog";
+import { isCurrentCampaignRelation, useCampaignLifecycleNow, type CampaignListingRelation } from "./campaignListingLifecycle";
 
-type CampaignResourceNode = {
+type CampaignResourceNode = CampaignListingRelation & {
   campaignId: string;
   resourceId: string;
   status: CampaignNeedStatus;
@@ -79,15 +81,19 @@ type TriageMutationData = {
 type TriageMutationVariables = {
   campaignId: string;
   resourceId: string;
+  expectedSubmissionId: string;
+  rejectionNote?: string;
 };
 
-function nodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resourceId">) {
-  return `${node.campaignId}:${node.resourceId}`;
+function nodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resourceId" | "submissionId">) {
+  return `${node.campaignId}:${node.resourceId}:${node.submissionId}`;
 }
 
 export default function CampaignResourceTriagePage() {
   const { t } = useTranslation("campaigns");
   const router = useRouter();
+  const now = useCampaignLifecycleNow();
+  const [rejectionNode, setRejectionNode] = useState<CampaignResourceNode | null>(null);
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const campaignIdFilter = typeof router.query.campaignId === "string" ? router.query.campaignId : undefined;
 
@@ -121,7 +127,7 @@ export default function CampaignResourceTriagePage() {
   const acceptErrorMessage = getUserFacingGraphQLErrorMessage(acceptError);
   const rejectErrorMessage = getUserFacingGraphQLErrorMessage(rejectError);
 
-  const nodes = useMemo(() => data?.allCampaignResources?.nodes ?? [], [data?.allCampaignResources?.nodes]);
+  const nodes = useMemo(() => (data?.allCampaignResources?.nodes ?? []).filter(node => isCurrentCampaignRelation(node, now)), [data?.allCampaignResources?.nodes, now]);
 
   const pendingCount = useMemo(() => {
     return nodes.filter(node => (optimisticStatuses[nodeKey(node)] ?? node.status) === "PENDING").length;
@@ -147,7 +153,8 @@ export default function CampaignResourceTriagePage() {
     });
   };
 
-  const handleTriage = async (node: CampaignResourceNode, action: "accept" | "reject") => {
+  const handleTriage = async (node: CampaignResourceNode, action: "accept" | "reject", rejectionNote?: string) => {
+    if (!isCurrentCampaignRelation(node) || node.status !== "PENDING" || !node.submissionId) return;
     const nextStatus: CampaignNeedStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
     const key = nodeKey(node);
 
@@ -163,20 +170,24 @@ export default function CampaignResourceTriagePage() {
         await acceptCampaignResource({
           variables: {
             campaignId: node.campaignId,
-            resourceId: node.resourceId
+            resourceId: node.resourceId,
+            expectedSubmissionId: node.submissionId
           }
         });
       } else {
         await rejectCampaignResource({
           variables: {
             campaignId: node.campaignId,
-            resourceId: node.resourceId
+            resourceId: node.resourceId,
+            expectedSubmissionId: node.submissionId,
+            rejectionNote
           }
         });
       }
 
       clearOptimistic(key);
       await refetch();
+      if (action === "reject") setRejectionNode(null);
     } catch (error) {
       clearOptimistic(key);
       const fallbackMessage = error instanceof Error ? error.message : t("errors.genericRetry", { ns: "common" });
@@ -267,7 +278,7 @@ export default function CampaignResourceTriagePage() {
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 1 }}>
                       <Typography variant="caption">
-                        {t("resourceTriage.joined")}: {new Date(node.createdAt).toLocaleString()}
+                        {t("resourceTriage.joined")}: {new Date(node.submittedAt).toLocaleString()}
                       </Typography>
                       {node.actedAt ? (
                         <Typography variant="caption">
@@ -296,7 +307,7 @@ export default function CampaignResourceTriagePage() {
                       <Button
                         color="error"
                         disabled={rowBusy}
-                        onClick={() => void handleTriage(node, "reject")}
+                        onClick={() => setRejectionNode(node)}
                         size="small"
                         variant="outlined"
                       >
@@ -309,6 +320,10 @@ export default function CampaignResourceTriagePage() {
             );
           })}
         </Grid>
+        <CampaignListingRejectionDialog key={rejectionNode?.submissionId ?? "closed"}
+          error={rejectionNode ? rowErrors[nodeKey(rejectionNode)] : null}
+          open={Boolean(rejectionNode)} busy={Boolean(busyKey)} onClose={() => setRejectionNode(null)}
+          onConfirm={async note => { if (rejectionNode) await handleTriage(rejectionNode, "reject", note); }} />
       </Box>
     </PageContainer>
   );

@@ -12,6 +12,7 @@ input AcceptCampaignNeedInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
+  expectedSubmissionId: UUID
   needId: UUID
 }
 
@@ -48,6 +49,7 @@ input AcceptCampaignResourceInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
+  expectedSubmissionId: UUID
   resourceId: UUID
 }
 
@@ -126,6 +128,30 @@ type Account implements Node {
   activationVerifiedAt: Datetime
   avatarUrl: String
   bio: String
+  """
+  Reads and enables pagination through a set of `CampaignListingSubmissionEvent`.
+  """
+  campaignListingSubmissionEventsByActorAccountId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: CampaignListingSubmissionEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsConnection!
   """
   Reads and enables pagination through a set of `CampaignModerationAuditEvent`.
   """
@@ -1586,6 +1612,30 @@ type Campaign implements Node {
   airdropAmount: Int!
   airdropAt: Datetime!
   """
+  Reads and enables pagination through a set of `CampaignListingSubmissionEvent`.
+  """
+  campaignListingSubmissionEventsByCampaignId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: CampaignListingSubmissionEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsConnection!
+  """
   Reads and enables pagination through a set of `CampaignModerationAuditEvent`.
   """
   campaignModerationAuditEventsByCampaignId(
@@ -1733,6 +1783,134 @@ input CampaignCondition {
   moderationStatus: CampaignModerationStatus
   """Checks for equality with the object’s `startAt` field."""
   startAt: Datetime
+}
+
+type CampaignListingSubmissionEvent implements Node {
+  """
+  Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  accountByActorAccountId: Account
+  actedAt: Datetime
+  actorAccountId: UUID
+  """
+  Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  campaignByCampaignId: Campaign
+  campaignId: UUID!
+  createdAt: Datetime!
+  id: UUID!
+  """
+  Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  needByNeedId: Need
+  needId: UUID
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  rejectionNote: String
+  """
+  Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  resourceByResourceId: Resource
+  resourceId: UUID
+  status: CampaignNeedStatus!
+  submissionId: UUID!
+  submittedAt: Datetime!
+}
+
+"""
+A condition to be used against `CampaignListingSubmissionEvent` object types.
+All fields are tested for equality and combined with a logical ‘and.’
+"""
+input CampaignListingSubmissionEventCondition {
+  """Checks for equality with the object’s `actorAccountId` field."""
+  actorAccountId: UUID
+  """Checks for equality with the object’s `campaignId` field."""
+  campaignId: UUID
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+  """Checks for equality with the object’s `needId` field."""
+  needId: UUID
+  """Checks for equality with the object’s `resourceId` field."""
+  resourceId: UUID
+}
+
+"""An input for mutations affecting `CampaignListingSubmissionEvent`"""
+input CampaignListingSubmissionEventInput {
+  actedAt: Datetime
+  actorAccountId: UUID
+  campaignId: UUID!
+  createdAt: Datetime
+  id: UUID
+  needId: UUID
+  rejectionNote: String
+  resourceId: UUID
+  status: CampaignNeedStatus!
+  submissionId: UUID!
+  submittedAt: Datetime!
+}
+
+"""
+Represents an update to a `CampaignListingSubmissionEvent`. Fields that are set will be updated.
+"""
+input CampaignListingSubmissionEventPatch {
+  actedAt: Datetime
+  actorAccountId: UUID
+  campaignId: UUID
+  createdAt: Datetime
+  id: UUID
+  needId: UUID
+  rejectionNote: String
+  resourceId: UUID
+  status: CampaignNeedStatus
+  submissionId: UUID
+  submittedAt: Datetime
+}
+
+"""A connection to a list of `CampaignListingSubmissionEvent` values."""
+type CampaignListingSubmissionEventsConnection {
+  """
+  A list of edges which contains the `CampaignListingSubmissionEvent` and cursor to aid in pagination.
+  """
+  edges: [CampaignListingSubmissionEventsEdge!]!
+  """A list of `CampaignListingSubmissionEvent` objects."""
+  nodes: [CampaignListingSubmissionEvent!]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """
+  The count of *all* `CampaignListingSubmissionEvent` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `CampaignListingSubmissionEvent` edge in the connection."""
+type CampaignListingSubmissionEventsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `CampaignListingSubmissionEvent` at the end of the edge."""
+  node: CampaignListingSubmissionEvent!
+}
+
+"""Methods to use when ordering `CampaignListingSubmissionEvent`."""
+enum CampaignListingSubmissionEventsOrderBy {
+  ACTOR_ACCOUNT_ID_ASC
+  ACTOR_ACCOUNT_ID_DESC
+  CAMPAIGN_ID_ASC
+  CAMPAIGN_ID_DESC
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  NEED_ID_ASC
+  NEED_ID_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  RESOURCE_ID_ASC
+  RESOURCE_ID_DESC
 }
 
 type CampaignModerationAuditEvent implements Node {
@@ -1967,6 +2145,7 @@ type CampaignNeed implements Node {
   campaignByCampaignId: Campaign
   campaignId: UUID!
   createdAt: Datetime!
+  isCurrent: Boolean!
   """Reads a single `Need` that is related to this `CampaignNeed`."""
   needByNeedId: Need
   needId: UUID!
@@ -1974,7 +2153,10 @@ type CampaignNeed implements Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+  rejectionNote: String
   status: CampaignNeedStatus!
+  submissionId: UUID!
+  submittedAt: Datetime!
 }
 
 """
@@ -1988,8 +2170,14 @@ input CampaignNeedCondition {
   campaignId: UUID
   """Checks for equality with the object’s `createdAt` field."""
   createdAt: Datetime
+  """Checks for equality with the object’s `isCurrent` field."""
+  isCurrent: Boolean
   """Checks for equality with the object’s `needId` field."""
   needId: UUID
+  """Checks for equality with the object’s `status` field."""
+  status: CampaignNeedStatus
+  """Checks for equality with the object’s `submittedAt` field."""
+  submittedAt: Datetime
 }
 
 """An input for mutations affecting `CampaignNeed`"""
@@ -1998,8 +2186,12 @@ input CampaignNeedInput {
   actedByAccountId: UUID
   campaignId: UUID!
   createdAt: Datetime
+  isCurrent: Boolean
   needId: UUID!
+  rejectionNote: String
   status: CampaignNeedStatus
+  submissionId: UUID
+  submittedAt: Datetime
 }
 
 """
@@ -2010,14 +2202,19 @@ input CampaignNeedPatch {
   actedByAccountId: UUID
   campaignId: UUID
   createdAt: Datetime
+  isCurrent: Boolean
   needId: UUID
+  rejectionNote: String
   status: CampaignNeedStatus
+  submissionId: UUID
+  submittedAt: Datetime
 }
 
 enum CampaignNeedStatus {
   ACCEPTED
   PENDING
   REJECTED
+  SUPERSEDED
 }
 
 """A connection to a list of `CampaignNeed` values."""
@@ -2050,11 +2247,17 @@ enum CampaignNeedsOrderBy {
   CAMPAIGN_ID_DESC
   CREATED_AT_ASC
   CREATED_AT_DESC
+  IS_CURRENT_ASC
+  IS_CURRENT_DESC
   NATURAL
   NEED_ID_ASC
   NEED_ID_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
+  STATUS_ASC
+  STATUS_DESC
+  SUBMITTED_AT_ASC
+  SUBMITTED_AT_DESC
 }
 
 """
@@ -2090,14 +2293,18 @@ type CampaignResource implements Node {
   campaignByCampaignId: Campaign
   campaignId: UUID!
   createdAt: Datetime!
+  isCurrent: Boolean!
   """
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+  rejectionNote: String
   """Reads a single `Resource` that is related to this `CampaignResource`."""
   resourceByResourceId: Resource
   resourceId: UUID!
   status: CampaignNeedStatus!
+  submissionId: UUID!
+  submittedAt: Datetime!
 }
 
 """
@@ -2109,8 +2316,14 @@ input CampaignResourceCondition {
   actedByAccountId: UUID
   """Checks for equality with the object’s `campaignId` field."""
   campaignId: UUID
+  """Checks for equality with the object’s `isCurrent` field."""
+  isCurrent: Boolean
   """Checks for equality with the object’s `resourceId` field."""
   resourceId: UUID
+  """Checks for equality with the object’s `status` field."""
+  status: CampaignNeedStatus
+  """Checks for equality with the object’s `submittedAt` field."""
+  submittedAt: Datetime
 }
 
 """An input for mutations affecting `CampaignResource`"""
@@ -2119,8 +2332,12 @@ input CampaignResourceInput {
   actedByAccountId: UUID
   campaignId: UUID!
   createdAt: Datetime
+  isCurrent: Boolean
+  rejectionNote: String
   resourceId: UUID!
   status: CampaignNeedStatus
+  submissionId: UUID
+  submittedAt: Datetime
 }
 
 """
@@ -2131,8 +2348,12 @@ input CampaignResourcePatch {
   actedByAccountId: UUID
   campaignId: UUID
   createdAt: Datetime
+  isCurrent: Boolean
+  rejectionNote: String
   resourceId: UUID
   status: CampaignNeedStatus
+  submissionId: UUID
+  submittedAt: Datetime
 }
 
 """A connection to a list of `CampaignResource` values."""
@@ -2165,11 +2386,17 @@ enum CampaignResourcesOrderBy {
   ACTED_BY_ACCOUNT_ID_DESC
   CAMPAIGN_ID_ASC
   CAMPAIGN_ID_DESC
+  IS_CURRENT_ASC
+  IS_CURRENT_DESC
   NATURAL
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
   RESOURCE_ID_ASC
   RESOURCE_ID_DESC
+  STATUS_ASC
+  STATUS_DESC
+  SUBMITTED_AT_ASC
+  SUBMITTED_AT_DESC
 }
 
 """A connection to a list of `Campaign` values."""
@@ -3059,6 +3286,57 @@ input CreateCampaignInput {
   startAt: Datetime
   theme: String
   title: String
+}
+
+"""All input for the create `CampaignListingSubmissionEvent` mutation."""
+input CreateCampaignListingSubmissionEventInput {
+  """The `CampaignListingSubmissionEvent` to be created by this mutation."""
+  campaignListingSubmissionEvent: CampaignListingSubmissionEventInput!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+}
+
+"""The output of our create `CampaignListingSubmissionEvent` mutation."""
+type CreateCampaignListingSubmissionEventPayload {
+  """
+  Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  accountByActorAccountId: Account
+  """
+  Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  campaignByCampaignId: Campaign
+  """
+  The `CampaignListingSubmissionEvent` that was created by this mutation.
+  """
+  campaignListingSubmissionEvent: CampaignListingSubmissionEvent
+  """
+  An edge for our `CampaignListingSubmissionEvent`. May be used by Relay 1.
+  """
+  campaignListingSubmissionEventEdge(
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """
+  Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  needByNeedId: Need
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  """
+  Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  resourceByResourceId: Resource
 }
 
 """All input for the create `CampaignModerationAuditEvent` mutation."""
@@ -4314,6 +4592,70 @@ input DeleteCampaignInput {
   The globally unique `ID` which will identify a single `Campaign` to be deleted.
   """
   nodeId: ID!
+}
+
+"""All input for the `deleteCampaignListingSubmissionEventById` mutation."""
+input DeleteCampaignListingSubmissionEventByIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `deleteCampaignListingSubmissionEvent` mutation."""
+input DeleteCampaignListingSubmissionEventInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """
+  The globally unique `ID` which will identify a single `CampaignListingSubmissionEvent` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""The output of our delete `CampaignListingSubmissionEvent` mutation."""
+type DeleteCampaignListingSubmissionEventPayload {
+  """
+  Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  accountByActorAccountId: Account
+  """
+  Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  campaignByCampaignId: Campaign
+  """
+  The `CampaignListingSubmissionEvent` that was deleted by this mutation.
+  """
+  campaignListingSubmissionEvent: CampaignListingSubmissionEvent
+  """
+  An edge for our `CampaignListingSubmissionEvent`. May be used by Relay 1.
+  """
+  campaignListingSubmissionEventEdge(
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedCampaignListingSubmissionEventId: ID
+  """
+  Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  needByNeedId: Need
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  """
+  Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  resourceByResourceId: Resource
 }
 
 """All input for the `deleteCampaignModerationAuditEventById` mutation."""
@@ -6435,6 +6777,42 @@ type LinkAccountExternalIdentityPayload {
   string: String
 }
 
+"""All input for the `linkCampaignNeed` mutation."""
+input LinkCampaignNeedInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pCampaignId: UUID
+  pNeedId: UUID
+}
+
+"""The output of our `linkCampaignNeed` mutation."""
+type LinkCampaignNeedPayload {
+  """Reads a single `Account` that is related to this `CampaignNeed`."""
+  accountByActedByAccountId: Account
+  """Reads a single `Campaign` that is related to this `CampaignNeed`."""
+  campaignByCampaignId: Campaign
+  campaignNeed: CampaignNeed
+  """An edge for our `CampaignNeed`. May be used by Relay 1."""
+  campaignNeedEdge(
+    """The method to use when ordering `CampaignNeed`."""
+    orderBy: [CampaignNeedsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignNeedsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """Reads a single `Need` that is related to this `CampaignNeed`."""
+  needByNeedId: Need
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `linkCampaignResource` mutation."""
 input LinkCampaignResourceInput {
   """
@@ -6859,6 +7237,13 @@ type Mutation {
     """
     input: CreateCampaignInput!
   ): CreateCampaignPayload
+  """Creates a single `CampaignListingSubmissionEvent`."""
+  createCampaignListingSubmissionEvent(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateCampaignListingSubmissionEventInput!
+  ): CreateCampaignListingSubmissionEventPayload
   """Creates a single `CampaignModerationAuditEvent`."""
   createCampaignModerationAuditEvent(
     """
@@ -7118,6 +7503,22 @@ type Mutation {
     """
     input: DeleteCampaignByIdInput!
   ): DeleteCampaignPayload
+  """
+  Deletes a single `CampaignListingSubmissionEvent` using its globally unique id.
+  """
+  deleteCampaignListingSubmissionEvent(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteCampaignListingSubmissionEventInput!
+  ): DeleteCampaignListingSubmissionEventPayload
+  """Deletes a single `CampaignListingSubmissionEvent` using a unique key."""
+  deleteCampaignListingSubmissionEventById(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteCampaignListingSubmissionEventByIdInput!
+  ): DeleteCampaignListingSubmissionEventPayload
   """
   Deletes a single `CampaignModerationAuditEvent` using its globally unique id.
   """
@@ -7586,6 +7987,12 @@ type Mutation {
     """
     input: LinkAccountExternalIdentityInput!
   ): LinkAccountExternalIdentityPayload
+  linkCampaignNeed(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: LinkCampaignNeedInput!
+  ): LinkCampaignNeedPayload
   linkCampaignResource(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -7766,12 +8173,6 @@ type Mutation {
     """
     input: SubmitResourceBidInput!
   ): SubmitResourceBidPayload
-  unlinkCampaignResource(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UnlinkCampaignResourceInput!
-  ): UnlinkCampaignResourcePayload
   """Updates a single `Account` using its globally unique id and a patch."""
   updateAccount(
     """
@@ -7847,6 +8248,24 @@ type Mutation {
     """
     input: UpdateCampaignForModerationInput!
   ): UpdateCampaignForModerationPayload
+  """
+  Updates a single `CampaignListingSubmissionEvent` using its globally unique id and a patch.
+  """
+  updateCampaignListingSubmissionEvent(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateCampaignListingSubmissionEventInput!
+  ): UpdateCampaignListingSubmissionEventPayload
+  """
+  Updates a single `CampaignListingSubmissionEvent` using a unique key and a patch.
+  """
+  updateCampaignListingSubmissionEventById(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateCampaignListingSubmissionEventByIdInput!
+  ): UpdateCampaignListingSubmissionEventPayload
   """
   Updates a single `CampaignModerationAuditEvent` using its globally unique id and a patch.
   """
@@ -8378,6 +8797,30 @@ Need published by authenticated accounts with optional campaign link and moderat
 type Need implements Node {
   """Reads a single `Account` that is related to this `Need`."""
   accountByCreatorAccountId: Account
+  """
+  Reads and enables pagination through a set of `CampaignListingSubmissionEvent`.
+  """
+  campaignListingSubmissionEventsByNeedId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: CampaignListingSubmissionEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsConnection!
   """Reads and enables pagination through a set of `CampaignNeed`."""
   campaignNeedsByNeedId(
     """Read all values in the set after (below) this cursor."""
@@ -9437,6 +9880,30 @@ type Query implements Node {
     orderBy: [AccountsOrderBy!] = [PRIMARY_KEY_ASC]
   ): AccountsConnection
   """
+  Reads and enables pagination through a set of `CampaignListingSubmissionEvent`.
+  """
+  allCampaignListingSubmissionEvents(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: CampaignListingSubmissionEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsConnection
+  """
   Reads and enables pagination through a set of `CampaignModerationAuditEvent`.
   """
   allCampaignModerationAuditEvents(
@@ -10105,6 +10572,16 @@ type Query implements Node {
   ): Campaign
   campaignById(id: UUID!): Campaign
   """
+  Reads a single `CampaignListingSubmissionEvent` using its globally unique `ID`.
+  """
+  campaignListingSubmissionEvent(
+    """
+    The globally unique `ID` to be used in selecting a single `CampaignListingSubmissionEvent`.
+    """
+    nodeId: ID!
+  ): CampaignListingSubmissionEvent
+  campaignListingSubmissionEventById(id: UUID!): CampaignListingSubmissionEvent
+  """
   Reads a single `CampaignModerationAuditEvent` using its globally unique `ID`.
   """
   campaignModerationAuditEvent(
@@ -10677,7 +11154,9 @@ input RejectCampaignNeedInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
+  expectedSubmissionId: UUID
   needId: UUID
+  rejectionNote: String
 }
 
 """The output of our `rejectCampaignNeed` mutation."""
@@ -10713,6 +11192,8 @@ input RejectCampaignResourceInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
+  expectedSubmissionId: UUID
+  rejectionNote: String
   resourceId: UUID
 }
 
@@ -10822,6 +11303,30 @@ type RequestPasswordResetPayload {
 type Resource implements Node {
   """Reads a single `Account` that is related to this `Resource`."""
   accountByCreatorAccountId: Account
+  """
+  Reads and enables pagination through a set of `CampaignListingSubmissionEvent`.
+  """
+  campaignListingSubmissionEventsByResourceId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: CampaignListingSubmissionEventCondition
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsConnection!
   """Reads and enables pagination through a set of `CampaignResource`."""
   campaignResourcesByResourceId(
     """Read all values in the set after (below) this cursor."""
@@ -12632,31 +13137,6 @@ A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/
 """
 scalar UUID
 
-"""All input for the `unlinkCampaignResource` mutation."""
-input UnlinkCampaignResourceInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  pCampaignId: UUID
-  pResourceId: UUID
-}
-
-"""The output of our `unlinkCampaignResource` mutation."""
-type UnlinkCampaignResourcePayload {
-  boolean: Boolean
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-}
-
 """All input for the `updateAccountByExternalSubject` mutation."""
 input UpdateAccountByExternalSubjectInput {
   """
@@ -12908,6 +13388,77 @@ input UpdateCampaignInput {
   The globally unique `ID` which will identify a single `Campaign` to be updated.
   """
   nodeId: ID!
+}
+
+"""All input for the `updateCampaignListingSubmissionEventById` mutation."""
+input UpdateCampaignListingSubmissionEventByIdInput {
+  """
+  An object where the defined keys will be set on the `CampaignListingSubmissionEvent` being updated.
+  """
+  campaignListingSubmissionEventPatch: CampaignListingSubmissionEventPatch!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""All input for the `updateCampaignListingSubmissionEvent` mutation."""
+input UpdateCampaignListingSubmissionEventInput {
+  """
+  An object where the defined keys will be set on the `CampaignListingSubmissionEvent` being updated.
+  """
+  campaignListingSubmissionEventPatch: CampaignListingSubmissionEventPatch!
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  """
+  The globally unique `ID` which will identify a single `CampaignListingSubmissionEvent` to be updated.
+  """
+  nodeId: ID!
+}
+
+"""The output of our update `CampaignListingSubmissionEvent` mutation."""
+type UpdateCampaignListingSubmissionEventPayload {
+  """
+  Reads a single `Account` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  accountByActorAccountId: Account
+  """
+  Reads a single `Campaign` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  campaignByCampaignId: Campaign
+  """
+  The `CampaignListingSubmissionEvent` that was updated by this mutation.
+  """
+  campaignListingSubmissionEvent: CampaignListingSubmissionEvent
+  """
+  An edge for our `CampaignListingSubmissionEvent`. May be used by Relay 1.
+  """
+  campaignListingSubmissionEventEdge(
+    """The method to use when ordering `CampaignListingSubmissionEvent`."""
+    orderBy: [CampaignListingSubmissionEventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CampaignListingSubmissionEventsEdge
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """
+  Reads a single `Need` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  needByNeedId: Need
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  """
+  Reads a single `Resource` that is related to this `CampaignListingSubmissionEvent`.
+  """
+  resourceByResourceId: Resource
 }
 
 """All input for the `updateCampaignModerationAuditEventById` mutation."""

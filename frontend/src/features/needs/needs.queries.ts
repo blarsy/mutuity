@@ -138,9 +138,15 @@ export const NEED_EDIT_DETAIL_QUERY = gql`
       requiredPeopleCount
       imageUrls
       expiresAt
-      campaignNeedsByNeedId(first: 1, orderBy: CREATED_AT_DESC) {
+      campaignNeedsByNeedId(orderBy: SUBMITTED_AT_DESC) {
         nodes {
           campaignId
+          submissionId
+          submittedAt
+          rejectionNote
+          isCurrent
+          status
+          campaignByCampaignId { title startAt endAt }
         }
       }
     }
@@ -203,19 +209,11 @@ export const PUBLIC_NEED_CAMPAIGN_FILTER_QUERY = gql`
 
 export const CREATE_CAMPAIGN_NEED_MUTATION = gql`
   mutation CreateCampaignNeedLink($campaignId: UUID!, $needId: UUID!) {
-    createCampaignNeed(input: { campaignNeed: { campaignId: $campaignId, needId: $needId } }) {
+    linkCampaignNeed(input: { pCampaignId: $campaignId, pNeedId: $needId }) {
       campaignNeed {
         campaignId
         needId
       }
-    }
-  }
-`;
-
-export const DELETE_CAMPAIGN_NEED_MUTATION = gql`
-  mutation DeleteCampaignNeedLink($campaignId: UUID!, $needId: UUID!) {
-    deleteCampaignNeedByCampaignIdAndNeedId(input: { campaignId: $campaignId, needId: $needId }) {
-      deletedCampaignNeedId
     }
   }
 `;

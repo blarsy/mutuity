@@ -114,6 +114,28 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
   });
 
   switch (eventType) {
+    case "campaign_listing_pending":
+    case "campaign_listing_accepted":
+    case "campaign_listing_rejected": {
+      const key = eventType === "campaign_listing_pending" ? "campaignListingPending"
+        : eventType === "campaign_listing_accepted" ? "campaignListingAccepted" : "campaignListingRejected";
+      const vars = {
+        ns: "us4",
+        campaignName: asText(p.campaignName, i18n.t("notifications.unknownCampaign", { ns: "us4" })),
+        listingName: asText(p.listingName, i18n.t(p.listingKind === "need" ? "notifications.unknownNeed" : "notifications.unknownResource", { ns: "us4" })),
+        listingKind: i18n.t(p.listingKind === "need" ? "notifications.listingKind.need" : "notifications.listingKind.resource", { ns: "us4" })
+      };
+      const copy = {
+        headline1: i18n.t(`notifications.events.${key}.headline1`, vars),
+        headline2: i18n.t(`notifications.events.${key}.headline2`, vars),
+        description: i18n.t(`notifications.events.${key}.description`, vars)
+      };
+      const note = typeof p.rejectionNote === "string" ? p.rejectionNote.trim() : "";
+      if (eventType === "campaign_listing_rejected" && note) {
+        copy.description += `\n${i18n.t("notifications.privateFeedback", { ns: "us4", note })}`;
+      }
+      return copy;
+    }
     case "gift_tokens_received":
       return translateEvent("giftTokensReceived", { senderName: asText(p.senderName, someone), amount: asNumber(p.amountReceived) }, {
         headline1: "Topes received!",

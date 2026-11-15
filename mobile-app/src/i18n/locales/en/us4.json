@@ -54,7 +54,12 @@
   "myPreferencesTitle": "My preferences",
   "backLabel": "Back",
   "notifications": {
+    "listingKind": { "need": "need", "resource": "resource" },
+    "privateFeedback": "Private feedback: {{note}}",
     "events": {
+      "campaignListingPending": { "headline1": "Listing awaiting review", "headline2": "{{campaignName}}", "description": "Review {{listingName}} ({{listingKind}}) for your campaign." },
+      "campaignListingAccepted": { "headline1": "Listing accepted", "headline2": "{{campaignName}}", "description": "{{listingName}} ({{listingKind}}) is now part of this campaign." },
+      "campaignListingRejected": { "headline1": "Listing needs changes", "headline2": "{{campaignName}}", "description": "Edit {{listingName}} ({{listingKind}}) to review feedback and resubmit." },
       "giftTokensReceived": { "headline1": "Topes received!", "headline2": "{{senderName}}", "description": "{{amount}} Topes sent your way" },
       "campaignAirdropComingSoon": { "headline1": "Airdrop coming soon", "headline2": "{{campaignName}}", "description": "Lands on {{date}}" },
       "campaignAirdropDone": { "headline1": "Airdrop received!", "headline2": "{{campaignName}}", "description": "{{amount}} Topes" },

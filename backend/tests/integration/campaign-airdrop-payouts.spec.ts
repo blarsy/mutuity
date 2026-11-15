@@ -130,6 +130,15 @@ describe("campaign airdrop payouts", () => {
         [campaignId, resourceA1.id, resourceA2.id, resourceB.id, resourceOnly1.id, resourceOnly2.id, singleResource.id, rejectedResource.id]
       );
 
+      // These fixtures represent decisions made before the airdrop, not late
+      // decisions made when the worker test happens to run.
+      for (const kind of ["need", "resource"]) {
+        await client.query(`update app_public.campaign_${kind} as link
+          set acted_at=c.airdrop_at-interval '1 hour', submitted_at=c.start_at,
+            is_current=(link.status='accepted')
+          from app_public.campaign c where link.campaign_id=c.id and c.id=$1`, [campaignId]);
+      }
+
       const balanceResult = await client.query<{ balance: number }>(
         `select coalesce(sum(amount_delta), 0)::int as balance
          from app_public.token_movement

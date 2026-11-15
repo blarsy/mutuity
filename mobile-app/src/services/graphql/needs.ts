@@ -1,11 +1,12 @@
 import { apolloClient } from "./client";
 import { uploadListingImages } from "../images";
+import { selectCampaignListingRelation, type CampaignListingRelation } from "./campaignListing";
 import {
   type CreateNeedInput,
   type Mutation,
   NeedClaimStatus,
   NeedIntensity,
-  type Need,
+  type Need as GeneratedNeed,
   type NeedPatch,
   type Query
 } from "./generated";
@@ -15,7 +16,6 @@ import {
   CREATE_CAMPAIGN_NEED_MUTATION,
   CREATE_NEED_MUTATION,
   DECLINE_NEED_CLAIM_MUTATION,
-  DELETE_CAMPAIGN_NEED_MUTATION,
   DELETE_NEED_BY_ID_MUTATION,
   MY_NEEDS_QUERY,
   NEED_BY_ID_QUERY,
@@ -27,6 +27,10 @@ import {
 } from "./operations";
 
 const DEFAULT_PAGE_SIZE = 50;
+
+type Need = Omit<GeneratedNeed, "campaignNeedsByNeedId"> & {
+  campaignNeedsByNeedId?: { nodes: CampaignListingRelation[] };
+};
 
 export interface SearchNeedsFilters {
   searchTerm: string;
@@ -64,6 +68,7 @@ export interface NeedItem {
   requiredToolingText?: string;
   requiredPeopleCount?: number | null;
   campaignId?: string | null;
+  campaignRelation?: CampaignListingRelation | null;
   expiresAt?: string | null;
   createdAt: string | null;
   creatorAccountId: string | null;
@@ -174,7 +179,7 @@ interface CreateNeedMutationResult {
 }
 
 interface UpdateNeedByIdMutationResult {
-  updateNeedById: Pick<Mutation, "updateNeedById">["updateNeedById"];
+  updateNeedById: { need: Need | null } | null;
 }
 
 interface DeleteNeedByIdMutationResult {
@@ -351,10 +356,8 @@ function normalizeNeed(
     requiredCompetenceText: node.requiredCompetenceText ?? "",
     requiredToolingText: node.requiredToolingText ?? "",
     requiredPeopleCount: typeof node.requiredPeopleCount === "number" ? node.requiredPeopleCount : null,
-    campaignId:
-      typeof node.campaignNeedsByNeedId?.nodes?.[0]?.campaignId === "string"
-        ? node.campaignNeedsByNeedId.nodes[0].campaignId
-        : null,
+    campaignId: selectCampaignListingRelation(node.campaignNeedsByNeedId?.nodes ?? [])?.campaignId ?? null,
+    campaignRelation: selectCampaignListingRelation(node.campaignNeedsByNeedId?.nodes ?? []),
     expiresAt: typeof node.expiresAt === "string" ? node.expiresAt : null,
     createdAt: typeof node.createdAt === "string" ? node.createdAt : null,
     creatorAccountId: typeof node.creatorAccountId === "string" ? node.creatorAccountId : null,
@@ -443,7 +446,7 @@ export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<Nee
 }
 
 export async function fetchNeedById(needId: string, currentAccountId: string | null = null): Promise<NeedDetailItem | null> {
-  const { data } = await apolloClient.query<Pick<Query, "needById">, { id: string }>({
+  const { data } = await apolloClient.query<{ needById: Need | null }, { id: string }>({
     query: NEED_BY_ID_QUERY,
     variables: { id: needId },
     fetchPolicy: "network-only"
@@ -478,6 +481,18 @@ export async function fetchNeedById(needId: string, currentAccountId: string | n
         ))[0] ?? null
       : null
   };
+}
+
+/** Full owner editor model, independent of the bounded owner list. */
+export async function fetchNeedForEdit(needId: string, creatorAccountId: string): Promise<NeedItem | null> {
+  const { data } = await apolloClient.query<{ needById: Need | null }, { id: string }>({
+    query: NEED_BY_ID_QUERY,
+    variables: { id: needId },
+    fetchPolicy: "network-only"
+  });
+  const need = data?.needById;
+  if (!need || need.id !== needId || need.creatorAccountId !== creatorAccountId) return null;
+  return normalizeNeed(need, creatorAccountId);
 }
 
 export async function fetchMyNeeds(creatorAccountId: string): Promise<NeedItem[]> {
@@ -580,29 +595,24 @@ export async function updateNeedById(needId: string, input: UpsertNeedInput): Pr
     return null;
   }
 
-  const previousCampaignId =
-    typeof updatedNeed.campaignNeedsByNeedId?.nodes?.[0]?.campaignId === "string"
-      ? updatedNeed.campaignNeedsByNeedId.nodes[0].campaignId
-      : null;
-
-  if (previousCampaignId !== input.campaignId) {
-    if (previousCampaignId) {
-      await apolloClient.mutate({
-        mutation: DELETE_CAMPAIGN_NEED_MUTATION,
-        variables: { campaignId: previousCampaignId, needId }
-      });
-    }
-
-    if (input.campaignId) {
-      await apolloClient.mutate({
-        mutation: CREATE_CAMPAIGN_NEED_MUTATION,
-        variables: { campaignId: input.campaignId, needId }
-      });
-    }
+  const previousRelation = selectCampaignListingRelation(updatedNeed.campaignNeedsByNeedId?.nodes ?? []);
+  let campaignRelation = previousRelation;
+  if (input.campaignId && previousRelation?.campaignId !== input.campaignId) {
+    campaignRelation = await resubmitNeedToCampaign(needId, input.campaignId);
   }
 
   const normalizedNeed = normalizeNeed(updatedNeed as Need, null);
-  return normalizedNeed ? { ...normalizedNeed, campaignId: input.campaignId } : null;
+  return normalizedNeed ? { ...normalizedNeed, campaignId: campaignRelation?.campaignId ?? null, campaignRelation } : null;
+}
+
+/** Explicit action only: editing a rejected listing never resubmits it. */
+export async function resubmitNeedToCampaign(needId: string, campaignId: string): Promise<CampaignListingRelation> {
+  const { data } = await apolloClient.mutate<{
+    linkCampaignNeed: { campaignNeed: CampaignListingRelation | null } | null;
+  }>({ mutation: CREATE_CAMPAIGN_NEED_MUTATION, variables: { campaignId, needId } });
+  const relation = data?.linkCampaignNeed?.campaignNeed;
+  if (!relation) throw new Error("Campaign need submission failed");
+  return relation;
 }
 
 export async function deleteNeedById(needId: string): Promise<DeleteNeedResult> {

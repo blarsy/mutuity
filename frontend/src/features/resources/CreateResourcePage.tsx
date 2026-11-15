@@ -13,7 +13,7 @@ import {
   Typography
 } from "@mui/material";
 import { Form, Formik } from "formik";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../auth/AuthProvider";
@@ -27,7 +27,6 @@ import { CategoriesPicker } from "../../components/CategoriesPicker";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import {
   CREATE_CAMPAIGN_RESOURCE_MUTATION,
-  DELETE_CAMPAIGN_RESOURCE_MUTATION,
   LINKABLE_RESOURCE_CAMPAIGN_OPTIONS_QUERY,
   PUBLISH_RESOURCE_MUTATION,
   RESOURCE_CATEGORY_OPTIONS_QUERY,
@@ -44,6 +43,14 @@ import type { AccountProfileQuery, LinkableResourceCampaignOptionsQuery, Publish
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
 import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
+import { CampaignListingFeedback } from "../campaigns/CampaignListingFeedback";
+import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
+
+type ResourceEditorData = Omit<ResourceEditDetailQuery, "resourceById"> & {
+  resourceById: (Omit<NonNullable<ResourceEditDetailQuery["resourceById"]>, "campaignResourcesByResourceId"> & {
+    campaignResourcesByResourceId: { nodes: CampaignListingRelation[] };
+  }) | null;
+};
 
 function normalizeOptionalInteger(value: number | "") {
   if (value === "") {
@@ -83,7 +90,7 @@ function toDateTimeLocalValue(value: string | null) {
 }
 
 function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
-  return now >= new Date(startAtIso) && now <= new Date(endAtIso);
+  return now >= new Date(startAtIso) && now < new Date(endAtIso);
 }
 
 export default function CreateResourcePage() {
@@ -93,15 +100,14 @@ export default function CreateResourcePage() {
   const accountId = session.account?.id ?? null;
   const resourceId = typeof router.query.resourceId === "string" ? router.query.resourceId : null;
   const isEditMode = Boolean(resourceId);
+  const now = useCampaignLifecycleNow();
+  const resubmitRequested = useRef(false);
   const [publishResource, { loading, error }] = useMutation<
     PublishResourceMutation,
     PublishResourceMutationVariables
   >(PUBLISH_RESOURCE_MUTATION);
   const [createCampaignResource, { error: createCampaignResourceError }] = useMutation(
     CREATE_CAMPAIGN_RESOURCE_MUTATION
-  );
-  const [deleteCampaignResource, { error: deleteCampaignResourceError }] = useMutation(
-    DELETE_CAMPAIGN_RESOURCE_MUTATION
   );
   const { data: categoryData, loading: loadingCategories, error: categoryError } =
     useQuery<ResourceCategoryOptionsQuery>(RESOURCE_CATEGORY_OPTIONS_QUERY);
@@ -114,7 +120,8 @@ export default function CreateResourcePage() {
     data: editData,
     loading: loadingEditResource,
     error: editResourceError
-  } = useQuery<ResourceEditDetailQuery>(RESOURCE_EDIT_DETAIL_QUERY, {
+  } = useQuery<ResourceEditorData>(RESOURCE_EDIT_DETAIL_QUERY, {
+    fetchPolicy: "network-only",
     skip: !resourceId,
     variables: {
       resourceId: resourceId ?? ""
@@ -129,20 +136,25 @@ export default function CreateResourcePage() {
     variables: { accountId: accountId ?? "" }
   });
   const errorMessage = getUserFacingGraphQLErrorMessage(error)
-    ?? getUserFacingGraphQLErrorMessage(createCampaignResourceError)
-    ?? getUserFacingGraphQLErrorMessage(deleteCampaignResourceError);
+    ?? getUserFacingGraphQLErrorMessage(createCampaignResourceError);
   const categoryErrorMessage = getUserFacingGraphQLErrorMessage(categoryError);
   const editResourceErrorMessage = getUserFacingGraphQLErrorMessage(editResourceError);
 
   const categoryOptions = categoryData?.allResourceCategories?.nodes ?? [];
   const editResource = editData?.resourceById ?? null;
-  const currentCampaignId = editResource?.campaignResourcesByResourceId.nodes[0]?.campaignId ?? "";
+  const relation = effectiveCampaignRelation(editResource?.campaignResourcesByResourceId.nodes ?? [], now);
+  const currentCampaignId = relation && isOngoingCampaignRelation(relation, now) ? relation.campaignId : "";
+  const campaignLocked = campaignSelectionLocked(relation, now);
+  const hasCurrentCampaign = Boolean(relation && isCurrentCampaignRelation(relation, now));
   const campaignOptions = useMemo(() => {
-    const now = new Date();
-    return (campaignData?.allCampaigns?.nodes ?? []).filter(
-      campaign => campaign.id === currentCampaignId || isCampaignActive(now, campaign.startAt, campaign.endAt)
+    const options = (campaignData?.allCampaigns?.nodes ?? []).filter(
+      campaign => campaign.id === currentCampaignId || isCampaignActive(new Date(now), campaign.startAt, campaign.endAt)
     );
-  }, [campaignData?.allCampaigns?.nodes, currentCampaignId]);
+    if (currentCampaignId && relation?.campaignByCampaignId && !options.some(node => node.id === currentCampaignId)) {
+      options.push({ __typename: "Campaign", id: currentCampaignId, ...relation.campaignByCampaignId });
+    }
+    return options;
+  }, [campaignData?.allCampaigns?.nodes, currentCampaignId, relation, now]);
 
   const initialValues = useMemo<CreateResourceValues>(() => {
     if (!editResource) {
@@ -177,7 +189,7 @@ export default function CreateResourcePage() {
     };
   }, [accountProfileData?.accountById, currentCampaignId, editResource]);
 
-  const submit = async (values: CreateResourceValues) => {
+  const submit = async (values: CreateResourceValues, resubmit = false) => {
     const result = await publishResource({
       variables: {
         resourceId: resourceId ?? undefined,
@@ -205,17 +217,10 @@ export default function CreateResourcePage() {
       throw new Error("Resource save did not return an ID");
     }
 
-    if (currentCampaignId !== values.campaignId) {
-      if (currentCampaignId) {
-        await deleteCampaignResource({
-          variables: { campaignId: currentCampaignId, resourceId: savedResourceId }
-        });
-      }
-      if (values.campaignId) {
-        await createCampaignResource({
-          variables: { campaignId: values.campaignId, resourceId: savedResourceId }
-        });
-      }
+    if (shouldSubmitCampaignLink(currentCampaignId, values.campaignId, resubmit)) {
+      await createCampaignResource({
+        variables: { campaignId: values.campaignId, resourceId: savedResourceId }
+      });
     }
 
     await router.push("/resources/manage");
@@ -301,16 +306,22 @@ export default function CreateResourcePage() {
           initialValues={initialValues}
           validationSchema={createResourceValidationSchema}
           onSubmit={async (values, helpers) => {
+            helpers.setStatus(undefined);
             try {
-              await submit(values);
+              await submit(values, resubmitRequested.current);
+            } catch (error) {
+              helpers.setStatus(getUserFacingGraphQLErrorMessage(error as Parameters<typeof getUserFacingGraphQLErrorMessage>[0])
+                ?? t("errors.genericRetry", { ns: "common" }));
             } finally {
+              resubmitRequested.current = false;
               helpers.setSubmitting(false);
             }
           }}
         >
-          {({ values, errors, touched, handleBlur, handleChange, isSubmitting, setFieldTouched, setFieldValue }) => (
+          {({ values, errors, touched, handleBlur, handleChange, isSubmitting, setFieldTouched, setFieldValue, submitForm, status }) => (
             <Form>
               <Stack spacing={2}>
+                {status ? <Alert severity="error">{status}</Alert> : null}
                 <TextField
                   name="title"
                   label={t("form.titleLabel")}
@@ -436,25 +447,45 @@ export default function CreateResourcePage() {
                   )}
                 </Box>
 
-                <TextField
-                  select
-                  name="campaignId"
-                  label={t("form.campaignLabel", { defaultValue: "Campaign (optional)" })}
-                  value={values.campaignId}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  disabled={loadingCampaigns}
-                  helperText={loadingCampaigns
-                    ? t("form.loadingCampaigns", { defaultValue: "Loading campaigns..." })
-                    : t("form.campaignHelper", { defaultValue: "Optionally join this resource to one campaign." })}
-                >
-                  <MenuItem value="">{t("form.noCampaign", { defaultValue: "No campaign" })}</MenuItem>
-                  {campaignOptions.map(campaign => (
-                    <MenuItem key={campaign.id} value={campaign.id}>
-                      {campaign.title}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                { campaignLocked ? (
+                  <>
+                    <Typography gutterBottom variant="subtitle1">
+                      {t("form.campaignLabel")}
+                    </Typography>
+                    <CampaignListingFeedback relation={relation} locked={campaignLocked} />
+                  </>
+                ) :
+                  <TextField
+                    select
+                    name="campaignId"
+                    label={t("form.campaignLabel", { defaultValue: "Campaign (optional)" })}
+                    value={values.campaignId}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    disabled={loadingCampaigns || campaignLocked || isSubmitting}
+                    helperText={loadingCampaigns
+                      ? t("form.loadingCampaigns", { defaultValue: "Loading campaigns..." })
+                      : t("form.campaignHelper", { defaultValue: "Optionally join this resource to one campaign." })}
+                  >
+                    {!hasCurrentCampaign ? <MenuItem value="">{t("form.noCampaign", { defaultValue: "No campaign" })}</MenuItem> : null}
+                    {campaignOptions.map(campaign => (
+                      <MenuItem key={campaign.id} value={campaign.id}>
+                        {campaign.title}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                }
+
+                  {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
+                    && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
+                    <Button type="button" variant="outlined" disabled={isSubmitting || loading}
+                      onClick={async () => {
+                        resubmitRequested.current = true;
+                        try { await submitForm(); } finally { resubmitRequested.current = false; }
+                      }}>
+                      {t("listingLifecycle.resubmit", { ns: "campaigns" })}
+                    </Button>
+                  ) : null}
 
                 <TextField
                   name="expiresAt"
@@ -559,7 +590,8 @@ export default function CreateResourcePage() {
                   </FormGroup>
                 </Box>
 
-                <Button disabled={isSubmitting || loading || loadingCategories || loadingEditResource} type="submit" variant="contained">
+                <Button disabled={isSubmitting || loading || loadingCategories || loadingEditResource} type="submit" variant="contained"
+                  onClick={() => { resubmitRequested.current = false; }}>
                   {isEditMode ? t("form.saveButton") : t("form.addButton")}
                 </Button>
                 {errorMessage ? (

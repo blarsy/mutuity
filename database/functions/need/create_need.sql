@@ -87,20 +87,7 @@ begin
   returning * into v_need;
 
   if create_need.campaign_id is not null then
-    insert into app_public.campaign_need (
-      campaign_id,
-      need_id,
-      status,
-      acted_by_account_id,
-      acted_at
-    )
-    values (
-      create_need.campaign_id,
-      v_need.id,
-      'pending',
-      null,
-      null
-    );
+    perform app_public.link_campaign_need(create_need.campaign_id, v_need.id);
   end if;
 
   return v_need;

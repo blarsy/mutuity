@@ -1,14 +1,29 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import { createInstance } from "i18next";
 
 import { CampaignDetailScreen } from "../../src/screens/campaigns/CampaignDetailScreen";
 import type { CampaignItem } from "../../src/services/graphql/campaigns";
 import { CampaignModerationStatus } from "../../src/services/graphql/generated";
+import en from "../../src/i18n/locales/en/us3.json";
+import fr from "../../src/i18n/locales/fr/us3.json";
+
+const mockStatsI18n = createInstance();
+void mockStatsI18n.init({
+  lng: "en",
+  fallbackLng: "en",
+  initAsync: false,
+  resources: { en: { us3: en }, fr: { us3: fr } }
+});
 
 jest.mock("react-i18next", () => ({
+  ...jest.requireActual("react-i18next"),
   useTranslation: () => ({
-    t: (_key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? _key,
-    i18n: { language: "en" }
+    t: (key: string, options?: { defaultValue?: string; count?: number }) =>
+      /^(campaignResourcesCount|campaignNeedsCount|campaignStatsPendingCount)$/.test(key)
+        ? mockStatsI18n.t(key, { ...options, ns: "us3" })
+        : options?.defaultValue ?? key,
+    i18n: mockStatsI18n
   })
 }));
 
@@ -32,6 +47,60 @@ const newCampaign: CampaignItem = {
 };
 
 describe("CampaignDetailScreen", () => {
+  beforeEach(() => { void mockStatsI18n.changeLanguage("en"); });
+
+  it.each([
+    ["en", 1, 0, 1, 0, "1 resource", "1 need"],
+    ["en", 3, 2, 4, 1, "3 resources (2 pending)", "4 needs (1 pending)"],
+    ["en", 0, 0, 0, 0, "0 resources", "0 needs"],
+    ["fr", 1, 0, 1, 0, "1 ressource", "1 besoin"],
+    ["fr", 3, 2, 4, 1, "3 ressources (2 en attente)", "4 besoins (1 en attente)"],
+    ["fr", 2, 1, 3, 2, "2 ressources (1 en attente)", "3 besoins (2 en attente)"]
+  ] as const)("localizes %s stats with totals %s/%s and %s/%s", (
+    language, resourceCount, pendingResourceCount, needCount, pendingNeedCount, resourcesText, needsText
+  ) => {
+    void mockStatsI18n.changeLanguage(language);
+    const screen = render(<CampaignDetailScreen creatorAccountId={null} campaign={{
+      ...newCampaign, resourceCount, pendingResourceCount, needCount, pendingNeedCount
+    }} />);
+
+    expect(screen.getByText(resourcesText)).toBeTruthy();
+    expect(screen.getByText(needsText)).toBeTruthy();
+    expect(screen.queryByText(/\(0 (pending|en attente)\)/)).toBeNull();
+  });
+
+  it("omits pending suffixes for legacy campaign items without optional counts", () => {
+    const screen = render(<CampaignDetailScreen creatorAccountId={null} campaign={{
+      ...newCampaign, resourceCount: 3, needCount: 2
+    }} />);
+    expect(screen.getByText("3 resources")).toBeTruthy();
+    expect(screen.getByText("2 needs")).toBeTruthy();
+    expect(screen.queryByText(/\(.*pending\)/)).toBeNull();
+  });
+
+  it("updates stats from parent moderation props without a redundant generic pending row", () => {
+    const campaign: CampaignItem = {
+      ...newCampaign, id: "campaign-stats", title: "Community garden",
+      moderationStatus: CampaignModerationStatus.Approved,
+      resourceCount: 3, pendingResourceCount: 2, needCount: 2, pendingNeedCount: 1,
+      pendingEntries: [{ id: "entry-1", type: "resource", title: "Garden tools", creatorAccountId: "creator" }]
+    };
+    const screen = render(<CampaignDetailScreen creatorAccountId={null} campaign={campaign} moderationMode />);
+    expect(screen.getByText("3 resources (2 pending)")).toBeTruthy();
+    expect(screen.getByText("2 needs (1 pending)")).toBeTruthy();
+    expect(screen.getByText("Garden tools")).toBeTruthy();
+    expect(screen.queryByText(/\d+ pending entr/)).toBeNull();
+    expect(screen.queryByText("{{count}} pending entries")).toBeNull();
+
+    screen.rerender(<CampaignDetailScreen creatorAccountId={null} campaign={{
+      ...campaign, resourceCount: 3, pendingResourceCount: 1, needCount: 1, pendingNeedCount: 0
+    }} moderationMode />);
+    expect(screen.getByText("3 resources (1 pending)")).toBeTruthy();
+    expect(screen.getByText("1 need")).toBeTruthy();
+    expect(screen.queryByText("3 resources (2 pending)")).toBeNull();
+    expect(screen.queryByText("2 needs (1 pending)")).toBeNull();
+  });
+
   it("shows validation errors only after the first submit attempt", () => {
     const screen = render(
       <CampaignDetailScreen

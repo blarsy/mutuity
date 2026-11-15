@@ -27,6 +27,7 @@ begin
         count(distinct cn.need_id)::integer as linked_need_count
       from app_public.campaign_need cn
       join app_public.need n on n.id = cn.need_id
+      where cn.is_current and cn.status in ('pending','accepted')
       group by cn.campaign_id, n.creator_account_id
     ),
     linked_resource_counts as (
@@ -36,6 +37,7 @@ begin
         count(distinct cr.resource_id)::integer as linked_resource_count
       from app_public.campaign_resource cr
       join app_public.resource r on r.id = cr.resource_id
+      where cr.is_current and cr.status in ('pending','accepted')
       group by cr.campaign_id, r.creator_account_id
     ),
     linked_accounts as (

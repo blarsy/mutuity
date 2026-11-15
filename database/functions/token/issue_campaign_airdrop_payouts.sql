@@ -27,7 +27,8 @@ begin
         count(distinct cn.need_id)::integer as approved_need_count
       from app_public.campaign_need cn
       join app_public.need n on n.id = cn.need_id
-      where cn.status = 'accepted'
+      join app_public.campaign nc on nc.id=cn.campaign_id
+      where cn.status = 'accepted' and cn.acted_at <= nc.airdrop_at
       group by cn.campaign_id, n.creator_account_id
     ),
     approved_resource_counts as (
@@ -37,7 +38,8 @@ begin
         count(distinct cr.resource_id)::integer as approved_resource_count
       from app_public.campaign_resource cr
       join app_public.resource r on r.id = cr.resource_id
-      where cr.status = 'accepted'
+      join app_public.campaign rc on rc.id=cr.campaign_id
+      where cr.status = 'accepted' and cr.acted_at <= rc.airdrop_at
       group by cr.campaign_id, r.creator_account_id
     ),
     eligible_accounts as (

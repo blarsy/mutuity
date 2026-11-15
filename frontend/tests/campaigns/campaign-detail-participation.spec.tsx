@@ -1,19 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { useQuery } from "@apollo/client/react";
-import { print } from "graphql";
 
 import PublicCampaignDetailPage from "../../src/pages/campaigns/[campaignId]/index";
 import { PUBLIC_CAMPAIGN_DETAIL_QUERY } from "../../src/features/campaigns/campaigns.queries";
 import { resolveCampaignParticipationState } from "../../src/features/campaigns/campaignParticipation";
 import en from "../../src/locales/en/campaigns.json";
 import fr from "../../src/locales/fr/campaigns.json";
+import type { CampaignListingRelation } from "../../src/features/campaigns/campaignListingLifecycle";
 
 let mockAuthenticated = true;
+let mockRelations: CampaignListingRelation[] = [];
 
 jest.mock("next/head", () => ({ __esModule: true, default: () => null }));
 jest.mock("next/router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
+    i18n: { language: "en" },
     t: (key: string, values?: Record<string, unknown>) =>
       [key, values?.start, values?.end].filter(Boolean).join(" ")
   })
@@ -51,6 +53,7 @@ function renderCampaign(overrides: Partial<typeof campaign> = {}) {
 beforeEach(() => {
   jest.spyOn(Date, "now").mockReturnValue(now);
   mockAuthenticated = true;
+  mockRelations = [];
   jest.mocked(useQuery).mockReset();
   jest.mocked(useQuery).mockImplementation(query => {
     const operation = query.definitions.find(definition => definition.kind === "OperationDefinition");
@@ -68,8 +71,8 @@ beforeEach(() => {
       defaultTokenAmount: 25,
       proposedTopesAmount: 50,
       intensity: "SHARING",
-      campaignResourcesByResourceId: { nodes: [] },
-      campaignNeedsByNeedId: { nodes: [] }
+      campaignResourcesByResourceId: { nodes: mockRelations },
+      campaignNeedsByNeedId: { nodes: mockRelations }
     };
     return {
       data: { [isResource ? "allResources" : "allNeeds"]: { nodes: [listing] } },
@@ -104,8 +107,51 @@ describe("campaign participation state", () => {
 });
 
 describe("campaign detail listing layout and visibility", () => {
+  function submission(patch: Partial<CampaignListingRelation> = {}): CampaignListingRelation {
+    return {
+      campaignId: campaign.id, submissionId: "submission", submittedAt: new Date(now - 3_600_000).toISOString(),
+      status: "PENDING", isCurrent: true, rejectionNote: null,
+      campaignByCampaignId: { title: "Linked campaign", startAt: campaign.startAt, endAt: campaign.endAt }, ...patch
+    };
+  }
+
+  it("offers explicit same-campaign resubmit and displays rejection feedback for both listing kinds", () => {
+    mockRelations = [submission({ status: "REJECTED", isCurrent: false, rejectionNote: "Add more details" })];
+    const html = renderCampaign();
+    const buttons = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) ?? [];
+    const resubmit = buttons.filter(button => button.includes("listingLifecycle.resubmit"));
+    expect(resubmit).toHaveLength(2);
+    expect(resubmit.every(button => !button.includes("disabled="))).toBe(true);
+    expect(html.match(/Add more details/g)).toHaveLength(2);
+    expect(html.match(/listingLifecycle.saveDoesNotResubmit/g)).toHaveLength(2);
+  });
+
+  it.each(["ACCEPTED", "PENDING"] as const)("prevents joining another campaign while the existing %s slot is locked", status => {
+    mockRelations = [submission({ campaignId: "another-campaign", status })];
+    const html = renderCampaign();
+    const buttons = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) ?? [];
+    const joinButtons = buttons.filter(button => /public\.(resource|need)Join\.joinSingle/.test(button));
+    expect(joinButtons).toHaveLength(2);
+    expect(joinButtons.every(button => button.includes("disabled="))).toBe(true);
+    expect(html).not.toContain("listingLifecycle.resubmit");
+    expect(html).toContain(status === "ACCEPTED" ? "listingLifecycle.acceptedLocked" : "listingLifecycle.pendingLocked");
+  });
+
+  it.each(["24h pending", "ended accepted", "superseded"] as const)("allows a fresh join for %s history without obsolete rejection feedback", scenario => {
+    const old = submission({ status: "REJECTED", isCurrent: false, rejectionNote: "Obsolete feedback",
+      submittedAt: new Date(now - 100 * 3_600_000).toISOString() });
+    const latest = submission({ campaignId: "another-campaign", submittedAt: new Date(now - 24 * 3_600_000).toISOString(),
+      ...(scenario === "ended accepted" ? { status: "ACCEPTED", campaignByCampaignId: { title: "Ended", startAt: "2020-01-01", endAt: new Date(now).toISOString() } }
+        : scenario === "superseded" ? { status: "SUPERSEDED", isCurrent: false } : {}) });
+    mockRelations = [old, latest];
+    const html = renderCampaign();
+    expect(html).not.toContain("Obsolete feedback");
+    // The historical rejection is still a valid explicit resubmit destination.
+    expect(html).toContain("listingLifecycle.resubmit");
+  });
+
   it("requests the campaign reward fields from GraphQL", () => {
-    const query = print(PUBLIC_CAMPAIGN_DETAIL_QUERY);
+    const query = PUBLIC_CAMPAIGN_DETAIL_QUERY.loc?.source.body;
     expect(query).toMatch(/\bairdropAmount\b/);
     expect(query).toMatch(/\brewardsMultiplier\b/);
   });

@@ -1,13 +1,14 @@
 import { apolloClient } from "./client";
+import { isCurrentCampaignRelation, isUnendedCampaignRelation, type CampaignListingRelation } from "./campaignListing";
 import {
-  AcceptCampaignNeedDocument,
-  AcceptCampaignResourceDocument,
-  CampaignModerationHistoryDocument,
-  CampaignNeedTriageDocument,
-  CampaignResourceTriageDocument,
-  RejectCampaignNeedDocument,
-  RejectCampaignResourceDocument
-} from "./operations.generated";
+  ACCEPT_CAMPAIGN_NEED_MUTATION,
+  ACCEPT_CAMPAIGN_RESOURCE_MUTATION,
+  CAMPAIGN_MODERATION_HISTORY_QUERY,
+  CAMPAIGN_NEED_TRIAGE_QUERY,
+  CAMPAIGN_RESOURCE_TRIAGE_QUERY,
+  REJECT_CAMPAIGN_NEED_MUTATION,
+  REJECT_CAMPAIGN_RESOURCE_MUTATION
+} from "./operations";
 
 export interface CampaignModerationEventItem {
   eventType: string;
@@ -15,24 +16,49 @@ export interface CampaignModerationEventItem {
   createdAt: string;
 }
 
-export interface CampaignNeedTriageItem {
-  campaignId: string;
+interface ListingCardMetadata {
+  actedAt?: string | null;
+  imageUrls?: string[];
+  createdAt?: string | null;
+  creatorDisplayName?: string | null;
+}
+
+/** Rejections remain readable; replaced applications are no longer reviewable. */
+export function isVisibleModerationRelation(relation: CampaignListingRelation): boolean {
+  return isCurrentCampaignRelation(relation) ||
+    (relation.status === "REJECTED" && isUnendedCampaignRelation(relation));
+}
+
+type ListingCardFields = {
+  imageUrls: Array<string | null> | null;
+  createdAt: unknown;
+  accountByCreatorAccountId: { displayName: string | null } | null;
+};
+
+function cardMetadata(listing: ListingCardFields | null): ListingCardMetadata {
+  return {
+    imageUrls: (listing?.imageUrls ?? []).filter((url): url is string => typeof url === "string" && url.length > 0),
+    createdAt: listing?.createdAt == null ? null : String(listing.createdAt),
+    creatorDisplayName: listing?.accountByCreatorAccountId?.displayName ?? null
+  };
+}
+
+export interface CampaignNeedTriageItem extends CampaignListingRelation, ListingCardMetadata {
   needId: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
   campaignTitle: string | null;
   title: string | null;
   intensity: string | null;
   proposedTokens: number | null;
 }
 
-export interface CampaignResourceTriageItem {
-  campaignId: string;
+export interface CampaignResourceTriageItem extends CampaignListingRelation, ListingCardMetadata {
   resourceId: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
   campaignTitle: string | null;
   title: string | null;
   location: string | null;
   defaultTokens: number | null;
+  canBeExchanged?: boolean;
+  canBeGifted?: boolean;
 }
 
 function nullableNumber(value: unknown): number | null {
@@ -44,8 +70,10 @@ function nullableNumber(value: unknown): number | null {
 }
 
 export async function fetchCampaignModerationHistory(campaignId: string): Promise<CampaignModerationEventItem[]> {
-  const { data } = await apolloClient.query({
-    query: CampaignModerationHistoryDocument,
+  const { data } = await apolloClient.query<{
+    campaignModerationEvents: { nodes: CampaignModerationEventItem[] } | null;
+  }>({
+    query: CAMPAIGN_MODERATION_HISTORY_QUERY,
     variables: { campaignId },
     fetchPolicy: "network-only"
   });
@@ -60,13 +88,21 @@ export async function fetchCampaignModerationHistory(campaignId: string): Promis
 }
 
 export async function fetchCampaignNeedTriage(campaignId: string): Promise<CampaignNeedTriageItem[]> {
-  const { data } = await apolloClient.query({
-    query: CampaignNeedTriageDocument,
+  const { data } = await apolloClient.query<{
+    allCampaignNeeds: { nodes: Array<CampaignListingRelation & {
+      needId: string;
+      actedAt?: string | null;
+      needByNeedId: (ListingCardFields & { title: string; intensity: string; proposedTopesAmount: number | null }) | null;
+    }> } | null;
+  }>({
+    query: CAMPAIGN_NEED_TRIAGE_QUERY,
     variables: { campaignId },
     fetchPolicy: "network-only"
   });
 
-  return (data?.allCampaignNeeds?.nodes ?? []).map((node) => ({
+  return (data?.allCampaignNeeds?.nodes ?? []).filter(isVisibleModerationRelation).map((node) => ({
+    ...node,
+    ...cardMetadata(node.needByNeedId),
     campaignId: String(node.campaignId),
     needId: String(node.needId),
     status: node.status,
@@ -78,41 +114,57 @@ export async function fetchCampaignNeedTriage(campaignId: string): Promise<Campa
 }
 
 export async function fetchCampaignResourceTriage(campaignId: string): Promise<CampaignResourceTriageItem[]> {
-  const { data } = await apolloClient.query({
-    query: CampaignResourceTriageDocument,
+  const { data } = await apolloClient.query<{
+    allCampaignResources: { nodes: Array<CampaignListingRelation & {
+      resourceId: string;
+      actedAt?: string | null;
+      resourceByResourceId: (ListingCardFields & { title: string; location: string | null; defaultTokenAmount: number | null; canBeExchanged: boolean; canBeGiven: boolean }) | null;
+    }> } | null;
+  }>({
+    query: CAMPAIGN_RESOURCE_TRIAGE_QUERY,
     variables: { campaignId },
     fetchPolicy: "network-only"
   });
 
-  return (data?.allCampaignResources?.nodes ?? []).map((node) => ({
+  return (data?.allCampaignResources?.nodes ?? []).filter(isVisibleModerationRelation).map((node) => ({
+    ...node,
+    ...cardMetadata(node.resourceByResourceId),
     campaignId: String(node.campaignId),
     resourceId: String(node.resourceId),
     status: node.status,
     campaignTitle: node.campaignByCampaignId?.title ?? null,
     title: node.resourceByResourceId?.title ?? null,
     location: node.resourceByResourceId?.location ?? null,
-    defaultTokens: nullableNumber(node.resourceByResourceId?.defaultTokenAmount)
+    defaultTokens: nullableNumber(node.resourceByResourceId?.defaultTokenAmount),
+    canBeExchanged: node.resourceByResourceId?.canBeExchanged ?? false,
+    canBeGifted: node.resourceByResourceId?.canBeGiven ?? false
   }));
 }
 
 export async function triageCampaignNeed(
   campaignId: string,
   needId: string,
-  action: "accept" | "reject"
+  action: "accept" | "reject",
+  expectedSubmissionId: string,
+  rejectionNote?: string
 ): Promise<void> {
+  if (!expectedSubmissionId) throw new Error("Submission ID is required");
   await apolloClient.mutate({
-    mutation: action === "accept" ? AcceptCampaignNeedDocument : RejectCampaignNeedDocument,
-    variables: { campaignId, needId }
+    mutation: action === "accept" ? ACCEPT_CAMPAIGN_NEED_MUTATION : REJECT_CAMPAIGN_NEED_MUTATION,
+    variables: { campaignId, needId, expectedSubmissionId, ...(action === "reject" ? { rejectionNote: rejectionNote?.trim() || null } : {}) }
   });
 }
 
 export async function triageCampaignResource(
   campaignId: string,
   resourceId: string,
-  action: "accept" | "reject"
+  action: "accept" | "reject",
+  expectedSubmissionId: string,
+  rejectionNote?: string
 ): Promise<void> {
+  if (!expectedSubmissionId) throw new Error("Submission ID is required");
   await apolloClient.mutate({
-    mutation: action === "accept" ? AcceptCampaignResourceDocument : RejectCampaignResourceDocument,
-    variables: { campaignId, resourceId }
+    mutation: action === "accept" ? ACCEPT_CAMPAIGN_RESOURCE_MUTATION : REJECT_CAMPAIGN_RESOURCE_MUTATION,
+    variables: { campaignId, resourceId, expectedSubmissionId, ...(action === "reject" ? { rejectionNote: rejectionNote?.trim() || null } : {}) }
   });
 }

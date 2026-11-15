@@ -58,12 +58,12 @@ describe("admin scoped ordinary-user access", () => {
       );
       const campaignId = await insertId(
         `insert into app_public.campaign
-           (creator_account_id, title, theme, rewards_multiplier, airdrop_amount, start_at, airdrop_at, end_at)
-          values ($1, 'Scoped campaign', 'test', 5, 3000, now(), now(), now() + interval '2 days')
+           (creator_account_id, title, theme, rewards_multiplier, airdrop_amount, start_at, airdrop_at, end_at, moderation_status)
+          values ($1, 'Scoped campaign', 'test', 5, 3000, now(), now(), now() + interval '2 days', 'approved')
          returning id`, [participantId]
       );
       await client.query(
-        `insert into app_public.campaign_resource (campaign_id, resource_id) values ($1, $2)`,
+        `insert into app_public.campaign_resource (campaign_id, resource_id, is_current) values ($1, $2, true)`,
         [campaignId, resourceId]
       );
       const needId = await insertId(
@@ -246,10 +246,10 @@ describe("admin scoped ordinary-user access", () => {
 
     // The formerly reproduced decision-reversal bypass must now be denied.
     const link = await client.query(
-      "select campaign_id from app_public.campaign_resource where resource_id=$1", [ids.campaign_resource[1]]
+      "select campaign_id,submission_id from app_public.campaign_resource where resource_id=$1", [ids.campaign_resource[1]]
     );
-    await client.query("select app_public.accept_campaign_resource($1, $2)",
-      [link.rows[0].campaign_id, ids.campaign_resource[1]]);
+    await client.query("select app_public.accept_campaign_resource($1, $2, $3)",
+      [link.rows[0].campaign_id, ids.campaign_resource[1], link.rows[0].submission_id]);
     await denied(
       `update app_public.campaign_resource set status='rejected'
        where campaign_id=$1 and resource_id=$2`,

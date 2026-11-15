@@ -247,7 +247,7 @@ export function NotificationsScreen({
                 <Text
                   variant="bodyMedium"
                   style={[styles.rowDescription, unread ? styles.rowDescriptionUnread : null]}
-                  numberOfLines={3}
+                  {...(entry.eventType === "campaign_listing_rejected" ? {} : { numberOfLines: 3 })}
                 >
                   {entry.description}
                 </Text>

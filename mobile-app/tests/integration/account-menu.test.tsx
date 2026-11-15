@@ -1,13 +1,16 @@
 import React from "react";
-import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
 import { AppNavigator, MyHubScreen } from "../../src/navigation/AppNavigator";
 import type { MyHubSection } from "../../src/screens/hub/MyHubDashboardScreen";
 import { designTokens } from "../../src/theme/tokens";
 import { appFontFamilies } from "../../src/theme/fonts";
 import { useTokenBalance } from "../../src/services/realtime/useTokenBalance";
+import { fetchNeedForEdit } from "../../src/services/graphql/needs";
+import { fetchResourceForEdit } from "../../src/services/graphql/resources";
 
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 const mockNavigate = jest.fn();
+const mockEditorModel = jest.fn();
 const mockAccountId = "11111111-1111-4111-8111-111111111111";
 
 function mockSpoke(title: string, props: any) {
@@ -76,7 +79,8 @@ jest.mock("../../src/screens/claims/MyClaimsScreen", () => ({
   MyClaimsScreen: (props: any) => mockSpoke(`${props.direction} claims screen`, props)
 }));
 jest.mock("../../src/screens/resources/EditResourceScreen", () => ({
-  EditResourceScreen: ({ onBack }: { onBack: () => void }) => {
+  EditResourceScreen: ({ onBack, initialResource }: { onBack: () => void; initialResource: unknown }) => {
+    mockEditorModel(initialResource);
     const React = require("react");
     const { View, Text, Button } = require("react-native");
     return React.createElement(View, null,
@@ -84,6 +88,15 @@ jest.mock("../../src/screens/resources/EditResourceScreen", () => ({
       React.createElement(Button, { title: "Cancel editor", onPress: onBack }));
   }
 }));
+jest.mock("../../src/screens/needs/EditNeedScreen", () => ({
+  EditNeedScreen: ({ initialNeed }: { initialNeed: unknown }) => {
+    mockEditorModel(initialNeed);
+    const React = require("react");
+    return React.createElement(require("react-native").Text, null, "Edit need screen");
+  }
+}));
+jest.mock("../../src/services/graphql/needs", () => ({ fetchNeedForEdit: jest.fn() }));
+jest.mock("../../src/services/graphql/resources", () => ({ fetchResourceForEdit: jest.fn() }));
 jest.mock("react-native-paper", () => {
   const actual = jest.requireActual("react-native-paper");
   const React = require("react");
@@ -185,6 +198,57 @@ it("preserves logout", async () => {
   fireEvent.press(screen.getByRole("button", { name: "Log out" }));
   await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
   expect(screen.queryByTestId("account-menu")).toBeNull();
+});
+
+describe("notification owner-editor navigation", () => {
+  it.each(["need", "resource"] as const)("loads an older/inactive %s editor by ID, outside the owner list's first page", async kind => {
+    const fetchListing = (kind === "need" ? fetchNeedForEdit : fetchResourceForEdit) as jest.Mock;
+    const model = { id: "listing-123", creatorAccountId: mockAccountId, createdAt: "2020-01-01", isActive: false,
+      categoryCodes: [3, 8], campaignId: "campaign-1", campaignRelation: { status: "REJECTED", rejectionNote: "Clarify" } };
+    fetchListing.mockResolvedValue(model);
+    const consume = jest.fn();
+    const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} pendingSection={{
+      section: kind === "need" ? "myNeeds" : "myResources", editListing: { kind, id: "listing-123" }
+    }} onConsumePendingSection={consume} />);
+    await waitFor(() => expect(screen.getByText(`Edit ${kind} screen`)).toBeTruthy());
+    expect(fetchListing).toHaveBeenCalledWith("listing-123", mockAccountId);
+    expect(mockEditorModel).toHaveBeenLastCalledWith(model);
+    expect(consume).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["need", "resource"] as const)("does not open an unavailable or non-owned %s", async kind => {
+    const fetchListing = (kind === "need" ? fetchNeedForEdit : fetchResourceForEdit) as jest.Mock;
+    fetchListing.mockResolvedValue(null);
+    const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} pendingSection={{
+      section: kind === "need" ? "myNeeds" : "myResources", editListing: { kind, id: "listing-123" }
+    }} onConsumePendingSection={jest.fn()} />);
+    await waitFor(() => expect(screen.getByText("notificationsDeepLinkError")).toBeTruthy());
+    expect(screen.queryByText(`Edit ${kind} screen`)).toBeNull();
+  });
+
+  it("handles an offline editor lookup without opening a public listing", async () => {
+    (fetchResourceForEdit as jest.Mock).mockRejectedValue(new Error("offline"));
+    const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} pendingSection={{
+      section: "myResources", editListing: { kind: "resource", id: "listing-123" }
+    }} onConsumePendingSection={jest.fn()} />);
+    await waitFor(() => expect(screen.getByText("notificationsDeepLinkError")).toBeTruthy());
+    expect(screen.queryByText("Edit resource screen")).toBeNull();
+  });
+
+  it.each(["need", "resource"] as const)("ignores a late %s lookup after navigating to another spoke", async kind => {
+    let resolve!: (value: unknown) => void;
+    const fetchListing = (kind === "need" ? fetchNeedForEdit : fetchResourceForEdit) as jest.Mock;
+    fetchListing.mockReturnValue(new Promise(value => { resolve = value; }));
+    const consume = jest.fn();
+    const screen = render(<MyHubScreen authenticated onRequestAuth={jest.fn()} pendingSection={{
+      section: kind === "need" ? "myNeeds" : "myResources", editListing: { kind, id: "listing-123" }
+    }} onConsumePendingSection={consume} />);
+    screen.rerender(<MyHubScreen authenticated onRequestAuth={jest.fn()} pendingSection={{ section: "preferences" }} onConsumePendingSection={consume} />);
+    await act(async () => { resolve({ id: "listing-123" }); });
+    expect(screen.getByText("Preferences screen")).toBeTruthy();
+    expect(mockEditorModel).not.toHaveBeenCalled();
+    expect(consume).toHaveBeenCalledTimes(1);
+  });
 });
 
 const sections: Array<[MyHubSection, string]> = [

@@ -45,7 +45,13 @@ import {
   CAMPAIGN_RESOURCE_TRIAGE_QUERY,
   REJECT_CAMPAIGN_RESOURCE_MUTATION
 } from "../../../features/campaigns/campaignResourceTriage.queries";
-import { CampaignNeedStatusChip, type CampaignNeedStatus } from "../../../components/campaign/CampaignNeedStatusChip";
+import type { CampaignNeedStatus } from "../../../components/campaign/CampaignNeedStatusChip";
+import { NeedCard } from "../../../features/ui/NeedCard";
+import { ResourceCard } from "../../../features/ui/ResourceCard";
+import { CampaignModerationListingGroup } from "../../../features/campaigns/CampaignModerationListingGroup";
+import { CampaignListingPreviewDialog } from "../../../features/campaigns/CampaignListingPreviewDialog";
+import { CampaignListingRejectionDialog } from "../../../features/campaigns/CampaignListingRejectionDialog";
+import { isCurrentCampaignRelation, isOngoingCampaignRelation, useCampaignLifecycleNow, type CampaignListingRelation } from "../../../features/campaigns/campaignListingLifecycle";
 
 type CampaignModerationDetailsData = {
   campaignById: {
@@ -92,7 +98,19 @@ type UpdateCampaignForModerationVariables = {
   pEndAt: string;
 };
 
-type CampaignNeedNode = {
+type ListingCardFields = {
+  description?: string | null;
+  imageUrls?: string[] | null;
+  expiresAt?: string | null;
+  createdAt?: string;
+  accountByCreatorAccountId?: {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
+};
+
+type CampaignNeedNode = CampaignListingRelation & {
   campaignId: string;
   needId: string;
   status: CampaignNeedStatus;
@@ -102,7 +120,7 @@ type CampaignNeedNode = {
     id: string;
     title: string;
   } | null;
-  needByNeedId: {
+  needByNeedId: ListingCardFields & {
     id: string;
     title: string;
     intensity: string;
@@ -116,7 +134,7 @@ type CampaignNeedTriageData = {
   } | null;
 };
 
-type CampaignResourceNode = {
+type CampaignResourceNode = CampaignListingRelation & {
   campaignId: string;
   resourceId: string;
   status: CampaignNeedStatus;
@@ -126,7 +144,7 @@ type CampaignResourceNode = {
     id: string;
     title: string;
   } | null;
-  resourceByResourceId: {
+  resourceByResourceId: ListingCardFields & {
     id: string;
     title: string;
     location: string | null;
@@ -147,11 +165,15 @@ type CampaignScopedTriageVariables = {
 type NeedTriageMutationVariables = {
   campaignId: string;
   needId: string;
+  expectedSubmissionId: string;
+  rejectionNote?: string;
 };
 
 type ResourceTriageMutationVariables = {
   campaignId: string;
   resourceId: string;
+  expectedSubmissionId: string;
+  rejectionNote?: string;
 };
 
 function toDatetimeLocalInput(value: string) {
@@ -160,12 +182,12 @@ function toDatetimeLocalInput(value: string) {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
-function needNodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId">) {
-  return `${node.campaignId}:${node.needId}`;
+function needNodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId" | "submissionId">) {
+  return `${node.campaignId}:${node.needId}:${node.submissionId}`;
 }
 
-function resourceNodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resourceId">) {
-  return `${node.campaignId}:${node.resourceId}`;
+function resourceNodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resourceId" | "submissionId">) {
+  return `${node.campaignId}:${node.resourceId}:${node.submissionId}`;
 }
 
 export default function CampaignModerationPage() {
@@ -174,6 +196,10 @@ export default function CampaignModerationPage() {
   const { t, i18n } = useTranslation("campaigns");
   const [editOpen, setEditOpen] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [previewListing, setPreviewListing] = useState<{ kind: "resource" | "need"; id: string } | null>(null);
+  const now = useCampaignLifecycleNow();
+  const [rejection, setRejection] = useState<{ kind: "need"; node: CampaignNeedNode } | { kind: "resource"; node: CampaignResourceNode } | null>(null);
+  const [triageActionError, setTriageActionError] = useState<string | null>(null);
 
   const campaignIdValue = (campaignId as string) ?? "";
 
@@ -259,64 +285,78 @@ export default function CampaignModerationPage() {
   const canEdit = campaign?.moderationStatus === "PENDING" || campaign?.moderationStatus === "AWAITING_ADAPTATION";
   const isApprovedOrLater = campaign ? !canEdit : false;
 
-  const needNodes = useMemo(() => needTriageData?.allCampaignNeeds?.nodes ?? [], [needTriageData?.allCampaignNeeds?.nodes]);
-  const resourceNodes = useMemo(() => resourceTriageData?.allCampaignResources?.nodes ?? [], [resourceTriageData?.allCampaignResources?.nodes]);
+  // Rejected submissions are no longer current, but remain reviewable until campaign end.
+  const visibleRelation = (node: CampaignListingRelation) => isOngoingCampaignRelation(node, now)
+    && (node.status === "REJECTED" || isCurrentCampaignRelation(node, now));
+  const needNodes = (needTriageData?.allCampaignNeeds?.nodes ?? []).filter(visibleRelation);
+  const resourceNodes = (resourceTriageData?.allCampaignResources?.nodes ?? []).filter(visibleRelation);
 
   const [busyNeedKey, setBusyNeedKey] = useState<string | null>(null);
   const [busyResourceKey, setBusyResourceKey] = useState<string | null>(null);
-  const [optimisticNeedStatuses, setOptimisticNeedStatuses] = useState<Record<string, CampaignNeedStatus>>({});
-  const [optimisticResourceStatuses, setOptimisticResourceStatuses] = useState<Record<string, CampaignNeedStatus>>({});
+  type OptimisticDecision = { status: CampaignNeedStatus; actedAt: string };
+  const [optimisticNeedStatuses, setOptimisticNeedStatuses] = useState<Record<string, OptimisticDecision>>({});
+  const [optimisticResourceStatuses, setOptimisticResourceStatuses] = useState<Record<string, OptimisticDecision>>({});
 
-  const handleNeedTriage = async (node: CampaignNeedNode, action: "accept" | "reject") => {
+  const handleNeedTriage = async (node: CampaignNeedNode, action: "accept" | "reject", rejectionNote?: string) => {
+    if (!isCurrentCampaignRelation(node) || node.status !== "PENDING" || !node.submissionId) return;
+    setTriageActionError(null);
     const key = needNodeKey(node);
     const nextStatus: CampaignNeedStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
     setBusyNeedKey(key);
-    setOptimisticNeedStatuses(current => ({ ...current, [key]: nextStatus }));
+    setOptimisticNeedStatuses(current => ({ ...current, [key]: { status: nextStatus, actedAt: new Date().toISOString() } }));
 
     try {
       if (action === "accept") {
         await acceptCampaignNeed({
-          variables: { campaignId: campaignIdValue, needId: node.needId }
+          variables: { campaignId: campaignIdValue, needId: node.needId, expectedSubmissionId: node.submissionId }
         });
       } else {
         await rejectCampaignNeed({
-          variables: { campaignId: campaignIdValue, needId: node.needId }
+          variables: { campaignId: campaignIdValue, needId: node.needId, expectedSubmissionId: node.submissionId, rejectionNote }
         });
       }
+      await refetchNeedTriage();
+      if (action === "reject") setRejection(null);
+    } catch (error) {
+      setTriageActionError(getUserFacingGraphQLErrorMessage(error as Parameters<typeof getUserFacingGraphQLErrorMessage>[0]) ?? t("errors.genericRetry", { ns: "common" }));
+    } finally {
       setOptimisticNeedStatuses(current => {
         const next = { ...current };
         delete next[key];
         return next;
       });
-      await refetchNeedTriage();
-    } finally {
       setBusyNeedKey(current => (current === key ? null : current));
     }
   };
 
-  const handleResourceTriage = async (node: CampaignResourceNode, action: "accept" | "reject") => {
+  const handleResourceTriage = async (node: CampaignResourceNode, action: "accept" | "reject", rejectionNote?: string) => {
+    if (!isCurrentCampaignRelation(node) || node.status !== "PENDING" || !node.submissionId) return;
+    setTriageActionError(null);
     const key = resourceNodeKey(node);
     const nextStatus: CampaignNeedStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
     setBusyResourceKey(key);
-    setOptimisticResourceStatuses(current => ({ ...current, [key]: nextStatus }));
+    setOptimisticResourceStatuses(current => ({ ...current, [key]: { status: nextStatus, actedAt: new Date().toISOString() } }));
 
     try {
       if (action === "accept") {
         await acceptCampaignResource({
-          variables: { campaignId: campaignIdValue, resourceId: node.resourceId }
+          variables: { campaignId: campaignIdValue, resourceId: node.resourceId, expectedSubmissionId: node.submissionId }
         });
       } else {
         await rejectCampaignResource({
-          variables: { campaignId: campaignIdValue, resourceId: node.resourceId }
+          variables: { campaignId: campaignIdValue, resourceId: node.resourceId, expectedSubmissionId: node.submissionId, rejectionNote }
         });
       }
+      await refetchResourceTriage();
+      if (action === "reject") setRejection(null);
+    } catch (error) {
+      setTriageActionError(getUserFacingGraphQLErrorMessage(error as Parameters<typeof getUserFacingGraphQLErrorMessage>[0]) ?? t("errors.genericRetry", { ns: "common" }));
+    } finally {
       setOptimisticResourceStatuses(current => {
         const next = { ...current };
         delete next[key];
         return next;
       });
-      await refetchResourceTriage();
-    } finally {
       setBusyResourceKey(current => (current === key ? null : current));
     }
   };
@@ -356,6 +396,15 @@ export default function CampaignModerationPage() {
 
         {loading ? <CircularProgress size={20} /> : null}
         {detailsErrorMessage ? <Alert severity="error">{detailsErrorMessage}</Alert> : null}
+        {triageActionError ? <Alert severity="error">{triageActionError}</Alert> : null}
+        <CampaignListingPreviewDialog listing={previewListing} onClose={() => setPreviewListing(null)} />
+        <CampaignListingRejectionDialog key={rejection?.node.submissionId ?? "closed"}
+          error={triageActionError}
+          open={Boolean(rejection)} busy={Boolean(busyNeedKey || busyResourceKey)} onClose={() => setRejection(null)}
+          onConfirm={async note => {
+            if (rejection?.kind === "need") await handleNeedTriage(rejection.node, "reject", note);
+            if (rejection?.kind === "resource") await handleResourceTriage(rejection.node, "reject", note);
+          }} />
 
         {!loading && !detailsErrorMessage && campaign ? (
           <Stack spacing={2}>
@@ -473,53 +522,37 @@ export default function CampaignModerationPage() {
                   <Alert severity="info">{t("resourceTriage.emptyForCampaign")}</Alert>
                 ) : null}
 
-                {resourceNodes.map(node => {
-                  const key = resourceNodeKey(node);
-                  const status = optimisticResourceStatuses[key] ?? node.status;
-                  const canTriageResource = status === "PENDING";
-                  const rowBusy = busyResourceKey === key || acceptResourceLoading || rejectResourceLoading;
-
-                  return (
-                    <Box key={key} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, p: 2 }}>
-                      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
-                        <Box>
-                          <Typography variant="subtitle1">
-                            {node.resourceByResourceId?.title ?? t("resourceTriage.resourceFallback", { resourceId: node.resourceId })}
-                          </Typography>
-                          <Typography color="text.secondary" variant="body2">
-                            {t("resourceTriage.location")}: {node.resourceByResourceId?.location ?? t("resourceTriage.na")}
-                          </Typography>
-                          <Typography color="text.secondary" variant="body2">
-                            {t("resourceTriage.defaultTokens")}: {node.resourceByResourceId?.defaultTokenAmount ?? t("resourceTriage.na")}
-                          </Typography>
-                        </Box>
-                        <CampaignNeedStatusChip status={status} />
-                      </Stack>
-
-                      {canTriageResource ? (
-                        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                          <Button
-                            disabled={rowBusy}
-                            onClick={() => void handleResourceTriage(node, "accept")}
-                            size="small"
-                            variant="contained"
-                          >
-                            {t("resourceTriage.accept")}
-                          </Button>
-                          <Button
-                            color="error"
-                            disabled={rowBusy}
-                            onClick={() => void handleResourceTriage(node, "reject")}
-                            size="small"
-                            variant="outlined"
-                          >
-                            {t("resourceTriage.reject")}
-                          </Button>
-                        </Stack>
-                      ) : null}
-                    </Box>
-                  );
-                })}
+                <CampaignModerationListingGroup
+                  items={resourceNodes.map(node => ({ ...node, ...optimisticResourceStatuses[resourceNodeKey(node)] }))}
+                  getKey={resourceNodeKey}
+                  rejectedLabel={t("moderationListings.rejectedResources")}
+                  renderCard={node => (
+                    <ResourceCard
+                      title={node.resourceByResourceId?.title ?? t("resourceTriage.resourceFallback", { resourceId: node.resourceId })}
+                      creatorName={node.resourceByResourceId?.accountByCreatorAccountId?.displayName ?? t("moderationListings.unknownCreator")}
+                      creatorImageUrl={node.resourceByResourceId?.accountByCreatorAccountId?.avatarUrl}
+                      description={node.resourceByResourceId?.description}
+                      imageUrls={node.resourceByResourceId?.imageUrls}
+                      expiresAt={node.resourceByResourceId?.expiresAt}
+                      location={node.resourceByResourceId?.location}
+                      tokenAmount={node.resourceByResourceId?.defaultTokenAmount}
+                      cardMaxWidth={480}
+                      onClick={() => setPreviewListing({ kind: "resource", id: node.resourceId })}
+                    />
+                  )}
+                  renderActions={node => (
+                    <Stack direction="row" spacing={1}>
+                      <Button disabled={busyResourceKey === resourceNodeKey(node) || acceptResourceLoading || rejectResourceLoading}
+                        onClick={() => void handleResourceTriage(node, "accept")} size="small" variant="contained">
+                        {t("resourceTriage.accept")}
+                      </Button>
+                      <Button color="error" disabled={busyResourceKey === resourceNodeKey(node) || acceptResourceLoading || rejectResourceLoading}
+                        onClick={() => setRejection({ kind: "resource", node })} size="small" variant="outlined">
+                        {t("resourceTriage.reject")}
+                      </Button>
+                    </Stack>
+                  )}
+                />
 
                 <Typography variant="h6" sx={{ mt: 1 }}>{t("triage.sectionTitle")}</Typography>
 
@@ -530,53 +563,36 @@ export default function CampaignModerationPage() {
                   <Alert severity="info">{t("triage.emptyForCampaign")}</Alert>
                 ) : null}
 
-                {needNodes.map(node => {
-                  const key = needNodeKey(node);
-                  const status = optimisticNeedStatuses[key] ?? node.status;
-                  const canTriageNeed = status === "PENDING";
-                  const rowBusy = busyNeedKey === key || acceptNeedLoading || rejectNeedLoading;
-
-                  return (
-                    <Box key={key} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, p: 2 }}>
-                      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1}>
-                        <Box>
-                          <Typography variant="subtitle1">
-                            {node.needByNeedId?.title ?? t("triage.needFallback", { needId: node.needId })}
-                          </Typography>
-                          <Typography color="text.secondary" variant="body2">
-                            {t("triage.campaignLabel")}: {node.campaignByCampaignId?.title ?? node.campaignId}
-                          </Typography>
-                          <Typography color="text.secondary" variant="body2">
-                            {t("triage.pendingTriage", { count: status === "PENDING" ? 1 : 0 })}
-                          </Typography>
-                        </Box>
-                        <CampaignNeedStatusChip status={status} />
-                      </Stack>
-
-                      {canTriageNeed ? (
-                        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                          <Button
-                            disabled={rowBusy}
-                            onClick={() => void handleNeedTriage(node, "accept")}
-                            size="small"
-                            variant="contained"
-                          >
-                            {t("triage.accept")}
-                          </Button>
-                          <Button
-                            color="error"
-                            disabled={rowBusy}
-                            onClick={() => void handleNeedTriage(node, "reject")}
-                            size="small"
-                            variant="outlined"
-                          >
-                            {t("triage.reject")}
-                          </Button>
-                        </Stack>
-                      ) : null}
-                    </Box>
-                  );
-                })}
+                <CampaignModerationListingGroup
+                  items={needNodes.map(node => ({ ...node, ...optimisticNeedStatuses[needNodeKey(node)] }))}
+                  getKey={needNodeKey}
+                  rejectedLabel={t("moderationListings.rejectedNeeds")}
+                  renderCard={node => (
+                    <NeedCard
+                      title={node.needByNeedId?.title ?? t("triage.needFallback", { needId: node.needId })}
+                      creatorName={node.needByNeedId?.accountByCreatorAccountId?.displayName ?? t("moderationListings.unknownCreator")}
+                      creatorImageUrl={node.needByNeedId?.accountByCreatorAccountId?.avatarUrl}
+                      description={node.needByNeedId?.description}
+                      imageUrls={node.needByNeedId?.imageUrls}
+                      expiresAt={node.needByNeedId?.expiresAt}
+                      tokenAmount={node.needByNeedId?.proposedTopesAmount}
+                      cardMaxWidth={480}
+                      onClick={() => setPreviewListing({ kind: "need", id: node.needId })}
+                    />
+                  )}
+                  renderActions={node => (
+                    <Stack direction="row" spacing={1}>
+                      <Button disabled={busyNeedKey === needNodeKey(node) || acceptNeedLoading || rejectNeedLoading}
+                        onClick={() => void handleNeedTriage(node, "accept")} size="small" variant="contained">
+                        {t("triage.accept")}
+                      </Button>
+                      <Button color="error" disabled={busyNeedKey === needNodeKey(node) || acceptNeedLoading || rejectNeedLoading}
+                        onClick={() => setRejection({ kind: "need", node })} size="small" variant="outlined">
+                        {t("triage.reject")}
+                      </Button>
+                    </Stack>
+                  )}
+                />
               </>
             ) : null}
 

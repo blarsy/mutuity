@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
@@ -32,7 +32,6 @@ import {
 import {
   CREATE_CAMPAIGN_NEED_MUTATION,
   CREATE_NEED_MUTATION,
-  DELETE_CAMPAIGN_NEED_MUTATION,
   LINKABLE_CAMPAIGN_OPTIONS_QUERY,
   NEED_EDIT_DETAIL_QUERY,
   UPDATE_NEED_MUTATION
@@ -41,6 +40,14 @@ import type { AccountProfileQuery, CreateNeedMutation, CreateNeedMutationVariabl
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
 import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
+import { CampaignListingFeedback } from "../campaigns/CampaignListingFeedback";
+import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
+
+type NeedEditorData = Omit<NeedEditDetailQuery, "needById"> & {
+  needById: (Omit<NonNullable<NeedEditDetailQuery["needById"]>, "campaignNeedsByNeedId"> & {
+    campaignNeedsByNeedId: { nodes: CampaignListingRelation[] };
+  }) | null;
+};
 
 function normalizeOptionalCoordinate(value: number | string | null | undefined): number | "" {
   if (value === "" || value == null) {
@@ -55,7 +62,7 @@ function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
   const startAt = new Date(startAtIso);
   const endAt = new Date(endAtIso);
 
-  return now >= startAt && now <= endAt;
+  return now >= startAt && now < endAt;
 }
 
 export default function EditNeedPage() {
@@ -65,6 +72,8 @@ export default function EditNeedPage() {
   const accountId = session.account?.id ?? null;
   const needId = typeof router.query.needId === "string" ? router.query.needId : null;
   const isEditMode = Boolean(needId);
+  const now = useCampaignLifecycleNow();
+  const resubmitRequested = useRef(false);
   const [createNeed, { loading, error }] = useMutation<CreateNeedMutation, CreateNeedMutationVariables>(
     CREATE_NEED_MUTATION
   );
@@ -73,7 +82,6 @@ export default function EditNeedPage() {
     UpdateNeedMutationVariables
   >(UPDATE_NEED_MUTATION);
   const [createCampaignNeed, { error: createCampaignNeedError }] = useMutation(CREATE_CAMPAIGN_NEED_MUTATION);
-  const [deleteCampaignNeed, { error: deleteCampaignNeedError }] = useMutation(DELETE_CAMPAIGN_NEED_MUTATION);
   const {
     data: campaignOptions,
     loading: campaignOptionsLoading,
@@ -83,7 +91,8 @@ export default function EditNeedPage() {
     data: editNeedData,
     loading: editNeedLoading,
     error: editNeedError
-  } = useQuery<NeedEditDetailQuery>(NEED_EDIT_DETAIL_QUERY, {
+  } = useQuery<NeedEditorData>(NEED_EDIT_DETAIL_QUERY, {
+    fetchPolicy: "network-only",
     skip: !needId,
     variables: {
       needId: needId ?? ""
@@ -102,19 +111,24 @@ export default function EditNeedPage() {
   const errorMessage = getUserFacingGraphQLErrorMessage(error)
     ?? getUserFacingGraphQLErrorMessage(updateError)
     ?? getUserFacingGraphQLErrorMessage(editNeedError)
-    ?? getUserFacingGraphQLErrorMessage(createCampaignNeedError)
-    ?? getUserFacingGraphQLErrorMessage(deleteCampaignNeedError);
+    ?? getUserFacingGraphQLErrorMessage(createCampaignNeedError);
   const campaignOptionsErrorMessage = getUserFacingGraphQLErrorMessage(campaignOptionsError);
 
-  const activeCampaignOptions = useMemo(() => {
-    const now = new Date();
-    const nodes = campaignOptions?.allCampaigns?.nodes ?? [];
+  const relation = effectiveCampaignRelation(editNeedData?.needById?.campaignNeedsByNeedId.nodes ?? [], now);
+  const currentCampaignId = relation && isOngoingCampaignRelation(relation, now) ? relation.campaignId : "";
+  const campaignLocked = campaignSelectionLocked(relation, now);
+  const hasCurrentCampaign = Boolean(relation && isCurrentCampaignRelation(relation, now));
 
-    const currentCampaignId = editNeedData?.needById?.campaignNeedsByNeedId.nodes[0]?.campaignId;
-    return nodes.filter(
-      node => node.id === currentCampaignId || isCampaignActive(now, node.startAt, node.endAt)
+  const activeCampaignOptions = useMemo(() => {
+    const nodes = campaignOptions?.allCampaigns?.nodes ?? [];
+    const options = nodes.filter(
+      node => node.id === currentCampaignId || isCampaignActive(new Date(now), node.startAt, node.endAt)
     );
-  }, [campaignOptions?.allCampaigns?.nodes, editNeedData?.needById?.campaignNeedsByNeedId.nodes]);
+    if (currentCampaignId && relation?.campaignByCampaignId && !options.some(node => node.id === currentCampaignId)) {
+      options.push({ __typename: "Campaign", id: currentCampaignId, ...relation.campaignByCampaignId });
+    }
+    return options;
+  }, [campaignOptions?.allCampaigns?.nodes, currentCampaignId, relation, now]);
 
   const initialValues = useMemo<CreateNeedValues>(() => {
     const editNeed = editNeedData?.needById;
@@ -146,12 +160,12 @@ export default function EditNeedPage() {
       requiredCompetenceText: editNeed.requiredCompetenceText ?? "",
       requiredToolingText: editNeed.requiredToolingText ?? "",
       requiredPeopleCount: editNeed.requiredPeopleCount ?? "",
-      campaignId: editNeed.campaignNeedsByNeedId.nodes[0]?.campaignId ?? "",
+      campaignId: currentCampaignId,
       expiresAt: editNeed.expiresAt ? new Date(editNeed.expiresAt).toISOString().slice(0, 16) : ""
     };
-  }, [accountProfileData?.accountById, editNeedData?.needById]);
+  }, [accountProfileData?.accountById, editNeedData?.needById, currentCampaignId]);
 
-  const submit = async (values: CreateNeedValues) => {
+  const submit = async (values: CreateNeedValues, resubmit = false) => {
     const normalizedVariables = {
       title: values.title.trim(),
       description: values.description.trim() || undefined,
@@ -179,14 +193,8 @@ export default function EditNeedPage() {
         }
       });
 
-      const previousCampaignId = editNeedData?.needById?.campaignNeedsByNeedId.nodes[0]?.campaignId ?? "";
-      if (previousCampaignId !== values.campaignId) {
-        if (previousCampaignId) {
-          await deleteCampaignNeed({ variables: { campaignId: previousCampaignId, needId } });
-        }
-        if (values.campaignId) {
-          await createCampaignNeed({ variables: { campaignId: values.campaignId, needId } });
-        }
+      if (shouldSubmitCampaignLink(currentCampaignId, values.campaignId, resubmit)) {
+        await createCampaignNeed({ variables: { campaignId: values.campaignId, needId } });
       }
 
       await router.push("/needs/manage");
@@ -265,17 +273,23 @@ export default function EditNeedPage() {
           enableReinitialize
           initialValues={initialValues}
           onSubmit={async (values, helpers) => {
+            helpers.setStatus(undefined);
             try {
-              await submit(values);
+              await submit(values, resubmitRequested.current);
+            } catch (error) {
+              helpers.setStatus(getUserFacingGraphQLErrorMessage(error as Parameters<typeof getUserFacingGraphQLErrorMessage>[0])
+                ?? t("errors.genericRetry", { ns: "common" }));
             } finally {
+              resubmitRequested.current = false;
               helpers.setSubmitting(false);
             }
           }}
           validationSchema={createNeedValidationSchema}
         >
-          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldTouched, setFieldValue, submitCount }) => (
+          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldTouched, setFieldValue, submitCount, submitForm, status }) => (
             <Form>
               <Stack spacing={2}>
+                {status ? <Alert severity="error">{status}</Alert> : null}
                 <TextField
                   name="title"
                   label={t("form.titleLabel")}
@@ -458,6 +472,7 @@ export default function EditNeedPage() {
                   />
                 ) : null}
 
+                <CampaignListingFeedback relation={relation} locked={campaignLocked} />
                 <TextField
                   select
                   name="campaignId"
@@ -465,15 +480,27 @@ export default function EditNeedPage() {
                   value={values.campaignId}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  disabled={campaignOptionsLoading || campaignLocked || isSubmitting}
                   helperText={campaignOptionsLoading ? t("form.loadingCampaigns") : t("form.campaignHelper")}
                 >
-                  <MenuItem value="">{t("form.noCampaign")}</MenuItem>
+                  {!hasCurrentCampaign ? <MenuItem value="">{t("form.noCampaign")}</MenuItem> : null}
                   {activeCampaignOptions.map(campaign => (
                     <MenuItem key={campaign.id} value={campaign.id}>
                       {campaign.title}
                     </MenuItem>
                   ))}
                 </TextField>
+
+                {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
+                  && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
+                  <Button type="button" variant="outlined" disabled={isSubmitting || loading || updateLoading}
+                    onClick={async () => {
+                      resubmitRequested.current = true;
+                      try { await submitForm(); } finally { resubmitRequested.current = false; }
+                    }}>
+                    {t("listingLifecycle.resubmit", { ns: "campaigns" })}
+                  </Button>
+                ) : null}
 
                 <TextField
                   name="expiresAt"
@@ -485,7 +512,8 @@ export default function EditNeedPage() {
                   InputLabelProps={{ shrink: true }}
                 />
 
-                <Button disabled={isSubmitting || loading || updateLoading} type="submit" variant="contained">
+                <Button disabled={isSubmitting || loading || updateLoading} type="submit" variant="contained"
+                  onClick={() => { resubmitRequested.current = false; }}>
                   {isEditMode ? t("form.saveButton") : t("form.addButton")}
                 </Button>
               </Stack>

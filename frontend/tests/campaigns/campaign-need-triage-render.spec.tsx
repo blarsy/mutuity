@@ -28,6 +28,23 @@ describe("campaign need triage missing connection regression", () => {
 });
 
 describe.each(["need", "resource"] as const)("%s triage detail links", kind => {
+  it("excludes noncurrent, superseded and ended submissions even if the server response contains them", () => {
+    const mocks = createCampaignTriageMocks(kind, "pending");
+    const operationName = kind === "need" ? "CampaignNeedTriage" : "CampaignResourceTriage";
+    const resolver = mocks.operations![operationName]!;
+    const data = typeof resolver === "function" ? resolver({}) : resolver;
+    const connectionName = kind === "need" ? "allCampaignNeeds" : "allCampaignResources";
+    const nodes = (data[connectionName] as { nodes: Record<string, unknown>[] }).nodes;
+    nodes[0]!.isCurrent = false;
+    nodes[1]!.status = "SUPERSEDED";
+    (nodes[2]!.campaignByCampaignId as Record<string, unknown>).endAt = new Date(Date.now() - 1).toISOString();
+    jest.mocked(useQuery).mockReturnValue({ data, loading: false } as ReturnType<typeof useQuery>);
+    const Page = kind === "need" ? CampaignNeedTriagePage : CampaignResourceTriagePage;
+    const html = renderToStaticMarkup(<Page />);
+    expect(html.match(/<a\b[^>]*>/g)).toHaveLength(1);
+    expect(html).toContain(`href="/${kind}s/${nodes[3]![kind === "need" ? "needId" : "resourceId"]}"`);
+  });
+
   it.each([false, true])("opens detail pages safely in a new browsing context (missing detail: %s)", missingDetail => {
     const mocks = createCampaignTriageMocks(kind, "pending");
     const operationName = kind === "need" ? "CampaignNeedTriage" : "CampaignResourceTriage";

@@ -213,9 +213,15 @@ export const RESOURCE_EDIT_DETAIL_QUERY = gql`
           categoryCode
         }
       }
-      campaignResourcesByResourceId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+      campaignResourcesByResourceId(orderBy: SUBMITTED_AT_DESC) {
         nodes {
           campaignId
+          submissionId
+          submittedAt
+          rejectionNote
+          isCurrent
+          status
+          campaignByCampaignId { title startAt endAt }
         }
       }
     }
@@ -242,14 +248,6 @@ export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
         campaignId
         resourceId
       }
-    }
-  }
-`;
-
-export const DELETE_CAMPAIGN_RESOURCE_MUTATION = gql`
-  mutation DeleteCampaignResourceLink($campaignId: UUID!, $resourceId: UUID!) {
-    unlinkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
-      boolean
     }
   }
 `;

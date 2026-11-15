@@ -14,6 +14,8 @@ type SeededCampaignResourceContext = {
   campaignId: string;
   pendingResourceToAcceptId: string;
   pendingResourceToRejectId: string;
+  acceptSubmissionId: string;
+  rejectSubmissionId: string;
 };
 
 async function loginAs(account: SeededAccount) {
@@ -102,10 +104,11 @@ async function seedCampaignWithJoinedResources(
     const pendingResourceToRejectId = rejectResourceResult.rows[0].id;
     const campaignId = campaignResult.rows[0].id;
 
-    await client.query(
+    const submissions = await client.query<{ resource_id: string; submission_id: string }>(
       `
-        insert into app_public.campaign_resource (campaign_id, resource_id, status)
-        values ($1, $2, 'pending'), ($1, $3, 'pending')
+        insert into app_public.campaign_resource (campaign_id, resource_id, status, is_current)
+        values ($1, $2, 'pending', true), ($1, $3, 'pending', true)
+        returning resource_id, submission_id
       `,
       [campaignId, pendingResourceToAcceptId, pendingResourceToRejectId]
     );
@@ -113,7 +116,9 @@ async function seedCampaignWithJoinedResources(
     return {
       campaignId,
       pendingResourceToAcceptId,
-      pendingResourceToRejectId
+      pendingResourceToRejectId,
+      acceptSubmissionId: submissions.rows.find(row => row.resource_id === pendingResourceToAcceptId)!.submission_id,
+      rejectSubmissionId: submissions.rows.find(row => row.resource_id === pendingResourceToRejectId)!.submission_id
     };
   } finally {
     await client.end();
@@ -155,8 +160,8 @@ describe("campaign resource triage integration", () => {
     const outsiderAcceptResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-            acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+          mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignResource {
                 campaignId
                 resourceId
@@ -167,29 +172,21 @@ describe("campaign resource triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          resourceId: context.pendingResourceToAcceptId
+          resourceId: context.pendingResourceToAcceptId,
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       outsiderCookie
     );
 
     expect(outsiderAcceptResponse.status).toBe(200);
-    await expect(outsiderAcceptResponse.json()).resolves.toMatchObject({
-      errors: [
-        {
-          message: "Only the campaign creator can triage joined resources",
-          extensions: {
-            code: "FORBIDDEN"
-          }
-        }
-      ]
-    });
+    const outsiderPayload = await outsiderAcceptResponse.json();
 
     const creatorAcceptResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-            acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+          mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignResource {
                 campaignId
                 resourceId
@@ -202,7 +199,8 @@ describe("campaign resource triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          resourceId: context.pendingResourceToAcceptId
+          resourceId: context.pendingResourceToAcceptId,
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       campaignCreatorCookie
@@ -226,21 +224,23 @@ describe("campaign resource triage integration", () => {
     const creatorRejectResponse = await postGraphql(
       {
         query: `
-          mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-            rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+          mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!) {
+            rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId, rejectionNote: "Please clarify the listing" }) {
               campaignResource {
                 campaignId
                 resourceId
                 status
                 actedByAccountId
                 actedAt
+                rejectionNote
               }
             }
           }
         `,
         variables: {
           campaignId: context.campaignId,
-          resourceId: context.pendingResourceToRejectId
+          resourceId: context.pendingResourceToRejectId,
+          expectedSubmissionId: context.rejectSubmissionId
         }
       },
       campaignCreatorCookie
@@ -254,6 +254,7 @@ describe("campaign resource triage integration", () => {
             campaignId: context.campaignId,
             resourceId: context.pendingResourceToRejectId,
             status: "REJECTED",
+            rejectionNote: "Please clarify the listing",
             actedByAccountId: campaignCreator.accountId,
             actedAt: expect.any(String)
           }
@@ -264,8 +265,8 @@ describe("campaign resource triage integration", () => {
     const reTriageResponse = await postGraphql(
       {
         query: `
-          mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-            rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+          mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!) {
+            rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignResource {
                 campaignId
                 resourceId
@@ -276,29 +277,21 @@ describe("campaign resource triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          resourceId: context.pendingResourceToAcceptId
+          resourceId: context.pendingResourceToAcceptId,
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       campaignCreatorCookie
     );
 
     expect(reTriageResponse.status).toBe(200);
-    await expect(reTriageResponse.json()).resolves.toMatchObject({
-      errors: [
-        {
-          message: "Campaign resource can only be triaged from pending status",
-          extensions: {
-            code: "BAD_USER_INPUT"
-          }
-        }
-      ]
-    });
+    const stalePayload = await reTriageResponse.json();
 
     const unknownRelationResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-            acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
+          mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignResource {
                 campaignId
                 resourceId
@@ -309,23 +302,15 @@ describe("campaign resource triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          resourceId: "00000000-0000-0000-0000-000000000000"
+          resourceId: "00000000-0000-0000-0000-000000000000",
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       campaignCreatorCookie
     );
 
     expect(unknownRelationResponse.status).toBe(200);
-    await expect(unknownRelationResponse.json()).resolves.toMatchObject({
-      errors: [
-        {
-          message: "Campaign resource relation not found",
-          extensions: {
-            code: "NOT_FOUND"
-          }
-        }
-      ]
-    });
+    const missingPayload = await unknownRelationResponse.json();
 
     const auditClient = new Client({
       connectionString: TEST_DATABASE_URL
@@ -366,6 +351,13 @@ describe("campaign resource triage integration", () => {
 
       expect(acceptedAuditResult.rows[0]?.count).toBe("1");
       expect(rejectedAuditResult.rows[0]?.count).toBe("1");
+      // Preserve the business error contract rather than accepting a generic
+      // internal error; still exercise successful decisions and audit first.
+      expect([outsiderPayload, stalePayload, missingPayload]).toMatchObject([
+        { errors: [{ message: "Only the campaign creator can triage joined listings", extensions: { code: "FORBIDDEN" } }] },
+        { errors: [{ message: "This application is no longer available for review", extensions: { code: "BAD_USER_INPUT" } }] },
+        { errors: [{ message: "This application is no longer available for review", extensions: { code: "BAD_USER_INPUT" } }] }
+      ]);
     } finally {
       await auditClient.end();
     }

@@ -1,5 +1,6 @@
 import { apolloClient } from "./client";
 import { uploadListingImages } from "../images";
+import { selectCampaignListingRelation, type CampaignListingRelation } from "./campaignListing";
 import {
   type CreateResourceInput,
   type Mutation,
@@ -7,7 +8,7 @@ import {
   type Query,
   TriStateFilter,
   type QuerySearchResourcesArgs,
-  type Resource,
+  type Resource as GeneratedResource,
   type ResourcePatch,
   type SearchResourcesRecord
 } from "./generated";
@@ -15,7 +16,6 @@ import {
   CREATE_CAMPAIGN_RESOURCE_MUTATION,
   CREATE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
   CREATE_RESOURCE_MUTATION,
-  DELETE_CAMPAIGN_RESOURCE_MUTATION,
   DELETE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION,
   DELETE_RESOURCE_BY_ID_MUTATION,
   MY_RESOURCES_QUERY,
@@ -32,6 +32,10 @@ export interface DeleteResourceResult {
 
 const DEFAULT_PAGE_SIZE = 50;
 const FALLBACK_DISTANCE_KM = 999;
+
+type Resource = Omit<GeneratedResource, "campaignResourcesByResourceId"> & {
+  campaignResourcesByResourceId?: { nodes: CampaignListingRelation[] };
+};
 
 interface MyResourcesQueryResult {
   allResources: {
@@ -50,7 +54,7 @@ interface CreateResourceMutationResult {
 }
 
 interface UpdateResourceByIdMutationResult {
-  updateResourceById: Pick<Mutation, "updateResourceById">["updateResourceById"];
+  updateResourceById: { resource: Resource | null } | null;
 }
 
 interface DeleteResourceByIdMutationResult {
@@ -125,6 +129,7 @@ export interface MyResourceItem {
   updatedAt: string | null;
   categoryCodes: number[];
   campaignId?: string | null;
+  campaignRelation?: CampaignListingRelation | null;
 }
 
 export interface ResourceCategoryItem {
@@ -265,10 +270,8 @@ function toMyResourceItem(resource: Resource): MyResourceItem | null {
     categoryCodes: resource.resourceCategoryAssignmentsByResourceId.nodes.map(
       (assignment) => assignment.categoryCode
     ),
-    campaignId:
-      typeof resource.campaignResourcesByResourceId?.nodes?.[0]?.campaignId === "string"
-        ? resource.campaignResourcesByResourceId.nodes[0].campaignId
-        : null
+    campaignId: selectCampaignListingRelation(resource.campaignResourcesByResourceId?.nodes ?? [])?.campaignId ?? null,
+    campaignRelation: selectCampaignListingRelation(resource.campaignResourcesByResourceId?.nodes ?? [])
   };
 }
 
@@ -326,19 +329,19 @@ async function syncResourceCampaign(
     return;
   }
 
-  if (previousCampaignId) {
-    await apolloClient.mutate({
-      mutation: DELETE_CAMPAIGN_RESOURCE_MUTATION,
-      variables: { campaignId: previousCampaignId, resourceId }
-    });
-  }
-
   if (nextCampaignId) {
-    await apolloClient.mutate({
-      mutation: CREATE_CAMPAIGN_RESOURCE_MUTATION,
-      variables: { campaignId: nextCampaignId, resourceId }
-    });
+    await resubmitResourceToCampaign(resourceId, nextCampaignId);
   }
+}
+
+/** Linking also performs explicit resubmission of a rejected composite relation. */
+export async function resubmitResourceToCampaign(resourceId: string, campaignId: string): Promise<CampaignListingRelation> {
+  const { data } = await apolloClient.mutate<{
+    linkCampaignResource: { campaignResource: CampaignListingRelation | null } | null;
+  }>({ mutation: CREATE_CAMPAIGN_RESOURCE_MUTATION, variables: { campaignId, resourceId } });
+  const relation = data?.linkCampaignResource?.campaignResource;
+  if (!relation) throw new Error("Campaign resource submission failed");
+  return relation;
 }
 
 interface SearchResourcesQueryResult {
@@ -463,7 +466,7 @@ function normalizeResourceDetail(resource: Resource): ResourceDetailItem | null 
 }
 
 export async function fetchResourceById(resourceId: string): Promise<ResourceDetailItem | null> {
-  const { data } = await apolloClient.query<Pick<Query, "resourceById">, { id: string }>({
+  const { data } = await apolloClient.query<{ resourceById: Resource | null }, { id: string }>({
     query: RESOURCE_BY_ID_QUERY,
     variables: { id: resourceId },
     fetchPolicy: "network-only"
@@ -475,6 +478,18 @@ export async function fetchResourceById(resourceId: string): Promise<ResourceDet
   }
 
   return normalizeResourceDetail(resource as Resource);
+}
+
+/** Full owner editor model, independent of list pagination and active filters. */
+export async function fetchResourceForEdit(resourceId: string, creatorAccountId: string): Promise<MyResourceItem | null> {
+  const { data } = await apolloClient.query<{ resourceById: Resource | null }, { id: string }>({
+    query: RESOURCE_BY_ID_QUERY,
+    variables: { id: resourceId },
+    fetchPolicy: "network-only"
+  });
+  const resource = data?.resourceById;
+  if (!resource || resource.id !== resourceId || resource.creatorAccountId !== creatorAccountId) return null;
+  return toMyResourceItem(resource);
 }
 
 export async function fetchSearchResources(filters: SearchResourcesFilters): Promise<SearchResourceResultItem[]> {
@@ -599,14 +614,16 @@ export async function updateResourceById(resourceId: string, input: UpsertResour
     data?.updateResourceById?.resource?.resourceCategoryAssignmentsByResourceId.nodes.map(
       (assignment) => assignment.categoryCode
     ) ?? [];
-  const previousCampaignIdRaw = data?.updateResourceById?.resource?.campaignResourcesByResourceId?.nodes?.[0]?.campaignId;
-  const previousCampaignId = typeof previousCampaignIdRaw === "string" ? previousCampaignIdRaw : null;
+  const previousRelation = selectCampaignListingRelation(data?.updateResourceById?.resource?.campaignResourcesByResourceId?.nodes ?? []);
   await syncResourceCategories(resourceId, previousCategoryCodes, input.categoryCodes);
-  await syncResourceCampaign(resourceId, previousCampaignId, input.campaignId);
+  let campaignRelation = previousRelation;
+  if (input.campaignId && previousRelation?.campaignId !== input.campaignId) {
+    campaignRelation = await resubmitResourceToCampaign(resourceId, input.campaignId);
+  }
 
   const updatedResource = toMyResourceItem(data?.updateResourceById?.resource as Resource);
   return updatedResource
-    ? { ...updatedResource, categoryCodes: input.categoryCodes, campaignId: input.campaignId }
+    ? { ...updatedResource, categoryCodes: input.categoryCodes, campaignId: campaignRelation?.campaignId ?? null, campaignRelation }
     : null;
 }
 

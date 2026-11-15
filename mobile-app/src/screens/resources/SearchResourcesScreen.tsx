@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -23,13 +22,13 @@ import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
+import { ResourceSearchCard } from "../../components/listings/SearchListingCards";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import {
   fetchResourceCategories,
   fetchSearchResources,
   type ResourceCategoryItem
 } from "../../services/graphql/resources";
-import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
 const MAX_DISTANCE_KM = 50;
@@ -88,19 +87,6 @@ export interface SearchResourcesScreenProps {
   onOpenCampaign?: (campaignId: string) => void;
 }
 
-function formatPublishedDate(value: string | null, locale: string): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
-}
-
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -130,7 +116,7 @@ export function SearchResourcesScreen({
   currentAccountId = null,
   onOpenCampaign
 }: SearchResourcesScreenProps): React.JSX.Element {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { width: windowWidth } = useWindowDimensions();
   const defaultLocationLabel = t("locationDefault", { defaultValue: "Tournai center" });
   const [searchTerm, setSearchTerm] = useState("");
@@ -603,63 +589,15 @@ export function SearchResourcesScreen({
           ) : (
             <View style={styles.resourcesList}>
               {filteredResources.map((resource) => (
-                <Pressable
+                <ResourceSearchCard
                   key={resource.id}
-                  accessibilityRole="button"
+                  listing={resource}
                   accessibilityLabel={`${resource.title}. ${resource.category}. ${resource.distanceKm.toFixed(1)} km.`}
-                  onPress={() => onOpenResource?.(resource)}
-                  style={styles.foundCard}
-                  testID={`resource-card-${resource.id}`}
-                >
-                  {resource.imageUrls[0] ? (
-                    <Image source={{ uri: resource.imageUrls[0] }} style={styles.foundCardImage} />
-                  ) : (
-                    <View style={styles.foundCardImageFallback}>
-                      <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
-                    </View>
-                  )}
-
-                  <View style={styles.foundCardContent}>
-                    <Text variant="labelSmall" style={styles.foundCardPublishedAt}>
-                      {`${t("publishedAtLabel", { defaultValue: "Published" })} ${formatPublishedDate(resource.createdAt, i18n.language) ?? "-"}`}
-                    </Text>
-
-                    <View style={styles.foundCardBody}>
-                      <Text variant="titleMedium" numberOfLines={2} style={styles.foundCardTitle}>
-                        {resource.title}
-                      </Text>
-                      <Text variant="labelSmall" style={styles.foundCardAuthor}>
-                        {`${t("broughtByLabel", { defaultValue: "Brought by" })} ${resource.creatorDisplayName ?? t("anonymousLabel", { defaultValue: "Anonymous" })}`}
-                      </Text>
-
-                      <View style={styles.foundCardFlagsRow}>
-                        {resource.canBeGifted ? (
-                          <Text variant="labelSmall" style={styles.foundCardFlagText}>
-                            {t("canBeGiftedLabel", { defaultValue: "Gift" })}
-                          </Text>
-                        ) : null}
-                        {resource.canBeExchanged ? (
-                          <Text variant="labelSmall" style={styles.foundCardFlagText}>
-                            {t("canBeExchangedLabel", { defaultValue: "Exchange" })}
-                          </Text>
-                        ) : null}
-                      </View>
-                    </View>
-
-                    {onOpenResourceChat && resource.creatorAccountId !== currentAccountId ? (
-                      <IconButton
-                        icon="chat-outline"
-                        size={15}
-                        style={styles.foundCardChatButton}
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          onOpenResourceChat(resource);
-                        }}
-                        testID={`resource-card-chat-${resource.id}`}
-                      />
-                    ) : null}
-                  </View>
-                </Pressable>
+                  {...(onOpenResource ? { onPress: () => onOpenResource(resource) } : {})}
+                  {...(onOpenResourceChat && resource.creatorAccountId !== currentAccountId
+                    ? { onStartChat: () => onOpenResourceChat(resource) }
+                    : {})}
+                />
               ))}
             </View>
           )}
@@ -788,76 +726,5 @@ const styles = StyleSheet.create({
     gap: 10,
     width: "100%",
     paddingBottom: 4
-  },
-  foundCard: {
-    alignSelf: "center",
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "stretch",
-    gap: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.md
-  },
-  foundCardImage: {
-    width: 92,
-    height: 92,
-    borderRadius: designTokens.radius.md,
-    backgroundColor: "#fff"
-  },
-  foundCardImageFallback: {
-    width: 92,
-    height: 92,
-    borderRadius: designTokens.radius.md,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  foundCardContent: {
-    flex: 1,
-    marginRight: 4,
-    position: "relative"
-  },
-  foundCardPublishedAt: {
-    color: designTokens.colors.primary,
-    alignSelf: "flex-end",
-    fontFamily: appFontFamilies.general,
-    fontSize: 10,
-    lineHeight: 12
-  },
-  foundCardBody: {
-    flex: 1,
-    justifyContent: "center",
-    gap: 2
-  },
-  foundCardTitle: {
-    fontFamily: appFontFamilies.altGeneral,
-    fontSize: 16,
-    lineHeight: 20
-  },
-  foundCardAuthor: {
-    color: designTokens.colors.primary,
-    fontSize: 10,
-    lineHeight: 12,
-    fontFamily: appFontFamilies.general
-  },
-  foundCardFlagsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 1
-  },
-  foundCardFlagText: {
-    textTransform: "uppercase",
-    fontSize: 10,
-    lineHeight: 12,
-    fontFamily: appFontFamilies.altGeneral,
-    letterSpacing: 0.35
-  },
-  foundCardChatButton: {
-    borderRadius: 0,
-    position: "absolute",
-    right: 0,
-    bottom: -6
   }
 });

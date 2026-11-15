@@ -36,7 +36,10 @@ as $$
     join app_public.campaign c on c.id = cn.campaign_id
     join need_context nc on nc.id = cn.need_id
     where cn.status = 'accepted'
+      and cn.is_current
       and c.moderation_status = 'approved'
+      and c.start_at <= now()
+      and c.end_at > now()
   ),
   campaign_participation as (
     select
@@ -46,12 +49,22 @@ as $$
       select n.creator_account_id as account_id, cn.campaign_id
       from app_public.campaign_need cn
       join app_public.need n on n.id = cn.need_id
+      join app_public.campaign c on c.id = cn.campaign_id
       where cn.status = 'accepted'
+        and cn.is_current
+        and c.moderation_status = 'approved'
+        and c.start_at <= now()
+        and c.end_at > now()
       union
       select r.creator_account_id as account_id, cr.campaign_id
       from app_public.campaign_resource cr
       join app_public.resource r on r.id = cr.resource_id
+      join app_public.campaign c on c.id = cr.campaign_id
       where cr.status = 'accepted'
+        and cr.is_current
+        and c.moderation_status = 'approved'
+        and c.start_at <= now()
+        and c.end_at > now()
     ) cp
     where cp.campaign_id in (select campaign_id from need_campaigns)
     group by cp.account_id

@@ -39,6 +39,8 @@ import { NeedCard } from "../../../features/ui/NeedCard";
 import { ResourceCard } from "../../../features/ui/ResourceCard";
 import { centeredResponsiveListingCardGridSx } from "../../../features/ui/listingCardGrid";
 import { getUserFacingGraphQLErrorMessage } from "../../../services/graphql/errorMessages";
+import { campaignJoinStatus, campaignSelectionLocked, effectiveCampaignRelation, useCampaignLifecycleNow, type CampaignListingRelation } from "../../../features/campaigns/campaignListingLifecycle";
+import { CampaignListingFeedback } from "../../../features/campaigns/CampaignListingFeedback";
 
 type PublicCampaignDetailData = {
   campaignById: {
@@ -72,7 +74,7 @@ type PublicCampaignDetailPageProps = {
   };
 };
 
-type CampaignJoinStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+type CampaignJoinStatus = CampaignListingRelation["status"];
 
 type MyActiveResourcesForCampaignData = {
   allResources: {
@@ -99,9 +101,7 @@ type MyActiveResourcesForCampaignData = {
         externalSubject: string;
       } | null;
       campaignResourcesByResourceId: {
-        nodes: {
-          status: CampaignJoinStatus;
-        }[];
+        nodes: CampaignListingRelation[];
       };
     }[];
   };
@@ -129,9 +129,7 @@ type MyActiveNeedsForCampaignData = {
         externalSubject: string;
       } | null;
       campaignNeedsByNeedId: {
-        nodes: {
-          status: CampaignJoinStatus;
-        }[];
+        nodes: CampaignListingRelation[];
       };
     }[];
   };
@@ -143,7 +141,7 @@ type MyActiveNeedsForCampaignVariables = {
 };
 
 const MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY = gql`
-  query MyActiveResourcesForCampaign($creatorAccountId: UUID!, $campaignId: UUID!) {
+  query MyActiveResourcesForCampaign($creatorAccountId: UUID!) {
     allResources(
       condition: { creatorAccountId: $creatorAccountId, isActive: true }
       orderBy: ID_DESC
@@ -170,9 +168,15 @@ const MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY = gql`
           displayName
           externalSubject
         }
-        campaignResourcesByResourceId(condition: { campaignId: $campaignId }, orderBy: PRIMARY_KEY_DESC, first: 1) {
+        campaignResourcesByResourceId(orderBy: SUBMITTED_AT_DESC) {
           nodes {
+            campaignId
+            submissionId
+            submittedAt
+            rejectionNote
+            isCurrent
             status
+            campaignByCampaignId { title startAt endAt }
           }
         }
       }
@@ -182,11 +186,7 @@ const MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY = gql`
 
 const REQUEST_RESOURCE_JOIN_MUTATION = gql`
   mutation RequestResourceJoinToCampaign($campaignId: UUID!, $resourceId: UUID!) {
-    createCampaignResource(
-      input: {
-        campaignResource: { campaignId: $campaignId, resourceId: $resourceId, status: PENDING }
-      }
-    ) {
+    linkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
       campaignResource {
         campaignId
         resourceId
@@ -197,7 +197,7 @@ const REQUEST_RESOURCE_JOIN_MUTATION = gql`
 `;
 
 const MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY = gql`
-  query MyActiveNeedsForCampaign($creatorAccountId: UUID!, $campaignId: UUID!) {
+  query MyActiveNeedsForCampaign($creatorAccountId: UUID!) {
     allNeeds(condition: { creatorAccountId: $creatorAccountId, isActive: true }, orderBy: ID_DESC) {
       nodes {
         id
@@ -213,9 +213,15 @@ const MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY = gql`
           displayName
           externalSubject
         }
-        campaignNeedsByNeedId(condition: { campaignId: $campaignId }, orderBy: PRIMARY_KEY_DESC, first: 1) {
+        campaignNeedsByNeedId(orderBy: SUBMITTED_AT_DESC) {
           nodes {
+            campaignId
+            submissionId
+            submittedAt
+            rejectionNote
+            isCurrent
             status
+            campaignByCampaignId { title startAt endAt }
           }
         }
       }
@@ -225,7 +231,7 @@ const MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY = gql`
 
 const REQUEST_NEED_JOIN_MUTATION = gql`
   mutation RequestNeedJoinToCampaign($campaignId: UUID!, $needId: UUID!) {
-    createCampaignNeed(input: { campaignNeed: { campaignId: $campaignId, needId: $needId, status: PENDING } }) {
+    linkCampaignNeed(input: { pCampaignId: $campaignId, pNeedId: $needId }) {
       campaignNeed {
         campaignId
         needId
@@ -237,13 +243,7 @@ const REQUEST_NEED_JOIN_MUTATION = gql`
 
 const REOPEN_NEED_JOIN_REQUEST_MUTATION = gql`
   mutation ReopenNeedJoinToCampaign($campaignId: UUID!, $needId: UUID!) {
-    updateCampaignNeedByCampaignIdAndNeedId(
-      input: {
-        campaignId: $campaignId
-        needId: $needId
-        campaignNeedPatch: { status: PENDING, actedAt: null, actedByAccountId: null }
-      }
-    ) {
+    linkCampaignNeed(input: { pCampaignId: $campaignId, pNeedId: $needId }) {
       campaignNeed {
         campaignId
         needId
@@ -255,13 +255,7 @@ const REOPEN_NEED_JOIN_REQUEST_MUTATION = gql`
 
 const REOPEN_RESOURCE_JOIN_REQUEST_MUTATION = gql`
   mutation ReopenResourceJoinToCampaign($campaignId: UUID!, $resourceId: UUID!) {
-    updateCampaignResourceByCampaignIdAndResourceId(
-      input: {
-        campaignId: $campaignId
-        resourceId: $resourceId
-        campaignResourcePatch: { status: PENDING, actedAt: null, actedByAccountId: null }
-      }
-    ) {
+    linkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
       campaignResource {
         campaignId
         resourceId
@@ -301,6 +295,7 @@ export default function PublicCampaignDetailPage({
   const { session } = useAuth();
   const { t } = useTranslation("campaigns");
   const router = useRouter();
+  const lifecycleNow = useCampaignLifecycleNow();
   const campaign = initialCampaign;
   const availabilityState = resolveCampaignAvailabilityState(campaign);
   const [now, setNow] = useState(() => Date.now());
@@ -413,9 +408,9 @@ export default function PublicCampaignDetailPage({
 
   const statusByResourceId = useMemo(() => {
     return new Map(
-      activeResources.map(resource => [resource.id, resource.campaignResourcesByResourceId.nodes[0]?.status ?? null])
+      activeResources.map(resource => [resource.id, campaignJoinStatus(resource.campaignResourcesByResourceId.nodes, campaignId, lifecycleNow)])
     );
-  }, [activeResources]);
+  }, [activeResources, campaignId, lifecycleNow]);
 
   const selectedJoinableIds = useMemo(() => {
     return selectedResourceIds.filter(resourceId => {
@@ -426,9 +421,9 @@ export default function PublicCampaignDetailPage({
 
   const needStatusByNeedId = useMemo(() => {
     return new Map(
-      activeNeeds.map(need => [need.id, need.campaignNeedsByNeedId.nodes[0]?.status ?? null])
+      activeNeeds.map(need => [need.id, campaignJoinStatus(need.campaignNeedsByNeedId.nodes, campaignId, lifecycleNow)])
     );
-  }, [activeNeeds]);
+  }, [activeNeeds, campaignId, lifecycleNow]);
 
   const selectedJoinableNeedIds = useMemo(() => {
     return selectedNeedIds.filter(needId => {
@@ -854,7 +849,7 @@ export default function PublicCampaignDetailPage({
 
                         <Box sx={centeredResponsiveListingCardGridSx}>
                           {activeResources.map(resource => {
-                            const status = resource.campaignResourcesByResourceId.nodes[0]?.status ?? null;
+                            const status = statusByResourceId.get(resource.id) ?? null;
                             const isJoinDisabled = status === "ACCEPTED" || status === "PENDING";
                             const isRunning = runningResourceIds.includes(resource.id);
                             const creatorLabel = resource.accountByCreatorAccountId?.displayName
@@ -867,6 +862,9 @@ export default function PublicCampaignDetailPage({
                                 onClick={() => void router.push(`/resources/${resource.id}`)}
                                 actions={
                                   <Stack spacing={1}>
+                                    <CampaignListingFeedback
+                                      relation={effectiveCampaignRelation(resource.campaignResourcesByResourceId.nodes, lifecycleNow)}
+                                      locked={campaignSelectionLocked(effectiveCampaignRelation(resource.campaignResourcesByResourceId.nodes, lifecycleNow), lifecycleNow)} />
                                     <FormControlLabel
                                       control={(
                                         <Checkbox
@@ -885,6 +883,7 @@ export default function PublicCampaignDetailPage({
                                     >
                                       {isRunning
                                         ? t("public.resourceJoin.joiningSingle")
+                                        : status === "REJECTED" ? t("listingLifecycle.resubmit")
                                         : t("public.resourceJoin.joinSingle")}
                                     </Button>
                                   </Stack>
@@ -965,7 +964,7 @@ export default function PublicCampaignDetailPage({
 
                     <Box sx={centeredResponsiveListingCardGridSx}>
                       {activeNeeds.map(need => {
-                        const status = need.campaignNeedsByNeedId.nodes[0]?.status ?? null;
+                        const status = needStatusByNeedId.get(need.id) ?? null;
                         const isJoinDisabled = status === "ACCEPTED" || status === "PENDING";
                         const isRunning = runningNeedIds.includes(need.id);
                         const creatorLabel = need.accountByCreatorAccountId?.displayName
@@ -978,6 +977,9 @@ export default function PublicCampaignDetailPage({
                             onClick={() => void router.push(`/needs/${need.id}`)}
                             actions={
                               <Stack spacing={1}>
+                                <CampaignListingFeedback
+                                  relation={effectiveCampaignRelation(need.campaignNeedsByNeedId.nodes, lifecycleNow)}
+                                  locked={campaignSelectionLocked(effectiveCampaignRelation(need.campaignNeedsByNeedId.nodes, lifecycleNow), lifecycleNow)} />
                                 <FormControlLabel
                                   control={(
                                     <Checkbox
@@ -996,6 +998,7 @@ export default function PublicCampaignDetailPage({
                                 >
                                   {isRunning
                                     ? t("public.needJoin.joiningSingle")
+                                    : status === "REJECTED" ? t("listingLifecycle.resubmit")
                                     : t("public.needJoin.joinSingle")}
                                 </Button>
                               </Stack>

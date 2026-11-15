@@ -517,26 +517,29 @@ export function CampaignDetailScreen({
             <Text variant="bodySmall">
               {t("campaignResourcesCount", {
                 ns: "us3",
-                defaultValue: "{{count}} resources",
+                defaultValue_one: "{{count}} resource",
+                defaultValue_other: "{{count}} resources",
                 count: campaign.resourceCount
               })}
+              {(campaign.pendingResourceCount ?? 0) > 0 ? ` ${t("campaignStatsPendingCount", {
+                ns: "us3",
+                defaultValue: "({{count}} pending)",
+                count: campaign.pendingResourceCount ?? 0
+              })}` : null}
             </Text>
             <Text variant="bodySmall">
               {t("campaignNeedsCount", {
                 ns: "us3",
-                defaultValue: "{{count}} needs",
+                defaultValue_one: "{{count}} need",
+                defaultValue_other: "{{count}} needs",
                 count: campaign.needCount
               })}
+              {(campaign.pendingNeedCount ?? 0) > 0 ? ` ${t("campaignStatsPendingCount", {
+                ns: "us3",
+                defaultValue: "({{count}} pending)",
+                count: campaign.pendingNeedCount ?? 0
+              })}` : null}
             </Text>
-            {pendingEntries.length > 0 && (
-              <Text variant="bodySmall">
-                {t("campaignPendingCount", {
-                  ns: "us3",
-                  defaultValue: "{{count}} pending entries",
-                  count: pendingEntries.length
-                })}
-              </Text>
-            )}
           </View>
         )}
       </ScrollView>

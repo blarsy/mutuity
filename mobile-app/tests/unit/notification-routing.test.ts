@@ -1,6 +1,24 @@
 import { notificationDestinationForEvent } from "../../src/services/notifications/notificationRouting";
 
 describe("mobile notification routing", () => {
+  it("routes pending submissions to campaign moderation, ignoring payload URLs", () => {
+    expect(notificationDestinationForEvent("campaign_listing_pending", { campaignId: "campaign-123", url: "https://untrusted.invalid" }))
+      .toEqual({ surface: "campaigns", campaignId: "campaign-123", moderation: true });
+    expect(notificationDestinationForEvent("campaign_listing_accepted", { campaignId: "campaign-123" }))
+      .toEqual({ surface: "campaigns", campaignId: "campaign-123" });
+  });
+
+  it.each(["need", "resource"] as const)("routes rejected %s submissions to the owner editor, never a public detail", kind => {
+    expect(notificationDestinationForEvent("campaign_listing_rejected", { listingKind: kind, listingId: "listing-123", submissionId: "not-the-listing", url: "/needs/wrong" }))
+      .toEqual({ surface: "myHub", drawer: kind === "need" ? "myNeeds" : "myResources", editListing: { kind, id: "listing-123" } });
+  });
+
+  it.each([{}, { listingId: "123" }, { listingId: "123", listingKind: "other" }, { listingKind: "need", listingId: 123 }])(
+    "does not guess an editor for a malformed payload %j", payload => {
+      expect(notificationDestinationForEvent("campaign_listing_rejected", payload)).toEqual({ surface: "notifications" });
+    }
+  );
+
   it.each(["claim_created", "claim_withdrawn", "need_expired_claims_declined"])(
     "routes %s to received claims using the need ID, not the claim ID",
     eventType => {

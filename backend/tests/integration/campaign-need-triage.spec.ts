@@ -14,6 +14,8 @@ type SeededCampaignNeedContext = {
   campaignId: string;
   pendingNeedToAcceptId: string;
   pendingNeedToRejectId: string;
+  acceptSubmissionId: string;
+  rejectSubmissionId: string;
 };
 
 async function loginAs(account: SeededAccount) {
@@ -98,10 +100,11 @@ async function seedCampaignWithJoinedNeeds(
     const pendingNeedToRejectId = rejectNeedResult.rows[0].id;
     const campaignId = campaignResult.rows[0].id;
 
-    await client.query(
+    const submissions = await client.query<{ need_id: string; submission_id: string }>(
       `
-        insert into app_public.campaign_need (campaign_id, need_id, status)
-        values ($1, $2, 'pending'), ($1, $3, 'pending')
+        insert into app_public.campaign_need (campaign_id, need_id, status, is_current)
+        values ($1, $2, 'pending', true), ($1, $3, 'pending', true)
+        returning need_id, submission_id
       `,
       [campaignId, pendingNeedToAcceptId, pendingNeedToRejectId]
     );
@@ -109,7 +112,9 @@ async function seedCampaignWithJoinedNeeds(
     return {
       campaignId,
       pendingNeedToAcceptId,
-      pendingNeedToRejectId
+      pendingNeedToRejectId,
+      acceptSubmissionId: submissions.rows.find(row => row.need_id === pendingNeedToAcceptId)!.submission_id,
+      rejectSubmissionId: submissions.rows.find(row => row.need_id === pendingNeedToRejectId)!.submission_id
     };
   } finally {
     await client.end();
@@ -151,8 +156,8 @@ describe("campaign need triage integration", () => {
     const outsiderAcceptResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignNeed {
                 campaignId
                 needId
@@ -163,29 +168,21 @@ describe("campaign need triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          needId: context.pendingNeedToAcceptId
+          needId: context.pendingNeedToAcceptId,
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       outsiderCookie
     );
 
     expect(outsiderAcceptResponse.status).toBe(200);
-    await expect(outsiderAcceptResponse.json()).resolves.toMatchObject({
-      errors: [
-        {
-          message: "Only the campaign creator can triage joined needs",
-          extensions: {
-            code: "FORBIDDEN"
-          }
-        }
-      ]
-    });
+    const outsiderPayload = await outsiderAcceptResponse.json();
 
     const creatorAcceptResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignNeed {
                 campaignId
                 needId
@@ -198,7 +195,8 @@ describe("campaign need triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          needId: context.pendingNeedToAcceptId
+          needId: context.pendingNeedToAcceptId,
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       campaignCreatorCookie
@@ -222,21 +220,23 @@ describe("campaign need triage integration", () => {
     const creatorRejectResponse = await postGraphql(
       {
         query: `
-          mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId, rejectionNote: "Please clarify the listing" }) {
               campaignNeed {
                 campaignId
                 needId
                 status
                 actedByAccountId
                 actedAt
+                rejectionNote
               }
             }
           }
         `,
         variables: {
           campaignId: context.campaignId,
-          needId: context.pendingNeedToRejectId
+          needId: context.pendingNeedToRejectId,
+          expectedSubmissionId: context.rejectSubmissionId
         }
       },
       campaignCreatorCookie
@@ -250,6 +250,7 @@ describe("campaign need triage integration", () => {
             campaignId: context.campaignId,
             needId: context.pendingNeedToRejectId,
             status: "REJECTED",
+            rejectionNote: "Please clarify the listing",
             actedByAccountId: campaignCreator.accountId,
             actedAt: expect.any(String)
           }
@@ -260,8 +261,8 @@ describe("campaign need triage integration", () => {
     const reTriageResponse = await postGraphql(
       {
         query: `
-          mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignNeed {
                 campaignId
                 needId
@@ -272,29 +273,21 @@ describe("campaign need triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          needId: context.pendingNeedToAcceptId
+          needId: context.pendingNeedToAcceptId,
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       campaignCreatorCookie
     );
 
     expect(reTriageResponse.status).toBe(200);
-    await expect(reTriageResponse.json()).resolves.toMatchObject({
-      errors: [
-        {
-          message: "Campaign need can only be triaged from pending status",
-          extensions: {
-            code: "BAD_USER_INPUT"
-          }
-        }
-      ]
-    });
+    const stalePayload = await reTriageResponse.json();
 
     const unknownRelationResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignNeed {
                 campaignId
                 needId
@@ -305,23 +298,15 @@ describe("campaign need triage integration", () => {
         `,
         variables: {
           campaignId: context.campaignId,
-          needId: "00000000-0000-0000-0000-000000000000"
+          needId: "00000000-0000-0000-0000-000000000000",
+          expectedSubmissionId: context.acceptSubmissionId
         }
       },
       campaignCreatorCookie
     );
 
     expect(unknownRelationResponse.status).toBe(200);
-    await expect(unknownRelationResponse.json()).resolves.toMatchObject({
-      errors: [
-        {
-          message: "Campaign need relation not found",
-          extensions: {
-            code: "NOT_FOUND"
-          }
-        }
-      ]
-    });
+    const missingPayload = await unknownRelationResponse.json();
 
     const auditClient = new Client({
       connectionString: TEST_DATABASE_URL
@@ -362,6 +347,13 @@ describe("campaign need triage integration", () => {
 
       expect(acceptedAuditResult.rows[0]?.count).toBe("1");
       expect(rejectedAuditResult.rows[0]?.count).toBe("1");
+      // Check error presentation last so a missing HTTP allowlist entry does
+      // not prevent exercising the successful decisions and audit writes.
+      expect([outsiderPayload, stalePayload, missingPayload]).toMatchObject([
+        { errors: [{ message: "Only the campaign creator can triage joined listings", extensions: { code: "FORBIDDEN" } }] },
+        { errors: [{ message: "This application is no longer available for review", extensions: { code: "BAD_USER_INPUT" } }] },
+        { errors: [{ message: "This application is no longer available for review", extensions: { code: "BAD_USER_INPUT" } }] }
+      ]);
     } finally {
       await auditClient.end();
     }

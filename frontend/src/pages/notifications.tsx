@@ -112,6 +112,9 @@ const EXACT_EVENT_TYPE_ICONS: Record<string, string> = {
   campaign_airdrop_done: "thumb-up.svg",
   welcome_profile_reward: "hey.svg",
   campaign_approved: "prize-won.svg",
+  campaign_listing_pending: "moderation.svg",
+  campaign_listing_accepted: "prize-won.svg",
+  campaign_listing_rejected: "denied.svg",
   campaign_moderation_note_received: "moderation.svg",
   campaign_creator_adaptation_submitted: "moderation.svg",
   resource_bid_expiring_soon: "time-up.svg",
@@ -164,6 +167,23 @@ function notificationCopy(notification: UnifiedNotification, t: TranslateFn) {
   });
 
   switch (notification.eventType) {
+    case "campaign_listing_pending":
+    case "campaign_listing_accepted":
+    case "campaign_listing_rejected": {
+      const key = notification.eventType === "campaign_listing_pending" ? "campaignListingPending"
+        : notification.eventType === "campaign_listing_accepted" ? "campaignListingAccepted" : "campaignListingRejected";
+      const copy = build(key, {
+        campaignName: campaignName ?? unknownCampaign,
+        listingName: asText(notification.payload.listingName) ?? (notification.payload.listingKind === "need" ? unknownNeed : unknownResource),
+        listingKind: t(notification.payload.listingKind === "need" ? "listingKind.need" : "listingKind.resource")
+      });
+      const note = asText(notification.payload.rejectionNote)?.trim();
+      // Only rejection notifications in the recipient's private inbox expose feedback.
+      if (notification.eventType === "campaign_listing_rejected" && note) {
+        copy.description += `\n${t("privateFeedback", { note })}`;
+      }
+      return copy;
+    }
     case "claim_created":
       return build("claimCreated", { claimerName: claimerName ?? someone, needName: needName ?? unknownNeed });
     case "resource_bid_created":
@@ -472,7 +492,7 @@ export default function NotificationsPage() {
                           {item.headline2}
                         </Typography>
                       ) : null}
-                      <Typography color="primary" noWrap sx={{ fontWeight: unread ? 700 : 400 }} variant="body1">
+                      <Typography color="primary" noWrap={item.eventType !== "campaign_listing_rejected"} sx={{ fontWeight: unread ? 700 : 400, whiteSpace: item.eventType === "campaign_listing_rejected" ? "pre-wrap" : "normal", overflowWrap: "anywhere" }} variant="body1">
                         {item.description}
                       </Typography>
                     </Stack>

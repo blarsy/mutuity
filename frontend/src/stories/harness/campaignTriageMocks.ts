@@ -23,10 +23,14 @@ type TriageNode = {
   needId?: string;
   resourceId?: string;
   status: CampaignNeedStatus;
+  submissionId: string;
+  submittedAt: string;
+  rejectionNote: string | null;
+  isCurrent: boolean;
   createdAt: string;
   actedAt: string | null;
   actedByAccountId: string | null;
-  campaignByCampaignId: { id: string; title: string };
+  campaignByCampaignId: { id: string; title: string; startAt: string; endAt: string };
   needByNeedId?: {
     id: string;
     title: string;
@@ -79,12 +83,18 @@ export function createCampaignTriageMocks(kind: CampaignTriageKind, phase: Campa
       campaignId,
       [itemIdKey]: id,
       status,
+      submissionId: `55555555-5555-4555-8555-${String(index + 1).padStart(12, "0")}`,
+      submittedAt: new Date(Date.now() - 3_600_000).toISOString(),
+      rejectionNote: status === "REJECTED" ? "Please clarify how this listing supports the campaign." : null,
+      isCurrent: status === "PENDING" || status === "ACCEPTED",
       createdAt: `2026-10-0${3 - Math.floor(index / 2)}T09:00:00.000Z`,
       actedAt: status === "PENDING" ? null : "2026-10-03T11:30:00.000Z",
       actedByAccountId: status === "PENDING" ? null : MOCK_ACCOUNT_ID,
       campaignByCampaignId: {
         id: campaignId,
-        title: index < 2 ? "Neighbourhood solidarity week" : "Community garden and workshop"
+        title: index < 2 ? "Neighbourhood solidarity week" : "Community garden and workshop",
+        startAt: new Date(Date.now() - 86_400_000).toISOString(),
+        endAt: new Date(Date.now() + 7 * 86_400_000).toISOString()
       },
       ...(isNeed ? {
         needByNeedId: {

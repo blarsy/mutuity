@@ -18,6 +18,7 @@ import {
 } from "../../components/primitives";
 import {
   createNeedForAccount,
+  resubmitNeedToCampaign,
   type NeedItem,
   updateNeedById
 } from "../../services/graphql/needs";
@@ -28,6 +29,7 @@ import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../service
 import { fetchMyProfile } from "../../services/graphql/profile";
 import { useTokenBalance } from "../../services/realtime/useTokenBalance";
 import { TokenBalanceInfo } from "../../components/contribution/TokenBalanceInfo";
+import { CampaignListingFeedback, useCampaignListingRules } from "../campaigns/CampaignListingFeedback";
 
 export interface EditNeedScreenProps {
   creatorAccountId: string | null;
@@ -96,6 +98,14 @@ export function EditNeedScreen({
   const [saving, setSaving] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const campaignRelation = initialNeed?.campaignRelation;
+  const campaignRules = useCampaignListingRules(campaignRelation);
+  const campaignOptions = campaigns.filter((campaign) =>
+    (!campaign.endAt || Date.parse(campaign.endAt) > Date.now()) &&
+    (campaignRules.canSwitch || campaign.id === campaignRelation?.campaignId));
+  if (campaignRelation?.campaignByCampaignId && !campaignOptions.some((campaign) => campaign.id === campaignRelation.campaignId)) {
+    campaignOptions.unshift({ id: campaignRelation.campaignId, ...campaignRelation.campaignByCampaignId });
+  }
 
   useEffect(() => {
     if (initialNeed || !creatorAccountId) {
@@ -198,7 +208,7 @@ export function EditNeedScreen({
     toolingRequired
   ]);
 
-  const saveNeed = async (): Promise<void> => {
+  const saveNeed = async (resubmit = false): Promise<void> => {
     setHasAttemptedSubmit(true);
 
     if (validationError) {
@@ -236,6 +246,9 @@ export function EditNeedScreen({
           campaignId: campaignId.trim() || null,
           expiresAt: expiresAt?.toISOString() ?? null
         });
+        if (resubmit && campaignRules.canResubmit && campaignId === campaignRelation?.campaignId) {
+          await resubmitNeedToCampaign(initialNeed.id, campaignId);
+        }
       } else {
         await createNeedForAccount(creatorAccountId, {
           title,
@@ -381,7 +394,7 @@ export function EditNeedScreen({
           />
         ) : null}
 
-        <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
+        <Pressable accessibilityRole="button" disabled={!campaignRules.canSwitch || saving} onPress={() => setShowCampaignDialog(true)}>
           <View style={styles.campaignRow}>
             <View>
               <View style={styles.campaignTitleRow}>
@@ -394,13 +407,21 @@ export function EditNeedScreen({
                 />
               </View>
               <Text variant="bodySmall">
-                {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
+                {campaignOptions.find((campaign) => campaign.id === campaignId)?.title ??
                   t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" })}
               </Text>
             </View>
             <Icon source="chevron-right" size={20} />
           </View>
         </Pressable>
+
+        <CampaignListingFeedback
+          relation={campaignRelation}
+          canSwitch={campaignRules.canSwitch}
+          canResubmit={campaignRules.canResubmit && campaignId === campaignRelation?.campaignId}
+          busy={saving}
+          onResubmit={() => void saveNeed(true)}
+        />
 
         <DateTimePickerField
           label={t("needExpiresAtLabel", { ns: "us2", defaultValue: "Expires at (ISO datetime)" })}
@@ -425,8 +446,8 @@ export function EditNeedScreen({
         visible={showCampaignDialog}
         title={t("needCampaignLabel", { ns: "us2", defaultValue: "Campaign (optional)" })}
         items={[
-          { value: "", label: t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" }) },
-          ...campaigns.map((campaign) => ({
+          ...(!campaignRules.requiresCampaign ? [{ value: "", label: t("noCampaignLabel", { ns: "us2", defaultValue: "No campaign" }) }] : []),
+          ...campaignOptions.map((campaign) => ({
             value: campaign.id,
             label: campaign.title,
             ...(onOpenCampaign
@@ -441,7 +462,8 @@ export function EditNeedScreen({
         multiple={false}
         onDismiss={() => setShowCampaignDialog(false)}
         onConfirm={(values) => {
-          setCampaignId(values[0] ?? "");
+          const nextId = values[0] ?? "";
+          if (!saving && campaignRules.canSwitch && (!campaignRules.requiresCampaign || nextId)) setCampaignId(nextId);
           setShowCampaignDialog(false);
         }}
         {...(onOpenCampaign ? { onItemAction: (item: { value: string }) => onOpenCampaign(item.value) } : {})}

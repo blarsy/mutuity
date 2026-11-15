@@ -1,4 +1,16 @@
 {
+  "listingLifecycle": {
+    "status": { "PENDING": "En attente de validation", "ACCEPTED": "Accepté", "REJECTED": "Refusé", "SUPERSEDED": "Remplacé" },
+    "submittedAt": "Soumis le : {{date}}",
+    "campaignDates": "Campagne : du {{start}} au {{end}}",
+    "saveDoesNotResubmit": "Enregistrer les modifications ne soumet pas à nouveau cette annonce. Utilisez Soumettre à nouveau pour demander une nouvelle validation dans cette campagne.",
+    "acceptedLocked": "Une annonce acceptée reste rattachée à cette campagne jusqu’à sa fin.",
+    "pendingLocked": "Vous pourrez changer de campagne après 24 heures d’attente. Vous ne pouvez pas quitter une campagne sans en choisir une autre.",
+    "resubmit": "Soumettre à nouveau",
+    "rejectTitle": "Refuser la soumission",
+    "rejectionNote": "Commentaire pour l’auteur de l’annonce (facultatif)",
+    "cancel": "Annuler"
+  },
   "page": {
     "title": "Campagnes",
     "launchCampaign": "Lancer une campagne",
@@ -156,6 +168,18 @@
     "eventMeta": "{{createdAt}}",
     "noteMeta": "Administrateur {{managerAccountId}} • {{createdAt}}",
     "updateSuccess": "Campagne mise à jour avec succès. Une notification a été envoyée au modérateur, et vous pouvez encore modifier la campagne ensuite si besoin."
+  },
+  "moderationListings": {
+    "rejectedResources": "Afficher aussi les ressources refusées",
+    "rejectedNeeds": "Afficher aussi les besoins refusés",
+    "lastAction": "{{date}}",
+    "publicInfo": "Informations publiques de l’annonce",
+    "unavailable": "Cette annonce n’est plus disponible.",
+    "inactive": "Cette annonce n’est plus active.",
+    "published": "Publié le : {{date}}",
+    "expires": "Expire le : {{date}}",
+    "noExpiry": "Sans expiration",
+    "unknownCreator": "Auteur inconnu"
   },
   "triage": {
     "title": "Triage des besoins de campagne",

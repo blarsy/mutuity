@@ -26,8 +26,10 @@ import {
   CAMPAIGN_NEED_TRIAGE_QUERY,
   REJECT_CAMPAIGN_NEED_MUTATION
 } from "./campaignNeedTriage.queries";
+import { CampaignListingRejectionDialog } from "./CampaignListingRejectionDialog";
+import { isCurrentCampaignRelation, useCampaignLifecycleNow, type CampaignListingRelation } from "./campaignListingLifecycle";
 
-type CampaignNeedNode = {
+type CampaignNeedNode = CampaignListingRelation & {
   campaignId: string;
   needId: string;
   status: CampaignNeedStatus;
@@ -81,15 +83,19 @@ type TriageMutationData = {
 type TriageMutationVariables = {
   campaignId: string;
   needId: string;
+  expectedSubmissionId: string;
+  rejectionNote?: string;
 };
 
-function nodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId">) {
-  return `${node.campaignId}:${node.needId}`;
+function nodeKey(node: Pick<CampaignNeedNode, "campaignId" | "needId" | "submissionId">) {
+  return `${node.campaignId}:${node.needId}:${node.submissionId}`;
 }
 
 export default function CampaignNeedTriagePage() {
   const { t } = useTranslation("campaigns");
   const router = useRouter();
+  const now = useCampaignLifecycleNow();
+  const [rejectionNode, setRejectionNode] = useState<CampaignNeedNode | null>(null);
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const campaignIdFilter = typeof router.query.campaignId === "string" ? router.query.campaignId : undefined;
 
@@ -123,7 +129,7 @@ export default function CampaignNeedTriagePage() {
   const acceptErrorMessage = getUserFacingGraphQLErrorMessage(acceptError);
   const rejectErrorMessage = getUserFacingGraphQLErrorMessage(rejectError);
 
-  const nodes = useMemo(() => data?.allCampaignNeeds?.nodes ?? [], [data?.allCampaignNeeds?.nodes]);
+  const nodes = useMemo(() => (data?.allCampaignNeeds?.nodes ?? []).filter(node => isCurrentCampaignRelation(node, now)), [data?.allCampaignNeeds?.nodes, now]);
 
   const pendingCount = useMemo(() => {
     return nodes.filter(node => (optimisticStatuses[nodeKey(node)] ?? node.status) === "PENDING").length;
@@ -149,7 +155,8 @@ export default function CampaignNeedTriagePage() {
     });
   };
 
-  const handleTriage = async (node: CampaignNeedNode, action: "accept" | "reject") => {
+  const handleTriage = async (node: CampaignNeedNode, action: "accept" | "reject", rejectionNote?: string) => {
+    if (!isCurrentCampaignRelation(node) || node.status !== "PENDING" || !node.submissionId) return;
     const nextStatus: CampaignNeedStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
     const key = nodeKey(node);
 
@@ -165,20 +172,24 @@ export default function CampaignNeedTriagePage() {
         await acceptCampaignNeed({
           variables: {
             campaignId: node.campaignId,
-            needId: node.needId
+            needId: node.needId,
+            expectedSubmissionId: node.submissionId
           }
         });
       } else {
         await rejectCampaignNeed({
           variables: {
             campaignId: node.campaignId,
-            needId: node.needId
+            needId: node.needId,
+            expectedSubmissionId: node.submissionId,
+            rejectionNote
           }
         });
       }
 
       clearOptimistic(key);
       await refetch();
+      if (action === "reject") setRejectionNode(null);
     } catch (error) {
       clearOptimistic(key);
       const fallbackMessage = error instanceof Error ? error.message : t("errors.genericRetry", { ns: "common" });
@@ -260,7 +271,7 @@ export default function CampaignNeedTriagePage() {
 
                     <NeedSummaryFacts
                       intensity={node.needByNeedId?.intensity}
-                      joinedAt={node.createdAt}
+                      joinedAt={node.submittedAt}
                       location={node.needByNeedId?.location}
                       proposedTopesAmount={node.needByNeedId?.proposedTopesAmount}
                       triagedAt={node.actedAt}
@@ -286,7 +297,7 @@ export default function CampaignNeedTriagePage() {
                       <Button
                         color="error"
                         disabled={rowBusy}
-                        onClick={() => void handleTriage(node, "reject")}
+                        onClick={() => setRejectionNode(node)}
                         size="small"
                         variant="outlined"
                       >
@@ -299,6 +310,10 @@ export default function CampaignNeedTriagePage() {
             );
           })}
         </Grid>
+        <CampaignListingRejectionDialog key={rejectionNode?.submissionId ?? "closed"}
+          error={rejectionNode ? rowErrors[nodeKey(rejectionNode)] : null}
+          open={Boolean(rejectionNode)} busy={Boolean(busyKey)} onClose={() => setRejectionNode(null)}
+          onConfirm={async note => { if (rejectionNode) await handleTriage(rejectionNode, "reject", note); }} />
       </Box>
     </PageContainer>
   );

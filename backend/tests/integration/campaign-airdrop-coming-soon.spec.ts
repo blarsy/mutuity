@@ -30,6 +30,10 @@ describe("campaign airdrop coming-soon notifications", () => {
     const eligibleNeed = await seedNeed({ creatorAccount: eligibleAccount, title: `Soon Need ${stamp}` });
     const eligibleResource = await seedResource({ creatorAccount: eligibleAccount, title: `Soon Resource ${stamp}` });
     const singleNeed = await seedNeed({ creatorAccount: singleNeedAccount, title: `Only Need ${stamp}` });
+    // A listing may occupy only one current campaign slot, so the later
+    // campaign must use distinct listings even for the same recipient.
+    const laterNeed = await seedNeed({ creatorAccount: eligibleAccount, title: `Later Need ${stamp}` });
+    const laterResource = await seedResource({ creatorAccount: eligibleAccount, title: `Later Resource ${stamp}` });
 
     const client = new Client({ connectionString: TEST_DATABASE_URL });
     await client.connect();
@@ -96,23 +100,23 @@ describe("campaign airdrop coming-soon notifications", () => {
 
       await client.query(
         `
-          insert into app_public.campaign_need (campaign_id, need_id, status, acted_at)
+          insert into app_public.campaign_need (campaign_id, need_id, status, acted_at, is_current)
           values
-            ($1, $2, 'accepted', now()),
-            ($1, $3, 'pending', now()),
-            ($4, $2, 'accepted', now())
+            ($1, $2, 'accepted', now(), true),
+            ($1, $3, 'pending', null, true),
+            ($4, $5, 'accepted', now(), true)
         `,
-        [eligibleCampaignId, eligibleNeed.id, singleNeed.id, laterCampaignId]
+        [eligibleCampaignId, eligibleNeed.id, singleNeed.id, laterCampaignId, laterNeed.id]
       );
 
       await client.query(
         `
-          insert into app_public.campaign_resource (campaign_id, resource_id, status, acted_at)
+          insert into app_public.campaign_resource (campaign_id, resource_id, status, acted_at, is_current)
           values
-            ($1, $2, 'accepted', now()),
-            ($3, $2, 'accepted', now())
+            ($1, $2, 'accepted', now(), true),
+            ($3, $4, 'accepted', now(), true)
         `,
-        [eligibleCampaignId, eligibleResource.id, laterCampaignId]
+        [eligibleCampaignId, eligibleResource.id, laterCampaignId, laterResource.id]
       );
     } finally {
       await client.end();

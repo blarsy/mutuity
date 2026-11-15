@@ -49,6 +49,18 @@ const PgPubSubPlugin =
 const pluginHook = makePluginHook([PgPubSubPlugin]);
 const ALLOWED_PG_ROLES = new Set(["anonymous", "identified_account", "admin"]);
 const SAFE_GRAPHQL_ERROR_CODES = new Map<string, string>([]);
+for (const message of [
+  "Campaign is not currently linkable",
+  "Listing is accepted until the campaign ends",
+  "Pending application cannot be replaced for 24 hours",
+  "This application is no longer available for review",
+  "Rejection note must not exceed 2000 characters"
+]) SAFE_GRAPHQL_ERROR_CODES.set(message, "BAD_USER_INPUT");
+for (const message of [
+  "Only the campaign creator can triage joined listings",
+  "Only the resource creator can join a campaign",
+  "Only the need creator can join a campaign"
+]) SAFE_GRAPHQL_ERROR_CODES.set(message, "FORBIDDEN");
 SAFE_GRAPHQL_ERROR_CODES.set("Campaign start_at must be before end_at", "BAD_USER_INPUT");
 SAFE_GRAPHQL_ERROR_CODES.set("Campaign airdrop_at must be between start_at and end_at", "BAD_USER_INPUT");
 SAFE_GRAPHQL_ERROR_CODES.set("Topes amount must be greater than zero", "BAD_USER_INPUT");

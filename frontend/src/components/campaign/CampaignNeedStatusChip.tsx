@@ -1,18 +1,14 @@
 import { Chip, type ChipProps } from "@mui/material";
+import type { CampaignNeedStatus as GeneratedCampaignNeedStatus } from "../../graphql/generated";
 
-export type CampaignNeedStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type CampaignNeedStatus = `${GeneratedCampaignNeedStatus}`;
 
-function toStatusColor(status: CampaignNeedStatus): ChipProps["color"] {
-  if (status === "PENDING") {
-    return "warning";
-  }
-
-  if (status === "ACCEPTED") {
-    return "success";
-  }
-
-  return "default";
-}
+const statusColors = {
+  PENDING: "warning",
+  ACCEPTED: "success",
+  REJECTED: "default",
+  SUPERSEDED: "default"
+} satisfies Record<CampaignNeedStatus, ChipProps["color"]>;
 
 export function CampaignNeedStatusChip({
   status,
@@ -21,5 +17,5 @@ export function CampaignNeedStatusChip({
   status: CampaignNeedStatus;
   size?: ChipProps["size"];
 }) {
-  return <Chip color={toStatusColor(status)} label={status} size={size} />;
+  return <Chip color={statusColors[status]} label={status} size={size} />;
 }

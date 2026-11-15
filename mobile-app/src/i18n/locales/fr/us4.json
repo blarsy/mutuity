@@ -54,7 +54,12 @@
   "myPreferencesTitle": "Mes préférences",
   "backLabel": "Retour",
   "notifications": {
+    "listingKind": { "need": "besoin", "resource": "ressource" },
+    "privateFeedback": "Retour privé : {{note}}",
     "events": {
+      "campaignListingPending": { "headline1": "Publication à examiner", "headline2": "{{campaignName}}", "description": "Examinez {{listingName}} ({{listingKind}}) pour votre campagne." },
+      "campaignListingAccepted": { "headline1": "Publication acceptée", "headline2": "{{campaignName}}", "description": "{{listingName}} ({{listingKind}}) fait maintenant partie de cette campagne." },
+      "campaignListingRejected": { "headline1": "Publication à adapter", "headline2": "{{campaignName}}", "description": "Modifiez {{listingName}} ({{listingKind}}) pour consulter le retour et soumettre à nouveau." },
       "giftTokensReceived": { "headline1": "Topes reçus !", "headline2": "{{senderName}}", "description": "{{amount}} Topes reçus" },
       "campaignAirdropComingSoon": { "headline1": "Airdrop bientôt disponible", "headline2": "{{campaignName}}", "description": "Arrive le {{date}}" },
       "campaignAirdropDone": { "headline1": "Airdrop reçu !", "headline2": "{{campaignName}}", "description": "{{amount}} Topes" },

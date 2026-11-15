@@ -1,3 +1,5 @@
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+
 export const AUTHENTICATION_ERROR_MESSAGE = "You must sign in to continue.";
 export const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 
@@ -19,7 +21,7 @@ export function getUserFacingGraphQLErrorMessage(error?: ApolloErrorLike | null)
     return null;
   }
 
-  const graphQLErrors = error.graphQLErrors ?? [];
+  const graphQLErrors = CombinedGraphQLErrors.is(error) ? error.errors : error.graphQLErrors ?? [];
 
   const authenticationError = graphQLErrors.find(
     graphQLError => graphQLError.extensions?.code === "UNAUTHENTICATED"

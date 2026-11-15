@@ -25,6 +25,12 @@ describe("authorization boundary verifier", () => {
 
   it.each([
     ["PUBLIC raw write", "grant insert on app_public.claim_message to public", "raw_business_write"],
+    ["PUBLIC campaign-need write", "grant insert on app_public.campaign_need to public", "raw_business_write"],
+    ["campaign-need admin write", "grant update on app_public.campaign_need to admin", "admin_table_privilege"],
+    ["campaign-need obsolete write policy", "create policy test_raw_need_link on app_public.campaign_need for insert with check (true)", "raw_write_policy"],
+    ["missing need submission execution", "revoke execute on function app_public.link_campaign_need(uuid,uuid) from admin", "required_function"],
+    ["missing need decision execution", "revoke execute on function app_public.reject_campaign_need(uuid,uuid,uuid,text) from identified_account", "required_function"],
+    ["resource decision security mode", "alter function app_public.accept_campaign_resource(uuid,uuid,uuid) security invoker", "required_function"],
     ["missing read", "revoke select on app_public.resource_bid from admin", "admin_table_privilege"],
     ["disabled RLS", "alter table app_public.token_movement disable row level security", "unsafe_table_rls"],
     ["table-owner bypass", "alter table app_public.token_movement owner to admin", "table_owner_bypass"],

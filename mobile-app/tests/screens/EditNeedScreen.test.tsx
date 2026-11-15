@@ -3,7 +3,8 @@ import { act, fireEvent, render, waitFor, within } from "@testing-library/react-
 import { PaperProvider } from "react-native-paper";
 
 import { EditNeedScreen } from "../../src/screens/needs/EditNeedScreen";
-import { createNeedForAccount, updateNeedById, type NeedItem } from "../../src/services/graphql/needs";
+import { createNeedForAccount, resubmitNeedToCampaign, updateNeedById, type NeedItem } from "../../src/services/graphql/needs";
+import type { CampaignListingRelation } from "../../src/services/graphql/campaignListing";
 import { NeedIntensity } from "../../src/services/graphql/generated";
 import { fetchMyProfile } from "../../src/services/graphql/profile";
 import { useTokenBalance } from "../../src/services/realtime/useTokenBalance";
@@ -12,6 +13,7 @@ jest.mock("../../src/services/realtime/useTokenBalance", () => ({ useTokenBalanc
 
 jest.mock("../../src/services/graphql/needs", () => ({
   createNeedForAccount: jest.fn().mockResolvedValue(undefined),
+  resubmitNeedToCampaign: jest.fn().mockResolvedValue(undefined),
   updateNeedById: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -59,6 +61,56 @@ describe("EditNeedScreen", () => {
   beforeEach(() => {
     jest.mocked(fetchMyProfile).mockResolvedValue(null);
     jest.mocked(useTokenBalance).mockReturnValue({ balance: 5, loading: false, error: null, refresh: jest.fn() });
+  });
+
+  describe("listing application feedback", () => {
+    function renderListing(status: CampaignListingRelation["status"], elapsedHours = 1) {
+      const campaignRelation: CampaignListingRelation = {
+        campaignId: "campaign-1", submissionId: "submission-1", status, isCurrent: true,
+        rejectionNote: "Please explain the need", submittedAt: new Date(Date.now() - elapsedHours * 3600000).toISOString(),
+        campaignByCampaignId: { title: "Winter drive", startAt: "2026-01-01", endAt: "2099-01-01" }
+      };
+      const initialNeed: NeedItem = {
+        id: "need-1", title: "Grocery pickup", description: "", location: { label: "Tournai" },
+        proposedTokenAmount: 25, intensity: NeedIntensity.LegUp, distanceKm: 0, located: true,
+        createdAt: null, creatorAccountId: "owner", claimCount: 0, isClaimedByCurrentAccount: false,
+        campaignId: "campaign-1", campaignRelation
+      };
+      const onSaved = jest.fn();
+      const screen = render(<EditNeedScreen creatorAccountId="owner" initialNeed={initialNeed}
+        campaigns={[{ id: "campaign-2", title: "Another drive" }]} onBack={jest.fn()} onSaved={onSaved} />, { wrapper: PaperProvider });
+      return { screen, onSaved };
+    }
+
+    beforeEach(() => jest.clearAllMocks());
+
+    it("keeps rejection feedback on edit and only resubmits via the explicit action", async () => {
+      const { screen, onSaved } = renderListing("REJECTED");
+      expect(screen.getByText("listingCampaignStatusREJECTED")).toBeTruthy();
+      expect(screen.getByText("Please explain the need")).toBeTruthy();
+      fireEvent.changeText(screen.getByLabelText("Title"), "Updated title");
+      fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+      await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+      expect(resubmitNeedToCampaign).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByRole("button", { name: "listingCampaignResubmit" }));
+      await waitFor(() => expect(resubmitNeedToCampaign).toHaveBeenCalledWith("need-1", "campaign-1"));
+      expect(updateNeedById).toHaveBeenLastCalledWith("need-1", expect.objectContaining({ title: "Updated title" }));
+    });
+
+    it.each(["PENDING", "ACCEPTED"] as const)("locks campaign switching for a recent %s application", (status) => {
+      const { screen } = renderListing(status);
+      fireEvent.press(screen.getByRole("button", { name: /Campaign \(optional\)/ }));
+      expect(screen.queryByTestId("need-campaign-dialog")).toBeNull();
+      expect(screen.queryByRole("button", { name: "listingCampaignResubmit" })).toBeNull();
+    });
+
+    it("allows switching after 24 hours but not an empty ongoing application", async () => {
+      const { screen } = renderListing("PENDING", 25);
+      fireEvent.press(screen.getByRole("button", { name: /Campaign \(optional\)/ }));
+      const dialog = await screen.findByTestId("need-campaign-dialog");
+      expect(within(dialog).getByText("Another drive")).toBeTruthy();
+      expect(within(dialog).queryByText("No campaign")).toBeNull();
+    });
   });
 
   it("shows the current available balance next to the amount/intensity controls", () => {

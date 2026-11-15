@@ -19,6 +19,7 @@ import {
 import {
   createResourceForAccount,
   fetchResourceCategories,
+  resubmitResourceToCampaign,
   type MyResourceItem,
   type ResourceCategoryItem,
   updateResourceById
@@ -29,6 +30,7 @@ import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../service
 import { fetchMyProfile } from "../../services/graphql/profile";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { CampaignListingFeedback, useCampaignListingRules } from "../campaigns/CampaignListingFeedback";
 
 export interface EditResourceScreenProps {
   creatorAccountId: string | null;
@@ -86,6 +88,14 @@ export function EditResourceScreen({
   const [saving, setSaving] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const campaignRelation = initialResource?.campaignRelation;
+  const campaignRules = useCampaignListingRules(campaignRelation);
+  const campaignOptions = campaigns.filter((campaign) =>
+    (!campaign.endAt || Date.parse(campaign.endAt) > Date.now()) &&
+    (campaignRules.canSwitch || campaign.id === campaignRelation?.campaignId));
+  if (campaignRelation?.campaignByCampaignId && !campaignOptions.some((campaign) => campaign.id === campaignRelation.campaignId)) {
+    campaignOptions.unshift({ id: campaignRelation.campaignId, ...campaignRelation.campaignByCampaignId });
+  }
 
   const withRequiredMark = (label: string): string => `${label} *`;
 
@@ -192,7 +202,7 @@ export function EditResourceScreen({
     return errors;
   }, [exchangeOptions.canBeExchanged, exchangeOptions.canBeGifted, location?.label, natureOptions.isProduct, natureOptions.isService, selectedCategoryCodes.length, t, transportOptions.canBeDelivered, transportOptions.canBeTakenAway]);
 
-  const handleSave = async (): Promise<void> => {
+  const handleSave = async (resubmit = false): Promise<void> => {
     setHasAttemptedSubmit(true);
 
     if (validationErrors.length > 0) {
@@ -229,6 +239,9 @@ export function EditResourceScreen({
           categoryCodes: selectedCategoryCodes.map(Number),
           campaignId: campaignId || null
         });
+        if (resubmit && campaignRules.canResubmit && campaignId === campaignRelation?.campaignId) {
+          await resubmitResourceToCampaign(initialResource.id, campaignId);
+        }
       } else {
         await createResourceForAccount(creatorAccountId, {
           title,
@@ -333,7 +346,7 @@ export function EditResourceScreen({
 
         <Divider style={styles.divider} />
 
-        <Pressable accessibilityRole="button" onPress={() => setShowCampaignDialog(true)}>
+        <Pressable accessibilityRole="button" disabled={!campaignRules.canSwitch || saving} onPress={() => setShowCampaignDialog(true)}>
           <View style={styles.categoryHeader}>
             <View>
               <View style={styles.categoryTitleRow}>
@@ -346,13 +359,21 @@ export function EditResourceScreen({
                 />
               </View>
               <Text variant="bodySmall" style={styles.categorySubtitle}>
-                {campaigns.find((campaign) => campaign.id === campaignId)?.title ??
+                {campaignOptions.find((campaign) => campaign.id === campaignId)?.title ??
                   t("noCampaignLabel", { defaultValue: "No campaign" })}
               </Text>
             </View>
-            <IconButton icon="chevron-right" size={18} onPress={() => setShowCampaignDialog(true)} />
+            <IconButton icon="chevron-right" size={18} disabled={!campaignRules.canSwitch || saving} onPress={() => setShowCampaignDialog(true)} />
           </View>
         </Pressable>
+
+        <CampaignListingFeedback
+          relation={campaignRelation}
+          canSwitch={campaignRules.canSwitch}
+          canResubmit={campaignRules.canResubmit && campaignId === campaignRelation?.campaignId}
+          busy={saving}
+          onResubmit={() => void handleSave(true)}
+        />
 
         <Divider style={styles.divider} />
 
@@ -473,7 +494,9 @@ export function EditResourceScreen({
       <PickerDialog
         visible={showCampaignDialog}
         title={t("campaignLabel", { defaultValue: "Campaign (optional)" })}
-        items={campaigns.map((campaign) => ({
+        items={[
+          ...(!campaignRules.requiresCampaign ? [{ value: "", label: t("noCampaignLabel", { defaultValue: "No campaign" }) }] : []),
+          ...campaignOptions.map((campaign) => ({
           value: campaign.id,
           label: campaign.title,
           ...(onOpenCampaign
@@ -482,12 +505,13 @@ export function EditResourceScreen({
                 actionAccessibilityLabel: t("openCampaignPublic", { defaultValue: "View campaign" })
               }
             : {})
-        }))}
+        }))]}
         selectedValues={[campaignId]}
         multiple={false}
         onDismiss={() => setShowCampaignDialog(false)}
         onConfirm={(values) => {
-          setCampaignId(values[0] ?? "");
+          const nextId = values[0] ?? "";
+          if (!saving && campaignRules.canSwitch && (!campaignRules.requiresCampaign || nextId)) setCampaignId(nextId);
           setShowCampaignDialog(false);
         }}
         {...(onOpenCampaign ? { onItemAction: (item: { value: string }) => onOpenCampaign(item.value) } : {})}

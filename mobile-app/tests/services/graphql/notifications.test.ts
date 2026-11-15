@@ -49,6 +49,9 @@ const events = [
   ["campaign_airdrop_done", "campaignAirdropDone", "account"],
   ["welcome_profile_reward", "welcomeProfileReward", "account"],
   ["campaign_approved", "campaignApproved", "account"],
+  ["campaign_listing_pending", "campaignListingPending", "account"],
+  ["campaign_listing_accepted", "campaignListingAccepted", "account"],
+  ["campaign_listing_rejected", "campaignListingRejected", "account"],
   ["campaign_moderation_note_received", "campaignModerationNoteReceived", "account"],
   ["campaign_creator_adaptation_submitted", "campaignCreatorAdaptationSubmitted", "account"]
 ] as const;
@@ -110,6 +113,30 @@ describe.each(["en", "fr"])("mobile notification formatting (%s)", language => {
     const item = (await fetchNotifications("viewer")).items[0]!;
     expect(item.headline1).toBe("Notification");
     expect(item.description).toBe("some future event");
+  });
+
+  it.each(["need", "resource"])("localizes %s listing copy and exposes notes only for private rejection feedback", async listingKind => {
+    for (const [eventType, key] of events.filter(([event]) => event.startsWith("campaign_listing_"))) {
+      const eventPayload = { campaignName: "Autumn", listingName: "Garden tools", listingKind, rejectionNote: "Please add details\nThank you" };
+      mockFeed(eventType, "account", eventPayload);
+      const item = (await fetchNotifications("viewer")).items[0]!;
+      expect(item.headline1).toBe(i18n.t(`notifications.events.${key}.headline1`, { ns: "us4", lng: language, fallbackLng: false }));
+      expect(item.headline2).toBe("Autumn");
+      expect(item.description).toContain("Garden tools");
+      expect(item.description).toContain(i18n.t(`notifications.listingKind.${listingKind}`, { ns: "us4" }));
+      if (eventType === "campaign_listing_rejected") {
+        expect(item.description).toContain(i18n.t("notifications.privateFeedback", { ns: "us4", note: eventPayload.rejectionNote }));
+      } else {
+        expect(item.description).not.toContain(eventPayload.rejectionNote);
+      }
+    }
+  });
+
+  it.each([null, "", "  ", 42])("omits empty or malformed rejection notes: %j", async rejectionNote => {
+    mockFeed("campaign_listing_rejected", "account", { listingKind: "need", rejectionNote });
+    const item = (await fetchNotifications("viewer")).items[0]!;
+    expect(item.description).not.toContain("\n");
+    expect(item.description).toContain(i18n.t("notifications.unknownNeed", { ns: "us4" }));
   });
 
   it.each([null, {}, { airdropAt: "not-a-date" }])("does not crash on incomplete airdrop payloads: %j", async eventPayload => {

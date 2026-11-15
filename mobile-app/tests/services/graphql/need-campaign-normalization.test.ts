@@ -28,12 +28,14 @@ describe("need campaign normalization", () => {
             {
               id: "existing",
               title: "Existing campaign",
-              campaignNeedsByNeedId: { nodes: [{ campaignId: "existing-campaign" }] }
+              campaignNeedsByNeedId: { nodes: [{ campaignId: "existing-campaign", status: "PENDING", isCurrent: true,
+                submittedAt: new Date().toISOString(), campaignByCampaignId: { endAt: "2099-01-01" } }] }
             },
             {
               id: "override",
               title: "Public campaign",
-              campaignNeedsByNeedId: { nodes: [{ campaignId: "old-campaign" }] }
+              campaignNeedsByNeedId: { nodes: [{ campaignId: "old-campaign", status: "REJECTED", isCurrent: false,
+                submittedAt: new Date().toISOString(), campaignByCampaignId: { endAt: "2099-01-01" } }] }
             }
           ]
         },

@@ -7,6 +7,10 @@
 
 Monorepo for Mutuity frontend, backend (PostGraphile + Graphile Worker), and PostgreSQL schema.
 
+## Feature Documentation
+
+- [Campaign listing submission lifecycle](docs/CAMPAIGN_LISTING_LIFECYCLE.md): submission slots, review, 24-hour protection, airdrop eligibility, and coordinated deployment.
+
 ## Project Structure
 
 - `frontend/`: Next.js web app

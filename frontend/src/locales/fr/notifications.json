@@ -18,7 +18,24 @@
     "unknownCampaign": "campagne inconnue",
     "someone": "Quelqu'un"
   },
+  "listingKind": { "need": "besoin", "resource": "ressource" },
+  "privateFeedback": "Retour privé : {{note}}",
   "events": {
+    "campaignListingPending": {
+      "headline1": "Publication à examiner",
+      "headline2": "{{campaignName}}",
+      "description": "Examinez {{listingName}} ({{listingKind}}) pour votre campagne."
+    },
+    "campaignListingAccepted": {
+      "headline1": "Publication acceptée",
+      "headline2": "{{campaignName}}",
+      "description": "{{listingName}} ({{listingKind}}) fait maintenant partie de cette campagne."
+    },
+    "campaignListingRejected": {
+      "headline1": "Publication à adapter",
+      "headline2": "{{campaignName}}",
+      "description": "Modifiez {{listingName}} ({{listingKind}}) pour consulter le retour et soumettre à nouveau."
+    },
     "claimCreated": {
       "headline1": "Nouvelle proposition d'aide",
       "headline2": "de {{claimerName}}",

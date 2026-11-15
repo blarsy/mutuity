@@ -47,6 +47,8 @@ import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import type { SocialProvider } from "../screens/auth/SocialAuthButtons";
 import type { MyResourceItem } from "../services/graphql/resources";
 import type { NeedItem } from "../services/graphql/needs";
+import { fetchResourceForEdit } from "../services/graphql/resources";
+import { fetchNeedForEdit } from "../services/graphql/needs";
 import { getAppVersionStatus, MINIMUM_SUPPORTED_APP_VERSION } from "../services/app/version";
 import {
   fetchAppVersionFloor,
@@ -129,8 +131,14 @@ interface ChatScreenProps extends MainTabScreenProps {
   onMessagesRead: () => void;
 }
 
+interface PendingMyHubSection {
+  section: MyHubSection;
+  needId?: string;
+  editListing?: { kind: "need" | "resource"; id: string };
+}
+
 interface MyHubScreenProps extends MainTabScreenProps {
-  pendingSection?: { section: MyHubSection; needId?: string } | null;
+  pendingSection?: PendingMyHubSection | null;
   onConsumePendingSection?: () => void;
   onOpenCampaigns?: () => void;
 }
@@ -266,9 +274,12 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
   const [openedWorkspaceConversation, setOpenedWorkspaceConversation] = useState<WorkspaceConversation | null>(null);
   const [openedClaimNeedId, setOpenedClaimNeedId] = useState<string | null>(null);
   const [openedClaimAccountId, setOpenedClaimAccountId] = useState<string | null>(null);
+  const [notificationEditorLoading, setNotificationEditorLoading] = useState(false);
+  const [notificationEditorError, setNotificationEditorError] = useState(false);
   const backToHub = (): void => setActiveSection(null);
 
   useEffect(() => {
+    let cancelled = false;
     if (pendingSection) {
       setActiveSection(pendingSection.section);
       setIsCreating(false);
@@ -283,9 +294,40 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
       setOpenedWorkspaceConversation(null);
       setOpenedClaimAccountId(null);
       setOpenedClaimNeedId(pendingSection.needId ?? null);
-      onConsumePendingSection?.();
+      setNotificationEditorError(false);
+      const target = pendingSection.editListing;
+      if (target && accountId && authenticated) {
+        setNotificationEditorLoading(true);
+        // Fetch the owner's editor model, not the public detail model. Never open
+        // another account's listing from a stale or malformed notification.
+        const request = target.kind === "need"
+          ? fetchNeedForEdit(target.id, accountId).then(item => {
+              if (!cancelled) {
+                if (!item) throw new Error("Listing unavailable");
+                setEditingNeed(item);
+              }
+            })
+          : fetchResourceForEdit(target.id, accountId).then(item => {
+              if (!cancelled) {
+                if (!item) throw new Error("Listing unavailable");
+                setEditingResource(item);
+              }
+            });
+        void request.catch(() => {
+          if (!cancelled) setNotificationEditorError(true);
+        }).finally(() => {
+          if (!cancelled) {
+            setNotificationEditorLoading(false);
+            onConsumePendingSection?.();
+          }
+        });
+      } else {
+        setNotificationEditorLoading(false);
+        onConsumePendingSection?.();
+      }
     }
-  }, [pendingSection, onConsumePendingSection]);
+    return () => { cancelled = true; };
+  }, [pendingSection, onConsumePendingSection, accountId, authenticated]);
 
   const canAccessMyHub = authenticated && Boolean(accountId);
 
@@ -458,6 +500,16 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
     );
   }
 
+  if (notificationEditorLoading) return <LoadingScreen />;
+  if (notificationEditorError) {
+    return (
+      <ScreenContainer>
+        <Text>{t("notificationsDeepLinkError", { ns: "us4" })}</Text>
+        <PrimaryButton label={t("backLabel", { ns: "us4" })} onPress={() => setNotificationEditorError(false)} />
+      </ScreenContainer>
+    );
+  }
+
   if (isCreating || editingResource) {
     return (
       <EditResourceScreen
@@ -587,7 +639,7 @@ export function MyHubScreen({ authenticated, onRequestAuth, pendingSection, onCo
 }
 
 
-function CampaignsScreen({ authenticated, onRequestAuth, pendingCampaignId, onConsumePendingCampaign }: MainTabScreenProps & { pendingCampaignId: string | null; onConsumePendingCampaign: () => void }): React.JSX.Element {
+function CampaignsScreen({ authenticated, onRequestAuth, pendingCampaignId, pendingCampaignModeration, onConsumePendingCampaign }: MainTabScreenProps & { pendingCampaignId: string | null; pendingCampaignModeration: boolean; onConsumePendingCampaign: () => void }): React.JSX.Element {
   const { t } = useTranslation(["common", "us1"]);
   const { accountId } = useCurrentAccount();
   if (!authenticated) {
@@ -604,7 +656,7 @@ function CampaignsScreen({ authenticated, onRequestAuth, pendingCampaignId, onCo
     return <LoadingScreen />;
   }
 
-  return <US3Navigator currentAccountId={accountId} pendingCampaignId={pendingCampaignId} onConsumePendingCampaign={onConsumePendingCampaign} />;
+  return <US3Navigator currentAccountId={accountId} pendingCampaignId={pendingCampaignId} pendingCampaignModeration={pendingCampaignModeration} onConsumePendingCampaign={onConsumePendingCampaign} />;
 }
 
 function ChatScreen({
@@ -761,7 +813,8 @@ function RootNavigator(): React.JSX.Element {
   const [incomingChatMessage, setIncomingChatMessage] = useState<ChatConversationItem | null>(null);
   const previousChatConversationsRef = useRef<Map<string, number> | null>(null);
   const navigationRef = useNavigationContainerRef<MainTabParamList>();
-  const [pendingMyHubSection, setPendingMyHubSection] = useState<{ section: MyHubSection; needId?: string } | null>(null);
+  const [pendingMyHubSection, setPendingMyHubSection] = useState<PendingMyHubSection | null>(null);
+  const [pendingCampaignModeration, setPendingCampaignModeration] = useState(false);
   const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
   const [minimumVersion, setMinimumVersion] = useState<string>(MINIMUM_SUPPORTED_APP_VERSION);
 
@@ -855,14 +908,15 @@ function RootNavigator(): React.JSX.Element {
 
     switch (destination.surface) {
       case "myHub":
-        setPendingMyHubSection(destination.needId
-          ? { section: destination.drawer, needId: destination.needId }
-          : { section: destination.drawer });
+        setPendingMyHubSection({ section: destination.drawer,
+          ...(destination.needId ? { needId: destination.needId } : {}),
+          ...(destination.editListing ? { editListing: destination.editListing } : {}) });
         setActiveRouteName("MyHub");
         navigationRef.current?.navigate("MyHub");
         break;
       case "campaigns":
         setPendingCampaignId(destination.campaignId ?? null);
+        setPendingCampaignModeration(destination.moderation ?? false);
         setActiveRouteName("Campaigns");
         navigationRef.current?.navigate("Campaigns");
         break;
@@ -1283,7 +1337,7 @@ function RootNavigator(): React.JSX.Element {
                   )}
                 </Tab.Screen>
                 <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }).toUpperCase() }}>
-                  {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} pendingCampaignId={pendingCampaignId} onConsumePendingCampaign={() => setPendingCampaignId(null)} />}
+                  {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} pendingCampaignId={pendingCampaignId} pendingCampaignModeration={pendingCampaignModeration} onConsumePendingCampaign={() => setPendingCampaignId(null)} />}
                 </Tab.Screen>
                 <Tab.Screen
                   name="Chat"

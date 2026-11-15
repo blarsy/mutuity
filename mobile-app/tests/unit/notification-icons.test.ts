@@ -4,9 +4,14 @@ import TimeUp from "../../src/assets/img/time-up.svg";
 import Denied from "../../src/assets/img/denied.svg";
 import Claim from "../../src/assets/img/claim.svg";
 import Bell from "../../src/assets/img/BELL.svg";
+import Moderation from "../../src/assets/img/moderation.svg";
+import PrizeWon from "../../src/assets/img/prize-won.svg";
 
 describe("mobile notification lifecycle icons", () => {
   it.each([
+    ["campaign_listing_pending", Moderation],
+    ["campaign_listing_accepted", PrizeWon],
+    ["campaign_listing_rejected", Denied],
     ["claim_declined", Denied],
     ["claim_withdrawn", Gone],
     ["claim_expired", TimeUp],

@@ -1,4 +1,16 @@
 {
+  "listingLifecycle": {
+    "status": { "PENDING": "Pending review", "ACCEPTED": "Accepted", "REJECTED": "Rejected", "SUPERSEDED": "Replaced" },
+    "submittedAt": "Submitted: {{date}}",
+    "campaignDates": "Campaign: {{start}} – {{end}}",
+    "saveDoesNotResubmit": "Saving edits does not resubmit this listing. Use Resubmit to request another review for this campaign.",
+    "acceptedLocked": "An accepted listing stays in this campaign until the campaign ends.",
+    "pendingLocked": "You can switch campaigns once this submission has been pending for 24 hours. You cannot leave without choosing another campaign.",
+    "resubmit": "Resubmit",
+    "rejectTitle": "Reject submission",
+    "rejectionNote": "Feedback for the listing owner (optional)",
+    "cancel": "Cancel"
+  },
   "page": {
     "title": "Campaigns",
     "launchCampaign": "Launch campaign",
@@ -156,6 +168,18 @@
     "eventMeta": "{{createdAt}}",
     "noteMeta": "Administrator {{managerAccountId}} • {{createdAt}}",
     "updateSuccess": "Campaign updated successfully. A notification has been sent to the moderator, and you can still update the campaign again if needed."
+  },
+  "moderationListings": {
+    "rejectedResources": "Also show rejected resources",
+    "rejectedNeeds": "Also show rejected needs",
+    "lastAction": "{{date}}",
+    "publicInfo": "Public listing information",
+    "unavailable": "This listing is no longer available.",
+    "inactive": "This listing is no longer active.",
+    "published": "Published: {{date}}",
+    "expires": "Expires: {{date}}",
+    "noExpiry": "No expiry",
+    "unknownCreator": "Unknown creator"
   },
   "triage": {
     "title": "Campaign need triage",

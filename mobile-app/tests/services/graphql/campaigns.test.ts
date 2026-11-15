@@ -9,17 +9,74 @@ jest.mock("../../../src/services/graphql/client", () => ({
 
 import { fetchLinkableCampaigns, fetchMyCampaigns, fetchInspirationCampaigns, fetchCampaignById, updateCampaignById, type CampaignUpdateInput } from "../../../src/services/graphql/campaigns";
 import { CampaignModerationStatus } from "../../../src/services/graphql/generated";
-import { Kind, print, type DocumentNode } from "graphql";
+import { Kind, print, valueFromASTUntyped, type DocumentNode, type FieldNode } from "graphql";
 
-function campaignFields(query: DocumentNode): string[] {
+function campaignSelections(query: DocumentNode): FieldNode[] {
   const operation = query.definitions.find(definition => definition.kind === Kind.OPERATION_DEFINITION);
   if (!operation || operation.kind !== Kind.OPERATION_DEFINITION) return [];
   const root = operation.selectionSet.selections.find(selection => selection.kind === Kind.FIELD);
   if (!root || root.kind !== Kind.FIELD) return [];
   const nodes = root.selectionSet?.selections.find(selection => selection.kind === Kind.FIELD && selection.name.value === "nodes");
   const selections = nodes?.kind === Kind.FIELD ? nodes.selectionSet?.selections : root.selectionSet?.selections;
-  return (selections ?? []).flatMap(selection => selection.kind === Kind.FIELD ? [selection.name.value] : []);
+  return (selections ?? []).filter((selection): selection is FieldNode => selection.kind === Kind.FIELD);
 }
+
+function campaignFields(query: DocumentNode): string[] {
+  return campaignSelections(query).map(selection => selection.name.value);
+}
+
+describe("campaign listing stats", () => {
+  beforeEach(() => jest.mocked(apolloClient.query).mockReset());
+
+  it.each(["mine", "inspiration", "detail"])("counts accepted plus current pending only for %s campaigns", async source => {
+    const campaign = {
+      id: "campaign-stats", title: "Community garden",
+      acceptedResources: { totalCount: 1 }, pendingResources: { totalCount: 2 },
+      acceptedNeeds: { totalCount: 4 }, pendingNeeds: { totalCount: 1 },
+      // Unfiltered relation counts include rejected and superseded submissions.
+      campaignResourcesByCampaignId: { totalCount: 100 },
+      campaignNeedsByCampaignId: { totalCount: 200 }
+    };
+    jest.mocked(apolloClient.query).mockResolvedValue({
+      data: source === "detail" ? { campaignById: campaign } : { allCampaigns: { nodes: [campaign] } }
+    });
+
+    const result = source === "mine" ? (await fetchMyCampaigns("creator")).campaigns[0]
+      : source === "inspiration" ? (await fetchInspirationCampaigns())[0]
+      : await fetchCampaignById(campaign.id);
+
+    expect(result).toMatchObject({ resourceCount: 3, pendingResourceCount: 2, needCount: 5, pendingNeedCount: 1 });
+    const query = jest.mocked(apolloClient.query).mock.calls[0]![0].query;
+    const fields = campaignSelections(query);
+    for (const [alias, relation, condition] of [
+      ["acceptedResources", "campaignResourcesByCampaignId", { status: "ACCEPTED" }],
+      ["pendingResources", "campaignResourcesByCampaignId", { status: "PENDING", isCurrent: true }],
+      ["acceptedNeeds", "campaignNeedsByCampaignId", { status: "ACCEPTED" }],
+      ["pendingNeeds", "campaignNeedsByCampaignId", { status: "PENDING", isCurrent: true }]
+    ] as const) {
+      const field = fields.find(selection => selection.alias?.value === alias);
+      expect(field?.name.value).toBe(relation);
+      const argument = field?.arguments?.find(argument => argument.name.value === "condition");
+      expect(argument && valueFromASTUntyped(argument.value)).toEqual(condition);
+      expect(field?.selectionSet?.selections).toEqual([
+        expect.objectContaining({ kind: Kind.FIELD, name: expect.objectContaining({ value: "totalCount" }) })
+      ]);
+    }
+    expect(fields.filter(field => /campaign(Resources|Needs)ByCampaignId/.test(field.name.value))).toHaveLength(4);
+  });
+
+  it.each([{}, { acceptedResources: null, pendingResources: null, acceptedNeeds: null, pendingNeeds: null }])(
+    "defaults absent or inaccessible stats connections to zero",
+    async stats => {
+      jest.mocked(apolloClient.query).mockResolvedValue({
+        data: { campaignById: { id: "campaign-stats", title: "Community garden", ...stats } }
+      });
+      expect(await fetchCampaignById("campaign-stats")).toMatchObject({
+        resourceCount: 0, pendingResourceCount: 0, needCount: 0, pendingNeedCount: 0
+      });
+    }
+  );
+});
 
 describe("campaign detail rewards data", () => {
   it.each(["mine", "inspiration", "detail"])("requests and preserves the actual rewards for %s campaigns", async source => {
@@ -138,8 +195,8 @@ describe("fetchLinkableCampaigns", () => {
     const campaigns = await fetchLinkableCampaigns();
 
     expect(campaigns).toEqual([
-      { id: "campaign-1", title: "Spring drive" },
-      { id: "campaign-2", title: "Autumn relaunch" }
+      { id: "campaign-1", title: "Spring drive", startAt: "2099-01-01T00:00:00Z", endAt: "2099-01-02T00:00:00Z" },
+      { id: "campaign-2", title: "Autumn relaunch", startAt: "", endAt: "not-a-date" }
     ]);
   });
 

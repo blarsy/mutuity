@@ -28,6 +28,8 @@ async function loginAs(account: SeededAccount) {
 type SeededPendingNeeds = {
   needIdToAccept: string;
   needIdToReject: string;
+  acceptSubmissionId: string;
+  rejectSubmissionId: string;
 };
 
 async function seedPendingJoinedNeeds(
@@ -75,17 +77,20 @@ async function seedPendingJoinedNeeds(
     const needIdToAccept = acceptNeed.rows[0].id;
     const needIdToReject = rejectNeed.rows[0].id;
 
-    await client.query(
+    const submissions = await client.query<{ need_id: string; submission_id: string }>(
       `
-        insert into app_public.campaign_need (campaign_id, need_id, status)
-        values ($1, $2, 'pending'), ($1, $3, 'pending')
+        insert into app_public.campaign_need (campaign_id, need_id, status, is_current)
+        values ($1, $2, 'pending', true), ($1, $3, 'pending', true)
+        returning need_id, submission_id
       `,
       [campaignId, needIdToAccept, needIdToReject]
     );
 
     return {
       needIdToAccept,
-      needIdToReject
+      needIdToReject,
+      acceptSubmissionId: submissions.rows.find(row => row.need_id === needIdToAccept)!.submission_id,
+      rejectSubmissionId: submissions.rows.find(row => row.need_id === needIdToReject)!.submission_id
     };
   } finally {
     await client.end();
@@ -213,8 +218,8 @@ describe("audit trail integration", () => {
     const acceptResponse = await postGraphql(
       {
         query: `
-          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignNeed {
                 campaignId
                 needId
@@ -225,7 +230,8 @@ describe("audit trail integration", () => {
         `,
         variables: {
           campaignId,
-          needId: seededNeeds.needIdToAccept
+          needId: seededNeeds.needIdToAccept,
+          expectedSubmissionId: seededNeeds.acceptSubmissionId
         }
       },
       creatorCookie
@@ -247,8 +253,8 @@ describe("audit trail integration", () => {
     const rejectResponse = await postGraphql(
       {
         query: `
-          mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-            rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
+          mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+            rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
               campaignNeed {
                 campaignId
                 needId
@@ -259,7 +265,8 @@ describe("audit trail integration", () => {
         `,
         variables: {
           campaignId,
-          needId: seededNeeds.needIdToReject
+          needId: seededNeeds.needIdToReject,
+          expectedSubmissionId: seededNeeds.rejectSubmissionId
         }
       },
       creatorCookie

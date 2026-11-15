@@ -1,4 +1,16 @@
 {
+  "listingCampaignStatusPENDING": "Candidature à la campagne en attente",
+  "listingCampaignStatusACCEPTED": "Accepté dans la campagne",
+  "listingCampaignStatusREJECTED": "Candidature à la campagne refusée",
+  "listingCampaignStatusSUPERSEDED": "Candidature à la campagne remplacée",
+  "listingCampaignRejectedWithoutNote": "Aucun motif de refus n’a été communiqué.",
+  "listingCampaignEditDoesNotResubmit": "Enregistrer vos modifications ne soumet pas à nouveau votre candidature. Utilisez Soumettre à nouveau lorsque vous êtes prêt.",
+  "listingCampaignAcceptedLock": "Vous ne pouvez pas changer de campagne avant la fin de celle-ci.",
+  "listingCampaignPendingLock": "Vous pourrez changer de campagne après 24 heures d’attente de votre candidature.",
+  "listingCampaignResubmit": "Soumettre à nouveau",
+  "listingCampaignRejectTitle": "Refuser la candidature de l’annonce",
+  "listingCampaignRejectionNote": "Motif du refus (facultatif)",
+  "listingCampaignDecisionError": "Impossible d’enregistrer cette décision. Actualisez la liste avant de réessayer.",
   "account": "Compte",
   "actions": {
     "accept": "Accepter l'offre",

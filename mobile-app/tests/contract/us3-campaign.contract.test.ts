@@ -40,7 +40,9 @@ describe("US3 campaign contract", () => {
       createdAt: "2026-07-25T12:00:00.000Z",
       creatorAccountId: "123e4567-e89b-12d3-a456-426614174000",
       resourceCount: 0,
-      needCount: 0
+      needCount: 0,
+      pendingResourceCount: 0,
+      pendingNeedCount: 0
     });
   });
 

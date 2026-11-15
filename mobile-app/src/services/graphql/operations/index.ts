@@ -128,9 +128,11 @@ export const MY_RESOURCES_QUERY = gql`
             categoryCode
           }
         }
-        campaignResourcesByResourceId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+        campaignResourcesByResourceId(orderBy: SUBMITTED_AT_DESC) {
           nodes {
             campaignId
+            submissionId status rejectionNote submittedAt isCurrent
+            campaignByCampaignId { title startAt endAt }
           }
         }
       }
@@ -205,9 +207,11 @@ export const MY_NEEDS_QUERY = gql`
         requiredCompetenceText
         requiredToolingText
         requiredPeopleCount
-        campaignNeedsByNeedId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+        campaignNeedsByNeedId(orderBy: SUBMITTED_AT_DESC) {
           nodes {
             campaignId
+            submissionId status rejectionNote submittedAt isCurrent
+            campaignByCampaignId { title startAt endAt }
           }
         }
         needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
@@ -249,10 +253,16 @@ export const MY_CAMPAIGNS_QUERY = gql`
         rewardsMultiplier
         airdropAmount
         managerNoteFromCreator
-        campaignResourcesByCampaignId {
+        acceptedResources: campaignResourcesByCampaignId(condition: { status: ACCEPTED }) {
           totalCount
         }
-        campaignNeedsByCampaignId {
+        pendingResources: campaignResourcesByCampaignId(condition: { status: PENDING, isCurrent: true }) {
+          totalCount
+        }
+        acceptedNeeds: campaignNeedsByCampaignId(condition: { status: ACCEPTED }) {
+          totalCount
+        }
+        pendingNeeds: campaignNeedsByCampaignId(condition: { status: PENDING, isCurrent: true }) {
           totalCount
         }
       }
@@ -285,6 +295,7 @@ export const RESOURCE_BY_ID_QUERY = gql`
       description
       creatorAccountId
       createdAt
+      updatedAt
       expiresAt
       isActive
       isProduct
@@ -299,6 +310,18 @@ export const RESOURCE_BY_ID_QUERY = gql`
       defaultTokenAmount
       categoryLabels
       imageUrls
+      resourceCategoryAssignmentsByResourceId {
+        nodes {
+          categoryCode
+        }
+      }
+      campaignResourcesByResourceId(orderBy: SUBMITTED_AT_DESC) {
+        nodes {
+          campaignId
+          submissionId status rejectionNote submittedAt isCurrent
+          campaignByCampaignId { title startAt endAt }
+        }
+      }
       accountByCreatorAccountId {
         id
         displayName
@@ -331,6 +354,12 @@ export const NEED_BY_ID_QUERY = gql`
       latitude
       longitude
       imageUrls
+      campaignNeedsByNeedId(orderBy: SUBMITTED_AT_DESC) {
+        nodes {
+          campaignId submissionId status rejectionNote submittedAt isCurrent
+          campaignByCampaignId { title startAt endAt }
+        }
+      }
       accountByCreatorAccountId {
         displayName
         avatarUrl
@@ -364,6 +393,18 @@ export const CAMPAIGN_BY_ID_QUERY = gql`
       rewardsMultiplier
       airdropAmount
       managerNoteFromCreator
+      acceptedResources: campaignResourcesByCampaignId(condition: { status: ACCEPTED }) {
+        totalCount
+      }
+      pendingResources: campaignResourcesByCampaignId(condition: { status: PENDING, isCurrent: true }) {
+        totalCount
+      }
+      acceptedNeeds: campaignNeedsByCampaignId(condition: { status: ACCEPTED }) {
+        totalCount
+      }
+      pendingNeeds: campaignNeedsByCampaignId(condition: { status: PENDING, isCurrent: true }) {
+        totalCount
+      }
     }
   }
 `;
@@ -382,17 +423,22 @@ export const CAMPAIGN_MODERATION_HISTORY_QUERY = gql`
 
 export const CAMPAIGN_NEED_TRIAGE_QUERY = gql`
   query CampaignNeedTriage($campaignId: UUID) {
-    allCampaignNeeds(condition: { campaignId: $campaignId }, orderBy: [CREATED_AT_DESC]) {
+    allCampaignNeeds(condition: { campaignId: $campaignId }, orderBy: [SUBMITTED_AT_DESC]) {
       nodes {
         campaignId
         needId
         status
         createdAt
-        campaignByCampaignId { title }
+        actedAt
+        submissionId rejectionNote submittedAt isCurrent
+        campaignByCampaignId { title startAt endAt }
         needByNeedId {
           title
           intensity
           proposedTopesAmount
+          imageUrls
+          createdAt
+          accountByCreatorAccountId { displayName }
         }
       }
     }
@@ -401,17 +447,24 @@ export const CAMPAIGN_NEED_TRIAGE_QUERY = gql`
 
 export const CAMPAIGN_RESOURCE_TRIAGE_QUERY = gql`
   query CampaignResourceTriage($campaignId: UUID) {
-    allCampaignResources(condition: { campaignId: $campaignId }, orderBy: [PRIMARY_KEY_DESC]) {
+    allCampaignResources(condition: { campaignId: $campaignId }, orderBy: [SUBMITTED_AT_DESC]) {
       nodes {
         campaignId
         resourceId
         status
         createdAt
-        campaignByCampaignId { title }
+        actedAt
+        submissionId rejectionNote submittedAt isCurrent
+        campaignByCampaignId { title startAt endAt }
         resourceByResourceId {
           title
           location
           defaultTokenAmount
+          imageUrls
+          createdAt
+          canBeExchanged
+          canBeGiven
+          accountByCreatorAccountId { displayName }
         }
       }
     }
@@ -419,33 +472,33 @@ export const CAMPAIGN_RESOURCE_TRIAGE_QUERY = gql`
 `;
 
 export const ACCEPT_CAMPAIGN_NEED_MUTATION = gql`
-  mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-    acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
-      campaignNeed { campaignId needId status }
+  mutation AcceptCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!) {
+    acceptCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId }) {
+      campaignNeed { campaignId needId status submissionId rejectionNote submittedAt isCurrent }
     }
   }
 `;
 
 export const REJECT_CAMPAIGN_NEED_MUTATION = gql`
-  mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-    rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId }) {
-      campaignNeed { campaignId needId status }
+  mutation RejectCampaignNeed($campaignId: UUID!, $needId: UUID!, $expectedSubmissionId: UUID!, $rejectionNote: String) {
+    rejectCampaignNeed(input: { campaignId: $campaignId, needId: $needId, expectedSubmissionId: $expectedSubmissionId, rejectionNote: $rejectionNote }) {
+      campaignNeed { campaignId needId status submissionId rejectionNote submittedAt isCurrent }
     }
   }
 `;
 
 export const ACCEPT_CAMPAIGN_RESOURCE_MUTATION = gql`
-  mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-    acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
-      campaignResource { campaignId resourceId status }
+  mutation AcceptCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!) {
+    acceptCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId }) {
+      campaignResource { campaignId resourceId status submissionId rejectionNote submittedAt isCurrent }
     }
   }
 `;
 
 export const REJECT_CAMPAIGN_RESOURCE_MUTATION = gql`
-  mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-    rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId }) {
-      campaignResource { campaignId resourceId status }
+  mutation RejectCampaignResource($campaignId: UUID!, $resourceId: UUID!, $expectedSubmissionId: UUID!, $rejectionNote: String) {
+    rejectCampaignResource(input: { campaignId: $campaignId, resourceId: $resourceId, expectedSubmissionId: $expectedSubmissionId, rejectionNote: $rejectionNote }) {
+      campaignResource { campaignId resourceId status submissionId rejectionNote submittedAt isCurrent }
     }
   }
 `;
@@ -537,9 +590,11 @@ export const UPDATE_RESOURCE_BY_ID_MUTATION = gql`
             categoryCode
           }
         }
-        campaignResourcesByResourceId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+        campaignResourcesByResourceId(orderBy: SUBMITTED_AT_DESC) {
           nodes {
             campaignId
+            submissionId status rejectionNote submittedAt isCurrent
+            campaignByCampaignId { title startAt endAt }
           }
         }
       }
@@ -583,19 +638,13 @@ export const DELETE_RESOURCE_CATEGORY_ASSIGNMENT_MUTATION = gql`
 
 export const CREATE_CAMPAIGN_NEED_MUTATION = gql`
   mutation CreateCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-    createCampaignNeed(input: { campaignNeed: { campaignId: $campaignId, needId: $needId } }) {
+    linkCampaignNeed(input: { pCampaignId: $campaignId, pNeedId: $needId }) {
       campaignNeed {
         campaignId
         needId
+        submissionId status rejectionNote submittedAt isCurrent
+        campaignByCampaignId { title startAt endAt }
       }
-    }
-  }
-`;
-
-export const DELETE_CAMPAIGN_NEED_MUTATION = gql`
-  mutation DeleteCampaignNeed($campaignId: UUID!, $needId: UUID!) {
-    deleteCampaignNeedByCampaignIdAndNeedId(input: { campaignId: $campaignId, needId: $needId }) {
-      deletedCampaignNeedId
     }
   }
 `;
@@ -606,15 +655,9 @@ export const CREATE_CAMPAIGN_RESOURCE_MUTATION = gql`
       campaignResource {
         campaignId
         resourceId
+        submissionId status rejectionNote submittedAt isCurrent
+        campaignByCampaignId { title startAt endAt }
       }
-    }
-  }
-`;
-
-export const DELETE_CAMPAIGN_RESOURCE_MUTATION = gql`
-  mutation DeleteCampaignResource($campaignId: UUID!, $resourceId: UUID!) {
-    unlinkCampaignResource(input: { pCampaignId: $campaignId, pResourceId: $resourceId }) {
-      boolean
     }
   }
 `;
@@ -643,9 +686,11 @@ export const UPDATE_NEED_BY_ID_MUTATION = gql`
         title
         description
         proposedTopesAmount
-        campaignNeedsByNeedId(first: 1, orderBy: PRIMARY_KEY_DESC) {
+        campaignNeedsByNeedId(orderBy: SUBMITTED_AT_DESC) {
           nodes {
             campaignId
+            submissionId status rejectionNote submittedAt isCurrent
+            campaignByCampaignId { title startAt endAt }
           }
         }
       }
@@ -1425,6 +1470,18 @@ export const INSPIRATION_CAMPAIGNS_QUERY = gql`
         creatorAccountId
         rewardsMultiplier
         airdropAmount
+        acceptedResources: campaignResourcesByCampaignId(condition: { status: ACCEPTED }) {
+          totalCount
+        }
+        pendingResources: campaignResourcesByCampaignId(condition: { status: PENDING, isCurrent: true }) {
+          totalCount
+        }
+        acceptedNeeds: campaignNeedsByCampaignId(condition: { status: ACCEPTED }) {
+          totalCount
+        }
+        pendingNeeds: campaignNeedsByCampaignId(condition: { status: PENDING, isCurrent: true }) {
+          totalCount
+        }
       }
     }
   }

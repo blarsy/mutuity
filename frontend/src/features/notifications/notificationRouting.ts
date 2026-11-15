@@ -10,6 +10,20 @@ export function notificationUrlForEvent(eventType: string, payload: Notification
   const needClaimId = asText(payload.needClaimId);
 
   switch (eventType) {
+    case "campaign_listing_pending":
+      return campaignId ? `/campaigns/${encodeURIComponent(campaignId)}/moderation` : "/campaigns";
+    case "campaign_listing_accepted":
+    case "campaign_listing_rejected": {
+      const listingId = asText(payload.listingId);
+      const collection = payload.listingKind === "need" ? "needs" : payload.listingKind === "resource" ? "resources" : null;
+      if (!listingId || !collection) return "/notifications";
+      const encodedId = encodeURIComponent(listingId);
+      if (eventType === "campaign_listing_rejected") {
+        const idParam = collection === "needs" ? "needId" : "resourceId";
+        return `/${collection}/create?${idParam}=${encodedId}`;
+      }
+      return `/${collection}/${encodedId}`;
+    }
     case "claim_created":
     case "claim_settled":
     case "claim_declined":

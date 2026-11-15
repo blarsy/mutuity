@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -16,6 +16,7 @@ import { EmptyState } from "../../components/state/EmptyState";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { CampaignExplainerButton } from "../../components/campaignExplainer/CampaignExplainerButton";
+import { NeedSearchCard } from "../../components/listings/SearchListingCards";
 import { fetchLinkableCampaigns, type LinkableCampaignItem } from "../../services/graphql/campaigns";
 import {
   fetchSearchNeeds,
@@ -81,19 +82,6 @@ function intensityFilterOptions(): NeedIntensity[] {
   return [NeedIntensity.Sharing, NeedIntensity.Commitment, NeedIntensity.LegUp, NeedIntensity.RareContribution];
 }
 
-function formatPublishedDate(value: string | null, locale: string): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
-}
-
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -121,7 +109,7 @@ export function SearchNeedsScreen({
   currentAccountId = null,
   onOpenCampaign
 }: SearchNeedsScreenProps): React.JSX.Element {
-  const { t, i18n } = useTranslation(["common", "us2"]);
+  const { t } = useTranslation(["common", "us2"]);
   const defaultLocationLabel = t("locationDefault", { defaultValue: "Tournai center" });
   const [searchTerm, setSearchTerm] = useState("");
   const [maxTokenAmount, setMaxTokenAmount] = useState("");
@@ -506,46 +494,13 @@ export function SearchNeedsScreen({
           />
         ) : (
           <View style={styles.list}>
-            {filteredNeeds.map((need) => {
-              return (
-                <Pressable
-                  key={need.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${need.title}. ${need.proposedTokenAmount} Tope.`}
-                  onPress={() => onOpenNeed?.(need)}
-                  style={styles.needCard}
-                  testID={`need-card-${need.id}`}
-                >
-                  {need.imageUrls?.[0] ? (
-                    <Image source={{ uri: need.imageUrls[0] }} style={styles.needCardImage} />
-                  ) : (
-                    <View style={styles.needCardImageFallback}>
-                      <Icon source="image-outline" size={20} color={designTokens.colors.primary} />
-                    </View>
-                  )}
-                  <View style={styles.needCardContent}>
-                    <Text variant="labelSmall" style={styles.needCardPublishedAt}>
-                      {`${t("publishedAtLabel", { defaultValue: "Published" })} ${formatPublishedDate(need.createdAt, i18n.language) ?? "-"}`}
-                    </Text>
-                    <View style={styles.needCardBody}>
-                      <Text variant="titleMedium" numberOfLines={2} style={styles.needTitle}>
-                        {need.title}
-                      </Text>
-                      <Text variant="labelSmall" style={styles.needCardAuthor}>
-                        {`${t("broughtByLabel", { defaultValue: "Brought by" })} ${need.creatorDisplayName ?? t("anonymousLabel", { defaultValue: "Anonymous" })}`}
-                      </Text>
-                      <Text variant="labelSmall" style={styles.tokenLine}>
-                        {t("needTokenAmount", {
-                          ns: "us2",
-                          defaultValue: "{{amount}} Topes",
-                          amount: need.proposedTokenAmount
-                        })}
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })}
+            {filteredNeeds.map((need) => (
+              <NeedSearchCard
+                key={need.id}
+                listing={need}
+                {...(onOpenNeed ? { onPress: () => onOpenNeed(need) } : {})}
+              />
+            ))}
           </View>
         )}
       </ScrollView>
@@ -657,61 +612,5 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: designTokens.spacing.sm
-  },
-  needCard: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    gap: 12,
-    backgroundColor: designTokens.colors.primaryContainer,
-    borderRadius: designTokens.radius.md,
-    paddingHorizontal: 8,
-    paddingVertical: 8
-  },
-  needCardImage: {
-    width: 92,
-    height: 92,
-    borderRadius: designTokens.radius.md,
-    backgroundColor: "#fff"
-  },
-  needCardImageFallback: {
-    width: 92,
-    height: 92,
-    borderRadius: designTokens.radius.md,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  needCardContent: {
-    flex: 1,
-    marginRight: 4,
-    gap: designTokens.spacing.xs
-  },
-  needCardPublishedAt: {
-    color: designTokens.colors.primary,
-    alignSelf: "flex-end",
-    fontFamily: appFontFamilies.general,
-    fontSize: 10,
-    lineHeight: 12
-  },
-  needCardBody: {
-    flex: 1,
-    justifyContent: "center",
-    gap: 2
-  },
-  needTitle: {
-    fontFamily: appFontFamilies.altGeneral,
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 20
-  },
-  needCardAuthor: {
-    color: designTokens.colors.primary,
-    fontSize: 10,
-    lineHeight: 12,
-    fontFamily: appFontFamilies.general
-  },
-  tokenLine: {
-    color: designTokens.colors.primary,
-    fontFamily: appFontFamilies.general
   }
 });
