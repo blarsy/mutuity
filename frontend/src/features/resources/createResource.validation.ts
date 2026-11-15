@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 
 import type { ResourceIntensity } from "./types";
+import { isValidDateTimeLocalValue } from "../../components/dateTime";
 
 export type CreateResourceValues = {
   title: string;
@@ -141,7 +142,7 @@ export const createResourceValidationSchema = Yup.object({
   canBeExchanged: Yup.boolean().required(),
   canBeTakenAway: Yup.boolean().required(),
   canBeDelivered: Yup.boolean().required(),
-  expiresAt: Yup.string().optional()
+  expiresAt: Yup.string().test("valid-date", "Enter a valid date and time", value => !value || isValidDateTimeLocalValue(value)).optional()
 })
   .test("product-or-service", function (value) {
     if (!value || value.isProduct || value.isService) {

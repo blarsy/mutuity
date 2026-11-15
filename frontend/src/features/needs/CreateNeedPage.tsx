@@ -39,6 +39,8 @@ import {
 import type { AccountProfileQuery, CreateNeedMutation, CreateNeedMutationVariables, UpdateNeedMutation, UpdateNeedMutationVariables, LinkableCampaignOptionsQuery, NeedEditDetailQuery, NeedEditDetailQueryVariables } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { DateTimePickerField } from "../../components/DateTimePickerField";
+import { toDateTimeLocalValue } from "../../components/dateTime";
 import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
 import { CampaignListingFeedback } from "../campaigns/CampaignListingFeedback";
 import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
@@ -161,7 +163,7 @@ export default function EditNeedPage() {
       requiredToolingText: editNeed.requiredToolingText ?? "",
       requiredPeopleCount: editNeed.requiredPeopleCount ?? "",
       campaignId: currentCampaignId,
-      expiresAt: editNeed.expiresAt ? new Date(editNeed.expiresAt).toISOString().slice(0, 16) : ""
+      expiresAt: toDateTimeLocalValue(editNeed.expiresAt)
     };
   }, [accountProfileData?.accountById, editNeedData?.needById, currentCampaignId]);
 
@@ -502,13 +504,14 @@ export default function EditNeedPage() {
                   </Button>
                 ) : null}
 
-                <TextField
+                <DateTimePickerField
                   name="expiresAt"
                   label={t("form.expiresAtLabel")}
-                  type="datetime-local"
                   value={values.expiresAt}
-                  onChange={handleChange}
+                  onChange={value => { void setFieldValue("expiresAt", value); }}
                   onBlur={handleBlur}
+                  error={Boolean(touched.expiresAt && errors.expiresAt)}
+                  helperText={touched.expiresAt ? errors.expiresAt : ""}
                   InputLabelProps={{ shrink: true }}
                 />
 

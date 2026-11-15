@@ -42,6 +42,8 @@ import {
 import type { AccountProfileQuery, LinkableResourceCampaignOptionsQuery, PublishResourceMutation, PublishResourceMutationVariables, ResourceCategoryOptionsQuery, ResourceEditDetailQuery } from "../../graphql/generated";
 import { NeedIntensity } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { DateTimePickerField } from "../../components/DateTimePickerField";
+import { toDateTimeLocalValue } from "../../components/dateTime";
 import { ACCOUNT_PROFILE_QUERY } from "../profile/profile.queries";
 import { CampaignListingFeedback } from "../campaigns/CampaignListingFeedback";
 import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
@@ -73,20 +75,6 @@ function fromGraphQLResourceIntensity(value: "LEG_UP" | "SHARING" | "COMMITMENT"
     default:
       return "sharing" as const;
   }
-}
-
-function toDateTimeLocalValue(value: string | null) {
-  if (!value) {
-    return "";
-  }
-
-  const timestamp = new Date(value).getTime();
-
-  if (Number.isNaN(timestamp)) {
-    return "";
-  }
-
-  return new Date(timestamp).toISOString().slice(0, 16);
 }
 
 function isCampaignActive(now: Date, startAtIso: string, endAtIso: string) {
@@ -482,12 +470,11 @@ export default function CreateResourcePage() {
                     ))}
                   </TextField>: null}
 
-                <TextField
+                <DateTimePickerField
                   name="expiresAt"
                   label={t("form.expiresAtLabel")}
-                  type="datetime-local"
                   value={values.expiresAt}
-                  onChange={handleChange}
+                  onChange={value => { void setFieldValue("expiresAt", value); }}
                   onBlur={handleBlur}
                   error={Boolean(touched.expiresAt && errors.expiresAt)}
                   helperText={

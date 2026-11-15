@@ -7,6 +7,7 @@ const legacyAppRedirects = require("./legacyAppRedirects.cjs");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["@mui/x-date-pickers", "date-fns"],
   experimental: { instrumentationHook: true },
   webpack(config, { dev, isServer }) {
     if (!dev && !isServer) config.devtool = "hidden-source-map";

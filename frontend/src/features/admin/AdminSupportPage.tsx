@@ -33,6 +33,7 @@ import { useRequireAdmin } from "../auth/requireAdmin";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { PageContainer } from "../../components/PageContainer";
+import { DateTimePickerField } from "../../components/DateTimePickerField";
 import {
   APPROVE_CAMPAIGN_MUTATION,
 } from "../campaigns/campaigns.queries";
@@ -669,13 +670,12 @@ function GrantCreatePageAction() {
               value={targetEmails}
               onChange={event => { setTargetEmails(event.target.value); }}
             />
-            <TextField
+            <DateTimePickerField
               fullWidth
               required
               label="Expires at"
-              type="datetime-local"
               value={expiresAt}
-              onChange={event => { setExpiresAt(event.target.value); }}
+              onChange={setExpiresAt}
               InputLabelProps={{ shrink: true }}
             />
             <Button

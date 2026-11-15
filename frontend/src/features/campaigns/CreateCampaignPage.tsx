@@ -15,6 +15,7 @@ import {
 } from "./createCampaign.validation";
 import type { CreateCampaignMutation, CreateCampaignMutationVariables, CreateCampaignLegacyMutation, CreateCampaignLegacyMutationVariables } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { DateTimePickerField } from "../../components/DateTimePickerField";
 
 function isUnsupportedCampaignImageFieldError(error: unknown) {
   const maybeError = error as {
@@ -197,36 +198,33 @@ export default function CreateCampaignPage() {
                   required
                   inputProps={{ min: 3000, max: 8000 }}
                 />
-                <TextField
+                <DateTimePickerField
                   name="startAt"
                   label={t("create.fields.startDatetime")}
-                  type="datetime-local"
                   value={values.startAt}
-                  onChange={handleChange}
+                  onChange={value => { void setFieldValue("startAt", value); }}
                   onBlur={handleBlur}
                   error={Boolean(touched.startAt && errors.startAt)}
                   helperText={touched.startAt ? errors.startAt : ""}
                   required
                   InputLabelProps={{ shrink: true }}
                 />
-                <TextField
+                <DateTimePickerField
                   name="airdropAt"
                   label={t("create.fields.airdropDatetime")}
-                  type="datetime-local"
                   value={values.airdropAt}
-                  onChange={handleChange}
+                  onChange={value => { void setFieldValue("airdropAt", value); }}
                   onBlur={handleBlur}
                   error={Boolean(touched.airdropAt && errors.airdropAt)}
                   helperText={touched.airdropAt ? errors.airdropAt : ""}
                   required
                   InputLabelProps={{ shrink: true }}
                 />
-                <TextField
+                <DateTimePickerField
                   name="endAt"
                   label={t("create.fields.endDatetime")}
-                  type="datetime-local"
                   value={values.endAt}
-                  onChange={handleChange}
+                  onChange={value => { void setFieldValue("endAt", value); }}
                   onBlur={handleBlur}
                   error={Boolean(touched.endAt && errors.endAt)}
                   helperText={touched.endAt ? errors.endAt : ""}

@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { isValidDateTimeLocalValue } from "../../components/dateTime";
 
 // Matches the generated NeedIntensity enum values for form validation
 export type NeedIntensityValue = "LEG_UP" | "SHARING" | "COMMITMENT" | "RARE_CONTRIBUTION";
@@ -113,7 +114,7 @@ export const createNeedValidationSchema = Yup.object({
       otherwise: schema => schema.optional()
     }),
   campaignId: Yup.string().uuid().optional(),
-  expiresAt: Yup.string().optional()
+  expiresAt: Yup.string().test("valid-date", "Enter a valid date and time", value => !value || isValidDateTimeLocalValue(value)).optional()
 }).test("nature-at-least-one", function validateNatureFlags(value) {
   if (
     value?.objectRequired ||

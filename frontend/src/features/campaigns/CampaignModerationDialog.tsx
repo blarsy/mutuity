@@ -23,6 +23,8 @@ import {
   type CreateCampaignValues
 } from "./createCampaign.validation";
 import { RichTextEditor } from "../../components/richText/RichTextEditor";
+import { DateTimePickerField } from "../../components/DateTimePickerField";
+import { toDateTimeLocalValue as toDatetimeLocalInput } from "../../components/dateTime";
 import {
   CAMPAIGN_MODERATION_DETAILS_QUERY,
   UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION
@@ -36,12 +38,6 @@ type CampaignModerationDialogProps = {
   onClose: () => void;
   onUpdated?: () => Promise<void> | void;
 };
-
-function toDatetimeLocalInput(value: string) {
-  const date = new Date(value);
-  const offsetMs = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
-}
 
 export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated }: CampaignModerationDialogProps) {
   const { t } = useTranslation("campaigns");
@@ -236,40 +232,37 @@ export function CampaignModerationDialog({ campaignId, open, onClose, onUpdated 
                             type="number"
                             value={values.airdropAmount}
                           />
-                          <TextField
+                          <DateTimePickerField
                             InputLabelProps={{ shrink: true }}
                             error={Boolean(touched.startAt && errors.startAt)}
                             helperText={touched.startAt ? errors.startAt : ""}
                             label={t("create.fields.startDatetime")}
                             name="startAt"
                             onBlur={handleBlur}
-                            onChange={handleChange}
+                            onChange={value => { void setFieldValue("startAt", value); }}
                             required
-                            type="datetime-local"
                             value={values.startAt}
                           />
-                          <TextField
+                          <DateTimePickerField
                             InputLabelProps={{ shrink: true }}
                             error={Boolean(touched.airdropAt && errors.airdropAt)}
                             helperText={touched.airdropAt ? errors.airdropAt : ""}
                             label={t("create.fields.airdropDatetime")}
                             name="airdropAt"
                             onBlur={handleBlur}
-                            onChange={handleChange}
+                            onChange={value => { void setFieldValue("airdropAt", value); }}
                             required
-                            type="datetime-local"
                             value={values.airdropAt}
                           />
-                          <TextField
+                          <DateTimePickerField
                             InputLabelProps={{ shrink: true }}
                             error={Boolean(touched.endAt && errors.endAt)}
                             helperText={touched.endAt ? errors.endAt : ""}
                             label={t("create.fields.endDatetime")}
                             name="endAt"
                             onBlur={handleBlur}
-                            onChange={handleChange}
+                            onChange={value => { void setFieldValue("endAt", value); }}
                             required
-                            type="datetime-local"
                             value={values.endAt}
                           />
                           <Button disabled={isSubmitting || updateLoading} type="submit" variant="contained">
