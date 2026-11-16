@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Icon, IconButton, Portal, Text } from "react-native-paper";
+import { Icon, IconButton, Portal, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import { TokenAmount } from "../../components/TokenAmount";
@@ -224,7 +226,7 @@ export function MyResourcesScreen({
             <Button key="cancel" onPress={() => setPendingDeleteResource(null)} disabled={deleting}>
               {t("cancelLabel", { defaultValue: "Cancel" })}
             </Button>,
-            <Button key="delete" textColor="#d32f2f" onPress={() => void handleDeleteConfirm()} loading={deleting} disabled={deleting}>
+            <Button key="delete" flavor="destructive" onPress={() => void handleDeleteConfirm()} loading={deleting} disabled={deleting}>
               {t("deleteResourceLabel", { defaultValue: "Delete Resource" })}
             </Button>
           ]}

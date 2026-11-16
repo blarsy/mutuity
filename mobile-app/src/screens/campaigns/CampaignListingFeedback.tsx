@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 import {
   canSwitchListingCampaign,

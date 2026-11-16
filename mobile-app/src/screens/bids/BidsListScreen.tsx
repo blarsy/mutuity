@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Icon, IconButton, Text } from "react-native-paper";
+import { Icon, IconButton, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 
@@ -544,11 +546,9 @@ const styles = StyleSheet.create({
   },
   mainButton: {
     marginTop: designTokens.spacing.lg,
-    alignSelf: "center",
-    borderRadius: 15
+    alignSelf: "center"
   },
   mainButtonContent: {
-    minHeight: 46,
-    backgroundColor: designTokens.colors.primary
+    minHeight: 46
   }
 });

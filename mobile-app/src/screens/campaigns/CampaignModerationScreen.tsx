@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
-import { Button, Chip, Divider, Icon, PaperProvider, Text, useTheme } from "react-native-paper";
+import { Chip, Divider, Icon, PaperProvider, Text, useTheme } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 

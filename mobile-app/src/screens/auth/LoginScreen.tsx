@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import { AuthDialog, FormTextInput } from "../../components/primitives";
@@ -124,9 +126,8 @@ export function LoginScreen({ initialEmail = "", socialAuthNotice, onSubmit, onS
         />
         <Button
           mode="contained"
+          flavor="authPrimary"
           icon="login"
-          buttonColor="#fef0e3"
-          textColor="#111111"
           contentStyle={styles.mainButtonContent}
           style={styles.mainButton}
           accessibilityLabel={t("signIn", { ns: "us1" })}
@@ -163,19 +164,18 @@ export function LoginScreen({ initialEmail = "", socialAuthNotice, onSubmit, onS
         {passwordResetRequired || socialAuthNotice?.status === "password_reset_required" ? (
           <Button
             mode="contained"
+            flavor="authPrimary"
             icon="lock-reset"
-            buttonColor="#fef0e3"
-            textColor="#111111"
             onPress={() => onSwitchToForgotPassword(email.trim())}
             testID="auth-login-reset-password"
           >
             {t("passwordResetRequiredButton", { ns: "us1" })}
           </Button>
         ) : null}
-        <Button mode="text" icon="account-plus-outline" textColor="#ffffff" onPress={onSwitchToRegister}>
+        <Button mode="text" flavor="inverse" icon="account-plus-outline" onPress={onSwitchToRegister}>
           {t("createAccount", { ns: "us1" })}
         </Button>
-        <Button mode="text" icon="lock-reset" textColor="#ffffff" onPress={() => onSwitchToForgotPassword(email.trim())}>
+        <Button mode="text" flavor="inverse" icon="lock-reset" onPress={() => onSwitchToForgotPassword(email.trim())}>
           {t("forgotPassword", { ns: "us1" })}
         </Button>
     </AuthDialog>
@@ -198,8 +198,7 @@ const styles = StyleSheet.create({
   mainButton: {
     marginTop: designTokens.spacing.lg,
     width: "82%",
-    alignSelf: "center",
-    borderRadius: 15
+    alignSelf: "center"
   },
   mainButtonContent: {
     minHeight: 46

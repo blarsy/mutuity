@@ -1,5 +1,6 @@
 import React from "react";
-import { Button } from "react-native-paper";
+
+import { AppButton } from "./AppButton";
 
 export interface PrimaryButtonProps {
   label: string;
@@ -25,14 +26,14 @@ export function PrimaryButton({
   };
 
   return (
-    <Button
-      mode="contained"
+    <AppButton
+      flavor="primary"
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       onPress={onPress}
       {...optionalProps}
     >
       {label}
-    </Button>
+    </AppButton>
   );
 }

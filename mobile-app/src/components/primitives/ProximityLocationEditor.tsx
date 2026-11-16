@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import * as ExpoLocation from "expo-location";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { Button, IconButton, Text, TextInput } from "react-native-paper";
+import { IconButton, Text, TextInput } from "react-native-paper";
+
+import { AppButton as Button } from "./AppButton";
 import { useTranslation } from "react-i18next";
 
 import { getCurrentAppVersion } from "../../services/app/versionGate";

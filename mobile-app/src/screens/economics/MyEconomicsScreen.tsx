@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import { AccordionItem, AppSegmentedButtons, PrimaryButton, ScreenContainer } from "../../components/primitives";

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Checkbox, Icon, IconButton, Snackbar, Text, useTheme } from "react-native-paper";
+import { Checkbox, Icon, IconButton, Snackbar, Text, useTheme } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -588,9 +590,8 @@ export function MyProfileScreen({
           <Button
             testID="change-password-button"
             mode="outlined"
+            flavor="profileAction"
             icon="lock-check"
-            style={styles.secondaryButton}
-            labelStyle={styles.secondaryButtonLabel}
             onPress={openChangePasswordDialog}
           >
             {t("changePasswordLabel", { defaultValue: "Change password" })}
@@ -599,8 +600,7 @@ export function MyProfileScreen({
           {onOpenPreferences ? (
             <Button
               mode="outlined"
-              style={styles.secondaryButton}
-              labelStyle={styles.secondaryButtonLabel}
+              flavor="profileAction"
               onPress={() => {
                 onOpenPreferences();
               }}
@@ -612,8 +612,7 @@ export function MyProfileScreen({
           {onOpenContribution ? (
             <Button
               mode="outlined"
-              style={styles.secondaryButton}
-              labelStyle={styles.secondaryButtonLabel}
+              flavor="profileAction"
               onPress={() => {
                 onOpenContribution();
               }}
@@ -624,9 +623,8 @@ export function MyProfileScreen({
 
           <Button
             mode="outlined"
+            flavor="profileAction"
             icon="logout"
-            style={styles.secondaryButton}
-            labelStyle={styles.secondaryButtonLabel}
             onPress={() => {
               if (onLogout) {
                 onLogout();
@@ -638,9 +636,8 @@ export function MyProfileScreen({
 
           <Button
             mode="outlined"
+            flavor="profileAction"
             icon="delete-forever"
-            style={styles.secondaryButton}
-            labelStyle={styles.secondaryButtonLabel}
             onPress={() => {
               setDeleteConfirmChecked(false);
               setDeleteErrorMessage(null);
@@ -1016,14 +1013,6 @@ const styles = StyleSheet.create({
   actionsZone: {
     gap: designTokens.spacing.sm,
     marginTop: designTokens.spacing.sm
-  },
-  secondaryButton: {
-    backgroundColor: designTokens.colors.secondary,
-    borderColor: "#000",
-    borderWidth: 1
-  },
-  secondaryButtonLabel: {
-    color: "#000"
   },
   deleteDialogContent: {
     gap: designTokens.spacing.xs

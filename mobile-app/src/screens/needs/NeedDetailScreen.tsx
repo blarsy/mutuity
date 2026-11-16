@@ -13,7 +13,9 @@ import {
   type NativeSyntheticEvent
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { Button, Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
+import { Chip, Icon, IconButton, Snackbar, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 import ChatIcon from "../../assets/img/CHAT.svg";
 

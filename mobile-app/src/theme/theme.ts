@@ -23,7 +23,7 @@ const fontConfig = {
 
 export const mutuityTheme: MD3Theme = {
   ...MD3LightTheme,
-  roundness: designTokens.radius.md,
+  roundness: designTokens.radius.sm,
   colors: {
     ...MD3LightTheme.colors,
     primary: designTokens.colors.primary,
@@ -35,5 +35,5 @@ export const mutuityTheme: MD3Theme = {
     backdrop: designTokens.colors.backdrop,
     background: "#ffffff"
   },
-  fonts: configureFonts({ config: fontConfig })
+  fonts: configureFonts({ config: fontConfig }),
 };

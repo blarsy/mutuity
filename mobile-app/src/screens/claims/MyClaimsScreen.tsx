@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, IconButton, Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import ChatIcon from "../../assets/img/CHAT.svg";
@@ -333,11 +335,9 @@ const styles = StyleSheet.create({
   },
   mainButton: {
     marginTop: designTokens.spacing.sm,
-    alignSelf: "center",
-    borderRadius: 15
+    alignSelf: "center"
   },
   mainButtonContent: {
-    minHeight: 46,
-    backgroundColor: designTokens.colors.primary
+    minHeight: 46
   }
 });

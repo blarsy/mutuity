@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
 import React, { useState } from "react";
 import { View } from "react-native";
-import { Button } from "react-native-paper";
+import { AppButton as Button } from "../primitives/AppButton";
 
 import { TokenExplainerDialog } from "./TokenExplainerDialog";
 

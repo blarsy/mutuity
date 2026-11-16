@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
-import { Button, ProgressBar, Text } from "react-native-paper";
+import { ProgressBar, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../primitives/AppButton";
 
 import { ThemedDialog } from "../primitives";
 import { appFontFamilies } from "../../theme/fonts";

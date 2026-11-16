@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
-import { Button, Chip, Icon, Portal, Text } from "react-native-paper";
+import { Chip, Icon, Portal, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import { PrimaryButton, ScreenContainer, ThemedDialog } from "../../components/primitives";

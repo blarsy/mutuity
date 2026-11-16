@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, Snackbar } from "react-native-paper";
+import { Snackbar } from "react-native-paper";
+
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import { AuthDialog, FormTextInput } from "../../components/primitives";
@@ -46,9 +48,8 @@ export function ForgotPasswordScreen({ initialEmail = "", onSubmit, onSwitchToSi
         />
         <Button
           mode="contained"
+          flavor="authPrimary"
           icon="email-fast-outline"
-          buttonColor="#fef0e3"
-          textColor="#111111"
           contentStyle={styles.mainButtonContent}
           style={styles.mainButton}
           accessibilityLabel={t("sendResetLink", { ns: "us1" })}
@@ -70,7 +71,7 @@ export function ForgotPasswordScreen({ initialEmail = "", onSubmit, onSwitchToSi
           {t("sendResetLink", { ns: "us1" })}
         </Button>
         {onSwitchToSignIn ? (
-          <Button mode="text" icon="login" textColor="#ffffff" onPress={onSwitchToSignIn}>
+          <Button mode="text" flavor="inverse" icon="login" onPress={onSwitchToSignIn}>
             {t("backToSignIn", { ns: "us1" })}
           </Button>
         ) : null}
@@ -98,8 +99,7 @@ const styles = StyleSheet.create({
   mainButton: {
     marginTop: designTokens.spacing.lg,
     width: "82%",
-    alignSelf: "center",
-    borderRadius: 15
+    alignSelf: "center"
   },
   mainButtonContent: {
     minHeight: 46

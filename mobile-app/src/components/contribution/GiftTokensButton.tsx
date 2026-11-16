@@ -1,6 +1,8 @@
 import React, { useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, IconButton, Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
+
+import { AppButton as Button } from "../primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
 import { FormTextInput, ThemedDialog } from "../primitives";

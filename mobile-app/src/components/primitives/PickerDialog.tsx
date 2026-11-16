@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Checkbox, Divider, IconButton, RadioButton, Text } from "react-native-paper";
+import { Checkbox, Divider, IconButton, RadioButton, Text } from "react-native-paper";
+
+import { AppButton as Button } from "./AppButton";
 import { useTranslation } from "react-i18next";
 
 import { designTokens } from "../../theme/tokens";

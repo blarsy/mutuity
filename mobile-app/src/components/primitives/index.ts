@@ -1,4 +1,5 @@
 export { AppCard } from "./AppCard";
+export { AppButton, type AppButtonProps } from "./AppButton";
 export { AccordionItem } from "./AccordionItem";
 export { NavigationBackHeader } from "./NavigationBackHeader";
 export { AuthDialog } from "./AuthDialog";

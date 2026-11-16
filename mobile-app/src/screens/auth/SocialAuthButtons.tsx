@@ -1,8 +1,9 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { designTokens } from "../../theme/tokens";
 
 export type SocialProvider = "google" | "apple";
@@ -35,13 +36,11 @@ export function SocialAuthButtons({ onPress, loadingProvider = null }: SocialAut
           <Button
             key={provider}
             mode="contained"
+            flavor="social"
             icon={provider}
-            buttonColor={designTokens.colors.secondary}
-            textColor="#111111"
             disabled={!hasAtLeastOneProvider || loadingProvider !== null}
             loading={isLoading}
             contentStyle={styles.buttonContent}
-            style={styles.button}
             accessibilityLabel={providerLabel}
             onPress={() => {
               if (onPress) {
@@ -73,9 +72,6 @@ const styles = StyleSheet.create({
   label: {
     color: "#ffffff",
     textAlign: "center"
-  },
-  button: {
-    borderRadius: 15
   },
   buttonContent: {
     minHeight: 46

@@ -1,8 +1,9 @@
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
-import { Button, Icon, Surface, Text } from "react-native-paper";
+import { Icon, Surface, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
+import { AppButton as Button } from "../../components/primitives/AppButton";
 import { designTokens } from "../../theme/tokens";
 
 export interface UpdateRequiredScreenProps {
@@ -24,8 +25,7 @@ export function UpdateRequiredScreen({ onDismiss }: UpdateRequiredScreenProps): 
         {onDismiss ? (
           <Button
             mode="outlined"
-            textColor="#000"
-            style={styles.button}
+            flavor="neutralOutline"
             onPress={onDismiss}
           >
             {t("updateRequiredDismiss", { defaultValue: "Dismiss" })}
@@ -59,7 +59,4 @@ const styles = StyleSheet.create({
   body: {
     textAlign: "center"
   },
-  button: {
-    borderRadius: 15
-  }
 });
