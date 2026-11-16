@@ -19,7 +19,6 @@
     "someone": "Someone"
   },
   "listingKind": { "need": "need", "resource": "resource" },
-  "privateFeedback": "Private feedback: {{note}}",
   "events": {
     "campaignListingPending": {
       "headline1": "Listing awaiting review",

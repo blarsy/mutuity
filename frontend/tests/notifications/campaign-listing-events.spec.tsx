@@ -42,21 +42,13 @@ describe.each(["en", "fr"])("campaign listing notifications (%s)", language => {
       expect(html).toContain(mockI18n.t(`listingKind.${listingKind}`));
       expect(html).toContain(`/topela/notifications/${icon}`);
       expect(html).not.toMatch(/events\.|undefined|\{\{/);
-      if (eventType === "campaign_listing_rejected") {
-        expect(html).toContain(mockI18n.t("privateFeedback", { note: "Owner-only feedback" }));
-      } else expect(html).not.toContain("Owner-only feedback");
+      expect(html).not.toContain("Owner-only feedback");
     }
   });
-  it.each([null, "", "  ", 42])("handles absent/malformed private feedback %j", rejectionNote => {
+  it.each([null, "", "  ", 42, "A long rejection note that should remain on the listing editor"])("does not include rejection feedback in notification copy: %j", rejectionNote => {
     const html = renderNotification("campaign_listing_rejected", { listingKind: "need", rejectionNote });
     expect(html).toContain(mockI18n.t("eventFallback.unknownNeed"));
-    expect(html).not.toContain(mockI18n.t("privateFeedback", { note: "" }));
-  });
-  it("renders private feedback as escaped text, not markup", () => {
-    const html = renderNotification("campaign_listing_rejected", { rejectionNote: "<script>alert(1)</script>\nDetails" });
-    expect(html).toContain("&lt;script&gt;");
-    expect(html).not.toContain("<script>");
-    expect(html).toContain("Details");
+    if (typeof rejectionNote === "string" && rejectionNote.trim()) expect(html).not.toContain(rejectionNote.trim());
   });
 });
 

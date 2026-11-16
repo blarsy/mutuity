@@ -52,7 +52,7 @@
     "categoriesHelper": "Choisissez dans la liste fixe des catégories système.",
     "loadingCategories": "Chargement des catégories…",
     "campaignLabel": "Campagne",
-    "campaignHelper": "Liez éventuellement cette ressource à une campagne approuvée et active.",
+    "campaignHelper": "Liez cette ressource à une campagne pour gagner plus de Topes.",
     "loadingCampaigns": "Chargement des campagnes…",
     "noCampaign": "Aucune campagne",
     "expiresAtLabel": "Date d’expiration",

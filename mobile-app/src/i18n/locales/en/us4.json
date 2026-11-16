@@ -55,7 +55,6 @@
   "backLabel": "Back",
   "notifications": {
     "listingKind": { "need": "need", "resource": "resource" },
-    "privateFeedback": "Private feedback: {{note}}",
     "events": {
       "campaignListingPending": { "headline1": "Listing awaiting review", "headline2": "{{campaignName}}", "description": "Review {{listingName}} ({{listingKind}}) for your campaign." },
       "campaignListingAccepted": { "headline1": "Listing accepted", "headline2": "{{campaignName}}", "description": "{{listingName}} ({{listingKind}}) is now part of this campaign." },

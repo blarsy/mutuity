@@ -177,11 +177,6 @@ function notificationCopy(notification: UnifiedNotification, t: TranslateFn) {
         listingName: asText(notification.payload.listingName) ?? (notification.payload.listingKind === "need" ? unknownNeed : unknownResource),
         listingKind: t(notification.payload.listingKind === "need" ? "listingKind.need" : "listingKind.resource")
       });
-      const note = asText(notification.payload.rejectionNote)?.trim();
-      // Only rejection notifications in the recipient's private inbox expose feedback.
-      if (notification.eventType === "campaign_listing_rejected" && note) {
-        copy.description += `\n${t("privateFeedback", { note })}`;
-      }
       return copy;
     }
     case "claim_created":

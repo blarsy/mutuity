@@ -19,7 +19,6 @@
     "someone": "Quelqu'un"
   },
   "listingKind": { "need": "besoin", "resource": "ressource" },
-  "privateFeedback": "Retour privé : {{note}}",
   "events": {
     "campaignListingPending": {
       "headline1": "Publication à examiner",

@@ -115,7 +115,7 @@ describe.each(["en", "fr"])("mobile notification formatting (%s)", language => {
     expect(item.description).toBe("some future event");
   });
 
-  it.each(["need", "resource"])("localizes %s listing copy and exposes notes only for private rejection feedback", async listingKind => {
+  it.each(["need", "resource"])("localizes %s listing copy without including rejection notes", async listingKind => {
     for (const [eventType, key] of events.filter(([event]) => event.startsWith("campaign_listing_"))) {
       const eventPayload = { campaignName: "Autumn", listingName: "Garden tools", listingKind, rejectionNote: "Please add details\nThank you" };
       mockFeed(eventType, "account", eventPayload);
@@ -124,19 +124,16 @@ describe.each(["en", "fr"])("mobile notification formatting (%s)", language => {
       expect(item.headline2).toBe("Autumn");
       expect(item.description).toContain("Garden tools");
       expect(item.description).toContain(i18n.t(`notifications.listingKind.${listingKind}`, { ns: "us4" }));
-      if (eventType === "campaign_listing_rejected") {
-        expect(item.description).toContain(i18n.t("notifications.privateFeedback", { ns: "us4", note: eventPayload.rejectionNote }));
-      } else {
-        expect(item.description).not.toContain(eventPayload.rejectionNote);
-      }
+      expect(item.description).not.toContain(eventPayload.rejectionNote);
     }
   });
 
-  it.each([null, "", "  ", 42])("omits empty or malformed rejection notes: %j", async rejectionNote => {
+  it.each([null, "", "  ", 42, "A long rejection note that should remain on the listing editor"])("does not include rejection feedback in notification copy: %j", async rejectionNote => {
     mockFeed("campaign_listing_rejected", "account", { listingKind: "need", rejectionNote });
     const item = (await fetchNotifications("viewer")).items[0]!;
     expect(item.description).not.toContain("\n");
     expect(item.description).toContain(i18n.t("notifications.unknownNeed", { ns: "us4" }));
+    if (typeof rejectionNote === "string" && rejectionNote.trim()) expect(item.description).not.toContain(rejectionNote.trim());
   });
 
   it.each([null, {}, { airdropAt: "not-a-date" }])("does not crash on incomplete airdrop payloads: %j", async eventPayload => {

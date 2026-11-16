@@ -52,7 +52,7 @@
     "categoriesHelper": "Choose from the fixed system-provided category list derived from the legacy product.",
     "loadingCategories": "Loading categories…",
     "campaignLabel": "Campaign",
-    "campaignHelper": "Optionally join this resource to one approved, active campaign.",
+    "campaignHelper": "Join this resource to a campaign to earn more Topes.",
     "loadingCampaigns": "Loading campaign options…",
     "noCampaign": "No campaign",
     "expiresAtLabel": "Expiration datetime",

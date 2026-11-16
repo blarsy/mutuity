@@ -130,10 +130,6 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
         headline2: i18n.t(`notifications.events.${key}.headline2`, vars),
         description: i18n.t(`notifications.events.${key}.description`, vars)
       };
-      const note = typeof p.rejectionNote === "string" ? p.rejectionNote.trim() : "";
-      if (eventType === "campaign_listing_rejected" && note) {
-        copy.description += `\n${i18n.t("notifications.privateFeedback", { ns: "us4", note })}`;
-      }
       return copy;
     }
     case "gift_tokens_received":

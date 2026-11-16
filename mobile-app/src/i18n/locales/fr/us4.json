@@ -55,7 +55,6 @@
   "backLabel": "Retour",
   "notifications": {
     "listingKind": { "need": "besoin", "resource": "ressource" },
-    "privateFeedback": "Retour privé : {{note}}",
     "events": {
       "campaignListingPending": { "headline1": "Publication à examiner", "headline2": "{{campaignName}}", "description": "Examinez {{listingName}} ({{listingKind}}) pour votre campagne." },
       "campaignListingAccepted": { "headline1": "Publication acceptée", "headline2": "{{campaignName}}", "description": "{{listingName}} ({{listingKind}}) fait maintenant partie de cette campagne." },
