@@ -29,6 +29,30 @@ const campaign: CampaignItem = {
 };
 
 describe("MyCampaignsScreen card actions", () => {
+  it("shows the campaign image without rendering its theme on the card", () => {
+    const campaignWithImage = {
+      ...campaign,
+      imageUrl: "https://example.com/campaign.jpg",
+      moderationStatus: CampaignModerationStatus.AwaitingAdaptation
+    };
+    const screen = render(
+      <PaperProvider>
+        <MyCampaignsScreen
+          creatorAccountId="account-1"
+          injectedCampaigns={[campaignWithImage]}
+          injectedLoading={false}
+          onAddCampaign={jest.fn()}
+        />
+      </PaperProvider>
+    );
+
+    expect(screen.getByTestId("campaign-card-image-campaign-1").props.source).toEqual({
+      uri: "https://example.com/campaign.jpg"
+    });
+    expect(screen.queryByText("Gardening")).toBeNull();
+    expect(screen.getByTestId("campaign-moderation-status-campaign-1")).toBeTruthy();
+  });
+
   it("opens the public campaign from the card body and moderation from its separate action", () => {
     const onOpenCampaign = jest.fn();
     const onModerateCampaign = jest.fn();
