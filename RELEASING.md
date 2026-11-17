@@ -64,24 +64,102 @@ the existing app to show its mandatory-update screen and store button.
    Verify the exact public URL returns the successful GraphQL response above,
    not HTML, a redirect or an `APP_UPDATE_REQUIRED` error.
 
+## Build-first server deployments
+
+For test, review, and production application updates, use the same build-first
+entry point from the repository root:
+
+```bash
+bash scripts/deploy-stack.sh test
+bash scripts/deploy-stack.sh review
+bash scripts/deploy-stack.sh prod
+```
+
+Run only the command for the intended environment. The script uses the existing
+`mutuity-<environment>` Compose project, `docker-compose.prod.yml`, and
+`.env.<environment>`. It does not discover/rename a custom existing project:
+confirm your deployment uses these names before adopting it. Keep the checkout
+and environment file unchanged throughout a deployment.
+
+The sequence is: validate configuration without printing secrets, build **all
+selected images while the old containers run**, start PostgreSQL if needed
+without recreating it, wait for DB health, migrate, replace selected application
+containers with `--no-build --no-deps --force-recreate`, then check readiness.
+Explicit recreation refreshes PostGraphile even for SQL-only releases. A build failure
+never starts migrations or replaces containers. There is no preliminary `stop`
+or `down`, no orphan removal, and no ingress/routing change. Do not separately
+apply a breaking migration before invoking the script.
+
+Select services for a smaller update (all three are the default):
+
+```bash
+bash scripts/deploy-stack.sh review backend worker
+bash scripts/deploy-stack.sh prod frontend
+```
+
+Always select **both backend and worker** after shared backend/worker code changes.
+Migrations run even for a frontend-only update, so use a release checkout with
+no unrelated pending migrations. After SQL/schema changes, select backend too:
+PostGraphile does not watch the production schema. The script never substitutes
+for store approval, version-floor planning, or candidate promotion.
+
+### Requirements, caching, and recovery
+
+- Requires Bash, Docker Compose v2 and BuildKit (enabled by the script); cache
+   mounts in the Dockerfiles require BuildKit even for manual builds.
+- Builds are serial by default (`COMPOSE_PARALLEL_LIMIT=1`) to reduce competition
+   with live requests and PostgreSQL on small servers. This does not impose a
+   CPU/RAM limit on an individual build. More capacity or off-host builds may
+   still be needed if compiling makes the running application unresponsive.
+- npm downloads and Next.js compiler cache persist in the local BuildKit cache.
+   Do not routinely prune builder caches between deployments. Dependency layers
+   are independent of frontend public build arguments, including release IDs.
+   Root build tooling is retained, but unrelated backend dependencies are no
+   longer installed in frontend images. Generated/mobile artifacts are excluded
+   from the build context.
+- Backend/frontend readiness uses their existing container healthchecks. The
+   worker has no healthcheck: only its running state is checked; verify registered
+   tasks/logs separately. `DEPLOY_READINESS_TIMEOUT_SECONDS` defaults to 180 per
+   wait phase. Public ingress, GraphQL/WebSocket and OAuth still need smoke tests.
+- An atomic temporary-directory lock prevents concurrent invocations for the
+   same checkout/environment. Manual Compose commands and other checkouts do not
+   share that lock. An untrappable kill can leave it behind: remove only the exact
+   lock reported by the script, after confirming no deployment remains active.
+- On migration/cutover/readiness failure, the script stops without attempting a
+   database rollback or stopping healthy services. Inspect status and logs using
+   the same project/env arguments. Migration failures can leave earlier migration
+   files applied; repair explicitly before retrying. Keep known-good image IDs
+   and a database backup for the rollback plan; rebuilding can move local image
+   tags even if cutover has not happened yet.
+
+This shortens the disruptive phase; it is **not zero-downtime deployment**.
+Incompatible migrations and replacement of singleton containers can still
+interrupt requests. Ingress and PostgreSQL volumes remain untouched. CI image
+publishing, registry-based deployment, standalone Next.js output, and blue/green
+cutover are not part of this procedure. The existing private monitoring-artifact
+export stage remains available; source maps must not be served publicly.
+
 ## The four scenarios
 
 ### 1. Backend only (services + database)
 
-Order matters: migrate the DB first, then restart the long-running services.
+Order matters: build first, migrate the DB, then replace long-running services.
+On servers, use `bash scripts/deploy-stack.sh <environment> backend worker`;
+the following individual commands illustrate the same sequence locally.
 
 1. Write migrations as new `database/migrations/NNN_*.sql` files (append-only).
    Keep canonical SQL in `database/functions/**` in sync with the migrations.
    - *If the change is breaking for older app clients*, bump
      `app_private.app_version_policy.min_*_semver` in the same migration.
-2. Run migrations:
+2. Build backend + worker while the old services continue running (worker runs
+   baked `dist/` artifacts, so rebuild after TS worker changes):
+   ```bash
+   docker compose build backend worker
+   ```
+3. Run migrations, then replace services without rebuilding:
    ```bash
    docker compose run --rm migrate   # or DATABASE_URL=... ./database/migrate.sh
-   ```
-3. Rebuild and restart backend + worker (worker runs baked `dist/` artifacts,
-   so `--build` is required after TS worker changes):
-   ```bash
-   docker compose up -d --build backend worker
+   docker compose up -d --no-build backend worker
    ```
 4. Verify:
    - `GET /health` returns `200` and reports the expected `appVersionPolicy`.
@@ -101,10 +179,12 @@ Lowest-risk roll-out; no DB or API-contract change.
 
 1. `npm --workspace frontend run typecheck` (runs GraphQL codegen against the
    checked-in schema snapshot) and `npm --workspace frontend run build`.
-2. Rebuild + swap the container (build args are baked at image build time, so
-   confirm `.env.prod` values first):
+2. Build before swapping the container (build args are baked at image build time,
+   so confirm environment values first). On a server use
+   `bash scripts/deploy-stack.sh <environment> frontend`; locally:
    ```bash
-   docker compose up -d --build frontend
+   docker compose build frontend
+   docker compose up -d --no-build frontend
    ```
 3. Verify the deployed URL serves and the Caddy healthcheck passes.
 
@@ -340,11 +420,10 @@ use the production/review ingress Caddyfile or its Caddy volumes.
    ```
    If they already exist, keep and reuse them. Never use `docker compose down -v`
    or prune volumes when you need to preserve the test database or Caddy state.
-4. Start PostgreSQL, apply migrations, then start the app services:
+4. Build images first, then start PostgreSQL, apply migrations and replace/start
+   the app services (existing services remain running during the build):
    ```bash
-   docker compose -p mutuity-test -f docker-compose.prod.yml --env-file .env.test up -d postgres
-   docker compose -p mutuity-test -f docker-compose.prod.yml --env-file .env.test run --rm migrate
-   docker compose -p mutuity-test -f docker-compose.prod.yml --env-file .env.test up -d --build --remove-orphans backend worker frontend
+   bash scripts/deploy-stack.sh test
    ```
 5. Start the test-only ingress:
    ```bash
@@ -352,8 +431,8 @@ use the production/review ingress Caddyfile or its Caddy volumes.
    ```
 6. Verify `https://test.tope-la.com/health`, GraphQL, WebSocket subscriptions,
    OAuth callbacks (if configured), frontend health, and worker logs. For future
-   test deployments, migrate first, then rebuild/restart only the affected
-   backend/worker/frontend services. The Test application is one isolated app
+   test deployments, use the script with only the affected services: build first,
+   then migrate and replace. The Test application is one isolated app
    stack; it has no review candidate routing.
 7. To run GlitchTip on this same Test VPS, follow [the monitoring guide](docs/MONITORING.md).
    It attaches to `mutuity-test-edge` without publishing ports; Test Caddy remains
@@ -403,12 +482,10 @@ between candidate cycles. The production/review Caddy config must not contain
    existing deployment, stop its old per-stack Caddy before starting the shared
    ingress, and preserve any existing certificate volumes instead of creating
    new ones.
-3. Bring up and migrate the production database, then start production
-   services:
+3. Build images, then bring up/migrate the production database and start/replace
+   production services:
    ```bash
-   docker compose -p mutuity-prod -f docker-compose.prod.yml --env-file .env.prod up -d postgres
-   docker compose -p mutuity-prod -f docker-compose.prod.yml --env-file .env.prod run --rm migrate
-   docker compose -p mutuity-prod -f docker-compose.prod.yml --env-file .env.prod up -d --build --remove-orphans backend worker frontend
+   bash scripts/deploy-stack.sh prod
    ```
 4. Start the shared production/review ingress:
    ```bash
@@ -429,11 +506,9 @@ by default and mail delivery is disabled by default.
 1. Bump `APP_VERSION` / `APP_VERSION_CODE`, build the mobile candidate with
    `TARGET_ENV=review`, and submit that immutable binary only after review-stack
    smoke tests pass.
-2. Start/migrate review and deploy its backend/worker/frontend:
+2. Build first, then start/migrate review and deploy its backend/worker/frontend:
    ```bash
-   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d postgres
-   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review run --rm migrate
-   docker compose -p mutuity-review -f docker-compose.prod.yml --env-file .env.review up -d --build --remove-orphans backend worker frontend
+   bash scripts/deploy-stack.sh review
    ```
 3. Set the candidate route. The script requires its version to equal
    `APP_VERSION` and be newer than `PRODUCTION_APP_VERSION`; it validates Caddy
@@ -471,8 +546,8 @@ by default and mail delivery is disabled by default.
 
 ### D. Routine updates and shutdown
 
-- For every app stack update: start its PostgreSQL service if needed, run its
-  `migrate` service, then rebuild/restart the changed long-running services.
+- For every app stack update: use `bash scripts/deploy-stack.sh <environment>`
+   (optionally selecting services) to build before migrations and cutover.
   Keep production up; review and test may be stopped when idle.
 - Restart the appropriate ingress after changing its Caddyfile or ingress env.
   The production/review server uses `docker-compose.ingress.yml` plus

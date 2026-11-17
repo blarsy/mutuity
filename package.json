@@ -20,6 +20,7 @@
     "guard:sql-plpgsql": "bash ./scripts/check-plpgsql-quality.sh",
     "test:oauth-ingress": "node --test scripts/tests/oauth-ingress.test.mjs",
     "test:backup": "node --test scripts/tests/backup.test.mjs",
+    "test:deploy": "node --test scripts/tests/deploy-stack.test.mjs",
     "test:backup:integration": "node scripts/tests/backup.integration.mjs",
     "test:monitoring": "npm --workspace backend test -- --runInBand tests/integration/monitoring.spec.ts tests/integration/monitoring-init.spec.ts tests/integration/monitoring-errors.spec.ts tests/integration/monitoring-fatal.spec.ts tests/integration/readiness.spec.ts && npm --workspace frontend test -- --runInBand tests/monitoring.spec.ts && node --test scripts/tests/monitoring-artifacts.test.mjs && npm --prefix mobile-app test -- --runInBand tests/monitoring.test.ts tests/monitoringPrivacy.test.ts tests/monitoringMetro.test.ts tests/appConfig.test.ts",
     "test:monitoring:stack": "node scripts/tests/monitoring-stack.integration.mjs",

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -6,7 +7,8 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
 
-RUN npm ci --workspace backend --include-workspace-root=false
+RUN --mount=type=cache,id=mutuity-backend-npm,target=/root/.npm,sharing=locked \
+    npm ci --workspace backend --include-workspace-root=false
 
 COPY backend backend
 
@@ -20,8 +22,8 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
 
-RUN npm ci --workspace backend --include-workspace-root=false --omit=dev \
-    && npm cache clean --force
+RUN --mount=type=cache,id=mutuity-backend-npm,target=/root/.npm,sharing=locked \
+    npm ci --workspace backend --include-workspace-root=false --omit=dev
 
 COPY --from=builder /app/backend/dist backend/dist
 COPY backend/.env.example backend/.env.example

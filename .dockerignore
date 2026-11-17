@@ -3,11 +3,22 @@ node_modules/
 .git/
 .gitignore
 .vscode/
-.next/
-coverage/
-dist/
+**/.next/
+**/coverage/
+**/dist/
+**/storybook-static/
+**/*.tsbuildinfo
+playwright-report/
+test-results/
+# Neither server image uses the mobile project (including its native outputs).
+mobile-app/
+*.aab
+*.apk
+*.ipa
 .env
 .env.*
+# The backend image explicitly copies this non-secret configuration template.
+!backend/.env.example
 *.log
 .monitoring-artifacts/
 **/.monitoring-artifacts/

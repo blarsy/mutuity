@@ -1,6 +1,16 @@
+# syntax=docker/dockerfile:1
 FROM node:20-alpine AS builder
 
 WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY frontend/package.json frontend/package.json
+COPY backend/package.json backend/package.json
+
+# Keep the root's pinned webpack build tooling, but not backend dependencies.
+# Public configuration belongs BELOW this layer so release/URL changes reuse it.
+RUN --mount=type=cache,id=mutuity-frontend-npm,target=/root/.npm,sharing=locked \
+	npm ci --workspace frontend --include-workspace-root=true
 
 ARG NEXT_PUBLIC_GRAPHQL_URL
 ARG NEXT_PUBLIC_GRAPHQL_WS_URL
@@ -28,15 +38,10 @@ ENV NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT
 ENV NEXT_PUBLIC_SENTRY_RELEASE=$NEXT_PUBLIC_SENTRY_RELEASE
 ENV NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=$NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE
 
-COPY package.json package-lock.json ./
-COPY frontend/package.json frontend/package.json
-COPY backend/package.json backend/package.json
-
-RUN npm ci
-
 COPY frontend frontend
 
-RUN npm --workspace frontend run build
+RUN --mount=type=cache,id=mutuity-frontend-next,target=/app/frontend/.next/cache,sharing=locked \
+	npm --workspace frontend run build
 
 FROM scratch AS artifacts
 
@@ -50,7 +55,8 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json frontend/package.json
 COPY backend/package.json backend/package.json
 
-RUN npm ci --omit=dev
+RUN --mount=type=cache,id=mutuity-frontend-npm,target=/root/.npm,sharing=locked \
+	npm ci --workspace frontend --include-workspace-root=false --omit=dev
 
 # Explicit runtime inputs keep host/build monitoring artifacts out of the image,
 # even if a local artifact directory has not yet been added to .dockerignore.
