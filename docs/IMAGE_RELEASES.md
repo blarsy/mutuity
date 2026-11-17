@@ -77,12 +77,14 @@ require relevant quality workflows and review to be green for the **same commit*
 before deployment. Publishing is not approval.
 
 BuildKit layer caches use Actions' cache service, including intermediate builder
-layers so unchanged dependency installs can be reused, with separate
-backend/per-environment frontend scopes. Leave the repository cache
+layers so unchanged dependency installs can be reused. Backend caches are scoped
+separately. Frontend caches are per-environment and enabled only for private
+repositories: intermediate layers contain source maps and public-repository
+pull requests can access Actions caches. Leave the repository cache
 limit at its included allowance; do not enable paid expansion without review.
 Eviction can make builds cold. Local npm/Next cache mounts are **not** automatically
 exported/restored on ephemeral runners. A warm build may still compile. Source-map
-export uses the same builder and arguments as the published frontend.
+export on private repositories uses the same builder and arguments as the published frontend.
 
 Measure cold/warm **total job minutes**, including uploads and reruns, in Actions
 and billing before increasing frequency. Only one selected environment and one
@@ -90,7 +92,8 @@ runner are used per run; there is no automatic retry.
 
 ## Artifacts and retention
 
-Successful runs produce two separately retained artifacts:
+Successful runs produce a release artifact and, for frontend builds in private
+repositories, a separately retained monitoring artifact:
 
 - `release-<environment>-<run>-<attempt>`: small release manifest with full
   commit, target environment, and immutable image references; **14 days**.
@@ -99,9 +102,14 @@ Successful runs produce two separately retained artifacts:
 - `private-maps-<environment>-<run>-<attempt>`: frontend client maps and manifest;
   **7 days**. Archive/upload them to private monitoring **before expiry** if
   needed for long-lived releases. They match this exact build, not a local
-  rebuild. Access follows repository artifact permissions: on a public repo
-  they are not private. Frontend publishing is blocked on public repositories
-  until a private artifact destination is implemented.
+   rebuild. Access follows repository artifact permissions.
+
+For a public repository, frontend publishing succeeds but maps are **not retained
+or uploaded** and the frontend Actions layer cache is disabled. The job warns
+and records this in its summary. Client stack traces for that exact build cannot
+be symbolicated without its maps; a local rebuild is not a substitute. If
+symbolication is required, implement a separate private source-map upload
+integration before publishing; this workflow does not provide one.
 
 No maps are included in the small deployment manifest. Docker build-record
 artifact uploads are disabled. Runtime frontend public maps are still purged.
@@ -136,7 +144,7 @@ this selective path; do not use the override manually for a blanket `up`.
 Migrations still come from the matching server checkout. Runtime `SENTRY_RELEASE`
 is set to the release commit for correlation. Frontend public values come from
 CI, not from changing the server env after compilation. Keep server public
-settings consistent for manual-mode fallback. Verify maps/uploads, health,
+settings consistent for manual-mode fallback. Verify maps/uploads when available, health,
 GraphQL/WebSocket, OAuth, worker registration and production sign-in.
 
 The same migration/cutover/readiness safeguards and rollback limitations apply

@@ -20,9 +20,6 @@ export function releaseInputs(env) {
     build_args: '',
   };
   if (services !== 'backend') {
-    if (env.REPOSITORY_PRIVATE !== 'true') {
-      throw new Error('Frontend source-map artifacts require a private repository; configure a private destination before publishing from a public repository.');
-    }
     let config;
     try { config = JSON.parse(env.FRONTEND_BUILD_CONFIG || ''); }
     catch { throw new Error('Set FRONTEND_BUILD_CONFIG to a public-settings JSON object in the selected GitHub Environment.'); }
@@ -74,8 +71,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const manifest = releaseManifest(inputs, process.env);
       await writeFile('.release-artifacts/release.env', manifest);
       if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY,
-        `## Published ${inputs.target} images\n\nCommit: ${inputs.revision}\n\n\`\`\`text\n${manifest}\`\`\`\n\nDownload the release manifest. Publishing does **not** deploy.\n`);
+        `## Published ${inputs.target} images\n\nCommit: ${inputs.revision}\n\n\`\`\`text\n${manifest}\`\`\`\n\nDownload the release manifest. Publishing does **not** deploy.\n${inputs.services !== 'backend' && process.env.REPOSITORY_PRIVATE !== 'true' ? '\n**Frontend source maps were not retained:** client stack traces cannot be symbolicated for this exact build.\n' : ''}`);
     } else {
+      if (inputs.services !== 'backend' && process.env.REPOSITORY_PRIVATE !== 'true') {
+        console.warn('::warning::Frontend source maps will not be retained for this public repository; client stack traces cannot be symbolicated for this exact build.');
+      }
       const output = ['backend_tag', 'frontend_tag', 'build_args'].map(key =>
         `${key}<<MUTUITY_OUTPUT\n${inputs[key]}\nMUTUITY_OUTPUT\n`).join('');
       if (!process.env.GITHUB_OUTPUT) throw new Error('GITHUB_OUTPUT is required.');

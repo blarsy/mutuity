@@ -90,11 +90,13 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             com.mutuity.environment=${{ inputs.environment }}
-          cache-from: type=gha,scope=release-frontend-${{ inputs.environment }}
-          cache-to: type=gha,scope=release-frontend-${{ inputs.environment }},mode=max
+          # Intermediate builder layers contain private source maps. Do not put
+          # them in an Actions cache accessible to public-repository PRs.
+          cache-from: ${{ github.event.repository.private == true && format('type=gha,scope=release-frontend-{0}', inputs.environment) || '' }}
+          cache-to: ${{ github.event.repository.private == true && format('type=gha,scope=release-frontend-{0},mode=max', inputs.environment) || '' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Export private source maps from the same cached build
-        if: inputs.services != 'backend'
+        if: inputs.services != 'backend' && github.event.repository.private == true
         uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.builder.outputs.name }}
@@ -119,7 +121,7 @@ jobs:
           retention-days: 14
           if-no-files-found: error
       - name: Upload private frontend monitoring artifacts
-        if: inputs.services != 'backend'
+        if: inputs.services != 'backend' && github.event.repository.private == true
         uses: actions/upload-artifact@v4
         with:
           name: private-maps-${{ inputs.environment }}-${{ github.run_id }}-${{ github.run_attempt }}

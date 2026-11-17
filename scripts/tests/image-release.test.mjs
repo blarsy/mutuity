@@ -43,6 +43,14 @@ test('frontend-only manifest requires only its own valid digest', () => {
   assert.throws(() => releaseManifest(inputs, { FRONTEND_DIGEST: 'latest' }), /digest/);
 });
 
+test('public repositories can prepare frontend or all images without retaining maps', () => {
+  for (const services of ['frontend', 'all']) {
+    const inputs = releaseInputs({ ...env, RELEASE_SERVICES: services, REPOSITORY_PRIVATE: 'false' });
+    assert.match(inputs.build_args, new RegExp(`NEXT_PUBLIC_SENTRY_RELEASE=${sha}`));
+    assert.match(releaseManifest(inputs, env), /FRONTEND_IMAGE=/);
+  }
+});
+
 test('CLI emits valid Actions multiline outputs and writes deployable manifest/summary', async t => {
   const dir = await mkdtemp(path.join(tmpdir(), 'mutuity-release-cli-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
@@ -61,11 +69,25 @@ test('CLI emits valid Actions multiline outputs and writes deployable manifest/s
   assert.match(await readFile(summary, 'utf8'), /Publishing does \*\*not\*\* deploy/);
 });
 
+test('public frontend CLI warns and records that source maps were not retained', async t => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'mutuity-public-release-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const output = path.join(dir, 'output');
+  const summary = path.join(dir, 'summary');
+  const options = { cwd: dir, encoding: 'utf8', env: { ...process.env, ...env, REPOSITORY_PRIVATE: 'false', GITHUB_OUTPUT: output, GITHUB_STEP_SUMMARY: summary } };
+  const script = path.join(root, 'scripts/prepare-image-release.mjs');
+  const prepare = spawnSync(process.execPath, [script], options);
+  assert.equal(prepare.status, 0, prepare.stderr);
+  assert.match(prepare.stderr, /source maps will not be retained/);
+  const manifest = spawnSync(process.execPath, [script, 'manifest'], options);
+  assert.equal(manifest.status, 0, manifest.stderr);
+  assert.match(await readFile(summary, 'utf8'), /source maps were not retained/);
+});
+
 test('invalid inputs, secrets, newline injection, missing URLs and credentials fail closed', () => {
   for (const patch of [
     { TARGET_ENVIRONMENT: 'production' }, { RELEASE_SERVICES: 'worker' }, { GITHUB_SHA: 'main' },
     { GITHUB_REPOSITORY: '../oops' }, { GITHUB_RUN_ID: 'bad' }, { FRONTEND_BUILD_CONFIG: '' },
-    { REPOSITORY_PRIVATE: 'false' },
     { FRONTEND_BUILD_CONFIG: '[]' }, { FRONTEND_BUILD_CONFIG: '{}' },
     ...[
       { SESSION_SECRET: 'secret' }, { NEXT_PUBLIC_SENTRY_RELEASE: 'wrong' },
@@ -181,4 +203,8 @@ test('manual workflow bounds spending and separates maps from manifest storage',
   assert.doesNotMatch(workflow, /ssh|deploy-stack\.sh/);
   assert.match(workflow, /platforms: linux\/amd64/);
   assert.match(workflow, /target: artifacts/);
+  assert.match(workflow, /name: Export private source maps[^\n]*\n\s+if: inputs\.services != 'backend' && github\.event\.repository\.private == true/);
+  assert.match(workflow, /name: Upload private frontend monitoring artifacts\n\s+if: inputs\.services != 'backend' && github\.event\.repository\.private == true/);
+  assert.match(workflow, /cache-from: \$\{\{ github\.event\.repository\.private == true && format\('type=gha,scope=release-frontend-\{0\}', inputs\.environment\) \|\| '' \}\}/);
+  assert.match(workflow, /cache-to: \$\{\{ github\.event\.repository\.private == true && format\('type=gha,scope=release-frontend-\{0\},mode=max', inputs\.environment\) \|\| '' \}\}/);
 });
