@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: bash scripts/deploy-stack.sh <test|review|prod> [backend|worker|frontend ...]" >&2
+  echo "Usage: bash scripts/deploy-stack.sh <test|review|prod> [--images <release.env>] [backend|worker|frontend ...]" >&2
   exit 2
 }
 
@@ -10,6 +10,13 @@ usage() {
 environment="$1"
 shift
 case "$environment" in test|review|prod) ;; *) usage ;; esac
+release_file=""
+if [[ "${1:-}" == "--images" ]]; then
+  [[ $# -ge 2 ]] || usage
+  # Resolve before changing directories, so caller-relative paths work.
+  release_file="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
+  shift 2
+fi
 services=("$@")
 if [[ ${#services[@]} -eq 0 ]]; then services=(backend worker frontend); fi
 for service in "${services[@]}"; do
@@ -20,6 +27,40 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 env_file=".env.$environment"
 [[ -f "$env_file" ]] || { echo "Missing $env_file; configure it from its example first." >&2; exit 1; }
+if [[ -n "$release_file" ]]; then
+  [[ -f "$release_file" ]] || { echo "Missing release manifest." >&2; exit 1; }
+  # Never source/eval downloaded files. Reject unknown, duplicate or unsafe input.
+  unset RELEASE_COMMIT RELEASE_ENVIRONMENT BACKEND_IMAGE FRONTEND_IMAGE
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    key="${line%%=*}"
+    value="${line#*=}"
+    case "$key" in
+      RELEASE_COMMIT|RELEASE_ENVIRONMENT|BACKEND_IMAGE|FRONTEND_IMAGE) ;;
+      *) echo "Unknown manifest field." >&2; exit 1 ;;
+    esac
+    if [[ "$line" != *=* || -n "${!key:-}" ]]; then echo "Invalid/duplicate manifest field." >&2; exit 1; fi
+    case "$key" in
+      RELEASE_COMMIT) [[ "$value" =~ ^[a-f0-9]{40}$ ]] || { echo "Invalid release commit." >&2; exit 1; } ;;
+      RELEASE_ENVIRONMENT) [[ "$value" == "$environment" ]] || { echo "Release environment mismatch." >&2; exit 1; } ;;
+      *) [[ "$value" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[a-f0-9]{64}$ ]] || { echo "Expected an immutable GHCR digest." >&2; exit 1; } ;;
+    esac
+    printf -v "$key" '%s' "$value"
+  done < "$release_file"
+  if [[ -z "${RELEASE_COMMIT:-}" || "${RELEASE_ENVIRONMENT:-}" != "$environment" || "$(git rev-parse HEAD)" != "$RELEASE_COMMIT" ]]; then
+    echo "Release commit/environment must match this checkout and target." >&2; exit 1
+  fi
+  # Untracked (non-ignored) files can include migrations; fail closed.
+  if [[ -n "$(git status --porcelain --untracked-files=normal)" ]]; then
+    echo "Image deployment requires a clean release checkout; keep live envs/manifests ignored or outside it." >&2; exit 1
+  fi
+  for service in "${services[@]}"; do
+    if [[ "$service" == frontend ]]; then image="${FRONTEND_IMAGE:-}"; else image="${BACKEND_IMAGE:-}"; fi
+    [[ -n "$image" ]] || { echo "Manifest has no image for $service; select only published services." >&2; exit 1; }
+  done
+  export BACKEND_IMAGE="${BACKEND_IMAGE:-}" FRONTEND_IMAGE="${FRONTEND_IMAGE:-}"
+  # Runtime monitoring release follows the compiled client release.
+  export SENTRY_RELEASE="$RELEASE_COMMIT"
+fi
 readiness_timeout="${DEPLOY_READINESS_TIMEOUT_SECONDS:-180}"
 [[ "$readiness_timeout" =~ ^[1-9][0-9]*$ ]] || { echo "Readiness timeout must be a positive integer." >&2; exit 2; }
 
@@ -37,6 +78,7 @@ trap 'exit 143' TERM
 
 # Fixed projects match the runbook; never operate on ingress or another stack.
 compose=(docker compose -p "mutuity-$environment" -f docker-compose.prod.yml --env-file "$env_file")
+if [[ -n "$release_file" ]]; then compose+=(-f docker-compose.images.yml); fi
 export DOCKER_BUILDKIT=1
 # Avoid simultaneous frontend/backend compilation starving the live app on a VPS.
 export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-1}"
@@ -70,8 +112,22 @@ wait_for_services() {
 
 echo "Validating $environment configuration (without printing secrets)..."
 "${compose[@]}" config --quiet
-echo "Building ${services[*]} while existing services remain running..."
-"${compose[@]}" build "${services[@]}"
+if [[ -n "$release_file" ]]; then
+  echo "Pulling ${services[*]} while existing services remain running..."
+  "${compose[@]}" pull "${services[@]}"
+  for service in "${services[@]}"; do
+    if [[ "$service" == frontend ]]; then image="$FRONTEND_IMAGE"; else image="$BACKEND_IMAGE"; fi
+    revision="$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image")"
+    [[ "$revision" == "$RELEASE_COMMIT" ]] || { echo "Image commit mismatch for $service." >&2; exit 1; }
+    if [[ "$service" == frontend ]]; then
+      target="$(docker image inspect --format '{{index .Config.Labels "com.mutuity.environment"}}' "$image")"
+      [[ "$target" == "$environment" ]] || { echo "Frontend image environment mismatch." >&2; exit 1; }
+    fi
+  done
+else
+  echo "Building ${services[*]} while existing services remain running..."
+  "${compose[@]}" build "${services[@]}"
+fi
 
 # Only after ALL builds succeed may we touch the database. Do not recreate an
 # existing PostgreSQL container just because its configuration/image changed.

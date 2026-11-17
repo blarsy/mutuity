@@ -134,9 +134,10 @@ for store approval, version-floor planning, or candidate promotion.
 
 This shortens the disruptive phase; it is **not zero-downtime deployment**.
 Incompatible migrations and replacement of singleton containers can still
-interrupt requests. Ingress and PostgreSQL volumes remain untouched. CI image
-publishing, registry-based deployment, standalone Next.js output, and blue/green
-cutover are not part of this procedure. The existing private monitoring-artifact
+interrupt requests. Ingress and PostgreSQL volumes remain untouched.
+For optional manual CI publishing, GHCR pull-only deployments and spending
+controls, see [Image releases](docs/IMAGE_RELEASES.md). Standalone Next.js output
+and blue/green cutover are not implemented. The private monitoring-artifact
 export stage remains available; source maps must not be served publicly.
 
 ## The four scenarios

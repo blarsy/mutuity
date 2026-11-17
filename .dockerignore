@@ -21,4 +21,5 @@ mobile-app/
 !backend/.env.example
 *.log
 .monitoring-artifacts/
+.release-artifacts/
 **/.monitoring-artifacts/

@@ -11,6 +11,7 @@ coverage/
 .env.test-ingress
 .env.monitoring
 .monitoring-artifacts/
+.release-artifacts/
 frontend/.monitoring-artifacts/
 frontend/tsconfig.tsbuildinfo
 .vscode/

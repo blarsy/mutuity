@@ -1,0 +1,128 @@
+name: Publish release images (manual)
+
+# No push, pull_request, schedule or automatic deployment trigger.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Frontend configuration / deployment target
+        type: choice
+        options: [test, review, prod]
+        default: test
+        required: true
+      services:
+        description: Images to publish (backend is shared with worker)
+        type: choice
+        options: [all, backend, frontend]
+        default: all
+        required: true
+
+permissions:
+  contents: read
+
+# Bound to one active publishing run per target, even across branches.
+concurrency:
+  group: publish-images-${{ inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TARGET_ENVIRONMENT: ${{ inputs.environment }}
+      RELEASE_SERVICES: ${{ inputs.services }}
+      REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+      FRONTEND_BUILD_CONFIG: ${{ vars.FRONTEND_BUILD_CONFIG }}
+      # Do not silently retain Docker build-record artifacts with default retention.
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Validate public configuration and prepare build inputs
+        id: config
+        run: node scripts/prepare-image-release.mjs
+      - name: Deployment and monitoring artifact regressions
+        run: node --test scripts/tests/deploy-stack.test.mjs scripts/tests/image-release.test.mjs scripts/tests/monitoring-artifacts.test.mjs
+      - uses: docker/setup-buildx-action@v3
+        id: builder
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish backend / worker
+        if: inputs.services != 'frontend'
+        id: backend
+        uses: docker/build-push-action@v6
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          context: .
+          file: backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.config.outputs.backend_tag }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=release-backend
+          cache-to: type=gha,scope=release-backend,mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish frontend
+        if: inputs.services != 'backend'
+        id: frontend
+        uses: docker/build-push-action@v6
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          context: .
+          file: frontend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.config.outputs.frontend_tag }}
+          build-args: ${{ steps.config.outputs.build_args }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            com.mutuity.environment=${{ inputs.environment }}
+          cache-from: type=gha,scope=release-frontend-${{ inputs.environment }}
+          cache-to: type=gha,scope=release-frontend-${{ inputs.environment }},mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Export private source maps from the same cached build
+        if: inputs.services != 'backend'
+        uses: docker/build-push-action@v6
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          context: .
+          file: frontend/Dockerfile
+          target: artifacts
+          platforms: linux/amd64
+          build-args: ${{ steps.config.outputs.build_args }}
+          outputs: type=local,dest=.release-artifacts/monitoring
+          cache-from: type=gha,scope=release-frontend-${{ inputs.environment }}
+          # Same builder and inputs reuse the exact builder stage just published.
+      - name: Write digest-pinned release manifest
+        env:
+          BACKEND_DIGEST: ${{ steps.backend.outputs.digest }}
+          FRONTEND_DIGEST: ${{ steps.frontend.outputs.digest }}
+        run: node scripts/prepare-image-release.mjs manifest
+      - name: Upload release manifest (no source maps)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ inputs.environment }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .release-artifacts/release.env
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload private frontend monitoring artifacts
+        if: inputs.services != 'backend'
+        uses: actions/upload-artifact@v4
+        with:
+          name: private-maps-${{ inputs.environment }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .release-artifacts/monitoring
+          retention-days: 7
+          if-no-files-found: error

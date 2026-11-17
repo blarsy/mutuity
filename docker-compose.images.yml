@@ -1,0 +1,10 @@
+# Use only through deploy-stack.sh --images: it validates immutable references,
+# commit identity and environment labels BEFORE migrations. Base build definitions
+# remain for local deployment compatibility, but this path never invokes a build.
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-mutuity-not-selected:unused}
+  worker:
+    image: ${BACKEND_IMAGE:-mutuity-not-selected:unused}
+  frontend:
+    image: ${FRONTEND_IMAGE:-mutuity-not-selected:unused}
