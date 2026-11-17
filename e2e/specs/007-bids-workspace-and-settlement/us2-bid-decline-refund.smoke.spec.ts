@@ -31,6 +31,9 @@ test("@smoke @spec-007-us2 bidder sees declined state after creator declines bid
   await expect(bidDialog).toBeVisible();
   await bidDialog.getByRole("textbox", { name: /optional message|message optionnel/i }).fill("E2E smoke decline bid message");
   await bidDialog.getByRole("button", { name: /Send bid|Save bid|Envoyer|Enregistrer/i }).click();
+  // Closing the dialog confirms the async mutation returned a bid ID. Navigating
+  // immediately after click can abort the request before the creator sees it.
+  await expect(bidDialog).not.toBeVisible();
 
   await bidderPage.goto("/app/bids");
   await expect(bidderPage).toHaveURL(urlRegexForPath("/bids"));
