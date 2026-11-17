@@ -6,9 +6,9 @@ jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) =>
 describe("campaign picker trigger", () => {
   const props = { label: "Campaign", options: [], selected: [], onChange: jest.fn() };
 
-  it("renders a compact secondary button with the FactCheck end icon for editors", () => {
+  it("renders a compact primary button with the FactCheck end icon for editors", () => {
     const html = renderToStaticMarkup(<CampaignPicker {...props} compact />);
-    expect(html).toContain("MuiButton-outlinedSecondary");
+    expect(html).toContain("MuiButton-outlinedPrimary");
     expect(html).not.toContain("MuiButton-fullWidth");
     expect(html).toMatch(/MuiButton-endIcon[\s\S]*data-testid="FactCheckIcon"/);
   });
