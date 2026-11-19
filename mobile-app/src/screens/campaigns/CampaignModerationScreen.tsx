@@ -194,7 +194,7 @@ export function CampaignModerationScreen({
       {journalExpanded ? (
         <ScrollView
           nestedScrollEnabled
-          style={[styles.journalList, { maxHeight: windowHeight * 0.5 }]}
+          style={[styles.journalList, { maxHeight: windowHeight * 0.25 }]}
           testID="campaign-moderation-journal-list"
         >
           {journalLoading ? <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} /> : null}
@@ -436,7 +436,8 @@ const styles = StyleSheet.create({
     fontFamily: appFontFamilies.altGeneral
   },
   journalList: {
-    flexGrow: 0
+    flexGrow: 0,
+    backgroundColor: designTokens.colors.secondary
   },
   journalEvent: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -445,7 +446,8 @@ const styles = StyleSheet.create({
     paddingVertical: designTokens.spacing.sm
   },
   journalEventTitle: {
-    fontFamily: appFontFamilies.general
+    fontFamily: appFontFamilies.general,
+    fontWeight: "bold"
   },
   triageSection: {
     gap: designTokens.spacing.sm,

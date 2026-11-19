@@ -190,6 +190,51 @@ describe("EditResourceScreen", () => {
     expect(screen.getByText("Transport")).toBeTruthy();
   });
 
+  it("preserves an existing amount above 10000 when saving without changing it", async () => {
+    const initialResource: MyResourceItem = {
+      id: "resource-high-price",
+      title: "Garden tools",
+      description: "",
+      defaultTokenAmount: 15000,
+      imageUrls: [],
+      isActive: true,
+      isProduct: true,
+      isService: false,
+      canBeTakenAway: true,
+      canBeDelivered: false,
+      canBeExchanged: false,
+      canBeGifted: true,
+      location: { label: "Tournai" },
+      expiresAt: null,
+      updatedAt: null,
+      categoryCodes: [1],
+      campaignId: null
+    };
+    const onSaved = jest.fn();
+    const screen = renderWithPaper(
+      <EditResourceScreen
+        creatorAccountId="owner"
+        initialResource={initialResource}
+        categories={[{ code: 1, label: "Decoration", labelFr: "Décoration" }]}
+        campaigns={[]}
+        onBack={jest.fn()}
+        onSaved={onSaved}
+      />
+    );
+
+    fireEvent(screen.getByTestId("price-info"), "layout", {
+      nativeEvent: { layout: { width: 300 } }
+    });
+    expect(screen.getByLabelText("Tope amount").props.value).toBe("15000");
+
+    fireEvent.press(screen.getByRole("button", { name: "Save resource" }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(updateResourceById).toHaveBeenCalledWith(
+      initialResource.id,
+      expect.objectContaining({ defaultTokenAmount: 15000 })
+    );
+  });
+
   it("lists selected categories as removable pills", async () => {
     const screen = renderWithPaper(
       <EditResourceScreen

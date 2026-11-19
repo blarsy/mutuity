@@ -267,6 +267,39 @@ describe("EditNeedScreen", () => {
       );
     });
 
+    if (mode === "edit") {
+      it("preserves an existing amount above 10000 when saving without changing it", async () => {
+        const highValueNeed = {
+          ...initialNeed,
+          proposedTokenAmount: 15000,
+          intensity: NeedIntensity.RareContribution
+        };
+        const onSaved = jest.fn();
+        const screen = render(
+          <EditNeedScreen
+            creatorAccountId={accountId}
+            initialNeed={highValueNeed}
+            campaigns={[]}
+            onBack={() => undefined}
+            onSaved={onSaved}
+          />,
+          { wrapper: PaperProvider }
+        );
+
+        fireEvent(screen.getByTestId("price-info"), "layout", {
+          nativeEvent: { layout: { width: 300 } }
+        });
+        expect(screen.getByLabelText("Tope amount").props.value).toBe("15000");
+
+        fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+        await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+        expect(updateNeedById).toHaveBeenCalledWith(
+          highValueNeed.id,
+          expect.objectContaining({ proposedTokenAmount: 15000 })
+        );
+      });
+    }
+
     it("rejects zero tokens", () => {
       const { screen, onSaved } = renderForm();
       fireEvent.changeText(screen.getByLabelText("Tope amount"), "0");
