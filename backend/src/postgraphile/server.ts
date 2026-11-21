@@ -268,6 +268,8 @@ const CONFIRM_SOCIAL_LINK_SQL =
   "select app_private.confirm_social_identity_link($1, $2, $3, $4, $5, $6)";
 const RESOLVE_EXTERNAL_IDENTITY_SQL =
   "select * from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
+const REGISTER_LOCAL_ACCOUNT_WITH_SOCIAL_IDENTITY_SQL =
+  "select app_public.register_local_account_with_social_identity($1, $2, $3, $4, $5, $6, $7, $8, $9)";
 const APPLE_OAUTH_CALLBACK_ROUTE = "/auth/apple/callback";
 if (!DATABASE_URL) {
   throw new Error("Missing DATABASE_URL.");
@@ -1059,9 +1061,7 @@ app.post("/auth/mobile/social/complete-registration", express.json(), async (req
 
   try {
     await pool.query(
-      `select app_public.register_local_account_with_social_identity(
-        $1, $2, $3, $4, $5, $6, $7, $8, $9
-      )`,
+      REGISTER_LOCAL_ACCOUNT_WITH_SOCIAL_IDENTITY_SQL,
       [
         identifier,
         displayName,
