@@ -1275,6 +1275,7 @@ function RootNavigator(): React.JSX.Element {
                 })}
                 screenOptions={({ route }) => ({
                   headerShown: false,
+                  tabBarAccessibilityLabel: headerTitleByRoute[route.name],
                   tabBarActiveTintColor: designTokens.colors.primary,
                   tabBarInactiveTintColor: "#000000",
                   tabBarStyle: {
@@ -1285,12 +1286,10 @@ function RootNavigator(): React.JSX.Element {
                     paddingBottom: isCompactTabLayout ? 6 : 10
                   },
                   tabBarLabelStyle: {
-    textTransform: "uppercase",
-    textAlign: "center",
+                    textAlign: "center",
                     fontSize: isCompactTabLayout ? 11 : 12,
                     lineHeight: isCompactTabLayout ? 13 : 14,
                     fontFamily: appFontFamilies.altGeneral,
-                    letterSpacing: 0.4,
                     marginTop: -2
                   },
                   tabBarIcon: ({ color, focused }) => {
@@ -1325,11 +1324,11 @@ function RootNavigator(): React.JSX.Element {
               >
                 <Tab.Screen
                   name="Explore"
-                  options={{ tabBarLabel: t("exploreLabel", { ns: "us1" }).toUpperCase() }}
+                  options={{ tabBarLabel: t("exploreTabLabel", { ns: "us1" }) }}
                 >
                   {() => <US2ExploreScreen currentAccountId={accountId} />}
                 </Tab.Screen>
-                <Tab.Screen name="MyHub" options={{ tabBarLabel: t("myHubLabel", { ns: "us1" }).toUpperCase() }}>
+                <Tab.Screen name="MyHub" options={{ tabBarLabel: t("myHubTabLabel", { ns: "us1" }) }}>
                   {() => (
                     <MyHubScreen
                       authenticated={authenticated}
@@ -1344,13 +1343,13 @@ function RootNavigator(): React.JSX.Element {
                     />
                   )}
                 </Tab.Screen>
-                <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }).toUpperCase() }}>
+                <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsTabLabel", { ns: "us1" }) }}>
                   {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} pendingCampaignId={pendingCampaignId} pendingCampaignModeration={pendingCampaignModeration} onConsumePendingCampaign={consumePendingCampaign} />}
                 </Tab.Screen>
                 <Tab.Screen
                   name="Chat"
                   options={{
-                    tabBarLabel: t("chatLabel", { ns: "us1" }).toUpperCase(),
+                    tabBarLabel: t("chatTabLabel", { ns: "us1" }),
                     ...(unreadChatConversationCount > 0
                       ? { tabBarBadge: unreadChatConversationCount }
                       : {})
@@ -1370,7 +1369,7 @@ function RootNavigator(): React.JSX.Element {
                   )}
                 </Tab.Screen>
                 <Tab.Screen name="Notifications" options={{
-                  tabBarLabel: t("notificationsLabel", { ns: "us1" }).toUpperCase(),
+                  tabBarLabel: t("notificationsTabLabel", { ns: "us1" }),
                   ...((unreadNotificationsCount ?? 0) > 0 ? { tabBarBadge: unreadNotificationsCount! } : {})
                 }}>
                   {() => <NotificationsScreen authenticated={authenticated} onRequestAuth={requestAuth} onOpenNotification={handleOpenNotification} />}

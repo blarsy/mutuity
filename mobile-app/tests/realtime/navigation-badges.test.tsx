@@ -17,7 +17,7 @@ const mockI18n = { language: "en", changeLanguage: jest.fn() };
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key, i18n: mockI18n })
 }));
-jest.mock("../../src/i18n", () => ({ __esModule: true, default: {} }));
+jest.mock("../../src/i18n", () => ({ __esModule: true, default: {}, getDeviceLanguage: () => "en" }));
 jest.mock("../../src/services/auth/AuthProvider", () => {
   const actual = jest.requireActual("../../src/services/auth/AuthProvider");
   const React = require("react");
@@ -27,7 +27,8 @@ jest.mock("../../src/services/auth/AuthProvider", () => {
 });
 jest.mock("../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn(), setPersistedToken: jest.fn().mockResolvedValue(undefined),
-  setPersistedAccountId: jest.fn().mockResolvedValue(undefined), clearPersistedToken: jest.fn().mockResolvedValue(undefined)
+  setPersistedAccountId: jest.fn().mockResolvedValue(undefined), setPersistedLanguage: jest.fn().mockResolvedValue(undefined),
+  clearPersistedToken: jest.fn().mockResolvedValue(undefined)
 }));
 jest.mock("../../src/services/graphql/auth", () => ({ fetchAccountSnapshotById: jest.fn().mockResolvedValue(null) }));
 jest.mock("../../src/services/graphql/client", () => ({
@@ -57,11 +58,18 @@ jest.mock("@react-navigation/bottom-tabs", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return { createBottomTabNavigator: () => ({
-    Navigator: ({ children }: { children: React.ReactNode }) => children,
+    Navigator: ({ children, screenOptions }: { children: React.ReactNode; screenOptions: (value: { route: { name: string } }) => { tabBarLabelStyle: object; tabBarAccessibilityLabel: string } }) => {
+      const options = screenOptions({ route: { name: "Explore" } });
+      return React.createElement(React.Fragment, null,
+        React.createElement(Text, { testID: "tab-label-style", style: options.tabBarLabelStyle, accessibilityLabel: options.tabBarAccessibilityLabel }),
+        children);
+    },
     // Read actual navigator options rather than mocking the unread hook. Leaf
     // screens are intentionally not mounted by this navigation integration seam.
-    Screen: ({ name, options }: { name: string; options: { tabBarBadge?: number } }) =>
-      React.createElement(Text, { testID: `tab-${name}` }, options.tabBarBadge == null ? "no badge" : String(options.tabBarBadge))
+    Screen: ({ name, options }: { name: string; options: { tabBarBadge?: number; tabBarLabel: string } }) =>
+      React.createElement(React.Fragment, null,
+        React.createElement(Text, { testID: `tab-${name}` }, options.tabBarBadge == null ? "no badge" : String(options.tabBarBadge)),
+        React.createElement(Text, { testID: `tab-label-${name}` }, options.tabBarLabel))
   }) };
 });
 
@@ -102,6 +110,24 @@ beforeEach(() => {
 afterEach(() => {
   cleanup(); jest.clearAllTimers(); jest.restoreAllMocks(); jest.useRealTimers();
   Object.defineProperty(AppState, "currentState", originalCurrentState);
+});
+
+it("uses separate mixed-case tab translations while retaining the full screen title", async () => {
+  const screen = await mount();
+  expect(screen.getByRole("header", { name: "exploreLabel" })).toBeTruthy();
+  for (const [route, label] of Object.entries({
+    Explore: "exploreTabLabel",
+    MyHub: "myHubTabLabel",
+    Campaigns: "campaignsTabLabel",
+    Chat: "chatTabLabel",
+    Notifications: "notificationsTabLabel"
+  })) {
+    expect(screen.getByTestId(`tab-label-${route}`)).toHaveTextContent(label);
+  }
+  const style = screen.getByTestId("tab-label-style");
+  expect(style.props.accessibilityLabel).toBe("exploreLabel");
+  expect(style.props.style).not.toHaveProperty("textTransform", "uppercase");
+  expect(style.props.style).not.toHaveProperty("letterSpacing");
 });
 
 it("wires distinct chat and notification badges through one shared subscription and catches up after offline recovery", async () => {
