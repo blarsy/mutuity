@@ -11,29 +11,37 @@ describe("confirmPendingSocialLink", () => {
   });
   afterEach(() => { global.fetch = originalFetch; });
 
-  it("uses the password-login session cookie to confirm a signed pending identity", async () => {
+  it("uses the password-login bearer session to confirm a signed pending identity", async () => {
     mockFetch.mockResolvedValue({ ok: true });
-    await confirmPendingSocialLink("signed-token");
+    await confirmPendingSocialLink("signed-token", "opaque-session-token");
     expect(mockFetch).toHaveBeenCalledWith(`${appSettings.apiUrl}/auth/social/confirm-link`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer opaque-session-token"
+      },
       body: JSON.stringify({ pendingLinkToken: "signed-token" })
     });
   });
 
   it.each([400, 401, 500])("surfaces HTTP %s without claiming link success", async (status) => {
     mockFetch.mockResolvedValue({ ok: false, status });
-    await expect(confirmPendingSocialLink("signed-token")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
+    await expect(confirmPendingSocialLink("signed-token", "opaque-session-token")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
   });
 
   it("surfaces network failures", async () => {
     mockFetch.mockRejectedValue(new Error("offline"));
-    await expect(confirmPendingSocialLink("signed-token")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
+    await expect(confirmPendingSocialLink("signed-token", "opaque-session-token")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
   });
 
   it("does not send a request without a pending token", async () => {
-    await expect(confirmPendingSocialLink("")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
+    await expect(confirmPendingSocialLink("", "opaque-session-token")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("does not attempt linking without the authenticated session", async () => {
+    await expect(confirmPendingSocialLink("signed-token", "")).rejects.toBeInstanceOf(SocialLinkConfirmationError);
     expect(mockFetch).not.toHaveBeenCalled();
   });
 });

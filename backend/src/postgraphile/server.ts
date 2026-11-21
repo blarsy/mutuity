@@ -264,8 +264,8 @@ const APPLE_OAUTH_CALLBACK_URL = resolveLocalUrl(
 );
 const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const APPLE_OAUTH_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize";
-const UPSERT_IDENTITY_SQL =
-  "select app_private.upsert_account_identity($1, $2, $3, $4, $5, '{}'::jsonb)";
+const CONFIRM_SOCIAL_LINK_SQL =
+  "select app_private.confirm_social_identity_link($1, $2, $3, $4, $5, $6)";
 const RESOLVE_EXTERNAL_IDENTITY_SQL =
   "select * from app_private.resolve_account_for_external_identity($1, $2, $3, $4);";
 const APPLE_OAUTH_CALLBACK_ROUTE = "/auth/apple/callback";
@@ -476,6 +476,7 @@ function buildFrontendSocialCallbackUrl(provider: "google" | "apple", input: {
   context?: SocialAuthCallbackContext;
   nextDestination: string;
   email?: string;
+  providerEmailVerified?: boolean;
   name?: string;
   providerSubject?: string;
   error?: string;
@@ -650,6 +651,7 @@ app.get("/auth/google/callback", async (req, res) => {
       context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
+      providerEmailVerified: result.providerEmailVerified,
       name: result.name,
       providerSubject: result.providerSubject,
       pendingRegistrationToken
@@ -673,6 +675,7 @@ app.get("/auth/google/callback", async (req, res) => {
       context: result.clientContext,
       nextDestination: result.nextDestination,
       email: result.email,
+      providerEmailVerified: result.providerEmailVerified,
       name: result.name,
       providerSubject: result.providerSubject,
       pendingLinkToken
@@ -961,8 +964,9 @@ app.post("/auth/social/confirm-link", express.json(), async (req, res) => {
   }
 
   try {
-    await pool.query(UPSERT_IDENTITY_SQL, [
+    await pool.query(CONFIRM_SOCIAL_LINK_SQL, [
       req.authSession.accountId,
+      req.authSession.sessionId,
       pending.provider,
       pending.providerSubject,
       pending.providerEmail,
@@ -973,7 +977,7 @@ app.post("/auth/social/confirm-link", express.json(), async (req, res) => {
     await logWebApiError("[auth] Failed to confirm pending social link", error, {
       context: "confirm_pending_link",
     });
-    res.status(500).json({ error: translate("auth.failed_to_link_identity", language) });
+    res.status(400).json({ error: translate("auth.failed_to_link_identity", language) });
   }
 });
 
@@ -1015,6 +1019,87 @@ app.post("/auth/social/complete-registration", express.json(), async (req, res) 
       context: "complete_social_registration"
     });
     res.status(500).json({ error: translate("auth.failed_to_complete_registration", language) });
+  }
+});
+
+app.post("/auth/mobile/social/complete-registration", express.json(), async (req, res) => {
+  const language = getLanguage(req);
+  const rawToken = typeof req.body?.pendingRegistrationToken === "string" ? req.body.pendingRegistrationToken : "";
+  const displayName = typeof req.body?.displayName === "string" ? req.body.displayName.trim() : "";
+  const submittedIdentifier = typeof req.body?.identifier === "string" ? req.body.identifier.trim().toLowerCase() : "";
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+  const preferredLanguage = req.body?.preferredLanguage === "en" ? "en" : "fr";
+
+  if (!rawToken) {
+    res.status(400).json({ error: translate("auth.missing_pending_registration_token", language) });
+    return;
+  }
+
+  const pending = verifyPendingRegistrationToken(rawToken, SOCIAL_AUTH_STATE_SECRET);
+  if (!pending) {
+    res.status(400).json({ error: translate("auth.invalid_pending_registration_token", language) });
+    return;
+  }
+
+  const providerEmail = pending.providerEmail.trim().toLowerCase();
+  const identifier = pending.providerEmailVerified ? providerEmail : submittedIdentifier || providerEmail;
+  if (!displayName || !identifier || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+    res.status(400).json({ error: translate("auth.failed_to_complete_registration", language) });
+    return;
+  }
+  if (pending.providerEmailVerified && submittedIdentifier && submittedIdentifier !== providerEmail) {
+    res.status(400).json({ error: translate("auth.failed_to_complete_registration", language) });
+    return;
+  }
+  const passwordMinimumLength = Number(process.env.PASSWORD_MIN_LENGTH ?? 8);
+  if (password && password.length < passwordMinimumLength) {
+    res.status(400).json({ error: translate("auth.password_too_short", language, { minLength: passwordMinimumLength }) });
+    return;
+  }
+
+  try {
+    await pool.query(
+      `select app_public.register_local_account_with_social_identity(
+        $1, $2, $3, $4, $5, $6, $7, $8, $9
+      )`,
+      [
+        identifier,
+        displayName,
+        password || null,
+        pending.provider,
+        pending.providerSubject,
+        providerEmail || null,
+        pending.providerEmailVerified,
+        preferredLanguage,
+        24 * 60 * 60 * 1000
+      ]
+    );
+
+    const { rows } = await pool.query<{ account_id: string | null; resolution: string }>(
+      RESOLVE_EXTERNAL_IDENTITY_SQL,
+      [pending.provider, pending.providerSubject, pending.providerEmail, pending.providerEmailVerified]
+    );
+    const resolution = rows[0];
+    if (!resolution || resolution.resolution !== "subject_match" || !resolution.account_id) {
+      res.status(400).json({ error: translate("auth.failed_to_complete_registration", language) });
+      return;
+    }
+
+    const nextSession = await createSessionForAccount(pool, {
+      accountId: resolution.account_id,
+      role: "identified_account"
+    });
+    res.status(200).json({
+      status: "authenticated",
+      sessionToken: nextSession.sessionToken,
+      accountId: resolution.account_id,
+      next: pending.next
+    });
+  } catch (error) {
+    await logWebApiError("[auth] Failed to complete mobile social registration", error, {
+      context: "complete_mobile_social_registration"
+    });
+    res.status(400).json({ error: translate("auth.failed_to_complete_registration", language) });
   }
 });
 

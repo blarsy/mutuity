@@ -1,6 +1,6 @@
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { apolloClient } from "../../../src/services/graphql/client";
-import { authenticateWithPassword, requestPasswordReset } from "../../../src/services/graphql/auth";
+import { authenticateWithPassword, registerWithPassword, requestPasswordReset } from "../../../src/services/graphql/auth";
 import { isPasswordResetRequiredError } from "../../../src/services/auth/errors";
 import { REQUEST_PASSWORD_RESET_MUTATION } from "../../../src/services/graphql/operations";
 
@@ -24,6 +24,47 @@ describe("requestPasswordReset", () => {
           throttleMs: 60 * 1000
         }
       }
+    });
+  });
+
+  it("creates a local account with the normalized email, chosen password, language, and verification email lifetime", async () => {
+    (apolloClient.mutate as jest.Mock).mockResolvedValueOnce({
+      data: { registerLocalAccountWithPassword: { boolean: true } }
+    });
+
+    await registerWithPassword({
+      email: "  Person@Example.com ",
+      fullName: "  Person Example  ",
+      password: "StrongPass123!",
+      preferredLanguage: "fr"
+    });
+
+    expect(apolloClient.mutate).toHaveBeenCalledWith(expect.objectContaining({
+      variables: {
+        input: {
+          identifier: "person@example.com",
+          displayName: "Person Example",
+          password: "StrongPass123!",
+          verificationTtlMs: 24 * 60 * 60 * 1000,
+          preferredLanguage: "fr"
+        }
+      }
+    }));
+  });
+
+  it("returns the opaque mobile session token from password login", async () => {
+    (apolloClient.mutate as jest.Mock).mockResolvedValueOnce({
+      data: {
+        authLogin: {
+          mobileSessionToken: "opaque-session-token",
+          authSession: { account: { id: "123e4567-e89b-12d3-a456-426614174000" } }
+        }
+      }
+    });
+
+    await expect(authenticateWithPassword({ email: "person@example.com", password: "secret" })).resolves.toEqual({
+      accountId: "123e4567-e89b-12d3-a456-426614174000",
+      sessionToken: "opaque-session-token"
     });
   });
 

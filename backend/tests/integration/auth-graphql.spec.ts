@@ -6,6 +6,7 @@ import {
   TEST_BACKEND_URL,
   TEST_DATABASE_URL,
   getSessionCookie,
+  loginWithGraphqlSessionCookie,
   seedDemoAccount
 } from "./auth-test-helpers";
 
@@ -24,13 +25,15 @@ type GraphQLResponse<TData> = {
 async function graphQLRequest<TData>(
   query: string,
   variables?: Record<string, unknown>,
-  cookie?: string
+  cookie?: string,
+  appPlatform?: "ios" | "android"
 ) {
   const response = await fetch(`${TEST_BACKEND_URL}/graphql`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(cookie ? { Cookie: cookie } : {})
+      ...(cookie ? { Cookie: cookie } : {}),
+      ...(appPlatform ? { "x-app-platform": appPlatform } : {})
     },
     body: JSON.stringify({
       query,
@@ -161,6 +164,88 @@ async function setCredentialRole(accountId: string, role: string) {
 }
 
 describe("auth graphql operations", () => {
+  it("returns a bearer session token to mobile password clients and accepts it on subsequent requests", async () => {
+    const account = await seedDemoAccount({
+      identifier: `mobile-token-login-${Date.now()}@example.com`
+    });
+    const login = await graphQLRequest<{
+      authLogin: { mobileSessionToken: string | null; authSession: { account: { id: string } } };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) {
+          mobileSessionToken
+          authSession { account { id } }
+        }
+      }`,
+      { identifier: account.identifier, password: account.password },
+      undefined,
+      "ios"
+    );
+
+    expect(login.payload.errors).toBeUndefined();
+    expect(login.payload.data?.authLogin.mobileSessionToken).toEqual(expect.any(String));
+    expect(login.payload.data?.authLogin.authSession.account.id).toBe(account.accountId);
+
+    const token = login.payload.data?.authLogin.mobileSessionToken;
+    const session = await fetch(`${TEST_BACKEND_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ query: `query { authSession { authenticated account { id } } }` })
+    });
+    const sessionPayload = await session.json() as { data?: { authSession?: { authenticated?: boolean; account?: { id?: string } } } };
+    expect(sessionPayload.data?.authSession).toMatchObject({
+      authenticated: true,
+      account: { id: account.accountId }
+    });
+
+    const webLogin = await graphQLRequest<{
+      authLogin: { mobileSessionToken: string | null };
+    }>(
+      `mutation AuthLogin($identifier: String!, $password: String!) {
+        authLogin(input: { identifier: $identifier, password: $password }) { mobileSessionToken }
+      }`,
+      { identifier: account.identifier, password: account.password }
+    );
+    expect(webLogin.payload.errors).toBeUndefined();
+    expect(webLogin.payload.data?.authLogin.mobileSessionToken).toBeNull();
+  });
+
+  it("links a verified social identity only to its recently authenticated matching local account", async () => {
+    const account = await seedDemoAccount({
+      identifier: `social-link-owner-${Date.now()}@example.com`
+    });
+    const otherAccount = await seedDemoAccount({
+      identifier: `social-link-other-${Date.now()}@example.com`
+    });
+    const sessionCookie = await loginWithGraphqlSessionCookie(account.identifier, account.password);
+    const sessionToken = decodeURIComponent(sessionCookie.split("=")[1] ?? "");
+    const sessionHash = createHash("sha256").update(sessionToken).digest("hex");
+    const sessionIdResult = await withDbClient(client => client.query<{ id: string }>(
+      `select id from app_private.account_session where session_token_hash = $1`,
+      [sessionHash]
+    ));
+    const sessionId = sessionIdResult.rows[0]?.id;
+    expect(sessionId).toBeTruthy();
+
+    await withDbClient(client => client.query(
+      `select app_private.confirm_social_identity_link($1, $2, 'google', $3, $4, true)`,
+      [account.accountId, sessionId, `google-sub-${Date.now()}`, account.identifier]
+    ));
+
+    await expect(withDbClient(client => client.query(
+      `select app_private.confirm_social_identity_link($1, $2, 'apple', $3, $4, true)`,
+      [account.accountId, sessionId, `apple-sub-${Date.now()}`, otherAccount.identifier]
+    ))).rejects.toThrow(/does not match the signed-in account/i);
+
+    await expect(withDbClient(client => client.query(
+      `select app_private.confirm_social_identity_link($1, $2, 'apple', $3, $4, false)`,
+      [account.accountId, sessionId, `apple-unverified-${Date.now()}`, account.identifier]
+    ))).rejects.toThrow(/verified social identity is required/i);
+  });
+
   it("uses the account role for social-only sessions and revokes sessions when the role changes", async () => {
     const identifier = `social-admin-role-${Date.now()}@example.com`;
     const tokenHash = createHash("sha256").update(`session-${identifier}`).digest("hex");

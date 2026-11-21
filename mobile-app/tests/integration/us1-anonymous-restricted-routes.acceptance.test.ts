@@ -19,8 +19,10 @@ jest.mock("../../src/services/auth/session", () => ({
 
 jest.mock("../../src/services/graphql/auth", () => ({
   authenticateWithPassword: jest.fn().mockResolvedValue({
-    accountId: "123e4567-e89b-12d3-a456-426614174000"
-  })
+    accountId: "123e4567-e89b-12d3-a456-426614174000",
+    sessionToken: "authenticated-mobile-token"
+  }),
+  registerWithPassword: jest.fn().mockResolvedValue(undefined)
 }));
 
 jest.mock("@react-native-community/netinfo", () => ({
@@ -109,5 +111,39 @@ describe("US1 anonymous restricted routes acceptance", () => {
       expect(screen.getByRole("alert")).toBeTruthy();
       expect(screen.getByText("Sign in failed. Please verify your credentials and try again.")).toBeTruthy();
     });
+  });
+
+  it("creates a real email/password account and signs in with its returned bearer session", async () => {
+    const authModule = require("../../src/services/graphql/auth") as {
+      authenticateWithPassword: jest.Mock;
+      registerWithPassword: jest.Mock;
+    };
+    const sessionModule = require("../../src/services/auth/session") as {
+      setPersistedToken: jest.Mock;
+    };
+
+    const screen = render(React.createElement(App));
+    await waitFor(() => expect(screen.getByLabelText("Main navigation")).toBeTruthy());
+    fireEvent.press(screen.getAllByRole("button", { name: "Sign in" })[0]);
+    await waitFor(() => expect(screen.getByTestId("auth-login-screen")).toBeTruthy());
+    fireEvent.press(screen.getByText("Create account"));
+
+    fireEvent.changeText(screen.getByTestId("auth-register-full-name"), "New Member");
+    fireEvent.changeText(screen.getByTestId("auth-register-email"), "New.Member@example.com");
+    fireEvent.changeText(screen.getByTestId("auth-register-password"), "StrongPass123!");
+    fireEvent.changeText(screen.getByTestId("auth-register-confirm-password"), "StrongPass123!");
+    fireEvent.press(screen.getByTestId("auth-register-submit"));
+
+    await waitFor(() => expect(authModule.registerWithPassword).toHaveBeenCalledWith({
+      email: "new.member@example.com",
+      fullName: "New Member",
+      password: "StrongPass123!",
+      preferredLanguage: expect.any(String)
+    }));
+    expect(authModule.authenticateWithPassword).toHaveBeenCalledWith({
+      email: "new.member@example.com",
+      password: "StrongPass123!"
+    });
+    await waitFor(() => expect(sessionModule.setPersistedToken).toHaveBeenCalledWith("authenticated-mobile-token"));
   });
 });

@@ -1241,6 +1241,7 @@ export type AuthLoginPayload = {
   __typename: 'AuthLoginPayload';
   authSession: AuthSessionPayload;
   clientMutationId: Maybe<Scalars['String']['output']>;
+  mobileSessionToken: Maybe<Scalars['String']['output']>;
 };
 
 export type AuthLogoutInput = {

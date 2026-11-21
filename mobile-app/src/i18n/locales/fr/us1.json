@@ -40,6 +40,7 @@
   "myHubNeedsGroup": "Besoins",
   "myHubAccountGroup": "Compte",
   "notificationsLabel": "Notifications",
+  "optionalPasswordLabel": "Mot de passe (facultatif)",
   "passwordLabel": "Mot de passe",
   "passwordResetRequiredMessage": "Votre compte a été transféré vers le nouveau Tope-là. Pour vous connecter, vous devez réinitialiser votre mot de passe. Appuyez sur Réinitialiser mon mot de passe pour demander un lien par e-mail, puis suivez ce lien pour choisir un nouveau mot de passe.",
   "passwordResetRequiredButton": "Réinitialiser mon mot de passe",

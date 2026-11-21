@@ -5,6 +5,7 @@ export interface MobileSocialCallbackInput {
   status: MobileSocialCallbackStatus;
   nextDestination: string;
   email?: string;
+  providerEmailVerified?: boolean;
   name?: string;
   providerSubject?: string;
   error?: string;
@@ -75,6 +76,10 @@ export function buildMobileSocialCallbackUrl(
 
   if (input.email) {
     callbackUrl.searchParams.set("email", input.email);
+  }
+
+  if (input.providerEmailVerified !== undefined) {
+    callbackUrl.searchParams.set("providerEmailVerified", String(input.providerEmailVerified));
   }
 
   if (input.name) {

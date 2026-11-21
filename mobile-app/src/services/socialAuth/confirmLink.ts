@@ -9,8 +9,8 @@ export class SocialLinkConfirmationError extends Error {
 
 // authLogin issues an HttpOnly session cookie. Use that session, not an
 // account ID or the pending token itself, to authenticate link confirmation.
-export async function confirmPendingSocialLink(pendingLinkToken: string): Promise<void> {
-  if (!pendingLinkToken) {
+export async function confirmPendingSocialLink(pendingLinkToken: string, sessionToken: string): Promise<void> {
+  if (!pendingLinkToken || !sessionToken) {
     throw new SocialLinkConfirmationError();
   }
 
@@ -18,7 +18,10 @@ export async function confirmPendingSocialLink(pendingLinkToken: string): Promis
     const response = await fetch(`${appSettings.apiUrl}/auth/social/confirm-link`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`
+      },
       body: JSON.stringify({ pendingLinkToken })
     });
     if (!response.ok) {

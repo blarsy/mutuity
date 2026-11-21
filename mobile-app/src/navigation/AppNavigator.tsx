@@ -13,9 +13,10 @@ import { useCurrentAccount } from "../services/auth/useCurrentAccount";
 import { AppCard, PrimaryButton, ScreenContainer } from "../components/primitives";
 import { AccountAvatar } from "../components/AccountAvatar";
 import { TokenBalanceInfo } from "../components/contribution/TokenBalanceInfo";
-import { authenticateWithPassword, registerWithSocialIdentity, requestPasswordReset } from "../services/graphql/auth";
+import { authenticateWithPassword, registerWithPassword, requestPasswordReset } from "../services/graphql/auth";
 import { openSocialAuthStart, parseSocialCallbackPayloadFromUrl } from "../services/socialAuth/callback";
 import { confirmPendingSocialLink } from "../services/socialAuth/confirmLink";
+import { completeMobileSocialRegistration } from "../services/socialAuth/completeRegistration";
 import type { SocialAuthNotice } from "../screens/auth/LoginScreen";
 import { EditResourceScreen } from "../screens/resources/EditResourceScreen";
 import { MyResourcesScreen } from "../screens/resources/MyResourcesScreen";
@@ -93,6 +94,7 @@ interface SocialRegistrationContext {
   providerSubject?: string | undefined;
   providerEmail?: string | undefined;
   providerEmailVerified?: boolean | undefined;
+  pendingRegistrationToken?: string | undefined;
   initialName?: string | undefined;
   initialEmail?: string | undefined;
 }
@@ -158,7 +160,6 @@ interface AuthScreenShellProps {
 }
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
-const mockAuthenticatedToken = "mock:123e4567-e89b-12d3-a456-426614174000";
 const safeSocialDestinationMap = {
   Explore: "/explore",
   MyHub: "/my-hub",
@@ -954,11 +955,11 @@ function RootNavigator(): React.JSX.Element {
       return;
     }
 
-    const { accountId } = await authenticateWithPassword(credentials);
+    const { accountId, sessionToken } = await authenticateWithPassword(credentials);
     if (authEntry.socialAuthNotice?.status === "link_confirmation_required") {
-      await confirmPendingSocialLink(authEntry.pendingLinkToken ?? "");
+      await confirmPendingSocialLink(authEntry.pendingLinkToken ?? "", sessionToken);
     }
-    await signIn(accountId);
+    await signIn(sessionToken, accountId);
     setActiveRouteName(authEntry.returnTo);
     setMainNavigatorVersion((previous) => previous + 1);
     setAuthEntry(null);
@@ -970,21 +971,26 @@ function RootNavigator(): React.JSX.Element {
     }
 
     if (socialContext?.provider && socialContext.providerSubject) {
-      await registerWithSocialIdentity({
+      if (!socialContext.pendingRegistrationToken) {
+        throw new Error(t("socialAuthErrorMessage", { ns: "us1" }));
+      }
+      const registration = await completeMobileSocialRegistration({
+        pendingRegistrationToken: socialContext.pendingRegistrationToken,
         identifier: account.email.trim(),
         displayName: account.fullName.trim(),
-        password: account.password,
-        provider: socialContext.provider,
-        providerSubject: socialContext.providerSubject,
-        providerEmail: socialContext.providerEmail ?? account.email.trim(),
-        providerEmailVerified: socialContext.providerEmailVerified ?? Boolean(socialContext.providerEmail),
+        ...(account.password ? { password: account.password } : {}),
         preferredLanguage: i18n.language.startsWith("fr") ? "fr" : "en"
       });
-
-      const { accountId } = await authenticateWithPassword({ email: account.email.trim(), password: account.password });
-      await signIn(accountId);
+      await signIn(registration.sessionToken, registration.accountId);
     } else {
-      await signIn(mockAuthenticatedToken);
+      await registerWithPassword({
+        email: account.email,
+        fullName: account.fullName,
+        password: account.password,
+        preferredLanguage: i18n.language.startsWith("fr") ? "fr" : "en"
+      });
+      const { accountId, sessionToken } = await authenticateWithPassword({ email: account.email, password: account.password });
+      await signIn(sessionToken, accountId);
     }
 
     setActiveRouteName(authEntry.returnTo);
@@ -1042,7 +1048,8 @@ function RootNavigator(): React.JSX.Element {
           provider: payload.provider,
           providerSubject: payload.providerSubject,
           providerEmail: payload.email,
-          providerEmailVerified: Boolean(payload.email),
+          providerEmailVerified: payload.providerEmailVerified ?? false,
+          pendingRegistrationToken: payload.pendingRegistrationToken,
           initialName: payload.name,
           initialEmail: payload.email
         }

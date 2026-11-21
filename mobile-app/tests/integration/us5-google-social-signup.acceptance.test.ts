@@ -6,6 +6,15 @@ import { mockLinkingUrlListener } from "../utils/mockLinkingUrlListener";
 import App from "../../src/App";
 import * as sessionService from "../../src/services/auth/session";
 import * as graphqlAuth from "../../src/services/graphql/auth";
+import * as socialRegistration from "../../src/services/socialAuth/completeRegistration";
+
+jest.mock("@react-native-community/netinfo", () => ({
+  __esModule: true,
+  default: {
+    addEventListener: jest.fn(() => jest.fn()),
+    fetch: jest.fn().mockResolvedValue({ isConnected: true, isInternetReachable: true })
+  }
+}));
 
 jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
@@ -44,7 +53,11 @@ jest.mock("../../src/services/auth/session", () => ({
 
 jest.mock("../../src/services/graphql/auth", () => ({
   authenticateWithPassword: jest.fn(),
-  registerWithSocialIdentity: jest.fn()
+  registerWithPassword: jest.fn()
+}));
+
+jest.mock("../../src/services/socialAuth/completeRegistration", () => ({
+  completeMobileSocialRegistration: jest.fn()
 }));
 
 describe("US5 Google social signup acceptance", () => {
@@ -63,8 +76,11 @@ describe("US5 Google social signup acceptance", () => {
 
     mockLinkingUrlListener(mockUrlHandler);
 
-    jest.mocked(graphqlAuth.authenticateWithPassword).mockResolvedValue({ accountId: "mock-account-id" } as never);
-    jest.mocked(graphqlAuth.registerWithSocialIdentity).mockResolvedValue(undefined as never);
+    jest.mocked(socialRegistration.completeMobileSocialRegistration).mockResolvedValue({
+      sessionToken: "mobile-session-token",
+      accountId: "123e4567-e89b-12d3-a456-426614174000",
+      next: "/my-hub"
+    });
 
     const screen = render(React.createElement(App));
 
@@ -84,7 +100,7 @@ describe("US5 Google social signup acceptance", () => {
 
     fireEvent.press(screen.getByTestId("auth-social-google"));
 
-    const callbackUrl = "topela://auth/google/callback?status=register_required&provider=google&next=%2Fmy-hub&name=Jane%20Doe&email=jane%40example.com&providerSubject=subject-123";
+    const callbackUrl = "topela://auth/google/callback?status=register_required&provider=google&next=%2Fmy-hub&name=Jane%20Doe&email=jane%40example.com&providerSubject=subject-123&providerEmailVerified=true&pendingRegistrationToken=signed-registration";
     mockUrlHandler.current?.({ url: callbackUrl });
 
     await waitFor(() => {
@@ -97,21 +113,18 @@ describe("US5 Google social signup acceptance", () => {
     });
 
     fireEvent.changeText(screen.getByTestId("auth-register-full-name"), "Jane Smith");
-    fireEvent.changeText(screen.getByTestId("auth-register-email"), "jane.updated@example.com");
-    fireEvent.changeText(screen.getByTestId("auth-register-password"), "StrongPass123!");
-    fireEvent.changeText(screen.getByTestId("auth-register-confirm-password"), "StrongPass123!");
     fireEvent.press(screen.getByTestId("auth-register-submit"));
 
     await waitFor(() => {
-      expect(graphqlAuth.registerWithSocialIdentity).toHaveBeenCalledWith(expect.objectContaining({
-        provider: "google",
-        providerSubject: "subject-123",
+      expect(socialRegistration.completeMobileSocialRegistration).toHaveBeenCalledWith(expect.objectContaining({
+        pendingRegistrationToken: "signed-registration",
         displayName: "Jane Smith",
-        identifier: "jane.updated@example.com"
+        identifier: "jane@example.com"
       }));
     });
+    expect(socialRegistration.completeMobileSocialRegistration).not.toHaveBeenCalledWith(expect.objectContaining({ password: expect.any(String) }));
 
-    expect(graphqlAuth.authenticateWithPassword).toHaveBeenCalled();
-    expect(sessionService.setPersistedToken).toHaveBeenCalledWith(expect.any(String));
+    expect(graphqlAuth.authenticateWithPassword).not.toHaveBeenCalled();
+    expect(sessionService.setPersistedToken).toHaveBeenCalledWith("mobile-session-token");
   });
 });

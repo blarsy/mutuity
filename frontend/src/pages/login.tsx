@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
 import { Alert, Box, Button, Stack, Typography } from "@mui/material";
@@ -25,6 +25,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { status, session } = useAuth();
   const { t } = useTranslation("auth");
+  const [socialLinkError, setSocialLinkError] = useState(false);
 
   const nextDestination = useMemo(() => resolveNextDestination(router.query.next), [router.query.next]);
   const isProtectedRedirect = nextDestination !== "/";
@@ -37,18 +38,23 @@ export default function LoginPage() {
    : "";
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !socialLinkRequired) {
       void router.replace(nextDestination);
     }
-  }, [nextDestination, router, status]);
+  }, [nextDestination, router, socialLinkRequired, status]);
 
   const handleLoginSuccess = async () => {
-    if (socialLinkRequired && pendingLinkToken) {
+    setSocialLinkError(false);
+    if (socialLinkRequired && !pendingLinkToken) {
+      setSocialLinkError(true);
+      return;
+    }
+    if (socialLinkRequired) {
       try {
         await confirmPendingLink(pendingLinkToken);
       } catch {
-        // Non-fatal: user is signed in; identity link failed silently.
-        // A production improvement would surface a dismissible error banner here.
+        setSocialLinkError(true);
+        return;
       }
     }
     await router.replace(nextDestination);
@@ -76,6 +82,20 @@ export default function LoginPage() {
               provider: socialProviderLabel,
               email: socialEmail || t("signIn.socialLinkRequiredNoEmail")
             })}
+          </Alert>
+        ) : null}
+
+        {socialLinkError ? (
+          <Alert
+            action={(
+              <Button color="inherit" onClick={() => void router.replace(nextDestination)} size="small">
+                {t("signIn.continueAfterLinkFailure")}
+              </Button>
+            )}
+            severity="error"
+            sx={{ mb: 2 }}
+          >
+            {t("signIn.socialLinkFailed")}
           </Alert>
         ) : null}
 

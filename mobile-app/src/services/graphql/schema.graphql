@@ -1566,6 +1566,7 @@ input AuthLoginInput {
 type AuthLoginPayload {
   authSession: AuthSessionPayload!
   clientMutationId: String
+  mobileSessionToken: String
 }
 
 input AuthLogoutInput {

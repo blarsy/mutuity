@@ -162,6 +162,7 @@ export function createAuthGraphqlPlugin(pool: Pool) {
       type AuthLoginPayload {
         clientMutationId: String
         authSession: AuthSessionPayload!
+        mobileSessionToken: String
       }
 
       input AuthLogoutInput {
@@ -286,9 +287,15 @@ export function createAuthGraphqlPlugin(pool: Pool) {
 
             res.cookie(SESSION_COOKIE_NAME, nextSession.sessionToken, getSessionCookieOptions());
 
+            const appPlatform = req.headers["x-app-platform"];
+            const mobileSessionToken = appPlatform === "ios" || appPlatform === "android"
+              ? nextSession.sessionToken
+              : null;
+
             return {
               clientMutationId: args.input.clientMutationId ?? null,
-              authSession: toSessionPayload(req)
+              authSession: toSessionPayload(req),
+              mobileSessionToken
             };
           } catch (error) {
             if (error instanceof GraphQLError) {

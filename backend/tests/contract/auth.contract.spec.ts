@@ -44,12 +44,14 @@ describe("auth GraphQL contract", () => {
     const loginResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-app-platform": "ios"
       },
       body: JSON.stringify({
         query: `
           mutation AuthLogin($identifier: String!, $password: String!) {
             authLogin(input: { identifier: $identifier, password: $password }) {
+              mobileSessionToken
               authSession {
                 authenticated
                 role
@@ -75,6 +77,7 @@ describe("auth GraphQL contract", () => {
 
     const loginPayload = (await loginResponse.json()) as GraphQLResponse<{
       authLogin: {
+        mobileSessionToken: string | null;
         authSession: {
           authenticated: boolean;
           role: string;
@@ -88,6 +91,7 @@ describe("auth GraphQL contract", () => {
     }>;
 
     expect(loginPayload.errors).toBeUndefined();
+    expect(loginPayload.data?.authLogin.mobileSessionToken).toEqual(expect.any(String));
     expect(loginPayload.data?.authLogin.authSession).toMatchObject({
       authenticated: true,
       role: account.role,

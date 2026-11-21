@@ -20,6 +20,7 @@ describe("mobile social callback contract builder", () => {
         status: "register_required",
         nextDestination: "/campaigns",
         email: "new@example.com",
+        providerEmailVerified: true,
         name: "New User",
         providerSubject: "provider-subject",
         pendingRegistrationToken: "signed-token"
@@ -31,6 +32,7 @@ describe("mobile social callback contract builder", () => {
     expect(callbackUrl.searchParams.get("status")).toBe("register_required");
     expect(callbackUrl.searchParams.get("next")).toBe("/campaigns");
     expect(callbackUrl.searchParams.get("email")).toBe("new@example.com");
+    expect(callbackUrl.searchParams.get("providerEmailVerified")).toBe("true");
     expect(callbackUrl.searchParams.get("providerSubject")).toBe("provider-subject");
     expect(callbackUrl.searchParams.get("pendingRegistrationToken")).toBe("signed-token");
   });

@@ -15,7 +15,7 @@ const fontConfig = {
   titleSmall: { fontFamily: appFontFamilies.title },
   bodyLarge: { fontFamily: appFontFamilies.general },
   bodyMedium: { fontFamily: appFontFamilies.general },
-  bodySmall: { fontFamily: appFontFamilies.sugar },
+  bodySmall: { fontFamily: appFontFamilies.general },
   labelLarge: { fontFamily: appFontFamilies.altGeneral },
   labelMedium: { fontFamily: appFontFamilies.altGeneral },
   labelSmall: { fontFamily: appFontFamilies.altGeneral }

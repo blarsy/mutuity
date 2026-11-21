@@ -10,6 +10,7 @@ export interface SocialCallbackPayload {
   status: SocialCallbackStatus;
   nextDestination: string;
   email?: string | undefined;
+  providerEmailVerified?: boolean | undefined;
   name?: string | undefined;
   providerSubject?: string | undefined;
   pendingRegistrationToken?: string | undefined;
@@ -65,6 +66,7 @@ export function parseSocialCallbackPayload(input?: Partial<SocialCallbackPayload
     status: normalizedStatus,
     nextDestination: normalizeRouteDestination(nextDestinationValue),
     email: typeof input?.email === "string" ? input.email : undefined,
+    providerEmailVerified: typeof input?.providerEmailVerified === "boolean" ? input.providerEmailVerified : undefined,
     name: typeof input?.name === "string" ? input.name : undefined,
     providerSubject: typeof input?.providerSubject === "string" ? input.providerSubject : undefined,
     pendingRegistrationToken: typeof input?.pendingRegistrationToken === "string" ? input.pendingRegistrationToken : undefined,
@@ -98,6 +100,7 @@ export function parseSocialCallbackPayloadFromUrl(url: string): SocialCallbackPa
       status: status as SocialCallbackStatus,
       nextDestination: next,
       email: params.get("email") ?? undefined,
+      providerEmailVerified: params.get("providerEmailVerified") === "true",
       name: params.get("name") ?? undefined,
       providerSubject: params.get("providerSubject") ?? undefined,
       pendingRegistrationToken: params.get("pendingRegistrationToken") ?? undefined,

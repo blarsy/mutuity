@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 import { apolloClient } from "./client";
-import { type AuthChangePasswordInput, type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs, type RequestPasswordResetInput } from "./generated";
+import { type AuthChangePasswordInput, type AuthLoginInput, type Mutation, type Query, type QueryAccountByIdArgs, type RegisterLocalAccountWithPasswordInput, type RequestPasswordResetInput } from "./generated";
 import { ACCOUNT_BY_ID_QUERY, AUTH_CHANGE_PASSWORD_MUTATION, REQUEST_PASSWORD_RESET_MUTATION } from "./operations";
 
 export type RegisterSocialIdentityInput = {
@@ -18,11 +18,20 @@ export type RegisterSocialIdentityInput = {
 const AUTH_LOGIN_MUTATION = gql`
   mutation AuthLogin($input: AuthLoginInput!) {
     authLogin(input: $input) {
+      mobileSessionToken
       authSession {
         account {
           id
         }
       }
+    }
+  }
+`;
+
+const REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION = gql`
+  mutation RegisterLocalAccountWithPassword($input: RegisterLocalAccountWithPasswordInput!) {
+    registerLocalAccountWithPassword(input: $input) {
+      boolean
     }
   }
 `;
@@ -36,7 +45,12 @@ const REGISTER_SOCIAL_IDENTITY_MUTATION = gql`
 `;
 
 interface AuthLoginMutationResult {
-  authLogin: Pick<Mutation, "authLogin">["authLogin"];
+  authLogin: {
+    authSession: {
+      account: { id: string | null } | null;
+    };
+    mobileSessionToken: string | null;
+  } | null;
 }
 
 interface AccountByIdQueryResult {
@@ -50,7 +64,7 @@ export interface AuthAccountSnapshot {
   preferredLanguage: string | null;
 }
 
-export async function authenticateWithPassword(input: { email: string; password: string }): Promise<{ accountId: string }> {
+export async function authenticateWithPassword(input: { email: string; password: string }): Promise<{ accountId: string; sessionToken: string }> {
   const variables: { input: AuthLoginInput } = {
     input: {
       identifier: input.email.trim(),
@@ -64,12 +78,42 @@ export async function authenticateWithPassword(input: { email: string; password:
   });
 
   const accountId = data?.authLogin?.authSession?.account?.id;
+  const sessionToken = data?.authLogin?.mobileSessionToken;
 
-  if (!accountId) {
-    throw new Error("Login succeeded without an authenticated account");
+  if (!accountId || !sessionToken) {
+    throw new Error("Login succeeded without a mobile session");
   }
 
-  return { accountId };
+  return { accountId, sessionToken };
+}
+
+export async function registerWithPassword(input: {
+  email: string;
+  fullName: string;
+  password: string;
+  preferredLanguage?: "en" | "fr";
+}): Promise<void> {
+  const variables: { input: RegisterLocalAccountWithPasswordInput } = {
+    input: {
+      identifier: input.email.trim().toLowerCase(),
+      displayName: input.fullName.trim(),
+      password: input.password,
+      verificationTtlMs: 24 * 60 * 60 * 1000,
+      preferredLanguage: input.preferredLanguage ?? "en"
+    }
+  };
+
+  const { data } = await apolloClient.mutate<
+    { registerLocalAccountWithPassword?: { boolean?: boolean | null } | null },
+    { input: RegisterLocalAccountWithPasswordInput }
+  >({
+    mutation: REGISTER_LOCAL_ACCOUNT_WITH_PASSWORD_MUTATION,
+    variables
+  });
+
+  if (data?.registerLocalAccountWithPassword?.boolean !== true) {
+    throw new Error("Account registration did not complete");
+  }
 }
 
 export async function fetchAccountSnapshotById(accountId: string): Promise<AuthAccountSnapshot | null> {

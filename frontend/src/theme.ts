@@ -1,14 +1,15 @@
 import { createTheme } from "@mui/material";
 import localFont from "next/font/local";
 
-const title = localFont({ src: "./fonts/LTMakeup-Regular.otf" });
+//const title = localFont({ src: "./fonts/LTMakeup-Regular.otf" });
+const title = localFont({ src: "./fonts/renner-black.otf" });
 const general = localFont({ src: "./fonts/renner-book.otf" });
 const altGeneral = localFont({ src: "./fonts/renner-black.otf", weight: "800" });
-const sugar = localFont({ src: "./fonts/ComicJensFreePro-Regular.ttf" });
+//const sugar = localFont({ src: "./fonts/ComicJensFreePro-Regular.ttf" });
 
 const titleFont = `${title.style.fontFamily}, sans-serif`;
 const bodyFont = `${general.style.fontFamily}, sans-serif`;
-const accentFont = `${sugar.style.fontFamily}, cursive`;
+//const accentFont = `${sugar.style.fontFamily}, cursive`;
 const buttonFont = `${altGeneral.style.fontFamily}, sans-serif`;
 
 const BIGGEST_TITLE_FONT_SIZE = 2.5;
@@ -42,7 +43,7 @@ export function createAppTheme(mode: AppColorMode = "light") {
     typography: {
       fontFamily: bodyFont,
       body1: { fontFamily: bodyFont },
-      body2: { fontFamily: accentFont },
+      //body2: { fontFamily: accentFont },
       h1: {
         fontFamily: titleFont,
         fontSize: `${BIGGEST_TITLE_FONT_SIZE * TITLE_SIZE_RATIOS[0]}rem`,

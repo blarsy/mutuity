@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
 import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
 
@@ -9,9 +10,9 @@ import { designTokens } from "../../theme/tokens";
 const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
 
 export interface RegisterScreenProps {
-  onSubmit: (value: { fullName: string; email: string; password: string; confirmPassword: string }, context?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined }) => Promise<void> | void;
+  onSubmit: (value: { fullName: string; email: string; password: string; confirmPassword: string }, context?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined; pendingRegistrationToken?: string | undefined }) => Promise<void> | void;
   initialValues?: { fullName?: string | undefined; email?: string | undefined };
-  socialContext?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined } | undefined;
+  socialContext?: { provider?: "google" | "apple" | undefined; providerSubject?: string | undefined; providerEmail?: string | undefined; providerEmailVerified?: boolean | undefined; pendingRegistrationToken?: string | undefined } | undefined;
   onSwitchToSignIn?: () => void;
   onDismiss: () => void;
 }
@@ -23,6 +24,15 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const socialRegistration = Boolean(socialContext?.provider && socialContext.providerSubject);
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+  const validPassword = socialRegistration
+    ? (!password && !confirmPassword) || (password.length >= 8 && password === confirmPassword)
+    : password.length >= 8 && password === confirmPassword;
+  const canSubmit = fullName.trim().length > 0 && validEmail && validPassword && !submitting;
 
   useEffect(() => {
     setFullName(initialValues?.fullName ?? "");
@@ -54,7 +64,11 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           label={t("emailLabel", { ns: "us1" })}
           accessibilityLabel={t("emailLabel", { ns: "us1" })}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(value) => {
+            setSubmitError(null);
+            setEmail(value);
+          }}
+          editable={!socialRegistration || !socialContext?.providerEmailVerified}
           autoCapitalize="none"
           keyboardType="email-address"
           textContentType="emailAddress"
@@ -67,10 +81,13 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           testID="auth-register-email"
         />
         <FormTextInput
-          label={t("passwordLabel", { ns: "us1" })}
+          label={socialRegistration ? t("optionalPasswordLabel", { ns: "us1" }) : t("passwordLabel", { ns: "us1" })}
           accessibilityLabel={t("passwordLabel", { ns: "us1" })}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(value) => {
+            setSubmitError(null);
+            setPassword(value);
+          }}
           secureTextEntry
           textContentType="newPassword"
           textColor="#ffffff"
@@ -85,7 +102,10 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           label={t("confirmPasswordLabel", { ns: "us1" })}
           accessibilityLabel={t("confirmPasswordLabel", { ns: "us1" })}
           value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          onChangeText={(value) => {
+            setSubmitError(null);
+            setConfirmPassword(value);
+          }}
           secureTextEntry
           textContentType="newPassword"
           textColor="#ffffff"
@@ -104,14 +124,26 @@ export function RegisterScreen({ onSubmit, initialValues, socialContext, onSwitc
           style={styles.mainButton}
           accessibilityLabel={t("createAccount", { ns: "us1" })}
           loading={submitting}
-          onPress={() => {
+          disabled={!canSubmit}
+          onPress={async () => {
             setSubmitting(true);
-            void Promise.resolve(onSubmit({ fullName, email, password, confirmPassword }, socialContext)).finally(() => setSubmitting(false));
+            setSubmitError(null);
+            try {
+              if (socialRegistration && !socialContext?.pendingRegistrationToken) {
+                throw new Error(t("socialAuthErrorMessage", { ns: "us1" }));
+              }
+              await onSubmit({ fullName: fullName.trim(), email: normalizedEmail, password, confirmPassword }, socialContext);
+            } catch (error) {
+              setSubmitError(error instanceof Error ? error.message : t("authFailedMessage", { ns: "us1" }));
+            } finally {
+              setSubmitting(false);
+            }
           }}
           testID="auth-register-submit"
         >
           {t("createAccount", { ns: "us1" })}
         </Button>
+        {submitError ? <Text accessibilityRole="alert" style={styles.errorText}>{submitError}</Text> : null}
         {onSwitchToSignIn ? (
           <Button mode="text" flavor="inverse" icon="login" onPress={onSwitchToSignIn}>
             {t("backToSignIn", { ns: "us1" })}
@@ -132,5 +164,10 @@ const styles = StyleSheet.create({
   },
   mainButtonContent: {
     minHeight: 46
+  },
+  errorText: {
+    color: "#ffd2cc",
+    textAlign: "center",
+    marginTop: designTokens.spacing.sm
   }
 });

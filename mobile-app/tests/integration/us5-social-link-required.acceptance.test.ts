@@ -66,7 +66,7 @@ jest.mock("../../src/services/auth/session", () => ({
 describe("US5 social link-required acceptance", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (authenticateWithPassword as jest.Mock).mockResolvedValue({ accountId: "123e4567-e89b-12d3-a456-426614174000" });
+    (authenticateWithPassword as jest.Mock).mockResolvedValue({ accountId: "123e4567-e89b-12d3-a456-426614174000", sessionToken: "authenticated-mobile-token" });
     (confirmPendingSocialLink as jest.Mock).mockResolvedValue(undefined);
     jest.spyOn(Linking, "getInitialURL").mockResolvedValue(null);
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined as never);
@@ -129,7 +129,7 @@ describe("US5 social link-required acceptance", () => {
     expect(screen.getByTestId("auth-social-notice")).toHaveTextContent(/Sign in with your password to link/);
     fireEvent.changeText(screen.getByTestId("auth-login-password"), "new-password");
     fireEvent.press(screen.getByTestId("auth-login-submit"));
-    await waitFor(() => expect(confirmPendingSocialLink).toHaveBeenCalledWith("signed-link"));
+    await waitFor(() => expect(confirmPendingSocialLink).toHaveBeenCalledWith("signed-link", "authenticated-mobile-token"));
     await waitFor(() => expect(screen.queryByTestId("auth-login-screen")).toBeNull());
     expect(authenticateWithPassword).toHaveBeenCalledWith({ email: "person@example.com", password: "new-password" });
     expect((authenticateWithPassword as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan((confirmPendingSocialLink as jest.Mock).mock.invocationCallOrder[0]!);
@@ -137,6 +137,7 @@ describe("US5 social link-required acceptance", () => {
   });
 
   it("keeps link failures visible and allows a fresh social attempt", async () => {
+    (authenticateWithPassword as jest.Mock).mockResolvedValue({ accountId: "123e4567-e89b-12d3-a456-426614174000", sessionToken: "authenticated-mobile-token" });
     (confirmPendingSocialLink as jest.Mock).mockRejectedValue(new SocialLinkConfirmationError());
     const handler = { current: null as ((event: { url: string }) => void) | null };
     mockLinkingUrlListener(handler);
