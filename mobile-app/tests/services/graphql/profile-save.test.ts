@@ -13,6 +13,7 @@ describe("updateMyProfile", () => {
     displayName: "Alice",
     location: { label: "Paris", latitude: 48.85, longitude: 2.35 },
     bio: "My bio",
+    preferredLanguage: "fr" as const,
     profileLinks
   };
 
@@ -30,7 +31,7 @@ describe("updateMyProfile", () => {
       mutation: UpdateAccountProfileDocument,
       variables: {
         id: accountId,
-        accountPatch: { displayName: "Alice", location: "Paris", latitude: 48.85, longitude: 2.35, bio: "My bio", profileLinks }
+        accountPatch: { displayName: "Alice", location: "Paris", latitude: 48.85, longitude: 2.35, bio: "My bio", preferredLanguage: "fr", profileLinks }
       }
     });
     expect(profile?.profileLinks).toEqual(profileLinks);
@@ -55,7 +56,7 @@ describe("updateMyProfile", () => {
     expect(apolloClient.mutate).toHaveBeenCalledWith(expect.objectContaining({
       variables: {
         id: accountId,
-        accountPatch: { displayName: "Alice", bio: "My bio", profileLinks: [], location: null, latitude: null, longitude: null, avatarUrl: null }
+        accountPatch: { displayName: "Alice", bio: "My bio", preferredLanguage: "fr", profileLinks: [], location: null, latitude: null, longitude: null, avatarUrl: null }
       }
     }));
     expect(uploadListingImages).not.toHaveBeenCalled();

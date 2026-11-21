@@ -799,7 +799,7 @@ function RootNavigator(): React.JSX.Element {
     signIn,
     signOut
   } = useAuth();
-  const { t } = useTranslation(["common", "us1"]);
+  const { t, i18n } = useTranslation(["common", "us1"]);
   const [authEntry, setAuthEntry] = useState<AuthEntryState | null>(null);
   const [activeRouteName, setActiveRouteName] = useState<MainRouteName>("Explore");
   const [mainNavigatorVersion, setMainNavigatorVersion] = useState(0);
@@ -978,7 +978,7 @@ function RootNavigator(): React.JSX.Element {
         providerSubject: socialContext.providerSubject,
         providerEmail: socialContext.providerEmail ?? account.email.trim(),
         providerEmailVerified: socialContext.providerEmailVerified ?? Boolean(socialContext.providerEmail),
-        preferredLanguage: "en"
+        preferredLanguage: i18n.language.startsWith("fr") ? "fr" : "en"
       });
 
       const { accountId } = await authenticateWithPassword({ email: account.email.trim(), password: account.password });

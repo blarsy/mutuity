@@ -171,7 +171,7 @@ function normalizePublicNeeds(value: unknown): PublicProfileNeed[] {
 }
 
 function toProfileRecord(
-  account: Pick<NonNullable<AccountProfileQueryResult["accountById"]>, "id" | "displayName" | "avatarUrl" | "location" | "latitude" | "longitude" | "bio" | "profileLinks">,
+  account: Pick<NonNullable<AccountProfileQueryResult["accountById"]>, "id" | "displayName" | "avatarUrl" | "location" | "latitude" | "longitude" | "bio" | "preferredLanguage" | "profileLinks">,
   allResources: unknown = [],
   allNeeds: unknown = []
 ): MyProfileRecord {
@@ -192,6 +192,7 @@ function toProfileRecord(
         }
       : null,
     bio: account.bio ?? "",
+    preferredLanguage: account.preferredLanguage === "fr" ? "fr" : "en",
     profileLinks: normalizeProfileLinks((account as { profileLinks?: unknown }).profileLinks),
     resources: normalizePublicResources(allResources),
     needs: normalizePublicNeeds(allNeeds)
@@ -217,7 +218,7 @@ export async function fetchMyProfile(accountId: string): Promise<MyProfileRecord
 
 export async function updateMyProfile(
   accountId: string,
-  profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { avatarUrl?: string | null }
+  profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { preferredLanguage?: "en" | "fr"; avatarUrl?: string | null }
 ): Promise<MyProfileRecord | null> {
   const locationValue: ProximityLocationValue | null = profilePatch.location ?? null;
   const avatarPatch: Pick<AccountPatch, "avatarUrl"> = profilePatch.avatarUrl === undefined
@@ -232,6 +233,7 @@ export async function updateMyProfile(
       longitude: locationValue?.longitude ?? null,
       bio: profilePatch.bio,
       profileLinks: profilePatch.profileLinks ?? [],
+      ...(profilePatch.preferredLanguage ? { preferredLanguage: profilePatch.preferredLanguage } : {}),
       ...avatarPatch
     }
   };

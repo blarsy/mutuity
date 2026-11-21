@@ -9,6 +9,7 @@ import {
   FormFieldLabel,
   FormTextInput,
   ImagePickerField,
+  AppSegmentedButtons,
   PrimaryButton,
   ProximityLocationEditor,
   type ProximityLocationValue,
@@ -57,6 +58,7 @@ export interface MyProfileRecord {
   avatarUrl: string | null;
   location: ProximityLocationValue | null;
   bio: string;
+  preferredLanguage?: "en" | "fr";
   profileLinks?: PublicProfileLink[];
   resources?: PublicProfileResource[];
   needs?: PublicProfileNeed[];
@@ -91,7 +93,7 @@ export interface MyProfileScreenProps {
   saving?: boolean;
   onRetry?: () => void;
   onBack?: () => void;
-  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { avatarUrl?: string | null }) => void;
+  onSaveProfile?: (profilePatch: Pick<MyProfileRecord, "displayName" | "location" | "bio" | "profileLinks"> & { preferredLanguage: "en" | "fr"; avatarUrl?: string | null }) => Promise<void> | void;
   onRequestEmailChange?: (newEmail: string) => Promise<void> | void;
   onChangePassword?: (input: { currentPassword: string; newPassword: string }) => Promise<void> | void;
   onOpenChangePassword?: () => void;
@@ -122,7 +124,7 @@ export function MyProfileScreen({
 }: MyProfileScreenProps): React.JSX.Element {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { refreshSession, signOut } = useAuth();
+  const { refreshSession, signOut, changeLanguage } = useAuth();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
@@ -132,6 +134,7 @@ export function MyProfileScreen({
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [location, setLocation] = useState<ProximityLocationValue | null>(null);
   const [bio, setBio] = useState("");
+  const [preferredLanguage, setPreferredLanguage] = useState<"en" | "fr">("en");
   const [profileLinks, setProfileLinks] = useState<PublicProfileLink[]>([]);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -239,6 +242,7 @@ export function MyProfileScreen({
       setAvatarUri(nextProfile?.avatarUrl ?? null);
       setLocation(nextProfile?.location ?? null);
       setBio(nextProfile?.bio ?? "");
+      setPreferredLanguage(nextProfile?.preferredLanguage === "fr" ? "fr" : "en");
       setProfileLinks(nextProfile?.profileLinks ?? []);
       setCurrentEmail(nextEmail ?? "");
       setEmailDraft(nextEmail ?? "");
@@ -255,6 +259,7 @@ export function MyProfileScreen({
       setAvatarUri(resolvedProfile.avatarUrl ?? null);
       setLocation(resolvedProfile.location ?? null);
       setBio(resolvedProfile.bio);
+      setPreferredLanguage(resolvedProfile.preferredLanguage === "fr" ? "fr" : "en");
       setProfileLinks(resolvedProfile.profileLinks ?? []);
 
       if (hasInjectedProfile) {
@@ -318,14 +323,17 @@ export function MyProfileScreen({
     }
 
     if (onSaveProfile) {
-      onSaveProfile({
+      void Promise.resolve(onSaveProfile({
         displayName: displayName.trim(),
         location,
         bio: bio.trim(),
         profileLinks,
+        preferredLanguage,
         avatarUrl: avatarUri
-      });
-      setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
+      }))
+        .then(() => changeLanguage(preferredLanguage))
+        .then(() => setFeedback(t("profileSaved", { defaultValue: "Profile saved." })))
+        .catch(() => setFeedback(t("profileSaveError", { defaultValue: "We could not save your profile changes." })));
       return;
     }
 
@@ -339,10 +347,12 @@ export function MyProfileScreen({
       location,
       bio: bio.trim(),
       profileLinks,
+      preferredLanguage,
       avatarUrl: avatarUri
     })
       .then(async (updatedProfile) => {
         setRemoteProfile(updatedProfile);
+        await changeLanguage(updatedProfile?.preferredLanguage ?? preferredLanguage);
         await refreshSession();
         setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
       })
@@ -534,6 +544,20 @@ export function MyProfileScreen({
           addFromCameraLabel={t("addFromCameraLabel", { defaultValue: "Take photo" })}
           addFromLibraryLabel={t("addFromLibraryLabel", { defaultValue: "Pick from library" })}
         />
+
+        <View style={styles.languageSection}>
+          <FormFieldLabel style={styles.sectionLabel}>{t("languageLabel", { defaultValue: "Language" })}</FormFieldLabel>
+          <AppSegmentedButtons
+            value={preferredLanguage}
+            onValueChange={(language) => {
+              if (language === "en" || language === "fr") setPreferredLanguage(language);
+            }}
+            buttons={[
+              { value: "en", label: t("languageEnglish", { defaultValue: "English" }), testID: "profile-language-en" },
+              { value: "fr", label: t("languageFrench", { defaultValue: "Français" }), testID: "profile-language-fr" }
+            ]}
+          />
+        </View>
 
         <FormFieldLabel style={styles.sectionLabel}>{t("locationLabel", { defaultValue: "Location" })}</FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={setLocation} />
@@ -939,6 +963,9 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     marginBottom: 2
+  },
+  languageSection: {
+    gap: designTokens.spacing.xs
   },
   linksSection: {
     gap: designTokens.spacing.xs

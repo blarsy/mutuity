@@ -3,6 +3,7 @@ import { render, waitFor } from "@testing-library/react-native";
 
 import i18n from "../../src/i18n";
 import App from "../../src/App";
+import { bootstrapSession } from "../../src/services/auth/session";
 
 jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
@@ -81,6 +82,7 @@ describe("US4 language switch acceptance", () => {
   });
 
   it("preserves language preference across re-renders", async () => {
+    (bootstrapSession as jest.Mock).mockResolvedValueOnce({ token: "session-token", accountId: null, language: "fr" });
     // Set language to French before rendering
     await i18n.changeLanguage("fr");
     expect(i18n.language).toBe("fr");

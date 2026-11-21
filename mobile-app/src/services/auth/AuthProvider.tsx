@@ -5,6 +5,7 @@ import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersis
 import { fetchAccountSnapshotById, type AuthAccountSnapshot } from "../graphql/auth";
 import { resetAccountGraphqlState } from "../graphql/client";
 import { logAppEvent } from "../monitoring/logger";
+import { getDeviceLanguage, type AppLanguage } from "../../i18n";
 
 export interface AuthSession {
   token: string | null;
@@ -125,6 +126,17 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     }
   };
 
+  const applyLanguage = async (language: AppLanguage): Promise<void> => {
+    if (i18n.language !== language) {
+      await i18n.changeLanguage(language);
+    }
+    try {
+      await setPersistedLanguage(language);
+    } catch (error) {
+      logAppEvent({ level: "warn", message: "auth-persist-language-failed", details: error });
+    }
+  };
+
   useEffect(() => {
     mounted.current = true;
     const version = generation.current;
@@ -144,13 +156,26 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
           await setPersistedAccountId(token ? resolvedAccountId : null);
         });
         if (!isCurrent(version)) return;
-        if (language && i18n.language !== language) {
-          await i18n.changeLanguage(language);
+        const startupLanguage = language === "fr" || language === "en" ? language : getDeviceLanguage();
+        if (i18n.language !== startupLanguage) {
+          await i18n.changeLanguage(startupLanguage);
+        }
+        if (!language) {
+          try {
+            await setPersistedLanguage(startupLanguage);
+          } catch (error) {
+            logAppEvent({ level: "warn", message: "auth-persist-language-failed", details: error });
+          }
         }
         if (!isCurrent(version)) return;
         const hydration = ++hydrationGeneration.current;
         const account = token ? await hydrateAccountSnapshot(resolvedAccountId) : null;
         if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        const accountLanguage = account?.preferredLanguage;
+        if (token && (accountLanguage === "en" || accountLanguage === "fr")) {
+          await applyLanguage(accountLanguage);
+          if (!isCurrent(version)) return;
+        }
         publishSession({
           token,
           accountId: token ? account?.id ?? resolvedAccountId : null,
@@ -227,6 +252,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
         const hydration = ++hydrationGeneration.current;
         const account = await hydrateAccountSnapshot(resolvedAccountId);
         if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        const accountLanguage = account?.preferredLanguage;
+        if (accountLanguage === "en" || accountLanguage === "fr") {
+          await applyLanguage(accountLanguage);
+          if (!isCurrent(version)) return;
+        }
         publishSession({
           ...sessionRef.current,
           accountId: account?.id ?? resolvedAccountId,
@@ -236,12 +266,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
       signOut: () => endSession(),
       invalidateSession: (reason?: string) => endSession(reason),
       changeLanguage: async (language: string) => {
-        await i18n.changeLanguage(language);
-        try {
-          await setPersistedLanguage(language);
-        } catch (error) {
-          logAppEvent({ level: "warn", message: "auth-persist-language-failed", details: error });
-        }
+        if (language === "en" || language === "fr") await applyLanguage(language);
       },
       refreshSession: async () => {
         const current = sessionRef.current;
@@ -253,6 +278,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
         const hydration = ++hydrationGeneration.current;
         const account = await hydrateAccountSnapshot(current.accountId);
         if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        const accountLanguage = account?.preferredLanguage;
+        if (accountLanguage === "en" || accountLanguage === "fr") {
+          await applyLanguage(accountLanguage);
+          if (!isCurrent(version) || hydration !== hydrationGeneration.current) return;
+        }
         publishSession({
           ...sessionRef.current,
           accountId: account?.id ?? current.accountId,

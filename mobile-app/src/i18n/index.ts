@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { getLocales } from "expo-localization";
 
 import enCommon from "./locales/en/common.json";
 import enUs1 from "./locales/en/us1.json";
@@ -29,9 +30,21 @@ const resources = {
   }
 } as const;
 
+export type AppLanguage = "en" | "fr";
+
+export function getDeviceLanguageFromLocales(locales: Array<{ languageCode?: string | null; languageTag?: string | null }>): AppLanguage {
+  const locale = locales[0];
+  const languageCode = (locale?.languageCode ?? locale?.languageTag?.split(/[-_]/, 1)[0])?.toLowerCase();
+  return languageCode?.startsWith("fr") ? "fr" : "en";
+}
+
+export function getDeviceLanguage(): AppLanguage {
+  return getDeviceLanguageFromLocales(getLocales());
+}
+
 void i18n.use(initReactI18next).init({
   resources,
-  lng: "en",
+  lng: getDeviceLanguage(),
   fallbackLng: "en",
   defaultNS: "common",
   ns: ["common", "us1", "us2", "us3", "us4"],

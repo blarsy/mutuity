@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { PaperProvider } from "react-native-paper";
 
@@ -11,8 +11,10 @@ jest.mock("react-i18next", () => ({
   })
 }));
 
+const mockChangeLanguage = jest.fn().mockResolvedValue(undefined);
+
 jest.mock("../../src/services/auth/AuthProvider", () => ({
-  useAuth: () => ({ refreshSession: async () => undefined })
+  useAuth: () => ({ refreshSession: async () => undefined, changeLanguage: mockChangeLanguage, signOut: jest.fn() })
 }));
 
 const invalidProfile: MyProfileRecord = {
@@ -43,7 +45,7 @@ describe("MyProfileScreen", () => {
     expect(screen.getAllByText("Title is required.").length).toBeGreaterThan(0);
   });
 
-  it("adds a profile link and includes it in the save payload", () => {
+  it("adds a profile link and includes it in the save payload", async () => {
     const onSaveProfile = jest.fn();
     const screen = renderWithPaper(
       <MyProfileScreen
@@ -62,7 +64,11 @@ describe("MyProfileScreen", () => {
     fireEvent.changeText(screen.getByLabelText("URL"), "https://example.com");
     fireEvent.press(screen.getByTestId("profile-link-editor-save"));
 
-    fireEvent.press(screen.getAllByRole("button", { name: "Save" })[0]);
+    await act(async () => {
+      fireEvent.press(screen.getAllByRole("button", { name: "Save" })[0]);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     expect(onSaveProfile).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,6 +82,29 @@ describe("MyProfileScreen", () => {
         ]
       })
     );
+  });
+
+  it("only applies a selected profile language after saving", async () => {
+    mockChangeLanguage.mockClear();
+    const onSaveProfile = jest.fn();
+    const screen = renderWithPaper(
+      <MyProfileScreen
+        accountId={invalidProfile.accountId}
+        profile={{ ...invalidProfile, displayName: "Alex", preferredLanguage: "en" }}
+        onSaveProfile={onSaveProfile}
+      />
+    );
+
+    fireEvent.press(screen.getByTestId("profile-language-fr"));
+    expect(mockChangeLanguage).not.toHaveBeenCalled();
+    await act(async () => {
+      fireEvent.press(screen.getAllByRole("button", { name: "Save" })[0]);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(mockChangeLanguage).toHaveBeenCalledWith("fr"));
+    expect(onSaveProfile).toHaveBeenCalledWith(expect.objectContaining({ preferredLanguage: "fr" }));
   });
 
   it("labels link types and bolds only the selected caption", () => {

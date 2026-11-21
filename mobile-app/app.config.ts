@@ -150,6 +150,7 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
       supportsTablet: true,
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
+        CFBundleLocalizations: ["en", "fr"],
         NSPhotoLibraryUsageDescription:
           "Tope-là would like to access your photos so you can choose images for your needs and resources.",
         NSCameraUsageDescription:
@@ -175,6 +176,7 @@ export default function appConfig(_: ConfigContext): ExpoConfig {
     },
     plugins: [
       "expo-secure-store",
+      "expo-localization",
       [
         "expo-location",
         {

@@ -1,6 +1,10 @@
 import "@testing-library/jest-native/extend-expect";
 import "../src/i18n";
 
+jest.mock("expo-localization", () => ({
+	getLocales: () => [{ languageCode: "en" }]
+}));
+
 // Never load native Sentry bindings or create a telemetry transport in Jest.
 jest.mock("@sentry/react-native", () => ({
 	init: jest.fn(),

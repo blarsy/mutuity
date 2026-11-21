@@ -7,6 +7,7 @@ import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersis
 import { fetchAccountSnapshotById, type AuthAccountSnapshot } from "../../../src/services/graphql/auth";
 import { resetAccountGraphqlState } from "../../../src/services/graphql/client";
 import { logAppEvent } from "../../../src/services/monitoring/logger";
+import { getDeviceLanguage } from "../../../src/i18n";
 
 const mockI18n = { language: "en", changeLanguage: jest.fn().mockResolvedValue(undefined) };
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ i18n: mockI18n }) }));
@@ -248,7 +249,23 @@ describe("AuthProvider account lifecycle", () => {
     expect(mockI18n.changeLanguage).toHaveBeenCalledWith("fr");
     await act(async () => { await current.changeLanguage("en"); await current.signOut(); });
     expect(setPersistedLanguage).toHaveBeenCalledWith("en");
-    expect(setPersistedLanguage).toHaveBeenCalledTimes(1);
+  });
+
+  it("overrides the app language with the signed-in account language", async () => {
+    (fetchAccountSnapshotById as jest.Mock).mockResolvedValueOnce({ ...account(ACCOUNT_A), preferredLanguage: "fr" });
+    await mount();
+
+    await act(async () => { await current.signIn(`mock:${ACCOUNT_A}`); });
+
+    expect(mockI18n.changeLanguage).toHaveBeenCalledWith("fr");
+    expect(setPersistedLanguage).toHaveBeenCalledWith("fr");
+  });
+
+  it("persists the OS-derived default when no app language is saved", async () => {
+    await mount();
+
+    expect(getDeviceLanguage()).toBe("en");
+    expect(setPersistedLanguage).toHaveBeenCalledWith("en");
   });
 
   it("ignores hydration after unmount", async () => {

@@ -1365,6 +1365,7 @@ export const UPDATE_ACCOUNT_PROFILE_MUTATION = gql`
         location
         latitude
         longitude
+        preferredLanguage
         profileLinks
       }
     }
