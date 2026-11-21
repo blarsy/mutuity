@@ -32,7 +32,7 @@
   "campaignPublicAirdropDate": "Date",
   "campaignPublicAirdropTitle": "Airdrop",
   "campaignPublicEnd": "Fin",
-  "campaignPublicJoinExplanation": "Vous pouvez joindre une ressource ou un besoin, existant ou nouveau à cette campagne, en l'éditant.",
+  "campaignPublicJoinExplanation": "Vous pouvez joindre une ressource ou un besoin, existant ou nouveau, à cette campagne, en modifiant son champ 'campagne'.",
   "campaignPublicLaunchNeed": "Ajouter un besoin",
   "campaignPublicLaunchResource": "Ajouter une ressource",
   "campaignPublicListingsError": "Impossible de charger les annonces de cette campagne.",

@@ -32,7 +32,7 @@
   "campaignPublicAirdropDate": "Date",
   "campaignPublicAirdropTitle": "Airdrop",
   "campaignPublicEnd": "End",
-  "campaignPublicJoinExplanation": "You may also join an existing resource or need to this campaign by editing it.",
+  "campaignPublicJoinExplanation": "You may also join an existing resource or need to this campaign by modifying its 'campaign' field.",
   "campaignPublicLaunchNeed": "Add a need",
   "campaignPublicLaunchResource": "Add a resource",
   "campaignPublicListingsError": "We could not load the campaign listings.",
