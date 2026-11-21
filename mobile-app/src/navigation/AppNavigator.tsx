@@ -1458,7 +1458,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#ffffff",
-    fontFamily: appFontFamilies.title,
+    fontFamily: appFontFamilies.display,
     fontWeight: "400",
     textAlign: "center",
     textAlignVertical: "center",

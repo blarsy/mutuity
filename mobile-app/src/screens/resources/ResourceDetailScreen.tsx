@@ -392,6 +392,7 @@ export function ResourceDetailScreen({
       />
 
       <View style={styles.bodyContent}>
+      <Text accessibilityRole="header" variant="bodyMedium" style={styles.listingTitle}>{resolvedResource.title}</Text>
 
       {!resolvedResource.isActive ? (
         <Banner
@@ -481,12 +482,6 @@ export function ResourceDetailScreen({
             />
           ) : null}
         </View>
-      </DetailField>
-
-      <View style={styles.hr} />
-
-      <DetailField title={t("titleLabel", { defaultValue: "Title" })} titleOnOwnLine>
-        <Text variant="bodyMedium" style={styles.bodyText}>{resolvedResource.title}</Text>
       </DetailField>
 
       <View style={styles.hr} />
@@ -817,6 +812,14 @@ const styles = StyleSheet.create({
   bodyText: {
     color: "#000000",
     fontFamily: appFontFamilies.general
+  },
+  listingTitle: {
+    color: "#000000",
+    fontFamily: appFontFamilies.title,
+    fontSize: 26,
+    lineHeight: 32,
+    textTransform: "uppercase",
+    letterSpacing: 0.6
   },
   infoChip: {
     backgroundColor: designTokens.colors.primaryContainer,

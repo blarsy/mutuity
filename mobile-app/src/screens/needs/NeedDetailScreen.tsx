@@ -205,6 +205,8 @@ export function NeedDetailScreen({
     <ScrollView style={styles.root} contentContainerStyle={styles.content} testID="need-detail-screen">
       <NavigationBackHeader onBack={onBack} accessibilityLabel={t("backLabel", { defaultValue: "Back" })} />
       <View style={styles.bodyContent}>
+        <Text accessibilityRole="header" variant="bodyMedium" style={styles.listingTitle}>{resolvedNeed.title}</Text>
+
         {images.length > 0 ? (
           <View style={[styles.galleryFrame, { height: viewportHeight }]}>
             <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={handleImageScrollEnd}>
@@ -258,11 +260,6 @@ export function NeedDetailScreen({
               />
             ) : null}
           </View>
-        </DetailField>
-
-        <View style={styles.hr} />
-        <DetailField title={t("needTitleLabel", { ns: "us2", defaultValue: "Title" })} titleOnOwnLine>
-          <Text variant="bodyMedium" style={styles.bodyText}>{resolvedNeed.title}</Text>
         </DetailField>
 
         <View style={styles.hr} />
@@ -417,6 +414,14 @@ const styles = StyleSheet.create({
   fieldTitle: { color: "#000000", fontFamily: appFontFamilies.altGeneral, textTransform: "uppercase", letterSpacing: 0.4 },
   fieldInlineContent: { flex: 1 },
   bodyText: { color: "#000000", fontFamily: appFontFamilies.general },
+  listingTitle: {
+    color: "#000000",
+    fontFamily: appFontFamilies.title,
+    fontSize: 26,
+    lineHeight: 32,
+    textTransform: "uppercase",
+    letterSpacing: 0.6
+  },
   infoChip: { backgroundColor: designTokens.colors.primaryContainer, marginRight: 4, marginBottom: 4 },
   infoChipText: { textTransform: "uppercase", fontFamily: appFontFamilies.general },
   chipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 2 },
