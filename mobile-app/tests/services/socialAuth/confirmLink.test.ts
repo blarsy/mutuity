@@ -16,7 +16,7 @@ describe("confirmPendingSocialLink", () => {
     await confirmPendingSocialLink("signed-token", "opaque-session-token");
     expect(mockFetch).toHaveBeenCalledWith(`${appSettings.apiUrl}/auth/social/confirm-link`, {
       method: "POST",
-      credentials: "include",
+      credentials: "omit",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer opaque-session-token"

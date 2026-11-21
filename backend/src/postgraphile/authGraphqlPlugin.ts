@@ -390,7 +390,21 @@ export function createAuthGraphqlPlugin(pool: Pool) {
             }
 
             const newPasswordHash = await hashPassword(newPassword);
-            await pool.query(UPDATE_ACCOUNT_PASSWORD_SQL, [session.accountId, newPasswordHash, null]);
+            const appPlatform = req.headers["x-app-platform"];
+            const authorization = req.headers.authorization;
+            const hasNativeBearerSession = (appPlatform === "ios" || appPlatform === "android")
+              && typeof authorization === "string"
+              && /^Bearer[\t ]+([^\s,]+)[\t ]*$/i.test(authorization);
+            // Mobile stores the opaque token, not the rotated HttpOnly cookie.
+            // Keep its authenticated session and revoke every other session.
+            await pool.query(UPDATE_ACCOUNT_PASSWORD_SQL, [session.accountId, newPasswordHash, hasNativeBearerSession ? session.sessionId : null]);
+
+            if (hasNativeBearerSession) {
+              return {
+                clientMutationId: args.input.clientMutationId ?? null,
+                authSession: toSessionPayload(req)
+              };
+            }
 
             const nextSession = await createSessionForAccount(pool, {
               accountId: session.accountId,

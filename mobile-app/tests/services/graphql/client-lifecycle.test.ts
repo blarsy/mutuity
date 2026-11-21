@@ -142,11 +142,32 @@ describe("mobile GraphQL transport lifecycle", () => {
     await client.query({ query: QUERY, fetchPolicy: "network-only" });
     expect(fetchMock.mock.calls[0]?.[1].headers.authorization).toBe(`Bearer mock:${ACCOUNT_A}`);
     expect(fetchMock.mock.calls[1]?.[1].headers.authorization).toBe(`Bearer mock:${ACCOUNT_B}`);
+    expect(fetchMock.mock.calls[0]?.[1].credentials).toBe("omit");
+    expect(fetchMock.mock.calls[1]?.[1].credentials).toBe("omit");
     listen(createApolloClient({ getToken: async () => `mock:${ACCOUNT_A}` }));
     listen(createApolloClient({ getToken: async () => `mock:${ACCOUNT_B}` }));
     await flush();
     expect(socket(0).options?.headers?.authorization).toBe(`Bearer mock:${ACCOUNT_A}`);
     expect(socket(1).options?.headers?.authorization).toBe(`Bearer mock:${ACCOUNT_B}`);
+  });
+
+  it("loads the social account balance without sending an older account's cookie", async () => {
+    (getPersistedToken as jest.Mock).mockResolvedValue("opaque-social-session");
+    (getPersistedAccountId as jest.Mock).mockResolvedValue(ACCOUNT_B);
+    fetchMock.mockImplementation(async (_url: string, options: { credentials: string; headers: { authorization: string } }) => {
+      // Simulate a device cookie jar containing an older account with balance 0.
+      const balance = options.credentials === "include" ? 0
+        : options.headers.authorization === "Bearer opaque-social-session" ? 731 : null;
+      return {
+        status: 200,
+        headers: { get: () => "application/json" },
+        text: async () => JSON.stringify({ data: { currentTokenBalance: balance } })
+      } as unknown as Response;
+    });
+    const client = createApolloClient();
+    const result = await client.query({ query: gql`query CurrentTokenBalance { currentTokenBalance }`, fetchPolicy: "network-only" });
+    expect(result.data).toEqual({ currentTokenBalance: 731 });
+    expect(fetchMock.mock.calls[0]?.[1].credentials).toBe("omit");
   });
 
   it("keeps retrying past five failures with bounded exponential delay and fresh credentials", async () => {

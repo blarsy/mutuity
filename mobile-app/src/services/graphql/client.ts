@@ -288,7 +288,9 @@ const accountBoundaryLink = new ApolloLink((operation, forward) => new Observabl
 export function createApolloClient(options: ApolloClientOptions = {}): ApolloClient {
   const httpLink = new HttpLink({
     uri: options.graphqlUrl ?? appSettings.graphQlApiUrl,
-    credentials: "include"
+    // The native app uses bearer sessions; an older cookie may belong to a
+    // different account and must not override the active token.
+    credentials: "omit"
   });
 
   const getToken = options.getToken ?? getPersistedToken;

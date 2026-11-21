@@ -28,16 +28,30 @@ describe("session credential extraction", () => {
     }
   );
 
-  it("preserves signed-cookie and password-session precedence", () => {
+  it("prefers an explicit native bearer session over signed and unsigned cookies", () => {
     const req = {
       signedCookies: { [SESSION_COOKIE_NAME]: "signed-session" },
       cookies: { [SESSION_COOKIE_NAME]: "password-session" },
       headers: { authorization: "Bearer native-session" }
     };
-    expect(getSessionTokenFromRequest(req)).toBe("signed-session");
-    expect(getSessionTokenFromRequest({ ...req, signedCookies: {} })).toBe("password-session");
+    expect(getSessionTokenFromRequest(req)).toBe("native-session");
+    expect(getSessionTokenFromRequest({ ...req, signedCookies: {} })).toBe("native-session");
+    expect(getSessionTokenFromRequest({ signedCookies: req.signedCookies, cookies: req.cookies })).toBe("signed-session");
     expect(getSessionTokenFromRequest({ cookies: req.cookies })).toBe("password-session");
+    expect(getSessionTokenFromRequest({ ...req, headers: { authorization: "Bearer bad token" } })).toBeNull();
     expect(getSessionTokenFromRequest({})).toBeNull();
+  });
+
+  it("does not fall back to a cookie if an explicit bearer session is invalid", async () => {
+    const query = jest.fn().mockResolvedValue({ rows: [] });
+    const req = {
+      headers: { authorization: "Bearer revoked-session" },
+      cookies: { [SESSION_COOKIE_NAME]: "old-session" }
+    } as unknown as Request;
+    await createAuthSessionMiddleware({ query } as unknown as Pool)(req, {} as Response, jest.fn());
+    expect(req.authSession).toBeNull();
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(query.mock.calls[0]?.[1]).toEqual([createHash("sha256").update("revoked-session").digest("hex")]);
   });
 });
 
@@ -87,6 +101,24 @@ describe("native session authentication middleware", () => {
     const hash = createHash("sha256").update(sessionToken).digest("hex");
     expect(query).toHaveBeenNthCalledWith(1, "select * from app_private.find_account_session($1);", [hash]);
     expect(query).toHaveBeenNthCalledWith(2, "select app_private.touch_account_session($1);", [hash]);
+  });
+
+  it("resolves the social account instead of an older cookie on native requests", async () => {
+    const oldAccountId = "8b15d747-2f5c-4078-9d7c-6a453734ce7a";
+    const oldHash = createHash("sha256").update("old-cookie").digest("hex");
+    const socialHash = createHash("sha256").update("social-bearer").digest("hex");
+    query.mockImplementation(async (sql: string, values: string[]) => ({
+      rows: sql.includes("find_account_session")
+        ? [values[0] === oldHash ? { ...row, account_id: oldAccountId } : row]
+        : []
+    }));
+    const req = {
+      headers: { authorization: "Bearer social-bearer" },
+      cookies: { [SESSION_COOKIE_NAME]: "old-cookie" }
+    } as unknown as Request;
+    await createAuthSessionMiddleware(pool)(req, {} as Response, jest.fn());
+    expect(req.authSession?.accountId).toBe(accountId);
+    expect(query).toHaveBeenNthCalledWith(1, "select * from app_private.find_account_session($1);", [socialHash]);
   });
 
   it.each(["expired", "revoked", "unknown"])("does not authenticate a %s session", async token => {

@@ -78,19 +78,18 @@ export function getSessionTokenFromRequest(req: {
   cookies?: Record<string, string | undefined>;
   headers?: { authorization?: string | string[] | undefined };
 }) {
-  // Keep cookie-based web/password sessions authoritative. Native social login
-  // receives an opaque session token, not the OAuth browser's session cookie.
+  // Native HTTP and WebSocket stacks may attach a cookie from an older login.
+  // An explicit bearer token must select the same account on both transports.
+  const authorization = req.headers?.authorization;
+  if (typeof authorization === "string" && /^Bearer(?:[\t ]|$)/i.test(authorization)) {
+    return /^Bearer[\t ]+([^\s,]+)[\t ]*$/i.exec(authorization)?.[1] ?? null;
+  }
+
   const cookieToken = req.signedCookies?.[SESSION_COOKIE_NAME] ?? req.cookies?.[SESSION_COOKIE_NAME];
   if (cookieToken) {
     return cookieToken;
   }
-
-  const authorization = req.headers?.authorization;
-  if (typeof authorization !== "string") {
-    return null;
-  }
-
-  return /^Bearer[\t ]+([^\s,]+)[\t ]*$/i.exec(authorization)?.[1] ?? null;
+  return null;
 }
 
 export async function getSessionFromToken(pool: Pool, sessionToken: string) {
