@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { Pressable, Text } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -11,9 +12,13 @@ import { FormTextInput, ThemedDialog } from "../../src/components/primitives";
 import { NeedSearchCard, ResourceSearchCard } from "../../src/components/listings/SearchListingCards";
 import { ResourceDetailScreen } from "../../src/screens/resources/ResourceDetailScreen";
 import { NeedDetailScreen } from "../../src/screens/needs/NeedDetailScreen";
+import { US3Navigator } from "../../src/navigation/US3Navigator";
+import { fetchCampaignById } from "../../src/services/graphql/campaigns";
 
 jest.mock("../../src/screens/resources/ResourceDetailScreen", () => ({ ResourceDetailScreen: jest.fn(() => null) }));
 jest.mock("../../src/screens/needs/NeedDetailScreen", () => ({ NeedDetailScreen: jest.fn(() => null) }));
+jest.mock("../../src/screens/campaigns/MyCampaignsScreen", () => ({ MyCampaignsScreen: () => null }));
+jest.mock("../../src/screens/campaigns/CampaignPublicInfoScreen", () => ({ CampaignPublicInfoScreen: () => null }));
 
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -95,11 +100,11 @@ const campaign: CampaignItem = {
   airdropAmount: 3000
 };
 
-function renderScreen(): ReturnType<typeof render> {
+function renderScreen(initialCampaign: CampaignItem = campaign): ReturnType<typeof render> {
   return render(
     <SafeAreaProvider>
       <PaperProvider>
-        <CampaignModerationScreen campaign={campaign} creatorAccountId="account-1" />
+        <CampaignModerationScreen campaign={initialCampaign} creatorAccountId="account-1" />
       </PaperProvider>
     </SafeAreaProvider>
   );
@@ -182,7 +187,7 @@ describe("CampaignModerationScreen", () => {
       title: "Ended resource", location: null, defaultTokens: null
     }]);
     const screen = renderScreen();
-    await screen.findByText("Looks good");
+    await screen.findByText("No resources linked to this campaign.");
     expect(screen.queryByText("Superseded need")).toBeNull();
     expect(screen.queryByText("Ended resource")).toBeNull();
     expect(screen.queryAllByRole("button", { name: "Approve" })).toHaveLength(0);
@@ -256,17 +261,32 @@ describe("CampaignModerationScreen", () => {
     expect(screen.queryByText("This campaign has been approved and can no longer be modified.")).toBeNull();
   });
 
-  it("opens the journal by default, keeps it collapsible, and supports linked-entry triage", async () => {
+  it.each([CampaignModerationStatus.Pending, CampaignModerationStatus.AwaitingAdaptation])(
+    "expands the journal initially for a campaign with status %s and allows collapsing it",
+    async (moderationStatus) => {
+      const screen = renderScreen({ ...campaign, moderationStatus });
+      const toggle = screen.getByTestId("campaign-moderation-journal-toggle");
+      expect(toggle.props.accessibilityState.expanded).toBe(true);
+      await screen.findByText("Looks good");
+      fireEvent.press(toggle);
+      expect(toggle.props.accessibilityState.expanded).toBe(false);
+      expect(screen.queryByText("Looks good")).toBeNull();
+      fireEvent.press(toggle);
+      expect(screen.getByText("Looks good")).toBeTruthy();
+    }
+  );
+
+  it("collapses the approved campaign journal initially, allows toggling it, and supports linked-entry triage", async () => {
     const screen = renderScreen();
 
     await waitFor(() => expect(screen.getByText("Community garden tools")).toBeTruthy());
-    await waitFor(() => expect(screen.getByText("Looks good")).toBeTruthy());
-    expect(screen.getByTestId("campaign-moderation-journal-toggle").props.accessibilityState.expanded).toBe(true);
-    fireEvent.press(screen.getByTestId("campaign-moderation-journal-toggle"));
+    expect(screen.getByTestId("campaign-moderation-journal-toggle").props.accessibilityState.expanded).toBe(false);
     expect(screen.queryByText("Looks good")).toBeNull();
     fireEvent.press(screen.getByTestId("campaign-moderation-journal-toggle"));
     await waitFor(() => expect(screen.getByText("Looks good")).toBeTruthy());
     expect(screen.getByText(/Campaign approved/)).toBeTruthy();
+    fireEvent.press(screen.getByTestId("campaign-moderation-journal-toggle"));
+    expect(screen.queryByText("Looks good")).toBeNull();
 
     expect(screen.getByText("Gardening volunteers")).toBeTruthy();
 
@@ -282,5 +302,53 @@ describe("CampaignModerationScreen", () => {
     await waitFor(() => {
       expect(triageCampaignNeed).toHaveBeenCalledWith("campaign-1", "need-1", "accept", "need-submission-1", undefined);
     });
+  });
+
+  it("reloads both triage lists when notifications reopen the same or another campaign", async () => {
+    const otherCampaign = { ...campaign, id: "campaign-2", title: "Other campaign" };
+    jest.mocked(fetchCampaignById).mockImplementation(async (id) => id === campaign.id ? campaign : otherCampaign);
+    const relation = {
+      campaignId: "campaign-1", submissionId: "submission-1", status: "PENDING" as const,
+      isCurrent: true, submittedAt: "2026-01-01", rejectionNote: null, campaignTitle: campaign.title,
+      campaignByCampaignId: { title: campaign.title, startAt: "2026-01-01", endAt: "2099-01-01" }
+    };
+    jest.mocked(fetchCampaignNeedTriage)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ ...relation, needId: "new-need", title: "New need", intensity: null, proposedTokens: null }])
+      .mockResolvedValueOnce([]);
+    jest.mocked(fetchCampaignResourceTriage)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ ...relation, resourceId: "new-resource", title: "New resource", location: null, defaultTokens: null }])
+      .mockResolvedValueOnce([]);
+
+    function NotificationHarness(): React.JSX.Element {
+      const [pendingId, setPendingId] = React.useState<string | null>("campaign-1");
+      const consume = React.useCallback(() => setPendingId(null), []);
+      return (
+        <SafeAreaProvider><PaperProvider>
+          <Pressable onPress={() => setPendingId("campaign-1")}><Text>Open same</Text></Pressable>
+          <Pressable onPress={() => setPendingId("campaign-2")}><Text>Open other</Text></Pressable>
+          <US3Navigator currentAccountId="account-1" pendingCampaignId={pendingId} pendingCampaignModeration onConsumePendingCampaign={consume} />
+        </PaperProvider></SafeAreaProvider>
+      );
+    }
+
+    const screen = render(<NotificationHarness />);
+    await screen.findByText("No resources linked to this campaign.");
+    expect(fetchCampaignNeedTriage).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByText("Open same"));
+    await screen.findByTestId("need-moderation-new-need");
+    expect(screen.getByTestId("resource-moderation-new-resource")).toBeTruthy();
+    expect(fetchCampaignNeedTriage).toHaveBeenCalledTimes(2);
+    expect(fetchCampaignResourceTriage).toHaveBeenCalledTimes(2);
+    expect(screen.UNSAFE_getByType(CampaignDetailScreen).props.campaign).toMatchObject({ pendingNeedCount: 1, pendingResourceCount: 1 });
+
+    fireEvent.press(screen.getByText("Open other"));
+    await waitFor(() => expect(fetchCampaignNeedTriage).toHaveBeenCalledWith("campaign-2"));
+    await screen.findByText("No resources linked to this campaign.");
+    expect(fetchCampaignResourceTriage).toHaveBeenCalledWith("campaign-2");
+    expect(screen.queryByTestId("need-moderation-new-need")).toBeNull();
+    expect(screen.queryByTestId("resource-moderation-new-resource")).toBeNull();
+    expect(screen.UNSAFE_getByType(CampaignDetailScreen).props.campaign.id).toBe("campaign-2");
   });
 });

@@ -82,7 +82,7 @@ export function CampaignModerationScreen({
   const theme = useTheme();
   const { height: windowHeight } = useWindowDimensions();
   const [campaign, setCampaign] = useState(initialCampaign);
-  const [journalExpanded, setJournalExpanded] = useState(true);
+  const [journalExpanded, setJournalExpanded] = useState(initialCampaign.moderationStatus !== "APPROVED");
   const [journal, setJournal] = useState<CampaignModerationEventItem[]>([]);
   const [needs, setNeeds] = useState<CampaignNeedTriageItem[]>([]);
   const [resources, setResources] = useState<CampaignResourceTriageItem[]>([]);

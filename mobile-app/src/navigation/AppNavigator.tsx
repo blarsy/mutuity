@@ -817,6 +817,7 @@ function RootNavigator(): React.JSX.Element {
   const [pendingCampaignModeration, setPendingCampaignModeration] = useState(false);
   const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
   const [minimumVersion, setMinimumVersion] = useState<string>(MINIMUM_SUPPORTED_APP_VERSION);
+  const consumePendingCampaign = useCallback(() => setPendingCampaignId(null), []);
 
   const versionStatus = useMemo(
     () => getAppVersionStatus(getCurrentAppVersion(), minimumVersion),
@@ -1337,7 +1338,7 @@ function RootNavigator(): React.JSX.Element {
                   )}
                 </Tab.Screen>
                 <Tab.Screen name="Campaigns" options={{ tabBarLabel: t("campaignsLabel", { ns: "us1" }).toUpperCase() }}>
-                  {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} pendingCampaignId={pendingCampaignId} pendingCampaignModeration={pendingCampaignModeration} onConsumePendingCampaign={() => setPendingCampaignId(null)} />}
+                  {() => <CampaignsScreen authenticated={authenticated} onRequestAuth={requestAuth} pendingCampaignId={pendingCampaignId} pendingCampaignModeration={pendingCampaignModeration} onConsumePendingCampaign={consumePendingCampaign} />}
                 </Tab.Screen>
                 <Tab.Screen
                   name="Chat"

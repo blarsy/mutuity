@@ -8,6 +8,31 @@ export const ACCOUNT_EVENTS_SUBSCRIPTION = gql`
   }
 `;
 
+export const PUBLIC_CAMPAIGN_LISTING_LINKS_QUERY = gql`
+  query PublicCampaignListingLinks {
+    publicCampaignResourceLinks { nodes { campaignId resourceId } }
+    publicCampaignNeedLinks { nodes { campaignId needId } }
+  }
+`;
+
+export const PUBLIC_CAMPAIGN_RESOURCE_CARD_QUERY = gql`
+  query PublicCampaignResourceCard($id: UUID!) {
+    resourceById(id: $id) {
+      id title createdAt imageUrls isActive expiresAt canBeGiven canBeExchanged
+      accountByCreatorAccountId { displayName }
+    }
+  }
+`;
+
+export const PUBLIC_CAMPAIGN_NEED_CARD_QUERY = gql`
+  query PublicCampaignNeedCard($id: UUID!) {
+    needById(id: $id) {
+      id title createdAt imageUrls isActive expiresAt proposedTopesAmount
+      accountByCreatorAccountId { displayName }
+    }
+  }
+`;
+
 export const ACCOUNT_BY_ID_QUERY = gql`
   query AccountById($id: UUID!) {
     accountById(id: $id) {

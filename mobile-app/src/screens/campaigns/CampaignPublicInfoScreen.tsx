@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import TokenSymbolSvg from "../../assets/img/TOKENS.svg";
 import { InlineHtml } from "../../components/InlineHtml";
+import { NeedSearchCard, ResourceSearchCard } from "../../components/listings/SearchListingCards";
 import {
   NavigationBackHeader,
   PrimaryButton,
@@ -12,9 +13,13 @@ import {
 } from "../../components/primitives";
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
+import { AccountPublicProfileNavigator } from "../../navigation/AccountPublicProfileNavigator";
 import { fetchCampaignById, type CampaignItem } from "../../services/graphql/campaigns";
+import { fetchCampaignPublicListings, type CampaignPublicListings } from "../../services/graphql/campaignPublicListings";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
+import { NeedDetailScreen } from "../needs/NeedDetailScreen";
+import { ResourceDetailScreen } from "../resources/ResourceDetailScreen";
 
 export interface CampaignPublicInfoScreenProps {
   campaignId: string;
@@ -62,6 +67,11 @@ export function CampaignPublicInfoScreen({
   const [remoteCampaign, setRemoteCampaign] = useState<CampaignItem | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(true);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [listings, setListings] = useState<CampaignPublicListings | null>(null);
+  const [listingsError, setListingsError] = useState(false);
+  const [listingsAttempt, setListingsAttempt] = useState(0);
+  const [selectedListing, setSelectedListing] = useState<{ kind: "resource" | "need"; id: string } | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
   const hasInjectedCampaign = campaign !== undefined;
 
@@ -89,9 +99,31 @@ export function CampaignPublicInfoScreen({
     void loadCampaign();
   }, [loadCampaign]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setListings(null);
+    setListingsError(false);
+    void fetchCampaignPublicListings(campaignId).then((result) => {
+      if (!cancelled) setListings(result);
+    }).catch(() => {
+      if (!cancelled) setListingsError(true);
+    });
+    return () => { cancelled = true; };
+  }, [campaignId, listingsAttempt]);
+
   const resolvedCampaign = campaign ?? remoteCampaign;
   const resolvedLoading = loading || (!hasInjectedCampaign && remoteLoading);
   const resolvedErrorMessage = errorMessage ?? (!hasInjectedCampaign ? remoteErrorMessage : null);
+
+  if (selectedAccountId) {
+    return <AccountPublicProfileNavigator accountId={selectedAccountId} currentAccountId={currentAccountId} onBack={() => setSelectedAccountId(null)} />;
+  }
+  if (selectedListing?.kind === "resource") {
+    return <ResourceDetailScreen resourceId={selectedListing.id} currentAccountId={currentAccountId} onBack={() => setSelectedListing(null)} onOpenCreatorAccount={setSelectedAccountId} />;
+  }
+  if (selectedListing?.kind === "need") {
+    return <NeedDetailScreen needId={selectedListing.id} currentAccountId={currentAccountId} onBack={() => setSelectedListing(null)} onOpenCreatorAccount={setSelectedAccountId} />;
+  }
 
   if (resolvedLoading) {
     return (
@@ -224,6 +256,33 @@ export function CampaignPublicInfoScreen({
           </Text>
         </View>
 
+        {listings?.resources.length ? (
+          <View style={styles.listingsBox}>
+            <Text accessibilityRole="header" variant="titleSmall" style={styles.sectionTitle}>
+              {t("campaignPublicResources", { ns: "us3", defaultValue: "Resources" })}
+            </Text>
+            {listings.resources.map((item) => (
+              <ResourceSearchCard key={item.id} listing={item} onPress={() => setSelectedListing({ kind: "resource", id: item.id })} />
+            ))}
+          </View>
+        ) : null}
+        {listings?.needs.length ? (
+          <View style={styles.listingsBox}>
+            <Text accessibilityRole="header" variant="titleSmall" style={styles.sectionTitle}>
+              {t("campaignPublicNeeds", { ns: "us3", defaultValue: "Needs" })}
+            </Text>
+            {listings.needs.map((item) => (
+              <NeedSearchCard key={item.id} listing={item} onPress={() => setSelectedListing({ kind: "need", id: item.id })} />
+            ))}
+          </View>
+        ) : null}
+        {listingsError ? (
+          <ErrorState
+            message={t("campaignPublicListingsError", { ns: "us3", defaultValue: "We could not load the campaign listings." })}
+            onRetry={() => setListingsAttempt((attempt) => attempt + 1)}
+          />
+        ) : null}
+
         <Divider />
 
         <View style={styles.actionsBox}>
@@ -289,6 +348,9 @@ const styles = StyleSheet.create({
   },
   airdropBox: {
     gap: designTokens.spacing.xs
+  },
+  listingsBox: {
+    gap: designTokens.spacing.sm
   },
   sectionTitle: {
     fontFamily: appFontFamilies.altGeneral,

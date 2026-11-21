@@ -43,6 +43,7 @@ export function US3Navigator({ currentAccountId, pendingCampaignId, pendingCampa
   const [activeScreen, setActiveScreen] = useState<US3Screen>("list");
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignItem | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [moderationVisit, setModerationVisit] = useState(0);
   const [isNewCampaign, setIsNewCampaign] = useState(false);
 
   const defaultCampaignDates = useMemo(() => buildDefaultCampaignDates(), []);
@@ -58,6 +59,10 @@ export function US3Navigator({ currentAccountId, pendingCampaignId, pendingCampa
         return;
       }
       setSelectedCampaign(campaign);
+      if (pendingCampaignModeration) {
+        // A notification can reopen the already-mounted screen, even for the same campaign.
+        setModerationVisit((visit) => visit + 1);
+      }
       setActiveScreen(pendingCampaignModeration ? "moderation" : "public");
       onConsumePendingCampaign?.();
     }).catch(() => {
@@ -105,6 +110,7 @@ export function US3Navigator({ currentAccountId, pendingCampaignId, pendingCampa
   if (activeScreen === "moderation" && selectedCampaign) {
     return (
       <CampaignModerationScreen
+        key={`${selectedCampaign.id}:${moderationVisit}`}
         campaign={selectedCampaign}
         creatorAccountId={currentAccountId}
         onBack={() => {
