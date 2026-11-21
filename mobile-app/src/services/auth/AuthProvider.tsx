@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersistedLanguage, setPersistedToken } from "./session";
 import { fetchAccountSnapshotById, type AuthAccountSnapshot } from "../graphql/auth";
 import { resetAccountGraphqlState } from "../graphql/client";
 import { logAppEvent } from "../monitoring/logger";
-import { getDeviceLanguage, type AppLanguage } from "../../i18n";
+import i18n, { getDeviceLanguage, type AppLanguage } from "../../i18n";
 
 export interface AuthSession {
   token: string | null;
@@ -87,7 +86,6 @@ export interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element {
   const [session, setSession] = useState<AuthSession>(initialSession);
-  const { i18n } = useTranslation();
   const sessionRef = useRef(session);
   const generation = useRef(0);
   const hydrationGeneration = useRef(0);
@@ -137,6 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     }
   };
 
+  // Bootstrap once per mount; the useTranslation() wrapper changes with the locale.
   useEffect(() => {
     mounted.current = true;
     const version = generation.current;
@@ -197,7 +196,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
       generation.current += 1;
       hydrationGeneration.current += 1;
     };
-  }, [i18n]);
+  }, []);
 
   const endSession = async (reason?: string) => {
     const version = beginTransition();
@@ -290,7 +289,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
         });
       }
     }),
-    [session, i18n]
+    [session]
   );
 
   return (

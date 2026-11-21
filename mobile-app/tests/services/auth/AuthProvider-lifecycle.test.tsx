@@ -7,10 +7,14 @@ import { bootstrapSession, clearPersistedToken, setPersistedAccountId, setPersis
 import { fetchAccountSnapshotById, type AuthAccountSnapshot } from "../../../src/services/graphql/auth";
 import { resetAccountGraphqlState } from "../../../src/services/graphql/client";
 import { logAppEvent } from "../../../src/services/monitoring/logger";
-import { getDeviceLanguage } from "../../../src/i18n";
+import i18n, { getDeviceLanguage } from "../../../src/i18n";
 
-const mockI18n = { language: "en", changeLanguage: jest.fn().mockResolvedValue(undefined) };
-jest.mock("react-i18next", () => ({ useTranslation: () => ({ i18n: mockI18n }) }));
+const mockI18n = jest.mocked(i18n);
+jest.mock("../../../src/i18n", () => ({
+  ...jest.requireActual("../../../src/i18n"),
+  __esModule: true,
+  default: { language: "en", changeLanguage: jest.fn() }
+}));
 jest.mock("../../../src/services/auth/session", () => ({
   bootstrapSession: jest.fn(),
   clearPersistedToken: jest.fn(),
@@ -69,7 +73,7 @@ describe("AuthProvider account lifecycle", () => {
     (resetAccountGraphqlState as jest.Mock).mockReset().mockResolvedValue(undefined);
     (fetchAccountSnapshotById as jest.Mock).mockReset().mockImplementation(async (id: string) => account(id));
     mockI18n.language = "en";
-    mockI18n.changeLanguage.mockReset().mockResolvedValue(undefined);
+    mockI18n.changeLanguage.mockReset();
   });
 
   it("persists both credentials and resets account state before publishing authentication or hydrating", async () => {

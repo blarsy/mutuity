@@ -127,7 +127,7 @@ export function MyProfileScreen({
   const { refreshSession, signOut, changeLanguage } = useAuth();
   const [remoteProfile, setRemoteProfile] = useState<MyProfileRecord | null>(null);
   const [remoteLoading, setRemoteLoading] = useState(false);
-  const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [remoteError, setRemoteError] = useState<"load" | "save" | null>(null);
   const resolvedProfile = profile ?? remoteProfile;
 
   const [displayName, setDisplayName] = useState("");
@@ -234,7 +234,7 @@ export function MyProfileScreen({
     }
 
     setRemoteLoading(true);
-    setRemoteErrorMessage(null);
+    setRemoteError(null);
     try {
       const [nextProfile, nextEmail] = await Promise.all([fetchMyProfile(accountId), fetchCurrentAccountEmail()]);
       setRemoteProfile(nextProfile);
@@ -247,11 +247,11 @@ export function MyProfileScreen({
       setCurrentEmail(nextEmail ?? "");
       setEmailDraft(nextEmail ?? "");
     } catch {
-      setRemoteErrorMessage(t("profileLoadError", { defaultValue: "We could not load your profile." }));
+      setRemoteError("load");
     } finally {
       setRemoteLoading(false);
     }
-  }, [accountId, hasInjectedProfile, t]);
+  }, [accountId, hasInjectedProfile]);
 
   useEffect(() => {
     if (resolvedProfile) {
@@ -332,7 +332,7 @@ export function MyProfileScreen({
         avatarUrl: avatarUri
       }))
         .then(() => changeLanguage(preferredLanguage))
-        .then(() => setFeedback(t("profileSaved", { defaultValue: "Profile saved." })))
+        .then(() => setFeedback(t("profileSaved", { lng: preferredLanguage, defaultValue: "Profile saved." })))
         .catch(() => setFeedback(t("profileSaveError", { defaultValue: "We could not save your profile changes." })));
       return;
     }
@@ -352,12 +352,13 @@ export function MyProfileScreen({
     })
       .then(async (updatedProfile) => {
         setRemoteProfile(updatedProfile);
-        await changeLanguage(updatedProfile?.preferredLanguage ?? preferredLanguage);
+        const language = updatedProfile?.preferredLanguage ?? preferredLanguage;
+        await changeLanguage(language);
         await refreshSession();
-        setFeedback(t("profileSaved", { defaultValue: "Profile saved." }));
+        setFeedback(t("profileSaved", { lng: language, defaultValue: "Profile saved." }));
       })
       .catch(() => {
-        setRemoteErrorMessage(t("profileSaveError", { defaultValue: "We could not save your profile changes." }));
+        setRemoteError("save");
       })
       .finally(() => {
         setRemoteLoading(false);
@@ -467,7 +468,9 @@ export function MyProfileScreen({
   };
 
   const resolvedLoading = loading || (!hasInjectedProfile && remoteLoading);
-  const resolvedErrorMessage = errorMessage ?? (!hasInjectedProfile ? remoteErrorMessage : null);
+  const resolvedErrorMessage = errorMessage ?? (hasInjectedProfile ? null :
+    remoteError === "load" ? t("profileLoadError", { defaultValue: "We could not load your profile." }) :
+    remoteError === "save" ? t("profileSaveError", { defaultValue: "We could not save your profile changes." }) : null);
 
   if (resolvedLoading) {
     return (

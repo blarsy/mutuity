@@ -11,13 +11,13 @@ import { fetchUnreadNotificationsCount } from "../../src/services/graphql/notifi
 import { fetchUnreadChatConversationCount } from "../../src/services/graphql/chat";
 import { fetchCurrentTokenBalance } from "../../src/services/graphql/economics";
 import { signalAccountRefresh } from "../../src/services/realtime/accountEvents";
+import mockI18n from "../../src/i18n";
 
 let mockAuth: AuthContextValue;
-const mockI18n = { language: "en", changeLanguage: jest.fn() };
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key, i18n: mockI18n })
 }));
-jest.mock("../../src/i18n", () => ({ __esModule: true, default: {}, getDeviceLanguage: () => "en" }));
+jest.mock("../../src/i18n", () => ({ __esModule: true, default: { language: "en", changeLanguage: jest.fn() }, getDeviceLanguage: () => "en" }));
 jest.mock("../../src/services/auth/AuthProvider", () => {
   const actual = jest.requireActual("../../src/services/auth/AuthProvider");
   const React = require("react");
