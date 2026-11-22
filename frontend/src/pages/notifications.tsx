@@ -112,6 +112,8 @@ const EXACT_EVENT_TYPE_ICONS: Record<string, string> = {
   campaign_airdrop_done: "thumb-up.svg",
   welcome_profile_reward: "hey.svg",
   campaign_approved: "prize-won.svg",
+  campaign_created_pending: "moderation.svg",
+  support_report_created: "moderation.svg",
   campaign_listing_pending: "moderation.svg",
   campaign_listing_accepted: "prize-won.svg",
   campaign_listing_rejected: "denied.svg",
@@ -167,6 +169,10 @@ function notificationCopy(notification: UnifiedNotification, t: TranslateFn) {
   });
 
   switch (notification.eventType) {
+    case "campaign_created_pending":
+      return build("campaignCreatedPending", { campaignName: campaignName?.trim() || unknownCampaign });
+    case "support_report_created":
+      return build("supportReportCreated");
     case "campaign_listing_pending":
     case "campaign_listing_accepted":
     case "campaign_listing_rejected": {

@@ -49,6 +49,8 @@ const events = [
   ["campaign_airdrop_done", "campaignAirdropDone", "account"],
   ["welcome_profile_reward", "welcomeProfileReward", "account"],
   ["campaign_approved", "campaignApproved", "account"],
+  ["campaign_created_pending", "campaignCreatedPending", "account"],
+  ["support_report_created", "supportReportCreated", "account"],
   ["campaign_listing_pending", "campaignListingPending", "account"],
   ["campaign_listing_accepted", "campaignListingAccepted", "account"],
   ["campaign_listing_rejected", "campaignListingRejected", "account"],
@@ -89,6 +91,28 @@ describe.each(["en", "fr"])("mobile notification formatting (%s)", language => {
     expect(item.headline1).toBe(i18n.t(`notifications.events.${key}.headline1`, { ns: "us4" }));
     expect(item.headline1).not.toBe(eventType);
     expect(`${item.headline1} ${item.headline2} ${item.description}`).not.toMatch(/notifications\.|undefined|{{/);
+  });
+
+  it("uses the campaign name and a localized explanation of the mobile fallback", async () => {
+    mockFeed("campaign_created_pending", "account", { campaignId: "campaign-123", campaignName: "Autumn" });
+    const item = (await fetchNotifications("viewer")).items[0]!;
+    expect(item.headline2).toBe("Autumn");
+    expect(item.description).toBe(i18n.t("notifications.events.campaignCreatedPending.description", { ns: "us4", lng: language, fallbackLng: false }));
+  });
+
+  it.each([null, {}, { campaignName: "" }, { campaignName: "  " }, { campaignName: 42 }])("uses a neutral fallback for missing campaign names: %j", async eventPayload => {
+    mockFeed("campaign_created_pending", "account", eventPayload);
+    expect((await fetchNotifications("viewer")).items[0]?.headline2)
+      .toBe(i18n.t("notifications.adminUnknownCampaign", { ns: "us4", lng: language, fallbackLng: false }));
+  });
+
+  it("localizes support report copy without exposing its ID or body", async () => {
+    mockFeed("support_report_created", "account", { reportId: "private-report-id", body: "private report text" });
+    const item = (await fetchNotifications("viewer")).items[0]!;
+    expect(item.headline1).toBe(i18n.t("notifications.events.supportReportCreated.headline1", { ns: "us4", lng: language, fallbackLng: false }));
+    expect(item.headline2).toBe("");
+    expect(item.description).toBe(i18n.t("notifications.events.supportReportCreated.description", { ns: "us4", lng: language, fallbackLng: false }));
+    expect(`${item.headline1} ${item.description}`).not.toMatch(/private-report-id|private report text/);
   });
 
   it.each(["claim_declined", "claim_withdrawn", "claim_expired", "claim_need_deactivated"])(

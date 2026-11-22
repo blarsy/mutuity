@@ -35,6 +35,10 @@ export function notificationDestinationForEvent(
   const needId = asText(payload.needId);
 
   switch (eventType) {
+    case "campaign_created_pending":
+    case "support_report_created":
+      // Mobile has no admin review surfaces; keep the explanatory notification visible.
+      return { surface: "notifications" };
     case "campaign_listing_pending":
       return campaignId ? { surface: "campaigns", campaignId, moderation: true } : { surface: "campaigns", moderation: true };
     case "campaign_listing_accepted":

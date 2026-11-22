@@ -15,5 +15,5 @@ export default function AdminSectionRoute() {
     return <AdminSupportPage section={getAdminSectionOrder()[0]} />;
   }
 
-  return <AdminSupportPage section={rawSection} />;
+  return <AdminSupportPage key={rawSection} section={rawSection} />;
 }

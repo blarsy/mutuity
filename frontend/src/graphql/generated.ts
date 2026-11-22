@@ -1108,6 +1108,39 @@ export type AdminListResourcesRecord = {
   tokenAmount: Maybe<Scalars['Int']['output']>;
 };
 
+/** A `AdminListSupportReportsRecord` edge in the connection. */
+export type AdminListSupportReportEdge = {
+  __typename: 'AdminListSupportReportEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListSupportReportsRecord` at the end of the edge. */
+  node: AdminListSupportReportsRecord;
+};
+
+/** A connection to a list of `AdminListSupportReportsRecord` values. */
+export type AdminListSupportReportsConnection = {
+  __typename: 'AdminListSupportReportsConnection';
+  /** A list of edges which contains the `AdminListSupportReportsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListSupportReportEdge>;
+  /** A list of `AdminListSupportReportsRecord` objects. */
+  nodes: Array<AdminListSupportReportsRecord>;
+  /** The count of *all* `AdminListSupportReportsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** The return type of our `adminListSupportReports` query. */
+export type AdminListSupportReportsRecord = {
+  __typename: 'AdminListSupportReportsRecord';
+  accountId: Maybe<Scalars['UUID']['output']>;
+  accountName: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  description: Maybe<Scalars['String']['output']>;
+  diagnostics: Maybe<Scalars['JSON']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  summary: Maybe<Scalars['String']['output']>;
+  totalCount: Maybe<Scalars['BigInt']['output']>;
+};
+
 /** All input for the `adminResendMail` mutation. */
 export type AdminResendMailInput = {
   /**
@@ -6708,6 +6741,7 @@ export type Mutation = {
   setGrantTargetEmails: Maybe<SetGrantTargetEmailsPayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
+  submitSupportReport: Maybe<SubmitSupportReportPayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
   updateAccount: Maybe<UpdateAccountPayload>;
   /** Updates a single `Account` using a unique key and a patch. */
@@ -7819,6 +7853,12 @@ export type MutationSettleNeedClaimArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSubmitResourceBidArgs = {
   input: SubmitResourceBidInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSubmitSupportReportArgs = {
+  input: SubmitSupportReportInput;
 };
 
 
@@ -9047,6 +9087,7 @@ export type Query = Node & {
   adminListMails: Maybe<AdminListMailsConnection>;
   adminListNotifications: Maybe<AdminListNotificationsConnection>;
   adminListResources: Maybe<AdminListResourcesConnection>;
+  adminListSupportReports: Maybe<AdminListSupportReportsConnection>;
   /** Reads and enables pagination through a set of `AccountDeliveryPreference`. */
   allAccountDeliveryPreferences: Maybe<AccountDeliveryPreferencesConnection>;
   /** Reads and enables pagination through a set of `AccountNotification`. */
@@ -9384,6 +9425,19 @@ export type QueryAdminListNotificationsArgs = {
 
 /** The root query type which gives access points into the data universe. */
 export type QueryAdminListResourcesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListSupportReportsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -12069,6 +12123,31 @@ export type SubmitResourceBidPayloadResourceBidEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceBidsOrderBy>>;
 };
 
+/** All input for the `submitSupportReport` mutation. */
+export type SubmitSupportReportInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pDescription?: InputMaybe<Scalars['String']['input']>;
+  pDiagnostics?: InputMaybe<Scalars['JSON']['input']>;
+  pSummary?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `submitSupportReport` mutation. */
+export type SubmitSupportReportPayload = {
+  __typename: 'SubmitSupportReportPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  uuid: Maybe<Scalars['UUID']['output']>;
+};
+
 /** The root subscription type: contains realtime events you can subscribe to with the `subscription` operation. */
 export type Subscription = {
   __typename: 'Subscription';
@@ -14186,6 +14265,15 @@ export type AdminListAccountsQueryVariables = Exact<{
 
 export type AdminListAccountsQuery = { __typename: 'Query', adminListAccounts: { __typename: 'AdminListAccountsConnection', totalCount: number, nodes: Array<{ __typename: 'AdminListAccountsRecord', id: any | null, name: string | null, email: string | null, language: string | null, tokenAmount: number | null, createdAt: any | null, address: string | null }> } | null };
 
+export type AdminListSupportReportsQueryVariables = Exact<{
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type AdminListSupportReportsQuery = { __typename: 'Query', adminListSupportReports: { __typename: 'AdminListSupportReportsConnection', nodes: Array<{ __typename: 'AdminListSupportReportsRecord', id: any | null, createdAt: any | null, accountId: any | null, accountName: string | null, summary: string | null, description: string | null, diagnostics: any | null, totalCount: any | null }> } | null };
+
 export type AdminListBidsQueryVariables = Exact<{
   pSearch?: InputMaybe<Scalars['String']['input']>;
   pLimit?: InputMaybe<Scalars['Int']['input']>;
@@ -15210,6 +15298,7 @@ export type AccountEventsSubscription = { __typename: 'Subscription', listen: { 
 
 export const BidWorkspaceFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BidWorkspaceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ResourceBid"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"resourceId"}},{"kind":"Field","name":{"kind":"Name","value":"bidderAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"proposedTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"validUntil"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"respondedAt"}},{"kind":"Field","name":{"kind":"Name","value":"respondedByAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"accountByBidderAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}},{"kind":"Field","name":{"kind":"Name","value":"resourceConversationsByResourceBidId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"resourceByResourceId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"creatorAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"defaultTokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrls"}},{"kind":"Field","name":{"kind":"Name","value":"categoryLabels"}},{"kind":"Field","name":{"kind":"Name","value":"isProduct"}},{"kind":"Field","name":{"kind":"Name","value":"isService"}},{"kind":"Field","name":{"kind":"Name","value":"canBeExchanged"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"accountByCreatorAccountId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"externalSubject"}}]}}]}}]}}]} as unknown as DocumentNode<BidWorkspaceFieldsFragment, unknown>;
 export const AdminListAccountsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListAccounts"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListAccounts"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"language"}},{"kind":"Field","name":{"kind":"Name","value":"tokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"address"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListAccountsQuery, AdminListAccountsQueryVariables>;
+export const AdminListSupportReportsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListSupportReports"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"50"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListSupportReports"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"accountId"}},{"kind":"Field","name":{"kind":"Name","value":"accountName"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"diagnostics"}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListSupportReportsQuery, AdminListSupportReportsQueryVariables>;
 export const AdminListBidsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListBids"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListBids"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"bidderName"}},{"kind":"Field","name":{"kind":"Name","value":"receiverName"}},{"kind":"Field","name":{"kind":"Name","value":"resourceTitle"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"tokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"expirationDatetime"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListBidsQuery, AdminListBidsQueryVariables>;
 export const AdminListResourcesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListResources"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListResources"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"creatorName"}},{"kind":"Field","name":{"kind":"Name","value":"intensity"}},{"kind":"Field","name":{"kind":"Name","value":"tokenAmount"}},{"kind":"Field","name":{"kind":"Name","value":"imageCount"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"expirationDatetime"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListResourcesQuery, AdminListResourcesQueryVariables>;
 export const AdminListNotificationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminListNotifications"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"25"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}},"defaultValue":{"kind":"IntValue","value":"0"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminListNotifications"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pSearch"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pSearch"}}},{"kind":"Argument","name":{"kind":"Name","value":"pLimit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pLimit"}}},{"kind":"Argument","name":{"kind":"Name","value":"pOffset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pOffset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"accountName"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"readAt"}}]}}]}}]}}]} as unknown as DocumentNode<AdminListNotificationsQuery, AdminListNotificationsQueryVariables>;

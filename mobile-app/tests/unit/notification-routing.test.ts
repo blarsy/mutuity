@@ -1,6 +1,12 @@
 import { notificationDestinationForEvent } from "../../src/services/notifications/notificationRouting";
 
 describe("mobile notification routing", () => {
+  it.each(["campaign_created_pending", "support_report_created"])("keeps %s in the inbox without an admin surface", eventType => {
+    expect(notificationDestinationForEvent(eventType, { campaignId: "campaign-123", reportId: "report-123", url: "https://untrusted.invalid" }))
+      .toEqual({ surface: "notifications" });
+    expect(notificationDestinationForEvent(eventType, {})).toEqual({ surface: "notifications" });
+  });
+
   it("routes pending submissions to campaign moderation, ignoring payload URLs", () => {
     expect(notificationDestinationForEvent("campaign_listing_pending", { campaignId: "campaign-123", url: "https://untrusted.invalid" }))
       .toEqual({ surface: "campaigns", campaignId: "campaign-123", moderation: true });

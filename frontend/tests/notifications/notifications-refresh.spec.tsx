@@ -95,6 +95,18 @@ describe("notification read refresh and loaded windows", () => {
     expect(mockPush).toHaveBeenCalled();
   });
 
+  it.each([
+    ["campaign_created_pending", "/admin/campaigns"],
+    ["support_report_created", "/admin/reports"]
+  ])("marks %s read and opens the admin section", async (eventType, destination) => {
+    const data = mockQueryResult.data as { allAccountNotifications: { nodes: unknown[] } };
+    data.allAccountNotifications.nodes = [{ id: "admin", eventType, payload: { url: "https://untrusted.invalid" }, readAt: null, createdAt: "2026-10-10T10:00:00Z" }];
+    find(render(), Box).find(element => element.key === "account-admin")?.props.onClick?.();
+    await flush();
+    expect(mockMutations[2]).toHaveBeenCalledWith({ variables: { input: { notificationId: "admin" } } });
+    expect(mockPush).toHaveBeenCalledWith(destination);
+  });
+
   it("explicitly refreshes the shared badge after mark-all", async () => {
     const confirm = find(render(), Button).find(button => button.props.children === "confirmDialog.confirm");
     confirm?.props.onClick?.();

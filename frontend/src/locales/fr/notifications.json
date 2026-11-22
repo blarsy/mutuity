@@ -20,6 +20,16 @@
   },
   "listingKind": { "need": "besoin", "resource": "ressource" },
   "events": {
+    "campaignCreatedPending": {
+      "headline1": "Campagne à examiner",
+      "headline2": "{{campaignName}}",
+      "description": "Une nouvelle campagne attend une modération."
+    },
+    "supportReportCreated": {
+      "headline1": "Nouveau signalement au support",
+      "headline2": "",
+      "description": "Un signalement a été envoyé au support."
+    },
     "campaignListingPending": {
       "headline1": "Publication à examiner",
       "headline2": "{{campaignName}}",

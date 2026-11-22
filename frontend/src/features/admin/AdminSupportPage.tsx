@@ -54,9 +54,11 @@ import {
   ADMIN_LIST_MAILS_QUERY,
   ADMIN_LIST_NOTIFICATIONS_QUERY,
   ADMIN_LIST_RESOURCES_QUERY,
+  ADMIN_LIST_SUPPORT_REPORTS_QUERY,
   ADMIN_RESEND_MAIL_MUTATION
 } from "./adminSupport.queries";
 import { resolveCampaignModerationPrefill } from "./adminCampaignFilters";
+import { SupportReportDetails } from "./SupportReportDetails";
 
 const PAGE_SIZE = 25;
 
@@ -68,12 +70,13 @@ type AdminSectionKey =
   | "mails"
   | "campaigns"
   | "grants"
+  | "reports"
   | "logs";
 
 type AdminRecord = Record<string, unknown>;
 
 type AdminConnection = {
-  totalCount: number;
+  totalCount?: number;
   nodes: AdminRecord[];
 };
 
@@ -719,6 +722,29 @@ function LogRowActions({ row }: { row: AdminRecord }) {
   );
 }
 
+function SupportReportRowActions({ row }: { row: AdminRecord }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button size="small" variant="outlined" onClick={() => { setOpen(true); }}>
+        View report
+      </Button>
+      <Dialog fullWidth maxWidth="md" open={open} onClose={() => { setOpen(false); }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          Support report
+          <IconButton aria-label="Close report" onClick={() => { setOpen(false); }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <SupportReportDetails report={row} />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 const ADMIN_SECTION_ORDER: AdminSectionKey[] = [
   "accounts",
   "bids",
@@ -727,6 +753,7 @@ const ADMIN_SECTION_ORDER: AdminSectionKey[] = [
   "mails",
   "campaigns",
   "grants",
+  "reports",
   "logs"
 ];
 
@@ -867,6 +894,20 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
     ],
     pageActions: () => <GrantCreatePageAction />
   },
+  reports: {
+    key: "reports",
+    title: "Admin Support - Reports",
+    searchLabel: "Search by summary, description, account, or report ID",
+    searchPlaceholder: "Type a report term, account name, or report ID",
+    connectionKey: "adminListSupportReports",
+    query: ADMIN_LIST_SUPPORT_REPORTS_QUERY,
+    columns: [
+      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
+      { key: "accountName", label: "Account", render: row => asString(row.accountName) || "-" },
+      { key: "summary", label: "Summary", render: row => asString(row.summary) || "-" }
+    ],
+    actions: row => <SupportReportRowActions row={row} />
+  },
   logs: {
     key: "logs",
     title: "Admin Support - Logs",
@@ -948,12 +989,20 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
 
   const { data, loading, error } = useQuery<AdminListQueryData, AdminListQueryVariables>(config.query, {
     skip: isChecking || isRedirecting || isForbiddenRedirecting || !isAdmin,
+    ...(section === "reports" ? { fetchPolicy: "no-cache" as const } : {}),
     variables
   });
 
   const connection = data?.[config.connectionKey];
   const rows = connection?.nodes ?? [];
-  const totalCount = connection?.totalCount ?? 0;
+  // PostgreSQL bigint counts may be serialized as strings by PostGraphile.
+  const reportCount = rows[0]?.totalCount;
+  const parsedReportCount = typeof reportCount === "number" || typeof reportCount === "string"
+    ? Number(reportCount)
+    : NaN;
+  const totalCount = section === "reports"
+    ? (Number.isSafeInteger(parsedReportCount) && parsedReportCount >= 0 ? parsedReportCount : 0)
+    : connection?.totalCount ?? 0;
   const hasPreviousPage = offset > 0;
   const hasNextPage = offset + PAGE_SIZE < totalCount;
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
@@ -981,7 +1030,7 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
   return (
     <PageContainer>
       <Box sx={{ py: 4 }}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
+        <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2, flexWrap: "wrap", rowGap: 1 }}>
           {getAdminSectionOrder().map(sectionKey => {
             const sectionConfig = getAdminSectionConfig(sectionKey);
             const selected = sectionKey === section;
@@ -1005,6 +1054,8 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
           </Typography>
           {config.pageActions ? config.pageActions() : null}
         </Stack>
+
+        {section === "reports" ? <Typography variant="body2" sx={{ mb: 2 }}>Newest reports first</Typography> : null}
 
         <Paper sx={{ p: 2, mb: 2 }} variant="outlined">
           <Stack direction={{ xs: "column", md: "row" }} spacing={2}>

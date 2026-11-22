@@ -10,6 +10,10 @@ export function notificationUrlForEvent(eventType: string, payload: Notification
   const needClaimId = asText(payload.needClaimId);
 
   switch (eventType) {
+    case "campaign_created_pending":
+      return "/admin/campaigns";
+    case "support_report_created":
+      return "/admin/reports";
     case "campaign_listing_pending":
       return campaignId ? `/campaigns/${encodeURIComponent(campaignId)}/moderation` : "/campaigns";
     case "campaign_listing_accepted":

@@ -56,6 +56,8 @@
   "notifications": {
     "listingKind": { "need": "need", "resource": "resource" },
     "events": {
+      "campaignCreatedPending": { "headline1": "Campaign awaiting review", "headline2": "{{campaignName}}", "description": "Review it on the admin website." },
+      "supportReportCreated": { "headline1": "New support report", "headline2": "", "description": "Review it on the admin website." },
       "campaignListingPending": { "headline1": "Listing awaiting review", "headline2": "{{campaignName}}", "description": "Review {{listingName}} ({{listingKind}}) for your campaign." },
       "campaignListingAccepted": { "headline1": "Listing accepted", "headline2": "{{campaignName}}", "description": "{{listingName}} ({{listingKind}}) is now part of this campaign." },
       "campaignListingRejected": { "headline1": "Listing needs changes", "headline2": "{{campaignName}}", "description": "Edit {{listingName}} ({{listingKind}}) to review feedback and resubmit." },
@@ -84,6 +86,7 @@
     "fallback": { "headline1": "{{eventType}}", "headline2": "", "description": "" },
     "someone": "Someone",
     "unknownNeed": "your need",
+    "adminUnknownCampaign": "Unknown campaign",
     "unknownCampaign": "your campaign",
     "unknownResource": "your resource"
   }

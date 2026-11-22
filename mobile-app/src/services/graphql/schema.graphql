@@ -1431,6 +1431,40 @@ type AdminListResourcesRecord {
   tokenAmount: Int
 }
 
+"""A `AdminListSupportReportsRecord` edge in the connection."""
+type AdminListSupportReportEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AdminListSupportReportsRecord` at the end of the edge."""
+  node: AdminListSupportReportsRecord!
+}
+
+"""A connection to a list of `AdminListSupportReportsRecord` values."""
+type AdminListSupportReportsConnection {
+  """
+  A list of edges which contains the `AdminListSupportReportsRecord` and cursor to aid in pagination.
+  """
+  edges: [AdminListSupportReportEdge!]!
+  """A list of `AdminListSupportReportsRecord` objects."""
+  nodes: [AdminListSupportReportsRecord!]!
+  """
+  The count of *all* `AdminListSupportReportsRecord` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""The return type of our `adminListSupportReports` query."""
+type AdminListSupportReportsRecord {
+  accountId: UUID
+  accountName: String
+  createdAt: Datetime
+  description: String
+  diagnostics: JSON
+  id: UUID
+  summary: String
+  totalCount: BigInt
+}
+
 """All input for the `adminResendMail` mutation."""
 input AdminResendMailInput {
   """
@@ -8174,6 +8208,12 @@ type Mutation {
     """
     input: SubmitResourceBidInput!
   ): SubmitResourceBidPayload
+  submitSupportReport(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SubmitSupportReportInput!
+  ): SubmitSupportReportPayload
   """Updates a single `Account` using its globally unique id and a patch."""
   updateAccount(
     """
@@ -9812,6 +9852,24 @@ type Query implements Node {
     pOffset: Int
     pSearch: String
   ): AdminListResourcesConnection
+  adminListSupportReports(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    pLimit: Int
+    pOffset: Int
+    pSearch: String
+  ): AdminListSupportReportsConnection
   """
   Reads and enables pagination through a set of `AccountDeliveryPreference`.
   """
@@ -12904,6 +12962,32 @@ type SubmitResourceBidPayload {
   ): ResourceBidsEdge
   """Reads a single `Resource` that is related to this `ResourceBid`."""
   resourceByResourceId: Resource
+}
+
+"""All input for the `submitSupportReport` mutation."""
+input SubmitSupportReportInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  pDescription: String
+  pDiagnostics: JSON
+  pSummary: String
+}
+
+"""The output of our `submitSupportReport` mutation."""
+type SubmitSupportReportPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  uuid: UUID
 }
 
 """

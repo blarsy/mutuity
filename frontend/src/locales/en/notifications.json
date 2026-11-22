@@ -20,6 +20,16 @@
   },
   "listingKind": { "need": "need", "resource": "resource" },
   "events": {
+    "campaignCreatedPending": {
+      "headline1": "Campaign awaiting review",
+      "headline2": "{{campaignName}}",
+      "description": "A new campaign is awaiting moderation."
+    },
+    "supportReportCreated": {
+      "headline1": "New support report",
+      "headline2": "",
+      "description": "A support report has been submitted."
+    },
     "campaignListingPending": {
       "headline1": "Listing awaiting review",
       "headline2": "{{campaignName}}",

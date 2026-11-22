@@ -1102,6 +1102,39 @@ export type AdminListResourcesRecord = {
   tokenAmount: Maybe<Scalars['Int']['output']>;
 };
 
+/** A `AdminListSupportReportsRecord` edge in the connection. */
+export type AdminListSupportReportEdge = {
+  __typename: 'AdminListSupportReportEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']['output']>;
+  /** The `AdminListSupportReportsRecord` at the end of the edge. */
+  node: AdminListSupportReportsRecord;
+};
+
+/** A connection to a list of `AdminListSupportReportsRecord` values. */
+export type AdminListSupportReportsConnection = {
+  __typename: 'AdminListSupportReportsConnection';
+  /** A list of edges which contains the `AdminListSupportReportsRecord` and cursor to aid in pagination. */
+  edges: Array<AdminListSupportReportEdge>;
+  /** A list of `AdminListSupportReportsRecord` objects. */
+  nodes: Array<AdminListSupportReportsRecord>;
+  /** The count of *all* `AdminListSupportReportsRecord` you could get from the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** The return type of our `adminListSupportReports` query. */
+export type AdminListSupportReportsRecord = {
+  __typename: 'AdminListSupportReportsRecord';
+  accountId: Maybe<Scalars['UUID']['output']>;
+  accountName: Maybe<Scalars['String']['output']>;
+  createdAt: Maybe<Scalars['Datetime']['output']>;
+  description: Maybe<Scalars['String']['output']>;
+  diagnostics: Maybe<Scalars['JSON']['output']>;
+  id: Maybe<Scalars['UUID']['output']>;
+  summary: Maybe<Scalars['String']['output']>;
+  totalCount: Maybe<Scalars['BigInt']['output']>;
+};
+
 /** All input for the `adminResendMail` mutation. */
 export type AdminResendMailInput = {
   /**
@@ -6702,6 +6735,7 @@ export type Mutation = {
   setGrantTargetEmails: Maybe<SetGrantTargetEmailsPayload>;
   settleNeedClaim: Maybe<SettleNeedClaimPayload>;
   submitResourceBid: Maybe<SubmitResourceBidPayload>;
+  submitSupportReport: Maybe<SubmitSupportReportPayload>;
   /** Updates a single `Account` using its globally unique id and a patch. */
   updateAccount: Maybe<UpdateAccountPayload>;
   /** Updates a single `Account` using a unique key and a patch. */
@@ -7813,6 +7847,12 @@ export type MutationSettleNeedClaimArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSubmitResourceBidArgs = {
   input: SubmitResourceBidInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSubmitSupportReportArgs = {
+  input: SubmitSupportReportInput;
 };
 
 
@@ -9041,6 +9081,7 @@ export type Query = Node & {
   adminListMails: Maybe<AdminListMailsConnection>;
   adminListNotifications: Maybe<AdminListNotificationsConnection>;
   adminListResources: Maybe<AdminListResourcesConnection>;
+  adminListSupportReports: Maybe<AdminListSupportReportsConnection>;
   /** Reads and enables pagination through a set of `AccountDeliveryPreference`. */
   allAccountDeliveryPreferences: Maybe<AccountDeliveryPreferencesConnection>;
   /** Reads and enables pagination through a set of `AccountNotification`. */
@@ -9378,6 +9419,19 @@ export type QueryAdminListNotificationsArgs = {
 
 /** The root query type which gives access points into the data universe. */
 export type QueryAdminListResourcesArgs = {
+  after?: InputMaybe<Scalars['Cursor']['input']>;
+  before?: InputMaybe<Scalars['Cursor']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  pLimit?: InputMaybe<Scalars['Int']['input']>;
+  pOffset?: InputMaybe<Scalars['Int']['input']>;
+  pSearch?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryAdminListSupportReportsArgs = {
   after?: InputMaybe<Scalars['Cursor']['input']>;
   before?: InputMaybe<Scalars['Cursor']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -12061,6 +12115,31 @@ export type SubmitResourceBidPayload = {
 /** The output of our `submitResourceBid` mutation. */
 export type SubmitResourceBidPayloadResourceBidEdgeArgs = {
   orderBy?: InputMaybe<Array<ResourceBidsOrderBy>>;
+};
+
+/** All input for the `submitSupportReport` mutation. */
+export type SubmitSupportReportInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  pDescription?: InputMaybe<Scalars['String']['input']>;
+  pDiagnostics?: InputMaybe<Scalars['JSON']['input']>;
+  pSummary?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The output of our `submitSupportReport` mutation. */
+export type SubmitSupportReportPayload = {
+  __typename: 'SubmitSupportReportPayload';
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']['output']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+  uuid: Maybe<Scalars['UUID']['output']>;
 };
 
 /** The root subscription type: contains realtime events you can subscribe to with the `subscription` operation. */

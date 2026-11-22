@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Snackbar, Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 import { FormTextInput, PrimaryButton, ScreenContainer } from "../../components/primitives";
-import { createDiagnosticsSnapshot, formatDiagnosticsForDisplay } from "../../services/support/diagnostics";
-import { buildIssueReport, submitIssueReport } from "../../services/support/reportIssue";
+import { createDiagnosticsSnapshot, formatDiagnosticsForDisplay, getSupportAppMetadata } from "../../services/support/diagnostics";
+import { submitIssueReport } from "../../services/support/reportIssue";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -21,37 +21,38 @@ export function SupportScreen({ appVersion, buildNumber, onBack }: SupportScreen
   const [description, setDescription] = useState("");
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const sendingRef = useRef(false);
 
-  const diagnostics = createDiagnosticsSnapshot(appVersion, buildNumber);
+  const metadata = getSupportAppMetadata(appVersion, buildNumber);
+  const diagnostics = createDiagnosticsSnapshot(metadata.appVersion, metadata.buildNumber);
   const diagnosticsText = formatDiagnosticsForDisplay(diagnostics);
 
   const handleSendReport = useCallback(async () => {
+    if (sendingRef.current) return;
     if (!summary.trim()) {
       setFeedback(t("supportReportSummaryLabel", { defaultValue: "Summary" }) + " " + t("fieldRequired", { defaultValue: "is required." }));
       return;
     }
 
+    sendingRef.current = true;
     setSending(true);
     setFeedback(null);
 
     try {
-      const result = await submitIssueReport({
+      await submitIssueReport({
         summary: summary.trim(),
         ...(description.trim() ? { description: description.trim() } : {}),
         ...(appVersion ? { appVersion } : {}),
         ...(buildNumber ? { buildNumber } : {})
       });
 
-      if (result.success) {
-        setFeedback(t("supportReportSent", { defaultValue: "Report sent. Thank you!" }));
-        setSummary("");
-        setDescription("");
-      } else {
-        setFeedback(t("supportReportError", { defaultValue: "We could not send your report. Please try again." }));
-      }
+      setFeedback(t("supportReportSent", { defaultValue: "Report sent. Thank you!" }));
+      setSummary("");
+      setDescription("");
     } catch {
       setFeedback(t("supportReportError", { defaultValue: "We could not send your report. Please try again." }));
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
   }, [summary, description, appVersion, buildNumber, t]);
@@ -75,6 +76,8 @@ export function SupportScreen({ appVersion, buildNumber, onBack }: SupportScreen
           accessibilityLabel={t("supportReportSummaryLabel", { defaultValue: "Summary" })}
           value={summary}
           onChangeText={setSummary}
+          maxLength={200}
+          editable={!sending}
         />
 
         <FormTextInput
@@ -82,6 +85,8 @@ export function SupportScreen({ appVersion, buildNumber, onBack }: SupportScreen
           accessibilityLabel={t("supportReportDescriptionLabel", { defaultValue: "Description" })}
           value={description}
           onChangeText={setDescription}
+          maxLength={8000}
+          editable={!sending}
           multiline
           numberOfLines={4}
         />
@@ -101,13 +106,16 @@ export function SupportScreen({ appVersion, buildNumber, onBack }: SupportScreen
         </Text>
       </ScrollView>
 
-      <Snackbar
-        visible={Boolean(feedback)}
-        onDismiss={() => setFeedback(null)}
-        duration={3000}
-      >
-        {feedback ?? ""}
-      </Snackbar>
+      {feedback ? (
+        <Snackbar
+          key={feedback}
+          visible
+          onDismiss={() => setFeedback(current => current === feedback ? null : current)}
+          duration={3000}
+        >
+          {feedback}
+        </Snackbar>
+      ) : null}
     </ScreenContainer>
   );
 }

@@ -9,6 +9,8 @@ import PrizeWon from "../../src/assets/img/prize-won.svg";
 
 describe("mobile notification lifecycle icons", () => {
   it.each([
+    ["campaign_created_pending", Moderation],
+    ["support_report_created", Moderation],
     ["campaign_listing_pending", Moderation],
     ["campaign_listing_accepted", PrizeWon],
     ["campaign_listing_rejected", Denied],

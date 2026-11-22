@@ -52,6 +52,31 @@ describe.each(["en", "fr"])("campaign listing notifications (%s)", language => {
   });
 });
 
+describe.each(["en", "fr"])("admin account notifications (%s)", language => {
+  beforeEach(async () => { jest.clearAllMocks(); await mockI18n.changeLanguage(language); });
+
+  it("renders the campaign name and localized moderation copy", () => {
+    const html = renderNotification("campaign_created_pending", { campaignId: "campaign-1", campaignName: "Autumn" });
+    expect(html).toContain(mockI18n.t("events.campaignCreatedPending.headline1", { lng: language, fallbackLng: false }));
+    expect(html).toContain(mockI18n.t("events.campaignCreatedPending.description", { lng: language, fallbackLng: false }));
+    expect(html).toContain("Autumn");
+    expect(html).toContain("/topela/notifications/moderation.svg");
+    expect(html).not.toMatch(/events\.|undefined|\{\{/);
+  });
+
+  it.each([{}, { campaignName: "" }, { campaignName: "  " }, { campaignName: 42 }])("handles missing campaign names %j", payload => {
+    expect(renderNotification("campaign_created_pending", payload)).toContain(mockI18n.t("eventFallback.unknownCampaign"));
+  });
+
+  it("renders a support report without displaying its ID or untrusted payload", () => {
+    const html = renderNotification("support_report_created", { reportId: "private-report-id", body: "private report text" });
+    expect(html).toContain(mockI18n.t("events.supportReportCreated.headline1", { lng: language, fallbackLng: false }));
+    expect(html).toContain(mockI18n.t("events.supportReportCreated.description", { lng: language, fallbackLng: false }));
+    expect(html).toContain("/topela/notifications/moderation.svg");
+    expect(html).not.toMatch(/private-report-id|private report text|events\.|undefined|\{\{/);
+  });
+});
+
 describe("campaign listing URLs", () => {
   it("targets campaign moderation for pending submissions", () => {
     expect(notificationUrlForEvent("campaign_listing_pending", { campaignId: "campaign/1", url: "https://untrusted.invalid" }))

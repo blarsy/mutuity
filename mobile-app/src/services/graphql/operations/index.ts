@@ -1,5 +1,13 @@
 import { gql } from "@apollo/client";
 
+export const SUBMIT_SUPPORT_REPORT_MUTATION = gql`
+  mutation SubmitSupportReport($input: SubmitSupportReportInput!) {
+    submitSupportReport(input: $input) {
+      uuid
+    }
+  }
+`;
+
 export const ACCOUNT_EVENTS_SUBSCRIPTION = gql`
   subscription AccountEvents($topic: String!) {
     listen(topic: $topic) {

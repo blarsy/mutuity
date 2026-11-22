@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import { NotificationsScreen } from "../../src/screens/notifications/NotificationsScreen";
+import { NotificationsScreen, type NotificationFeedItem } from "../../src/screens/notifications/NotificationsScreen";
+import { notificationDestinationForEvent } from "../../src/services/notifications/notificationRouting";
 
 // These acceptance cases inject their feed; shared realtime is covered by the
 // focused screen tests, not by opening a real account subscription here.
@@ -111,6 +112,27 @@ describe("US4 notifications continuity acceptance", () => {
     fireEvent.press(screen.getByTestId("notification-row-lifecycle-notification"));
     expect(onMarkRead).toHaveBeenCalledWith(notification.id, "need-claim");
     expect(onOpenNotification).toHaveBeenCalledWith(notification);
+  });
+
+  it.each(["campaign_created_pending", "support_report_created"])("keeps %s in the inbox after marking it read", eventType => {
+    const notification = {
+      id: "admin-notification",
+      source: "account" as const,
+      eventType,
+      headline1: "Admin notification",
+      headline2: "",
+      description: "Review information",
+      payload: { campaignId: "campaign-1", reportId: "report-1", url: "https://untrusted.invalid" },
+      createdAt: "2026-10-07T12:00:00Z",
+      readAt: null
+    };
+    const onMarkRead = jest.fn();
+    const onOpenNotification = jest.fn((item: NotificationFeedItem) => notificationDestinationForEvent(item.eventType ?? "", item.payload ?? {}));
+    const screen = render(React.createElement(NotificationsScreen, { notifications: [notification], onMarkRead, onOpenNotification }));
+    fireEvent.press(screen.getByTestId("notification-row-admin-notification"));
+    expect(onMarkRead).toHaveBeenCalledWith(notification.id, "account");
+    expect(onOpenNotification).toHaveBeenCalledWith(notification);
+    expect(onOpenNotification).toHaveReturnedWith({ surface: "notifications" });
   });
 
   it("shows loading state while fetching notifications", async () => {

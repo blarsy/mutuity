@@ -17,6 +17,25 @@ export const ADMIN_LIST_ACCOUNTS_QUERY = gql`
   }
 `;
 
+// The function returns the filtered total on each row; the connection count is
+// only the number of rows returned by the function after pLimit/pOffset.
+export const ADMIN_LIST_SUPPORT_REPORTS_QUERY = gql`
+  query AdminListSupportReports($pSearch: String, $pLimit: Int = 50, $pOffset: Int = 0) {
+    adminListSupportReports(pSearch: $pSearch, pLimit: $pLimit, pOffset: $pOffset) {
+      nodes {
+        id
+        createdAt
+        accountId
+        accountName
+        summary
+        description
+        diagnostics
+        totalCount
+      }
+    }
+  }
+`;
+
 export const ADMIN_LIST_BIDS_QUERY = gql`
   query AdminListBids($pSearch: String, $pLimit: Int = 25, $pOffset: Int = 0) {
     adminListBids(pSearch: $pSearch, pLimit: $pLimit, pOffset: $pOffset) {

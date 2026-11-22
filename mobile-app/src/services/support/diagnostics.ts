@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 export interface DiagnosticsSnapshot {
@@ -7,6 +8,25 @@ export interface DiagnosticsSnapshot {
   appVersion?: string;
   buildNumber?: string;
   deviceLocale?: string;
+}
+
+/** Use native build metadata when available, falling back to the Expo manifest. */
+export function getSupportAppMetadata(appVersion?: string, buildNumber?: string): {
+  appVersion?: string;
+  buildNumber?: string;
+} {
+  const config = Constants.expoConfig;
+  const build = Platform.OS === "ios"
+    ? Constants.platform?.ios?.buildNumber ?? config?.ios?.buildNumber
+    : Platform.OS === "android"
+      ? Constants.platform?.android?.versionCode ?? config?.android?.versionCode
+      : undefined;
+  const version = appVersion || config?.version;
+  const resolvedBuild = buildNumber || (build == null ? undefined : String(build));
+  return {
+    ...(version ? { appVersion: version } : {}),
+    ...(resolvedBuild ? { buildNumber: resolvedBuild } : {})
+  };
 }
 
 export function createDiagnosticsSnapshot(appVersion?: string, buildNumber?: string): DiagnosticsSnapshot {

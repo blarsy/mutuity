@@ -27,6 +27,8 @@ const EXACT_EVENT_TYPE_ICONS: Record<string, NotificationIcon> = {
   welcome_profile_reward: Hey,
   grant_claim: GotGift,
   campaign_approved: PrizeWon,
+  campaign_created_pending: Moderation,
+  support_report_created: Moderation,
   campaign_listing_pending: Moderation,
   campaign_listing_accepted: PrizeWon,
   campaign_listing_rejected: Denied,

@@ -2,6 +2,14 @@ import { resolveCampaignModerationPrefill } from "../../src/features/admin/admin
 import { notificationUrlForEvent } from "../../src/features/notifications/notificationRouting";
 
 describe("campaign moderation notification routing", () => {
+  it.each([
+    ["campaign_created_pending", "/admin/campaigns"],
+    ["support_report_created", "/admin/reports"]
+  ])("routes %s to its admin section, never a payload URL", (eventType, expected) => {
+    expect(notificationUrlForEvent(eventType, { campaignId: "campaign/1", reportId: "report/1", url: "https://untrusted.invalid" })).toBe(expected);
+    expect(notificationUrlForEvent(eventType, {})).toBe(expected);
+  });
+
   it("routes creator campaign notifications to the moderation page", () => {
     expect(
       notificationUrlForEvent("campaign_moderation_note_received", {

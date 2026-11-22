@@ -130,3 +130,23 @@ embeds deployment snapshots of this canonical source, need creation, and both
 campaign-airdrop issuers. Numbered migrations must contain their own SQL, never
 include mutable canonical files with psql include directives. Future canonical
 changes require a new migration snapshot rather than changing a deployed one.
+
+## Support reports
+
+Migration 175 creates private, RLS-protected report and rate-lock tables. The
+canonical function source is [support/support_reports.sql](support/support_reports.sql);
+future changes require a new self-contained migration snapshot. Submissions use
+the authenticated account, accept a 1–200 character summary, optional description
+of at most 8000 characters, and a JSON object of at most 16384 serialized bytes.
+Each account may submit five reports per rolling hour. Every admin, including an
+admin submitter, receives a transactional `support_report_created` notification
+whose payload contains only `reportId`.
+
+Only admins can list reports; search is case-insensitive literal substring over
+summary, description, account name or report ID. Limits default to 50 and clamp
+to 1–500; offsets clamp to zero. Results sort by creation time and ID descending.
+`total_count` is the filtered count repeated on each returned row; an empty page
+has no row from which to read it. Account names are current, not snapshots.
+Account anonymization deletes its reports and rate-limit state because free text
+can contain identifying information. Callers should not include secrets; an
+operational retention policy is still needed for other reports.

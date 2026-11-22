@@ -114,6 +114,22 @@ function formatNotificationCopy(eventType: string, payload: unknown): Notificati
   });
 
   switch (eventType) {
+    case "campaign_created_pending": {
+      const campaignName = typeof p.campaignName === "string" && p.campaignName.trim()
+        ? p.campaignName.trim()
+        : i18n.t("notifications.adminUnknownCampaign", { ns: "us4", defaultValue: "Unknown campaign" });
+      return translateEvent("campaignCreatedPending", { campaignName }, {
+        headline1: "Campaign awaiting review",
+        headline2: campaignName,
+        description: "Review it on the admin website."
+      });
+    }
+    case "support_report_created":
+      return translateEvent("supportReportCreated", {}, {
+        headline1: "New support report",
+        headline2: "",
+        description: "Review it on the admin website."
+      });
     case "campaign_listing_pending":
     case "campaign_listing_accepted":
     case "campaign_listing_rejected": {
