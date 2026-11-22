@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
-import { ProgressBar, Text } from "react-native-paper";
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { IconButton, Modal, Portal, ProgressBar, Text } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppButton as Button } from "../primitives/AppButton";
-
-import { ThemedDialog } from "../primitives";
+import CrossIcon from "../../assets/img/CROSS.svg";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
@@ -47,33 +46,62 @@ export function ExplainerDialog({
   testID
 }: ExplainerDialogProps): React.JSX.Element | null {
   const totalSlides = slides.length;
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const maxDialogHeight = Math.max(0, windowHeight - insets.top - insets.bottom - 32);
 
-  if (totalSlides === 0) {
+  if (!visible || totalSlides === 0) {
     return null;
   }
 
   return (
-    <ThemedDialog
-      visible={visible}
-      title={title}
-      onDismiss={onClose}
-      testID={testID}
-      content={<ExplainerDialogContent slides={slides} labels={labels} onClose={onClose} />}
-      actions={[]}
-    />
+    <Portal>
+      <Modal visible={visible} onDismiss={onClose} contentContainerStyle={styles.modalContent}>
+        <View style={styles.screen} pointerEvents="box-none">
+          <Pressable
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            onPress={onClose}
+            style={StyleSheet.absoluteFill}
+            testID="explainer-backdrop"
+          />
+          <View
+            pointerEvents="box-none"
+            style={[styles.dialogPlacement, { paddingLeft: insets.left + 16, paddingRight: insets.right + 16 }]}
+          >
+            <View style={[styles.dialog, { maxHeight: maxDialogHeight }]} testID={testID}>
+              <View style={styles.titleRow}>
+                <Text variant="titleLarge" style={styles.dialogTitle} numberOfLines={1}>
+                  {title}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={labels.close}
+                  onPress={onClose}
+                  style={styles.closeButton}
+                >
+                  <CrossIcon width={24} height={24} fill={designTokens.colors.primary} />
+                </Pressable>
+              </View>
+              <View style={styles.contentZone}>
+                <ExplainerDialogContent slides={slides} labels={labels} />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </Portal>
   );
 }
 
 interface ExplainerDialogContentProps {
   slides: ExplainerSlide[];
   labels: ExplainerDialogLabels;
-  onClose: () => void;
 }
 
 function ExplainerDialogContent({
   slides,
-  labels,
-  onClose
+  labels
 }: ExplainerDialogContentProps): React.JSX.Element {
   const { height: windowHeight } = useWindowDimensions();
   const [slideIndex, setSlideIndex] = useState(0);
@@ -144,27 +172,74 @@ function ExplainerDialogContent({
       </ScrollView>
 
       <View style={styles.actionsRow}>
-        <Button onPress={onClose}>{labels.close}</Button>
-        <Button
+        <IconButton
+          icon="chevron-left"
+          accessibilityLabel={labels.previous}
+          containerColor={designTokens.colors.primary}
+          iconColor="#FFF"
           disabled={isFirstSlide}
           onPress={() => setSlideIndex((previous) => Math.max(0, previous - 1))}
-        >
-          {labels.previous}
-        </Button>
-        <Button
-          mode="contained"
+        />
+        <IconButton
+          icon="chevron-right"
+          containerColor={designTokens.colors.primary}
+          iconColor="#FFF"
+          accessibilityLabel={labels.next}
           disabled={isLastSlide}
           onPress={() => setSlideIndex((previous) => Math.min(totalSlides - 1, previous + 1))}
-        >
-          {labels.next}
-        </Button>
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  modalContent: {
+    height: "100%",
+    backgroundColor: "transparent",
+    elevation: 0
+  },
+  screen: {
+    flex: 1
+  },
+  dialogPlacement: {
+    flex: 1,
+    justifyContent: "center",
+    paddingTop: 16,
+    paddingBottom: 16
+  },
+  dialog: {
+    backgroundColor: designTokens.colors.primaryContainer,
+    borderRadius: 7
+  },
+  titleRow: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: 48
+  },
+  dialogTitle: {
+    width: "100%",
+    textAlign: "center"
+  },
+  contentZone: {
+    flexShrink: 1,
+    minHeight: 0,
+    paddingHorizontal: 12,
+    paddingBottom: 12
+  },
+  closeButton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center"
+  },
   contentRoot: {
+    flexShrink: 1,
+    minHeight: 0,
     gap: designTokens.spacing.sm
   },
   stepLabel: {
@@ -177,7 +252,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff"
   },
   slidesScroll: {
-    flexGrow: 0
+    flexGrow: 0,
+    flexShrink: 1
   },
   slidesContent: {
     gap: designTokens.spacing.sm
@@ -201,9 +277,7 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    flexWrap: "wrap",
-    gap: designTokens.spacing.xs,
+    justifyContent: "space-between",
     marginTop: designTokens.spacing.xs
   }
 });
