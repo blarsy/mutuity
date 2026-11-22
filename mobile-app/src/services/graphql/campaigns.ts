@@ -8,7 +8,7 @@ import {
   type Query
 } from "./generated";
 import { uploadListingImages } from "../images";
-import { CAMPAIGN_BY_ID_QUERY, CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION } from "./operations";
+import { CAMPAIGN_BY_ID_QUERY, PUBLIC_CAMPAIGN_BY_ID_QUERY, CREATE_CAMPAIGN_MUTATION, INSPIRATION_CAMPAIGNS_QUERY, LINKABLE_CAMPAIGNS_QUERY, MY_CAMPAIGNS_QUERY, UPDATE_CAMPAIGN_FOR_MODERATION_MUTATION } from "./operations";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -224,6 +224,18 @@ export async function fetchCampaignById(campaignId: string): Promise<CampaignIte
     campaignById?: CampaignWithStats | null;
   }, { id: string }>({
     query: CAMPAIGN_BY_ID_QUERY,
+    variables: { id: campaignId },
+    fetchPolicy: "network-only"
+  });
+
+  return data?.campaignById ? normalizeCampaign(data.campaignById) : null;
+}
+
+export async function fetchPublicCampaignById(campaignId: string): Promise<CampaignItem | null> {
+  const { data } = await apolloClient.query<{
+    campaignById?: CampaignWithStats | null;
+  }, { id: string }>({
+    query: PUBLIC_CAMPAIGN_BY_ID_QUERY,
     variables: { id: campaignId },
     fetchPolicy: "network-only"
   });

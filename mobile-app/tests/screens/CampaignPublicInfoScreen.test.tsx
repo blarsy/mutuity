@@ -5,7 +5,9 @@ import { CampaignPublicInfoScreen } from "../../src/screens/campaigns/CampaignPu
 import { ResourceDetailScreen } from "../../src/screens/resources/ResourceDetailScreen";
 import { NeedDetailScreen } from "../../src/screens/needs/NeedDetailScreen";
 import { fetchCampaignPublicListings } from "../../src/services/graphql/campaignPublicListings";
+import { apolloClient } from "../../src/services/graphql/client";
 import { CampaignModerationStatus } from "../../src/services/graphql/generated";
+import { print } from "graphql";
 import type { CampaignItem } from "../../src/services/graphql/campaigns";
 
 jest.mock("../../src/assets/img/TOKENS.svg", () => "TokenSymbol");
@@ -13,7 +15,11 @@ jest.mock("../../src/screens/resources/ResourceDetailScreen", () => ({ ResourceD
 jest.mock("../../src/screens/needs/NeedDetailScreen", () => ({ NeedDetailScreen: jest.fn(() => null) }));
 jest.mock("../../src/navigation/AccountPublicProfileNavigator", () => ({ AccountPublicProfileNavigator: jest.fn(() => null) }));
 jest.mock("../../src/services/graphql/campaignPublicListings", () => ({ fetchCampaignPublicListings: jest.fn() }));
-jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key, i18n: { language: "en" } }) }));
+jest.mock("../../src/services/graphql/client", () => ({ apolloClient: { query: jest.fn() } }));
+jest.mock("react-i18next", () => {
+  const t = (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key;
+  return { useTranslation: () => ({ t, i18n: { language: "en" } }) };
+});
 
 const campaign: CampaignItem = {
   id: "c1", title: "Garden", theme: "Garden", description: "", imageUrl: null,
@@ -31,7 +37,24 @@ function renderScreen(id = "c1") {
 }
 
 describe("CampaignPublicInfoScreen listings", () => {
-  beforeEach(() => jest.mocked(fetchCampaignPublicListings).mockReset());
+  beforeEach(() => {
+    jest.mocked(fetchCampaignPublicListings).mockReset();
+    jest.mocked(apolloClient.query).mockReset();
+  });
+
+  it("loads public campaign information for an anonymous visitor", async () => {
+    jest.mocked(apolloClient.query).mockResolvedValue({ data: { campaignById: campaign } });
+    jest.mocked(fetchCampaignPublicListings).mockResolvedValue({ resources: [], needs: [] });
+    const screen = render(<PaperProvider><CampaignPublicInfoScreen campaignId="c1" /></PaperProvider>);
+
+    await screen.findByText("Garden");
+    expect(screen.queryByText("We could not load this campaign.")).toBeNull();
+    const request = jest.mocked(apolloClient.query).mock.calls[0]![0];
+    expect(request.variables).toEqual({ id: "c1" });
+    expect(print(request.query)).toContain("query PublicCampaignById");
+    expect(print(request.query)).not.toContain("campaignResourcesByCampaignId");
+    expect(print(request.query)).not.toContain("campaignNeedsByCampaignId");
+  });
 
   it.each(["resource", "need"] as const)("shows listings and opens and returns from a %s", async (kind) => {
     jest.mocked(fetchCampaignPublicListings).mockResolvedValue(listings);

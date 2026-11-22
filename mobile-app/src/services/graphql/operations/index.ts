@@ -401,6 +401,26 @@ export const NEED_BY_ID_QUERY = gql`
   }
 `;
 
+export const PUBLIC_CAMPAIGN_BY_ID_QUERY = gql`
+  query PublicCampaignById($id: UUID!) {
+    campaignById(id: $id) {
+      id
+      title
+      theme
+      description
+      imageUrl
+      createdAt
+      creatorAccountId
+      moderationStatus
+      startAt
+      airdropAt
+      endAt
+      rewardsMultiplier
+      airdropAmount
+    }
+  }
+`;
+
 export const CAMPAIGN_BY_ID_QUERY = gql`
   query CampaignById($id: UUID!) {
     campaignById(id: $id) {

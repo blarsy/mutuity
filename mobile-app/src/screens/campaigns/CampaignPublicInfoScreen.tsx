@@ -14,7 +14,7 @@ import {
 import { ErrorState } from "../../components/state/ErrorState";
 import { LoadingState } from "../../components/state/LoadingState";
 import { AccountPublicProfileNavigator } from "../../navigation/AccountPublicProfileNavigator";
-import { fetchCampaignById, type CampaignItem } from "../../services/graphql/campaigns";
+import { fetchPublicCampaignById, type CampaignItem } from "../../services/graphql/campaigns";
 import { fetchCampaignPublicListings, type CampaignPublicListings } from "../../services/graphql/campaignPublicListings";
 import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
@@ -84,7 +84,7 @@ export function CampaignPublicInfoScreen({
     setRemoteErrorMessage(null);
 
     try {
-      const nextCampaign = await fetchCampaignById(campaignId);
+      const nextCampaign = await fetchPublicCampaignById(campaignId);
       setRemoteCampaign(nextCampaign);
     } catch {
       setRemoteErrorMessage(

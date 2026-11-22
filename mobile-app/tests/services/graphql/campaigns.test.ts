@@ -7,7 +7,7 @@ jest.mock("../../../src/services/graphql/client", () => ({
   }
 }));
 
-import { fetchLinkableCampaigns, fetchMyCampaigns, fetchInspirationCampaigns, fetchCampaignById, updateCampaignById, type CampaignUpdateInput } from "../../../src/services/graphql/campaigns";
+import { fetchLinkableCampaigns, fetchMyCampaigns, fetchInspirationCampaigns, fetchCampaignById, fetchPublicCampaignById, updateCampaignById, type CampaignUpdateInput } from "../../../src/services/graphql/campaigns";
 import { CampaignModerationStatus } from "../../../src/services/graphql/generated";
 import { Kind, print, valueFromASTUntyped, type DocumentNode, type FieldNode } from "graphql";
 
@@ -24,6 +24,35 @@ function campaignSelections(query: DocumentNode): FieldNode[] {
 function campaignFields(query: DocumentNode): string[] {
   return campaignSelections(query).map(selection => selection.name.value);
 }
+
+describe("public campaign detail", () => {
+  beforeEach(() => jest.mocked(apolloClient.query).mockReset());
+
+  it("loads public display fields without querying restricted submission relations", async () => {
+    jest.mocked(apolloClient.query).mockResolvedValue({ data: { campaignById: {
+      id: "campaign-1", title: "Garden", moderationStatus: CampaignModerationStatus.Approved,
+      description: "Grow together", rewardsMultiplier: 7, airdropAmount: 4000
+    } } });
+
+    expect(await fetchPublicCampaignById("campaign-1")).toMatchObject({
+      id: "campaign-1", title: "Garden", description: "Grow together", rewardsMultiplier: 7, airdropAmount: 4000
+    });
+    const request = jest.mocked(apolloClient.query).mock.calls[0]![0];
+    expect(request.variables).toEqual({ id: "campaign-1" });
+    expect(request.fetchPolicy).toBe("network-only");
+    expect(campaignFields(request.query)).toEqual(expect.arrayContaining([
+      "id", "title", "description", "startAt", "airdropAt", "endAt", "rewardsMultiplier", "airdropAmount"
+    ]));
+    expect(campaignFields(request.query)).not.toEqual(expect.arrayContaining(["campaignResourcesByCampaignId"]));
+    expect(campaignFields(request.query)).not.toEqual(expect.arrayContaining(["campaignNeedsByCampaignId"]));
+    expect(campaignFields(request.query)).not.toContain("managerNoteFromCreator");
+  });
+
+  it("returns null for campaigns not visible to the caller", async () => {
+    jest.mocked(apolloClient.query).mockResolvedValue({ data: { campaignById: null } });
+    expect(await fetchPublicCampaignById("hidden")).toBeNull();
+  });
+});
 
 describe("campaign listing stats", () => {
   beforeEach(() => jest.mocked(apolloClient.query).mockReset());
