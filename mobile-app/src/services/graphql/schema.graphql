@@ -8915,9 +8915,9 @@ type Need implements Node {
   imageUrls: [String]
   intensity: NeedIntensity!
   isActive: Boolean!
-  latitude: BigFloat!
-  location: String!
-  longitude: BigFloat!
+  latitude: BigFloat
+  location: String
+  longitude: BigFloat
   multiplePeopleRequired: Boolean!
   """
   Reads and enables pagination through a set of `NeedClaimSettlementEvent`.

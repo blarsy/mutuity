@@ -13,12 +13,10 @@ describe("create form location defaults", () => {
     await expect(createResourceValidationSchema.validateAt("longitude", createResourceInitialValues)).resolves.toBeNull();
   });
 
-  it("requires a need location and coordinates instead of substituting defaults", async () => {
-    await expect(createNeedValidationSchema.validateAt("location", createNeedInitialValues)).rejects.toThrow("Location is required");
-    await expect(createNeedValidationSchema.validateAt("latitude", {
-      ...createNeedInitialValues,
-      location: "Tournai"
-    })).rejects.toThrow("Latitude is required");
+  it("allows an optional empty need location and coordinates", async () => {
+    await expect(createNeedValidationSchema.validateAt("location", createNeedInitialValues)).resolves.toBe("");
+    await expect(createNeedValidationSchema.validateAt("latitude", createNeedInitialValues)).resolves.toBeNull();
+    await expect(createNeedValidationSchema.validateAt("longitude", createNeedInitialValues)).resolves.toBeNull();
   });
 });
 

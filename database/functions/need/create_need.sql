@@ -24,6 +24,7 @@ declare
   v_account_id uuid;
   v_account_latitude numeric;
   v_account_longitude numeric;
+  v_location text;
   v_image_urls text[];
   v_need app_public.need;
 begin
@@ -37,10 +38,16 @@ begin
   perform app_private.validate_people_count(create_need.multiple_people_required, create_need.required_people_count);
   perform app_private.validate_campaign_linkability(create_need.campaign_id);
 
-  select a.latitude, a.longitude
-  into v_account_latitude, v_account_longitude
-  from app_public.account a
-  where a.id = v_account_id;
+  v_location := nullif(btrim(create_need.location), '');
+
+  -- Keep the historical fallback for addressed needs only. An absent address
+  -- must not invent coordinates, while explicitly supplied coordinates survive.
+  if v_location is not null then
+    select a.latitude, a.longitude
+    into v_account_latitude, v_account_longitude
+    from app_public.account a
+    where a.id = v_account_id;
+  end if;
 
   v_image_urls := app_private.normalize_text_array(create_need.image_urls);
 
@@ -68,9 +75,11 @@ begin
     v_account_id,
     nullif(btrim(create_need.title), ''),
     nullif(btrim(create_need.description), ''),
-    nullif(btrim(create_need.location), ''),
-    coalesce(create_need.latitude, v_account_latitude, 50.6072),
-    coalesce(create_need.longitude, v_account_longitude, 3.3889),
+    v_location,
+    case when v_location is null then create_need.latitude
+      else coalesce(create_need.latitude, v_account_latitude, 50.6072) end,
+    case when v_location is null then create_need.longitude
+      else coalesce(create_need.longitude, v_account_longitude, 3.3889) end,
     create_need.intensity,
     create_need.proposed_topes_amount,
     create_need.object_required,

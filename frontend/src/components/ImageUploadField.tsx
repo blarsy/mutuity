@@ -112,7 +112,7 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, show
 
   return (
     <Stack spacing={1}>
-      <Typography variant="subtitle2">{t("imageUpload.title")}</Typography>
+      <Typography variant="subtitle1">{t("imageUpload.title")}</Typography>
 
       {showExistingImages && imageUrls.length > 0 && (
         <Box

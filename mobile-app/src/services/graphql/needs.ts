@@ -100,6 +100,8 @@ export interface UpsertNeedInput {
     latitude?: number;
     longitude?: number;
   } | null;
+  /** Preserve coordinates on an untouched, already locationless need. Update only. */
+  preserveLocationCoordinates?: boolean;
   proposedTokenAmount: number;
   objectRequired: boolean;
   competenceRequired: boolean;
@@ -579,12 +581,20 @@ export async function createNeedForAccount(creatorAccountId: string, input: Upse
 export async function updateNeedById(needId: string, input: UpsertNeedInput): Promise<NeedItem | null> {
   const proposedTokenAmount = Math.max(0, Math.round(input.proposedTokenAmount));
   const imageUrls = await uploadListingImages(input.imageUrls);
+  const locationLabel = input.location?.label?.trim();
   const optionalNeedPatch: Partial<NeedPatch> = {
     description: input.description.trim(),
     imageUrls,
-    ...(input.location?.label?.trim() ? { location: input.location.label.trim() } : {}),
-    ...(input.location?.latitude !== undefined ? { latitude: input.location.latitude } : {}),
-    ...(input.location?.longitude !== undefined ? { longitude: input.location.longitude } : {}),
+    ...(locationLabel
+      ? {
+          location: locationLabel,
+          ...(input.location?.latitude !== undefined ? { latitude: input.location.latitude } : {}),
+          ...(input.location?.longitude !== undefined ? { longitude: input.location.longitude } : {})
+        }
+      : {
+          location: null,
+          ...(input.preserveLocationCoordinates ? {} : { latitude: null, longitude: null })
+        }),
     ...(input.requiredCompetenceText.trim() ? { requiredCompetenceText: input.requiredCompetenceText.trim() } : {}),
     ...(input.requiredToolingText.trim() ? { requiredToolingText: input.requiredToolingText.trim() } : {}),
     ...(input.requiredPeopleCount !== null ? { requiredPeopleCount: input.requiredPeopleCount } : {}),

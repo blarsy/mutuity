@@ -9,14 +9,17 @@
 import {
   Autocomplete,
   Box,
+  Button,
   CircularProgress,
+  IconButton,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { APIProvider, Map, Marker, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export interface LocationValue {
   address: string;
@@ -27,6 +30,7 @@ export interface LocationValue {
 interface LocationPickerProps {
   value: { address: string; latitude: number | ""; longitude: number | "" };
   onChange: (value: LocationValue) => void;
+  onClear?: () => void;
   onBlur?: () => void;
   addressLabel?: string;
   addressError?: boolean;
@@ -34,6 +38,7 @@ interface LocationPickerProps {
   coordinatesError?: boolean;
   coordinatesHelperText?: string;
   required?: boolean;
+  style?: React.CSSProperties;
 }
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
@@ -48,6 +53,8 @@ interface AddressAutocompleteProps {
   required?: boolean;
   onBlur?: () => void;
   onLocationResolved: (loc: LocationValue) => void;
+  style?: React.CSSProperties;
+
 }
 
 function AddressAutocomplete({
@@ -58,6 +65,7 @@ function AddressAutocomplete({
   required,
   onBlur,
   onLocationResolved,
+  style,
 }: AddressAutocompleteProps) {
   const { t } = useTranslation("common");
   const placesLibrary = useMapsLibrary("places");
@@ -67,6 +75,12 @@ function AddressAutocomplete({
   >([]);
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const active = useRef(true);
+
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; };
+  }, []);
 
   useEffect(() => {
     setInputValue(value);
@@ -117,6 +131,7 @@ function AddressAutocomplete({
     const { place } = await raw.fetchFields({
       fields: ["formattedAddress", "location"],
     });
+    if (!active.current) return;
     const latitude = place.location?.lat();
     const longitude = place.location?.lng();
     if (latitude === undefined || longitude === undefined) {
@@ -134,6 +149,7 @@ function AddressAutocomplete({
 
   return (
     <Autocomplete<google.maps.places.PlacePrediction, false, true, true>
+      style={style}
       freeSolo
       disableClearable
       disabled={Boolean(loadError)}
@@ -215,6 +231,7 @@ function PickerMap({ latitude, longitude, onMapClick }: PickerMapProps) {
 export function LocationPicker({
   value,
   onChange,
+  onClear,
   onBlur,
   addressLabel,
   addressError,
@@ -222,22 +239,28 @@ export function LocationPicker({
   coordinatesError,
   coordinatesHelperText,
   required,
+  style
 }: LocationPickerProps) {
   const { t } = useTranslation("common");
+  const [resetKey, setResetKey] = useState(0);
+  const changeVersion = useRef(0);
   const hasCoordinates =
     typeof value.latitude === "number" && Number.isFinite(value.latitude) &&
     typeof value.longitude === "number" && Number.isFinite(value.longitude);
 
   const handleMapClick = (lat: number, lng: number) => {
+    const version = ++changeVersion.current;
     // Reverse-geocode click → update address label via Places API
     (async () => {
       try {
         const geocoder = new google.maps.Geocoder();
         const result = await geocoder.geocode({ location: { lat, lng } });
+        if (version !== changeVersion.current) return;
         const address =
           result.results?.[0]?.formatted_address ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
         onChange({ address, latitude: lat, longitude: lng });
       } catch {
+        if (version !== changeVersion.current) return;
         onChange({ address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, latitude: lat, longitude: lng });
       }
     })();
@@ -245,16 +268,32 @@ export function LocationPicker({
 
   return (
     <APIProvider apiKey={API_KEY}>
-      <Stack spacing={1}>
-        <AddressAutocomplete
-          value={value.address}
-          label={addressLabel ?? t("locationPicker.addressLabel")}
-          error={addressError}
-          helperText={addressHelperText}
-          required={required}
-          onBlur={onBlur}
-          onLocationResolved={onChange}
-        />
+      <Stack spacing={1} style={style}>
+        <Stack direction="row" spacing={1}>
+          <AddressAutocomplete
+            style={{ flex: 1 }}
+            key={resetKey}
+            value={value.address}
+            label={addressLabel ?? t("locationPicker.addressLabel")}
+            error={addressError}
+            helperText={addressHelperText}
+            required={required}
+            onBlur={onBlur}
+            onLocationResolved={location => {
+              changeVersion.current++;
+              onChange(location);
+            }}
+          />
+        {onClear && (value.address || value.latitude !== "" || value.longitude !== "") ? (
+          <IconButton onClick={() => {
+            changeVersion.current++;
+            setResetKey(key => key + 1);
+            onClear();
+          }} sx={{ alignSelf: "center" }}>
+            <DeleteIcon />
+          </IconButton>
+        ) : null}
+        </Stack>
         {hasCoordinates ? (
           <Box
             sx={{

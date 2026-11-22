@@ -202,7 +202,7 @@ export function RichTextEditor({
 
   return (
     <Box>
-      <Typography sx={{ mb: 0.75 }} variant="body2">
+      <Typography sx={{ mb: 0.75 }} variant="subtitle1">
         {label}
       </Typography>
 

@@ -162,7 +162,7 @@ export function EditNeedScreen({
       return t("fieldRequired", { ns: "common", defaultValue: "This field is required." });
     }
 
-    if (!location?.label?.trim()) {
+    if (!initialNeed?.id && !location?.label?.trim()) {
       return t("needLocationRequired", { ns: "us2", defaultValue: "Location is required." });
     }
 
@@ -197,6 +197,7 @@ export function EditNeedScreen({
     return null;
   }, [
     competenceRequired,
+    initialNeed?.id,
     isTokenAmountInRange,
     location?.label,
     multiplePeopleRequired,
@@ -235,6 +236,9 @@ export function EditNeedScreen({
           description,
           imageUrls,
           location: location?.label?.trim() ? location : null,
+          ...(!initialNeed.location && !locationWasManuallyChanged.current
+            ? { preserveLocationCoordinates: true }
+            : {}),
           proposedTokenAmount: parsedTokenAmount,
           objectRequired,
           competenceRequired,
@@ -321,7 +325,9 @@ export function EditNeedScreen({
         />
 
         <FormFieldLabel>
-          {withRequiredMark(t("needLocationLabel", { ns: "us2", defaultValue: "Location" }))}
+          {initialNeed?.id
+            ? t("needLocationLabel", { ns: "us2", defaultValue: "Location" })
+            : withRequiredMark(t("needLocationLabel", { ns: "us2", defaultValue: "Location" }))}
         </FormFieldLabel>
         <ProximityLocationEditor value={location} onChange={handleLocationChange} />
 

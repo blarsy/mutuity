@@ -189,6 +189,7 @@ export interface IntensityPickerProps {
   error?: boolean;
   helperText?: string;
   onBlur?: () => void;
+  style?: React.CSSProperties;
 }
 
 export function IntensityPicker({
@@ -201,6 +202,7 @@ export function IntensityPicker({
   error,
   helperText,
   onBlur,
+  style,
 }: IntensityPickerProps) {
   const { t } = useTranslation("resources");
   const zone = normalizeIntensity(intensity);
@@ -245,7 +247,18 @@ export function IntensityPicker({
       : "5 000+";
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} style={style}>
+      <TextField
+        size="small"
+        type="number"
+        label={tokenAmountLabel}
+        value={inputValue}
+        onChange={(e) => handleTokenInput(e.target.value)}
+        onBlur={onBlur}
+        error={error}
+        helperText={helperText ?? `${t("intensity.rangeHint")}: ${rangeLabel}`}
+        inputProps={{ min: ZONE_MIN[zone] }}
+      />
       <GradientBar zone={zone} onChange={applyZone} />
       <Stack direction="row" justifyContent="space-between">
         {ZONE_ORDER.map((z) => (
@@ -259,17 +272,6 @@ export function IntensityPicker({
           </Typography>
         ))}
       </Stack>
-      <TextField
-        size="small"
-        type="number"
-        label={tokenAmountLabel}
-        value={inputValue}
-        onChange={(e) => handleTokenInput(e.target.value)}
-        onBlur={onBlur}
-        error={error}
-        helperText={helperText ?? `${t("intensity.rangeHint")}: ${rangeLabel}`}
-        inputProps={{ min: ZONE_MIN[zone] }}
-      />
     </Stack>
   );
 }

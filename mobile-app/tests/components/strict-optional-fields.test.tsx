@@ -101,4 +101,12 @@ describe("strict optional field behavior", () => {
       expect(onChange).toHaveBeenCalledWith({ label: "Null Island", latitude: 0, longitude: 0 });
     });
   });
+
+  it("leaves an absent location empty without geocoding or emitting a value", () => {
+    const onChange = jest.fn();
+    const screen = render(<ProximityLocationEditor value={null} onChange={onChange} />);
+    expect(screen.getByText("No address defined")).toBeTruthy();
+    expect(ExpoLocation.geocodeAsync).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

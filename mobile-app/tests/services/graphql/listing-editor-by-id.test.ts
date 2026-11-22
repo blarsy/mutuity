@@ -21,6 +21,15 @@ const common = {
 
 beforeEach(() => jest.resetAllMocks());
 
+it("loads an owner need with a null address without creating a location", async () => {
+  jest.mocked(apolloClient.query).mockResolvedValue({ data: { needById: {
+    ...common, location: null, latitude: "50.85", longitude: "4.35",
+    proposedTopesAmount: 25, intensity: NeedIntensity.LegUp,
+    campaignNeedsByNeedId: { nodes: [] }, needClaimsByNeedId: { nodes: [] }
+  } } });
+  expect(await fetchNeedForEdit("old-listing", "owner")).toMatchObject({ location: null, located: true });
+});
+
 describe.each(["need", "resource"] as const)("%s editor ID lookup", kind => {
   const isNeed = kind === "need";
   const root = isNeed ? "needById" : "resourceById";

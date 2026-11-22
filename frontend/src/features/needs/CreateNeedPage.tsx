@@ -46,13 +46,14 @@ import { CampaignPicker } from "../campaigns/CampaignPicker";
 import { campaignSelectionLocked, effectiveCampaignRelation, isCurrentCampaignRelation, isOngoingCampaignRelation, shouldSubmitCampaignLink, useCampaignLifecycleNow, type CampaignListingRelation } from "../campaigns/campaignListingLifecycle";
 
 type NeedEditorData = Omit<NeedEditDetailQuery, "needById"> & {
-  needById: (Omit<NonNullable<NeedEditDetailQuery["needById"]>, "campaignNeedsByNeedId"> & {
+  needById: (Omit<NonNullable<NeedEditDetailQuery["needById"]>, "campaignNeedsByNeedId" | "location"> & {
+    location: string | null;
     campaignNeedsByNeedId: { nodes: CampaignListingRelation[] };
   }) | null;
 };
 
 function normalizeOptionalCoordinate(value: number | string | null | undefined): number | "" {
-  if (value === "" || value == null) {
+  if (value == null || (typeof value === "string" && value.trim() === "")) {
     return "";
   }
 
@@ -150,7 +151,7 @@ export default function EditNeedPage() {
       title: editNeed.title,
       description: editNeed.description ?? "",
       imageUrls: (editNeed.imageUrls ?? []).filter((u): u is string => u != null),
-      location: editNeed.location,
+      location: editNeed.location ?? "",
       latitude: normalizeOptionalCoordinate(editNeed.latitude),
       longitude: normalizeOptionalCoordinate(editNeed.longitude),
       intensity: editNeed.intensity,
@@ -172,9 +173,9 @@ export default function EditNeedPage() {
       title: values.title.trim(),
       description: values.description.trim() || undefined,
       imageUrls: values.imageUrls,
-      location: values.location.trim(),
-      latitude: values.latitude === "" ? undefined : Number(values.latitude),
-      longitude: values.longitude === "" ? undefined : Number(values.longitude),
+      location: values.location.trim() || null,
+      latitude: values.latitude === "" ? null : Number(values.latitude),
+      longitude: values.longitude === "" ? null : Number(values.longitude),
       intensity: values.intensity as unknown as NeedIntensity,
       proposedTopesAmount: values.proposedTopesAmount === "" ? undefined : Number(values.proposedTopesAmount),
       objectRequired: values.objectRequired,
@@ -288,7 +289,7 @@ export default function EditNeedPage() {
           }}
           validationSchema={createNeedValidationSchema}
         >
-          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldTouched, setFieldValue, submitCount, submitForm, status }) => (
+          {({ values, errors, touched, handleChange, handleBlur, isSubmitting, setFieldTouched, setFieldValue, setValues, submitCount, submitForm, status }) => (
             <Form>
               <Stack spacing={2}>
                 {status ? <Alert severity="error">{status}</Alert> : null}
@@ -302,6 +303,102 @@ export default function EditNeedPage() {
                   helperText={touched.title ? errors.title : ""}
                   required
                 />
+
+                <Stack direction="row" gap={2}>
+                  <Stack gap={2} style={{ flexBasis: "50%" }}>
+                    <IntensityPicker
+                      intensity={values.intensity}
+                      tokenAmount={values.proposedTopesAmount}
+                      tokenAmountLabel={t("form.proposedTopesLabel")}
+                      uppercase
+                      onIntensityChange={(v) => {
+                        void setFieldValue("intensity", v);
+                      }}
+                      onTokenAmountChange={(v) => {
+                        void setFieldValue("proposedTopesAmount", v);
+                      }}
+                      onBlur={() => {
+                        void setFieldTouched("intensity", true, true);
+                        void setFieldTouched("proposedTopesAmount", true, true);
+                      }}
+                      error={Boolean(
+                        (touched.intensity && errors.intensity) ||
+                        (touched.proposedTopesAmount && errors.proposedTopesAmount)
+                      )}
+                      helperText={
+                        (touched.intensity && errors.intensity)
+                          ? String(errors.intensity)
+                          : (touched.proposedTopesAmount && errors.proposedTopesAmount)
+                          ? String(errors.proposedTopesAmount)
+                          : undefined
+                      }
+                    />
+
+                    {typeof values.proposedTopesAmount === "number" && Number.isFinite(values.proposedTopesAmount) ? (
+                      <TokenAmount amount={values.proposedTopesAmount} size={28} sx={{ alignSelf: "center" }}/>
+                    ) : null}
+                    <CampaignListingFeedback relation={relation} locked={campaignLocked} />
+                    <CampaignPicker
+                      name="campaignId"
+                      compact
+                      label={t("form.campaignLabel")}
+                      options={activeCampaignOptions}
+                      selected={values.campaignId ? [values.campaignId] : []}
+                      onChange={ids => { void setFieldValue("campaignId", ids[0] ?? ""); }}
+                      allowEmpty={!hasCurrentCampaign}
+                      disabled={campaignOptionsLoading || campaignLocked || isSubmitting}
+                      helperText={campaignOptionsLoading ? t("form.loadingCampaigns") : t("form.campaignHelper")}
+                    />
+
+                    {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
+                      && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
+                      <Button type="button" variant="outlined" sx={{ alignSelf: "flex-start" }} disabled={isSubmitting || loading || updateLoading}
+                        onClick={async () => {
+                          resubmitRequested.current = true;
+                          try { await submitForm(); } finally { resubmitRequested.current = false; }
+                        }}>
+                        {t("listingLifecycle.resubmit", { ns: "campaigns" })}
+                      </Button>
+                    ) : null}
+
+                    <DateTimePickerField
+                      name="expiresAt"
+                      label={t("form.expiresAtLabel")}
+                      value={values.expiresAt}
+                      onChange={value => { void setFieldValue("expiresAt", value); }}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.expiresAt && errors.expiresAt)}
+                      helperText={touched.expiresAt ? errors.expiresAt : ""}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Stack>
+                  <LocationPicker
+                    style={{ flexBasis: "50%" }}
+                    value={{
+                      address: values.location,
+                      latitude: values.latitude,
+                      longitude: values.longitude
+                    }}
+                    onChange={(loc) => {
+                      void setFieldValue("location", loc.address);
+                      void setFieldValue("latitude", loc.latitude);
+                      void setFieldValue("longitude", loc.longitude);
+                    }}
+                    onClear={() => {
+                      void setValues(previous => ({ ...previous, location: "", latitude: "", longitude: "" }));
+                    }}
+                    onBlur={() => {
+                      void setFieldTouched("location", true, true);
+                      void setFieldTouched("latitude", true, true);
+                      void setFieldTouched("longitude", true, true);
+                    }}
+                    addressLabel={t("form.locationLabel")}
+                    addressError={Boolean(touched.location && errors.location)}
+                    addressHelperText={touched.location && errors.location ? errors.location : undefined}
+                    coordinatesError={Boolean((touched.latitude && errors.latitude) || (touched.longitude && errors.longitude))}
+                    coordinatesHelperText={(touched.latitude && errors.latitude) || (touched.longitude && errors.longitude) || undefined}
+                  />
+                </Stack>
 
                 <RichTextEditor
                   label={t("form.descriptionLabel")}
@@ -327,58 +424,6 @@ export default function EditNeedPage() {
                     );
                   }}
                 />
-
-                <LocationPicker
-                  value={{
-                    address: values.location,
-                    latitude: values.latitude,
-                    longitude: values.longitude
-                  }}
-                  onChange={(loc) => {
-                    void setFieldValue("location", loc.address);
-                    void setFieldValue("latitude", loc.latitude);
-                    void setFieldValue("longitude", loc.longitude);
-                  }}
-                  onBlur={() => {
-                    void setFieldTouched("location", true, true);
-                  }}
-                  addressLabel={t("form.locationLabel")}
-                  addressError={Boolean(touched.location && errors.location)}
-                  addressHelperText={touched.location && errors.location ? errors.location : undefined}
-                  required
-                />
-
-                <IntensityPicker
-                  intensity={values.intensity}
-                  tokenAmount={values.proposedTopesAmount}
-                  tokenAmountLabel={t("form.proposedTopesLabel")}
-                  uppercase
-                  onIntensityChange={(v) => {
-                    void setFieldValue("intensity", v);
-                  }}
-                  onTokenAmountChange={(v) => {
-                    void setFieldValue("proposedTopesAmount", v);
-                  }}
-                  onBlur={() => {
-                    void setFieldTouched("intensity", true, true);
-                    void setFieldTouched("proposedTopesAmount", true, true);
-                  }}
-                  error={Boolean(
-                    (touched.intensity && errors.intensity) ||
-                    (touched.proposedTopesAmount && errors.proposedTopesAmount)
-                  )}
-                  helperText={
-                    (touched.intensity && errors.intensity)
-                      ? String(errors.intensity)
-                      : (touched.proposedTopesAmount && errors.proposedTopesAmount)
-                      ? String(errors.proposedTopesAmount)
-                      : undefined
-                  }
-                />
-
-                {typeof values.proposedTopesAmount === "number" && Number.isFinite(values.proposedTopesAmount) ? (
-                  <TokenAmount amount={values.proposedTopesAmount} size={28} />
-                ) : null}
 
                 <Stack spacing={0}>
                   <Typography variant="subtitle2">{t("form.needNatureLabel")}</Typography>
@@ -473,41 +518,6 @@ export default function EditNeedPage() {
                     required
                   />
                 ) : null}
-
-                <CampaignListingFeedback relation={relation} locked={campaignLocked} />
-                <CampaignPicker
-                  name="campaignId"
-                  compact
-                  label={t("form.campaignLabel")}
-                  options={activeCampaignOptions}
-                  selected={values.campaignId ? [values.campaignId] : []}
-                  onChange={ids => { void setFieldValue("campaignId", ids[0] ?? ""); }}
-                  allowEmpty={!hasCurrentCampaign}
-                  disabled={campaignOptionsLoading || campaignLocked || isSubmitting}
-                  helperText={campaignOptionsLoading ? t("form.loadingCampaigns") : t("form.campaignHelper")}
-                />
-
-                {relation?.status === "REJECTED" && values.campaignId === currentCampaignId && currentCampaignId
-                  && Date.parse(relation.campaignByCampaignId?.startAt ?? "") <= now ? (
-                  <Button type="button" variant="outlined" sx={{ alignSelf: "flex-start" }} disabled={isSubmitting || loading || updateLoading}
-                    onClick={async () => {
-                      resubmitRequested.current = true;
-                      try { await submitForm(); } finally { resubmitRequested.current = false; }
-                    }}>
-                    {t("listingLifecycle.resubmit", { ns: "campaigns" })}
-                  </Button>
-                ) : null}
-
-                <DateTimePickerField
-                  name="expiresAt"
-                  label={t("form.expiresAtLabel")}
-                  value={values.expiresAt}
-                  onChange={value => { void setFieldValue("expiresAt", value); }}
-                  onBlur={handleBlur}
-                  error={Boolean(touched.expiresAt && errors.expiresAt)}
-                  helperText={touched.expiresAt ? errors.expiresAt : ""}
-                  InputLabelProps={{ shrink: true }}
-                />
 
                 <Button disabled={isSubmitting || loading || updateLoading} type="submit" variant="contained"
                   onClick={() => { resubmitRequested.current = false; }}>

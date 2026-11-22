@@ -38,7 +38,7 @@ type PublicNeedDetailData = {
     creatorAccountId: string;
     title: string;
     description: string | null;
-    location: string;
+    location: string | null;
     latitude: string | number | null;
     longitude: string | number | null;
     intensity: string;
@@ -129,7 +129,7 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
     ?? t("detail.unknownAccount");
   const latitude = Number(need?.latitude);
   const longitude = Number(need?.longitude);
-  const hasCompleteLocation = Boolean(need?.location.trim())
+  const hasCompleteLocation = Boolean(need?.location?.trim())
     && need?.latitude !== null
     && need?.latitude !== undefined
     && need?.longitude !== null

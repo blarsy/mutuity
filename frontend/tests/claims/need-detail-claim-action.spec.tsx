@@ -50,6 +50,10 @@ describe("need detail volunteering action", () => {
     expect(mockRefetchConversation).toHaveBeenCalled();
   });
 
+  it("renders a need without a location after it is removed", () => {
+    expect(render({ location: null, latitude: null, longitude: null })).toContain("Need");
+  });
+
   it.each([false, true])("hides volunteering and skips lookup for signed-out/owner viewers (%s)", owner => {
     mockSession = owner ? { authenticated: true, account: { id: "owner" } } : { authenticated: false, account: { id: "viewer" } };
     render();

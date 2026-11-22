@@ -34,7 +34,7 @@ export function CampaignPicker({
 
   return (
     <Box>
-      <Typography variant="subtitle2" gutterBottom>{label}</Typography>
+      <Typography variant="subtitle1" gutterBottom>{label}</Typography>
       <Button
         name={name}
         type="button"

@@ -178,6 +178,83 @@ describe("EditNeedScreen", () => {
     expect(fetchMyProfile).toHaveBeenCalledWith("00000000-0000-0000-0000-000000000111");
   });
 
+  describe("location on create and edit", () => {
+    const accountId = "owner";
+    const need: NeedItem = {
+      id: "need-1", title: "Grocery pickup", description: "Original", location: null,
+      proposedTokenAmount: 25, intensity: NeedIntensity.LegUp, distanceKm: Infinity, located: false,
+      createdAt: null, creatorAccountId: accountId, claimCount: 0, isClaimedByCurrentAccount: false
+    };
+
+    beforeEach(() => jest.clearAllMocks());
+
+    it("saves an unrelated change to a locationless need without applying the profile location", async () => {
+      const onSaved = jest.fn();
+      const screen = render(<EditNeedScreen creatorAccountId={accountId} initialNeed={need}
+        campaigns={[]} onBack={jest.fn()} onSaved={onSaved} />, { wrapper: PaperProvider });
+      expect(screen.getByLabelText("Location").props.value).toBe("");
+      expect(screen.getByText("Location")).toBeTruthy();
+      expect(screen.queryByText("Location *")).toBeNull();
+      fireEvent.changeText(screen.getByLabelText("Description"), "Updated description");
+      fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+      await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+      expect(fetchMyProfile).not.toHaveBeenCalled();
+      expect(updateNeedById).toHaveBeenCalledWith("need-1", expect.objectContaining({
+        description: "Updated description", location: null, preserveLocationCoordinates: true
+      }));
+      expect(createNeedForAccount).not.toHaveBeenCalled();
+    });
+
+    it("allows an existing location to be cleared", async () => {
+      const onSaved = jest.fn();
+      const screen = render(<EditNeedScreen creatorAccountId={accountId}
+        initialNeed={{ ...need, location: { label: "Tournai", latitude: 50.6, longitude: 3.4 } }}
+        campaigns={[]} onBack={jest.fn()} onSaved={onSaved} />, { wrapper: PaperProvider });
+      fireEvent.changeText(screen.getByLabelText("Location"), "   ");
+      fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+      await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+      expect(updateNeedById).toHaveBeenCalledWith("need-1", expect.objectContaining({ location: null }));
+      expect(jest.mocked(updateNeedById).mock.calls[0]?.[1]).not.toHaveProperty("preserveLocationCoordinates");
+    });
+
+    it("does not preserve hidden coordinates when an initially locationless need is explicitly cleared", async () => {
+      const onSaved = jest.fn();
+      const screen = render(<EditNeedScreen creatorAccountId={accountId} initialNeed={need}
+        campaigns={[]} onBack={jest.fn()} onSaved={onSaved} />, { wrapper: PaperProvider });
+      fireEvent.changeText(screen.getByLabelText("Location"), "Tournai");
+      fireEvent.changeText(screen.getByLabelText("Location"), "");
+      fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+      await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+      expect(updateNeedById).toHaveBeenCalledWith("need-1", expect.objectContaining({ location: null }));
+      expect(jest.mocked(updateNeedById).mock.calls[0]?.[1]).not.toHaveProperty("preserveLocationCoordinates");
+    });
+
+    it("retains an existing address and coordinates when editing another field", async () => {
+      const location = { label: "Tournai", latitude: 50.6, longitude: 3.4 };
+      const onSaved = jest.fn();
+      const screen = render(<EditNeedScreen creatorAccountId={accountId} initialNeed={{ ...need, location }}
+        campaigns={[]} onBack={jest.fn()} onSaved={onSaved} />, { wrapper: PaperProvider });
+      fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+      await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+      expect(updateNeedById).toHaveBeenCalledWith("need-1", expect.objectContaining({ location }));
+    });
+
+    it("still requires a nonblank location on creation", async () => {
+      const onSaved = jest.fn();
+      const screen = render(<EditNeedScreen creatorAccountId={accountId} initialNeed={null}
+        campaigns={[]} onBack={jest.fn()} onSaved={onSaved} />, { wrapper: PaperProvider });
+      expect(screen.getByText("Location *")).toBeTruthy();
+      fireEvent.changeText(screen.getByLabelText("Title"), "New need");
+      fireEvent.changeText(screen.getByLabelText("Tope amount"), "25");
+      fireEvent.changeText(screen.getByLabelText("Location"), "   ");
+      fireEvent.press(screen.getByRole("button", { name: "Save need" }));
+      expect(screen.getAllByText("Location is required.").length).toBeGreaterThan(0);
+      expect(createNeedForAccount).not.toHaveBeenCalled();
+      expect(updateNeedById).not.toHaveBeenCalled();
+      expect(onSaved).not.toHaveBeenCalled();
+    });
+  });
+
   it("shows validation errors only after the first submit attempt", () => {
     const screen = render(
       <EditNeedScreen

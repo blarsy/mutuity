@@ -8337,9 +8337,9 @@ export type Need = Node & {
   imageUrls: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   intensity: NeedIntensity;
   isActive: Scalars['Boolean']['output'];
-  latitude: Scalars['BigFloat']['output'];
-  location: Scalars['String']['output'];
-  longitude: Scalars['BigFloat']['output'];
+  latitude: Maybe<Scalars['BigFloat']['output']>;
+  location: Maybe<Scalars['String']['output']>;
+  longitude: Maybe<Scalars['BigFloat']['output']>;
   multiplePeopleRequired: Scalars['Boolean']['output'];
   /** Reads and enables pagination through a set of `NeedClaimSettlementEvent`. */
   needClaimSettlementEventsByNeedId: NeedClaimSettlementEventsConnection;

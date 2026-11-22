@@ -64,13 +64,13 @@ export const createNeedValidationSchema = Yup.object({
   title: Yup.string().trim().required("Title is required"),
   description: Yup.string().max(8000).optional(),
   imageUrls: Yup.array().of(Yup.string().url().required()).default([]),
-  location: Yup.string().trim().required("Location is required"),
+  location: Yup.string().trim().optional(),
   latitude: Yup.number()
-    .transform((value, originalValue) => (originalValue === "" || originalValue == null ? undefined : value))
-    .required("Latitude is required"),
+    .transform((value, originalValue) => (originalValue == null || (typeof originalValue === "string" && originalValue.trim() === "") ? null : value))
+    .nullable().min(-90).max(90).optional(),
   longitude: Yup.number()
-    .transform((value, originalValue) => (originalValue === "" || originalValue == null ? undefined : value))
-    .required("Longitude is required"),
+    .transform((value, originalValue) => (originalValue == null || (typeof originalValue === "string" && originalValue.trim() === "") ? null : value))
+    .nullable().min(-180).max(180).optional(),
   intensity: Yup.mixed<NeedIntensityValue>()
     .oneOf(["LEG_UP", "SHARING", "COMMITMENT", "RARE_CONTRIBUTION"])
     .required("Intensity is required"),

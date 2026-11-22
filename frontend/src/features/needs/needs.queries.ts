@@ -4,7 +4,7 @@ export const CREATE_NEED_MUTATION = gql`
   mutation CreateNeed(
     $title: String!
     $description: String
-    $location: String!
+    $location: String
     $latitude: BigFloat
     $longitude: BigFloat
     $intensity: NeedIntensity!
@@ -56,7 +56,7 @@ export const UPDATE_NEED_MUTATION = gql`
     $id: UUID!
     $title: String!
     $description: String
-    $location: String!
+    $location: String
     $latitude: BigFloat
     $longitude: BigFloat
     $intensity: NeedIntensity!
