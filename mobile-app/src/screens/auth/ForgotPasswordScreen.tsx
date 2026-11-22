@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
-import { Snackbar } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import { Icon, Portal, Snackbar, Text } from "react-native-paper";
 
 import { AppButton as Button } from "../../components/primitives/AppButton";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { AuthDialog, FormTextInput } from "../../components/primitives";
 import { designTokens } from "../../theme/tokens";
 
 const authInputTheme = { colors: { onSurfaceVariant: "rgba(255, 255, 255, 0.78)" } };
+const successTextColor = "#1b5e32";
 
 export interface ForgotPasswordScreenProps {
   initialEmail?: string;
@@ -21,15 +22,17 @@ export function ForgotPasswordScreen({ initialEmail = "", onSubmit, onSwitchToSi
   const { t } = useTranslation(["common", "us1"]);
   const [email, setEmail] = useState(initialEmail);
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState<"success" | "error" | null>(null);
 
   return (
-    <AuthDialog
-      testID="auth-forgot-password-screen"
-      title={t("forgotPasswordTitle", { ns: "us1" })}
-      accessibilityLabel={t("forgotPasswordTitle", { ns: "us1" })}
-      onDismiss={onDismiss}
-    >
+    <>
+      <AuthDialog
+        testID="auth-forgot-password-screen"
+        title={t("forgotPasswordTitle", { ns: "us1" })}
+        accessibilityLabel={t("forgotPasswordTitle", { ns: "us1" })}
+        onDismiss={onDismiss}
+      >
         <FormTextInput
           label={t("emailLabel", { ns: "us1" })}
           accessibilityLabel={t("emailLabel", { ns: "us1" })}
@@ -54,11 +57,13 @@ export function ForgotPasswordScreen({ initialEmail = "", onSubmit, onSwitchToSi
           style={styles.mainButton}
           accessibilityLabel={t("sendResetLink", { ns: "us1" })}
           loading={submitting}
+          disabled={submitting || submitted}
           onPress={async () => {
             setSubmitting(true);
             setFeedback(null);
             try {
               await onSubmit({ email: email.trim() });
+              setSubmitted(true);
               setFeedback("success");
             } catch {
               setFeedback("error");
@@ -75,20 +80,31 @@ export function ForgotPasswordScreen({ initialEmail = "", onSubmit, onSwitchToSi
             {t("backToSignIn", { ns: "us1" })}
           </Button>
         ) : null}
+      </AuthDialog>
+      <Portal>
         <Snackbar
+          duration={Infinity}
           visible={feedback !== null}
           onDismiss={() => setFeedback(null)}
+          style={feedback === "success" ? styles.successSnackbar : undefined}
+          testID="auth-forgot-feedback"
           {...(feedback === "success" && onSwitchToSignIn
-            ? { action: { label: t("backToSignIn", { ns: "us1" }), onPress: onSwitchToSignIn } }
+            ? { action: { label: t("backToSignIn", { ns: "us1" }), onPress: onSwitchToSignIn, textColor: successTextColor } }
             : {})}
         >
-          {feedback === "success"
-            ? t("forgotPasswordSuccessMessage", { ns: "us1" })
-            : feedback === "error"
-              ? t("forgotPasswordErrorMessage", { ns: "us1" })
-              : ""}
+          {feedback === "success" ? (
+            <View style={styles.successContent}>
+              <View testID="auth-forgot-success-icon" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <Icon source="email-outline" size={24} color={successTextColor} />
+              </View>
+              <Text variant="bodyMedium" style={styles.successMessage}>
+                {t("forgotPasswordSuccessMessage", { ns: "us1" })}
+              </Text>
+            </View>
+          ) : feedback === "error" ? t("forgotPasswordErrorMessage", { ns: "us1" }) : ""}
         </Snackbar>
-    </AuthDialog>
+      </Portal>
+    </>
   );
 }
 
@@ -103,5 +119,17 @@ const styles = StyleSheet.create({
   },
   mainButtonContent: {
     minHeight: 46
+  },
+  successSnackbar: {
+    backgroundColor: "#dff2e3"
+  },
+  successContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: designTokens.spacing.sm
+  },
+  successMessage: {
+    color: successTextColor,
+    flexShrink: 1
   }
 });

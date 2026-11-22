@@ -20,7 +20,7 @@
   "forgotPassword": "Forgot password",
   "forgotPasswordErrorMessage": "We couldn't submit your request. Please check your connection and try again.",
   "forgotPasswordErrorTitle": "Request not sent",
-  "forgotPasswordSuccessMessage": "If an account exists for this email, password reset instructions have been sent. Check your inbox in the next few minutes, including your spam folder.",
+  "forgotPasswordSuccessMessage": "Password reset instructions have been sent. Check your inbox in the next few minutes, including your spam folder.",
   "forgotPasswordSuccessTitle": "Request submitted",
   "forgotPasswordTitle": "Forgot password",
   "fullNameLabel": "Full name",

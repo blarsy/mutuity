@@ -1,6 +1,6 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import { PaperProvider } from "react-native-paper";
+import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { PaperProvider, Snackbar } from "react-native-paper";
 
 import { ForgotPasswordScreen } from "../../src/screens/auth/ForgotPasswordScreen";
 
@@ -39,8 +39,35 @@ describe("ForgotPasswordScreen", () => {
       expect(screen.getByText("forgotPasswordSuccessMessage")).toBeTruthy();
     });
 
-    fireEvent.press(screen.getAllByRole("button", { name: "backToSignIn" })[0]);
+    expect(screen.getByTestId("auth-forgot-feedback")).toHaveStyle({ backgroundColor: "#dff2e3" });
+    expect(screen.getByTestId("auth-forgot-success-icon", { includeHiddenElements: true })).toBeTruthy();
+    expect(within(screen.getByTestId("auth-forgot-password-screen")).queryByTestId("auth-forgot-feedback")).toBeNull();
+    const signInButtons = screen.getAllByRole("button", { name: "backToSignIn" });
+    fireEvent.press(signInButtons[signInButtons.length - 1]);
     expect(onSwitchToSignIn).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the send button disabled after success even when feedback is dismissed", async () => {
+    jest.useFakeTimers();
+    const onSubmit = jest.fn().mockResolvedValue(undefined);
+    const screen = render(
+      <PaperProvider>
+        <ForgotPasswordScreen onSubmit={onSubmit} onDismiss={() => undefined} />
+      </PaperProvider>
+    );
+
+    const sendButton = screen.getByTestId("auth-forgot-submit");
+    expect(sendButton).toBeEnabled();
+    fireEvent.press(sendButton);
+    await waitFor(() => expect(sendButton).toBeDisabled());
+    await waitFor(() => expect(screen.getByText("forgotPasswordSuccessMessage")).toBeTruthy());
+    fireEvent(screen.UNSAFE_getByType(Snackbar), "dismiss");
+    expect(screen.UNSAFE_getByType(Snackbar).props.visible).toBe(false);
+    expect(sendButton).toBeDisabled();
+    fireEvent.press(sendButton);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    act(() => jest.runOnlyPendingTimers());
+    jest.useRealTimers();
   });
 
   it("shows an error snackbar when the recovery request fails", async () => {
@@ -57,5 +84,8 @@ describe("ForgotPasswordScreen", () => {
     await waitFor(() => {
       expect(screen.getByText("forgotPasswordErrorMessage")).toBeTruthy();
     });
+    expect(screen.queryByTestId("auth-forgot-success-icon", { includeHiddenElements: true })).toBeNull();
+    expect(within(screen.getByTestId("auth-forgot-password-screen")).queryByTestId("auth-forgot-feedback")).toBeNull();
+    expect(screen.getByTestId("auth-forgot-submit")).toBeEnabled();
   });
 });
