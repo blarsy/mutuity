@@ -111,6 +111,50 @@ describe("AccountPublicProfileScreen", () => {
     expect(screen.getByText("Help planting seedlings")).toBeTruthy();
   });
 
+  it("hides more info when bio, links and location are absent, even if listings exist", () => {
+    const emptyProfile = { ...profile, bio: "  ", profileLinks: [], location: null };
+    const screen = render(<AccountPublicProfileScreen accountId={profile.accountId} profile={emptyProfile} />);
+
+    expect(screen.queryByRole("button", { name: "More info" })).toBeNull();
+    expect(screen.queryByText("Bio")).toBeNull();
+    expect(screen.queryByText("Links")).toBeNull();
+    expect(screen.queryByText("Location")).toBeNull();
+    expect(screen.getByText("Bike repair support")).toBeTruthy();
+    expect(screen.getByText("Help planting seedlings")).toBeTruthy();
+  });
+
+  it.each([
+    { field: "bio", bio: "Just a bio", profileLinks: [], location: null, expected: "Just a bio" },
+    { field: "links", bio: "", profileLinks: profile.profileLinks, location: null, expected: "Website" },
+    { field: "location", bio: "", profileLinks: [], location: profile.location, expected: "Location" }
+  ])("offers more info when only $field is present", ({ bio, profileLinks, location, expected }) => {
+    const screen = render(
+      <AccountPublicProfileScreen accountId={profile.accountId} profile={{ ...profile, bio, profileLinks, location }} />
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: "More info" }));
+    expect(screen.getByText(expected)).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Less info" }));
+    expect(screen.queryByText(expected)).toBeNull();
+  });
+
+  it("removes an open more-info section if its content disappears", () => {
+    const screen = render(<AccountPublicProfileScreen accountId={profile.accountId} profile={profile} />);
+    fireEvent.press(screen.getByRole("button", { name: "More info" }));
+
+    screen.rerender(
+      <AccountPublicProfileScreen
+        accountId={profile.accountId}
+        profile={{ ...profile, bio: "", profileLinks: [], location: { label: "  ", latitude: null, longitude: null } }}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: "Less info" })).toBeNull();
+    expect(screen.queryByText("Bio")).toBeNull();
+    expect(screen.queryByText("Links")).toBeNull();
+    expect(screen.queryByText("Location")).toBeNull();
+  });
+
   it("matches resource card layout and typography while retaining need metadata", () => {
     const screen = render(<AccountPublicProfileScreen accountId={profile.accountId} profile={profile} />);
     const resourceCard = screen.getByTestId(`resource-card-${profile.resources![0]!.id}`);

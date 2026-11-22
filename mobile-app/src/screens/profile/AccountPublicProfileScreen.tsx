@@ -118,6 +118,8 @@ export function AccountPublicProfileScreen({
   const effectiveLng = location?.longitude ?? geocodedLocation?.longitude;
   const hasLocationMap = Boolean(effectiveLat != null && effectiveLng != null);
   const hasBio = Boolean(resolvedProfile?.bio.trim());
+  const hasLocation = Boolean(location?.label?.trim());
+  const hasMoreInfo = hasBio || profileLinks.length > 0 || hasLocation;
 
   const intensityLabelMeta = (intensity: NeedIntensity): { key: string; defaultValue: string } => {
     if (intensity === NeedIntensity.Commitment) {
@@ -219,13 +221,15 @@ export function AccountPublicProfileScreen({
           />
         </View>
 
-        <Pressable accessibilityRole="button" onPress={() => setShowMoreInfo((current) => !current)} style={styles.moreInfoButton}>
-          <Text variant="labelLarge" style={styles.moreInfoText}>
-            {showMoreInfo ? t("lessInfoLabel", { defaultValue: "Less info" }) : t("moreInfoLabel", { defaultValue: "More info" })}
-          </Text>
-        </Pressable>
+        {hasMoreInfo ? (
+          <Pressable accessibilityRole="button" onPress={() => setShowMoreInfo((current) => !current)} style={styles.moreInfoButton}>
+            <Text variant="labelLarge" style={styles.moreInfoText}>
+              {showMoreInfo ? t("lessInfoLabel", { defaultValue: "Less info" }) : t("moreInfoLabel", { defaultValue: "More info" })}
+            </Text>
+          </Pressable>
+        ) : null}
 
-        {showMoreInfo ? (
+        {hasMoreInfo && showMoreInfo ? (
           <View style={styles.sectionCard}>
             {hasBio ? (
               <View style={styles.inlineStack}>
@@ -258,10 +262,10 @@ export function AccountPublicProfileScreen({
               </View>
             ) : null}
 
-            {location?.label ? (
+            {hasLocation ? (
               <View style={styles.inlineStack}>
                 <Text variant="labelLarge" style={styles.sectionTitle}>{t("locationLabel", { defaultValue: "Location" })}</Text>
-                <Text variant="bodyMedium" style={styles.locationText}>{location.label}</Text>
+                <Text variant="bodyMedium" style={styles.locationText}>{location?.label}</Text>
                 {hasLocationMap && effectiveLat != null && effectiveLng != null ? (
                   <MapView
                     provider={PROVIDER_GOOGLE}
