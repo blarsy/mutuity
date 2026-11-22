@@ -67,6 +67,11 @@ export function PickerDialog<TValue extends string = string>({
       onDismiss={onDismiss}
       content={
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {items.length === 0 ? (
+            <Text variant="bodyMedium" style={styles.emptyMessage}>
+              {t("pickerNoDataAvailable", { defaultValue: "No data available at this time" })}
+            </Text>
+          ) : null}
           {items.map((item, index) => {
             const selected = selectedSet.has(item.value);
 
@@ -139,6 +144,10 @@ export function PickerDialog<TValue extends string = string>({
 const styles = StyleSheet.create({
   content: {
     gap: 0
+  },
+  emptyMessage: {
+    textAlign: "center",
+    paddingVertical: designTokens.spacing.md
   },
   row: {
     minHeight: 32,

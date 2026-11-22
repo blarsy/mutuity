@@ -195,6 +195,7 @@
   "emptyState": {
     "defaultMessage": "Nothing here yet"
   },
+  "pickerNoDataAvailable": "No data available at this time",
   "error": "Something went wrong",
   "exchangeModesSectionLabel": "Exchange modes",
   "expirationSectionLabel": "Expiration",

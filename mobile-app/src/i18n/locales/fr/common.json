@@ -196,6 +196,7 @@
   "emptyState": {
     "defaultMessage": "Rien ici pour le moment"
   },
+  "pickerNoDataAvailable": "Aucune donnée disponible pour le moment",
   "error": "Une erreur s'est produite",
   "exchangeModesSectionLabel": "Modes d'échange",
   "expirationSectionLabel": "Expiration",
