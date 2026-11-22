@@ -193,8 +193,7 @@ function RestrictedTabPlaceholderScreen({ tabLabel, onSignIn, onCreateAccount }:
           {tabLabel}
         </Text>
         <Text variant="bodyMedium">{t("restrictedSurfaceTitle", { ns: "us1" })}</Text>
-        <Text variant="bodySmall">{t("restrictedSurfaceBody", { ns: "us1" })}</Text>
-      </AppCard>
+        </AppCard>
       <PrimaryButton label={t("signIn", { ns: "us1" })} onPress={onSignIn} />
       <PrimaryButton label={t("createAccount", { ns: "us1" })} onPress={onCreateAccount} />
     </ScreenContainer>
