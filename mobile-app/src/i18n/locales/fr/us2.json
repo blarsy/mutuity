@@ -26,6 +26,7 @@
   "editNeedAccessibilityLabel": "Modifier {{title}}",
   "editNeedLabel": "Modifier le besoin",
   "hideClaimedNeeds": "Masquer les besoins auxquels vous avez déjà proposé votre aide",
+  "searchNeedsLimit": "Affichage limité à 50 résultats. Affinez votre recherche ; d'autres résultats peuvent manquer.",
   "maxNeedTokenAmountLabel": "Montant max en Topes",
   "myClaimsActionError": "Impossible de terminer cette action.",
   "myClaimsEmpty": "Aucune proposition d'aide trouvée.",

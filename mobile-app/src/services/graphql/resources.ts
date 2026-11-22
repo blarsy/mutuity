@@ -92,6 +92,7 @@ function resolveCreatorDisplayName(
 export interface SearchResourcesFilters {
   searchTerm: string;
   hasReferenceLocation: boolean;
+  referenceLocation?: { latitude: number; longitude: number } | null;
   distanceKm: number;
   natureOptions: {
     isProduct: boolean;
@@ -390,6 +391,12 @@ export function buildSearchResourcesVariables(filters: SearchResourcesFilters): 
 
   if (filters.hasReferenceLocation) {
     variables.maxDistanceKm = filters.distanceKm;
+    const location = filters.referenceLocation;
+    if (location && Number.isFinite(location.latitude) && Math.abs(location.latitude) <= 90 &&
+        Number.isFinite(location.longitude) && Math.abs(location.longitude) <= 180) {
+      variables.latitude = location.latitude;
+      variables.longitude = location.longitude;
+    }
   }
 
   return variables;
@@ -404,7 +411,7 @@ export function normalizeSearchResource(
   }
 
   const firstCategory = node.categoryLabels?.find((label): label is string => typeof label === "string" && label.length > 0);
-  const located = typeof node.latitude === "number" && typeof node.longitude === "number";
+  const located = parseBigFloat(node.latitude) !== null && parseBigFloat(node.longitude) !== null;
   const distanceKm = parseBigFloat(node.distanceKm) ?? FALLBACK_DISTANCE_KM;
 
   return {

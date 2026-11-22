@@ -10,6 +10,7 @@ import {
   type NeedPatch,
   type Query
 } from "./generated";
+import type { SearchNeedsQuery, SearchNeedsQueryVariables } from "./operations.generated";
 import {
   CANCEL_NEED_CLAIM_MUTATION,
   CLAIM_NEED_MUTATION,
@@ -34,12 +35,8 @@ type Need = Omit<GeneratedNeed, "campaignNeedsByNeedId"> & {
 
 export interface SearchNeedsFilters {
   searchTerm: string;
-  intensityFilters: NeedIntensity[];
-  maxProposedTokenAmount: number | null;
-  hideClaimedNeeds: boolean;
   currentAccountId?: string | null;
-  hasReferenceLocation: boolean;
-  distanceKm: number;
+  distanceKm: number | null;
   referenceLocation?: {
     latitude?: number;
     longitude?: number;
@@ -68,6 +65,7 @@ export interface NeedItem {
   requiredToolingText?: string;
   requiredPeopleCount?: number | null;
   campaignId?: string | null;
+  campaignIds?: string[];
   campaignRelation?: CampaignListingRelation | null;
   expiresAt?: string | null;
   createdAt: string | null;
@@ -146,20 +144,6 @@ export interface NeedClaimItem {
   ownerAccountId: string | null;
   ownerDisplayName: string | null;
   ownerAvatarUrl: string | null;
-}
-
-interface SearchNeedsQueryResult {
-  allNeeds: {
-    nodes: Need[];
-  } | null;
-  publicCampaignNeedLinks: {
-    nodes: Array<{ campaignId: string; needId: string }>;
-  } | null;
-}
-
-interface SearchNeedsQueryVariables {
-  first?: number;
-  after?: string | null;
 }
 
 interface MyNeedsQueryResult {
@@ -405,43 +389,79 @@ export function normalizeNeedClaimPayload(
 }
 
 export async function fetchSearchNeeds(filters: SearchNeedsFilters): Promise<NeedItem[]> {
+  const latitude = filters.referenceLocation?.latitude;
+  const longitude = filters.referenceLocation?.longitude;
+  const hasCoordinates = typeof latitude === "number" && Number.isFinite(latitude) &&
+    typeof longitude === "number" && Number.isFinite(longitude);
   const variables: SearchNeedsQueryVariables = {
-    first: DEFAULT_PAGE_SIZE
+    latitude: hasCoordinates ? latitude : null,
+    longitude: hasCoordinates ? longitude : null,
+    searchText: filters.searchTerm.trim() || null,
+    maxDistanceKm: filters.distanceKm,
+    viewerId: filters.currentAccountId ?? null,
+    includeClaims: Boolean(filters.currentAccountId)
   };
 
-  const { data } = await apolloClient.query<SearchNeedsQueryResult, SearchNeedsQueryVariables>({
+  const { data } = await apolloClient.query<SearchNeedsQuery, SearchNeedsQueryVariables>({
     query: SEARCH_NEEDS_QUERY,
     variables,
-    fetchPolicy: "network-only"
+    fetchPolicy: "no-cache"
   });
 
-  const normalizedSearch = filters.searchTerm.trim().toLowerCase();
-  const campaignIdByNeedId = new Map(
-    (data?.publicCampaignNeedLinks?.nodes ?? []).map((link) => [String(link.needId), String(link.campaignId)])
-  );
-  const sourceNeeds = (data?.allNeeds?.nodes ?? [])
-    .map((need) => normalizeNeed(need, filters.currentAccountId ?? null, filters.referenceLocation ?? null))
-    .filter((need): need is NeedItem => need !== null);
-
-  for (const need of sourceNeeds) {
-    const campaignId = campaignIdByNeedId.get(need.id);
-    if (campaignId !== undefined) {
-      need.campaignId = campaignId;
+  const campaignIdsByNeedId = new Map<string, string[]>();
+  for (const link of data?.publicCampaignNeedLinks?.nodes ?? []) {
+    if (typeof link.needId === "string" && typeof link.campaignId === "string") {
+      const ids = campaignIdsByNeedId.get(link.needId) ?? [];
+      if (!ids.includes(link.campaignId)) ids.push(link.campaignId);
+      campaignIdsByNeedId.set(link.needId, ids);
     }
   }
+  const claimedNeedIds = new Set((data?.allNeedClaims?.nodes ?? [])
+    .filter((claim) => claim.status === NeedClaimStatus.Open || claim.status === NeedClaimStatus.Settled)
+    .map((claim) => claim.needId));
 
-  return sourceNeeds.filter((need) => {
-    const matchesSearch =
-      normalizedSearch.length === 0 ||
-      `${need.title} ${need.description}`.toLowerCase().includes(normalizedSearch);
-    const matchesIntensity =
-      filters.intensityFilters.length === 0 || filters.intensityFilters.includes(need.intensity);
-    const matchesTokenAmount =
-      filters.maxProposedTokenAmount === null || need.proposedTokenAmount <= filters.maxProposedTokenAmount;
-    const matchesClaimedVisibility = !filters.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
-    const matchesDistance = !filters.hasReferenceLocation || need.distanceKm <= filters.distanceKm;
-
-    return matchesSearch && matchesIntensity && matchesTokenAmount && matchesClaimedVisibility && matchesDistance;
+  return (data?.searchNeeds?.nodes ?? []).flatMap((node): NeedItem[] => {
+    if (typeof node.id !== "string" || !node.title) return [];
+    const nodeLatitude = parseBigFloat(node.latitude);
+    const nodeLongitude = parseBigFloat(node.longitude);
+    const queryLatitude = parseBigFloat(node.queryLatitude);
+    const queryLongitude = parseBigFloat(node.queryLongitude);
+    const located = nodeLatitude !== null && nodeLongitude !== null;
+    const campaignIds = campaignIdsByNeedId.get(node.id) ?? [];
+    return [{
+      id: node.id,
+      title: node.title,
+      description: node.description ?? "",
+      imageUrls: toSafeImageUrls(node.imageUrls),
+      location: node.location ? {
+        label: node.location,
+        ...(nodeLatitude !== null ? { latitude: nodeLatitude } : {}),
+        ...(nodeLongitude !== null ? { longitude: nodeLongitude } : {})
+      } : null,
+      proposedTokenAmount: parseTokenAmount(node.proposedTopesAmount),
+      intensity: Object.values(NeedIntensity).find((value) => value === node.intensity) ?? NeedIntensity.Sharing,
+      distanceKm: located && queryLatitude !== null && queryLongitude !== null
+        ? calculateDistanceKm({ latitude: nodeLatitude, longitude: nodeLongitude },
+          { latitude: queryLatitude, longitude: queryLongitude })
+        : Number.POSITIVE_INFINITY,
+      located,
+      objectRequired: node.objectRequired ?? true,
+      competenceRequired: node.competenceRequired ?? false,
+      toolingRequired: node.toolingRequired ?? false,
+      multiplePeopleRequired: node.multiplePeopleRequired ?? false,
+      requiredCompetenceText: node.requiredCompetenceText ?? "",
+      requiredToolingText: node.requiredToolingText ?? "",
+      requiredPeopleCount: node.requiredPeopleCount,
+      campaignId: campaignIds[0] ?? null,
+      campaignIds,
+      expiresAt: typeof node.expiresAt === "string" ? node.expiresAt : null,
+      createdAt: typeof node.createdAt === "string" ? node.createdAt : null,
+      creatorAccountId: typeof node.creatorAccountId === "string" ? node.creatorAccountId : null,
+      creatorDisplayName: node.creatorDisplayName,
+      // The public search does not expose a count of other people's claims.
+      claimCount: 0,
+      isClaimedByCurrentAccount: claimedNeedIds.has(node.id)
+    }];
   });
 }
 

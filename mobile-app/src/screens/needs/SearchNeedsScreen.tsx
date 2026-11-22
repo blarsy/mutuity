@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "react-native-paper";
@@ -28,6 +28,7 @@ import { appFontFamilies } from "../../theme/fonts";
 import { designTokens } from "../../theme/tokens";
 
 const MAX_DISTANCE_KM = 50;
+const DEFAULT_LOCATION = { latitude: 50.6072, longitude: 3.3889 };
 
 interface ProximityOptionRowProps {
   title: string;
@@ -121,12 +122,13 @@ export function SearchNeedsScreen({
   const [distanceFilter, setDistanceFilter] = useState("10");
   const [excludeUnlocated, setExcludeUnlocated] = useState(false);
   const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
-    label: defaultLocationLabel
+    label: defaultLocationLabel, ...DEFAULT_LOCATION
   });
-  const [remoteNeeds, setRemoteNeeds] = useState<NeedItem[]>([]);
+  const [remoteResult, setRemoteResult] = useState<{ accountId: string | null; needs: NeedItem[] } | null>(null);
   const [campaignOptions, setCampaignOptions] = useState<LinkableCampaignItem[]>(injectedCampaignOptions ?? []);
   const [remoteLoading, setRemoteLoading] = useState(false);
-  const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
+  const [remoteError, setRemoteError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const hasInjectedNeeds = needs !== undefined;
   const hasInjectedCampaignOptions = injectedCampaignOptions !== undefined;
 
@@ -154,8 +156,6 @@ export function SearchNeedsScreen({
       selectedIntensities
     ]
   );
-  const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
-
   const distanceKmValue = useMemo(() => {
     const parsed = Number.parseFloat(distanceFilter);
     if (!Number.isFinite(parsed)) {
@@ -164,61 +164,59 @@ export function SearchNeedsScreen({
     return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
   }, [distanceFilter]);
   const hasReferenceLocation = referenceLocation !== null;
-  const debouncedDistanceKmValue = useMemo(() => {
-    const parsed = Number.parseFloat(debouncedFilters.distanceFilter);
-    if (!Number.isFinite(parsed)) {
-      return 10;
-    }
-    return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
-  }, [debouncedFilters.distanceFilter]);
-
-  const parsedMaxTokenAmount = useMemo(() => {
-    const parsed = Number.parseInt(debouncedFilters.maxTokenAmount, 10);
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
-  }, [debouncedFilters.maxTokenAmount]);
+  const unresolvedLocation = hasReferenceLocation &&
+    (!Number.isFinite(referenceLocation.latitude) || !Number.isFinite(referenceLocation.longitude));
+  const serverFilters = useMemo(() => ({
+    searchTerm: searchTerm.trim(),
+    distanceKm: hasReferenceLocation ? distanceKmValue : null,
+    latitude: referenceLocation?.latitude ?? null,
+    longitude: referenceLocation?.longitude ?? null
+  }), [searchTerm, hasReferenceLocation, distanceKmValue, referenceLocation?.latitude, referenceLocation?.longitude]);
+  const debouncedServerFilters = useDebouncedValue(serverFilters, 500);
   const currentMaxTokenAmount = useMemo(() => {
     const parsed = Number.parseInt(filterSnapshot.maxTokenAmount, 10);
     return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
   }, [filterSnapshot.maxTokenAmount]);
 
-  const loadNeeds = useCallback(async () => {
+  useEffect(() => {
     if (hasInjectedNeeds) {
       return;
     }
-
+    let active = true;
     setRemoteLoading(true);
-    setRemoteErrorMessage(null);
+    setRemoteError(false);
+
+    if (unresolvedLocation) {
+      setRemoteLoading(false);
+      return () => { active = false; };
+    }
+    // Cancel previous requests as soon as an input changes, not after debounce.
+    if (serverFilters !== debouncedServerFilters) {
+      return () => { active = false; };
+    }
 
     const filters: SearchNeedsFilters = {
-      searchTerm: debouncedFilters.searchTerm,
-      intensityFilters: debouncedFilters.selectedIntensities,
-      maxProposedTokenAmount: parsedMaxTokenAmount,
-      hideClaimedNeeds: debouncedFilters.hideClaimedNeeds,
+      searchTerm: debouncedServerFilters.searchTerm,
       currentAccountId,
-      hasReferenceLocation: debouncedFilters.referenceLocationLabel !== null,
-      distanceKm: debouncedDistanceKmValue,
+      distanceKm: debouncedServerFilters.distanceKm,
       referenceLocation:
-        debouncedFilters.referenceLatitude !== undefined && debouncedFilters.referenceLongitude !== undefined
+        debouncedServerFilters.latitude !== null && debouncedServerFilters.longitude !== null
           ? {
-              latitude: debouncedFilters.referenceLatitude,
-              longitude: debouncedFilters.referenceLongitude
+              latitude: debouncedServerFilters.latitude,
+              longitude: debouncedServerFilters.longitude
             }
           : null
     };
 
-    try {
-      const nextNeeds = await fetchSearchNeeds(filters);
-      setRemoteNeeds(nextNeeds);
-    } catch {
-      setRemoteErrorMessage(t("needsLoadError", { ns: "us2", defaultValue: "We could not load needs." }));
-    } finally {
-      setRemoteLoading(false);
-    }
-  }, [currentAccountId, debouncedDistanceKmValue, debouncedFilters, hasInjectedNeeds, parsedMaxTokenAmount, t]);
-
-  useEffect(() => {
-    void loadNeeds();
-  }, [loadNeeds]);
+    void fetchSearchNeeds(filters).then((nextNeeds) => {
+      if (active) setRemoteResult({ accountId: currentAccountId, needs: nextNeeds });
+    }).catch(() => {
+      if (active) setRemoteError(true);
+    }).finally(() => {
+      if (active) setRemoteLoading(false);
+    });
+    return () => { active = false; };
+  }, [currentAccountId, debouncedServerFilters, serverFilters, hasInjectedNeeds, retryCount, unresolvedLocation]);
 
   useEffect(() => {
     if (hasInjectedCampaignOptions) {
@@ -230,7 +228,8 @@ export function SearchNeedsScreen({
       .catch(() => setCampaignOptions([]));
   }, [hasInjectedCampaignOptions]);
 
-  const sourceNeeds = hasInjectedNeeds ? needs : remoteNeeds;
+  const hasRemoteResult = remoteResult !== null && remoteResult.accountId === currentAccountId;
+  const sourceNeeds = hasInjectedNeeds ? needs : hasRemoteResult ? remoteResult.needs : [];
   const campaignTitleById = useMemo(
     () => new Map(campaignOptions.map((campaign) => [campaign.id, campaign.title])),
     [campaignOptions]
@@ -244,19 +243,19 @@ export function SearchNeedsScreen({
 
     return sourceNeeds.filter((need) => {
       const matchesSearch =
-        normalizedSearch.length === 0 || `${need.title} ${need.description}`.toLowerCase().includes(normalizedSearch);
+        !hasInjectedNeeds || normalizedSearch.length === 0 ||
+        `${need.title} ${need.description}`.toLowerCase().includes(normalizedSearch);
       const matchesIntensity =
         filterSnapshot.selectedIntensities.length === 0 ||
         filterSnapshot.selectedIntensities.includes(need.intensity);
       const matchesTokenAmount = currentMaxTokenAmount === null || need.proposedTokenAmount <= currentMaxTokenAmount;
       const matchesCampaign =
         filterSnapshot.selectedCampaignIds.length === 0 ||
-        (need.campaignId !== null &&
-          need.campaignId !== undefined &&
-          filterSnapshot.selectedCampaignIds.includes(need.campaignId));
+        (need.campaignIds ?? (need.campaignId ? [need.campaignId] : []))
+          .some((id) => filterSnapshot.selectedCampaignIds.includes(id));
       const matchesClaimedVisibility = !filterSnapshot.hideClaimedNeeds || !need.isClaimedByCurrentAccount;
       const matchesDistance =
-        !hasReferenceLocation || !hasDistanceFilter || need.distanceKm <= maxDistance;
+        !hasInjectedNeeds || !hasReferenceLocation || !hasDistanceFilter || !need.located || need.distanceKm <= maxDistance;
       const matchesUnlocated = !filterSnapshot.excludeUnlocated || need.located;
 
       return (
@@ -269,10 +268,11 @@ export function SearchNeedsScreen({
         matchesUnlocated
       );
     });
-  }, [currentMaxTokenAmount, filterSnapshot, sourceNeeds]);
+  }, [currentMaxTokenAmount, filterSnapshot, sourceNeeds, hasInjectedNeeds]);
 
   const resolvedLoading = loading || (!hasInjectedNeeds && remoteLoading);
-  const resolvedErrorMessage = errorMessage ?? (!hasInjectedNeeds ? remoteErrorMessage : null);
+  const resolvedErrorMessage = errorMessage ?? (!hasInjectedNeeds && remoteError
+    ? t("needsLoadError", { ns: "us2", defaultValue: "We could not load needs." }) : null);
 
   const toggleIntensity = (intensity: NeedIntensity): void => {
     setSelectedIntensities((previous) =>
@@ -288,7 +288,7 @@ export function SearchNeedsScreen({
       return;
     }
 
-    void loadNeeds();
+    setRetryCount((count) => count + 1);
   };
 
   const clearFilters = (): void => {
@@ -299,10 +299,10 @@ export function SearchNeedsScreen({
     setHideClaimedNeeds(false);
     setDistanceFilter("10");
     setExcludeUnlocated(false);
-    setReferenceLocation({ label: defaultLocationLabel });
+    setReferenceLocation({ label: defaultLocationLabel, ...DEFAULT_LOCATION });
   };
 
-  if (resolvedErrorMessage) {
+  if (resolvedErrorMessage && !hasRemoteResult && !hasInjectedNeeds) {
     return <ErrorState message={resolvedErrorMessage} onRetry={handleRetry} />;
   }
 
@@ -449,6 +449,9 @@ export function SearchNeedsScreen({
         {showProximity ? (
           <View style={styles.proximitySection}>
             <ProximityLocationEditor value={referenceLocation} onChange={setReferenceLocation} />
+            {unresolvedLocation ? (
+              <Text>{t("locationLookupFailedLabel", { defaultValue: "Unable to retrieve location details right now." })}</Text>
+            ) : null}
 
             {hasReferenceLocation ? (
               <View style={styles.distanceZone}>
@@ -481,9 +484,12 @@ export function SearchNeedsScreen({
           </View>
         ) : null}
 
-        {resolvedLoading ? (
-          <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} />
-        ) : filteredNeeds.length === 0 ? (
+        {resolvedErrorMessage ? <ErrorState message={resolvedErrorMessage} onRetry={handleRetry} /> : null}
+        {!hasInjectedNeeds && sourceNeeds.length >= 50 ? (
+          <Text variant="bodySmall">{t("searchNeedsLimit", { ns: "us2", defaultValue: "Showing up to 50 results. Refine your search; other matches may be missing." })}</Text>
+        ) : null}
+        {resolvedLoading ? <LoadingState label={t("loading", { ns: "common", defaultValue: "Loading..." })} /> : null}
+        {resolvedLoading && sourceNeeds.length === 0 ? null : filteredNeeds.length === 0 ? (
           <EmptyState
             message={t("searchNeedsEmpty", {
               ns: "us2",

@@ -3,8 +3,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  View,
-  useWindowDimensions
+  View
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Checkbox, Chip, Divider, Icon, IconButton, Text, TextInput } from "react-native-paper";
@@ -32,6 +31,7 @@ import {
 import { designTokens } from "../../theme/tokens";
 
 const MAX_DISTANCE_KM = 50;
+const DEFAULT_LOCATION_COORDINATES = { latitude: 50.6072, longitude: 3.3889 };
 
 interface ProximityOptionRowProps {
   title: string;
@@ -117,7 +117,6 @@ export function SearchResourcesScreen({
   onOpenCampaign
 }: SearchResourcesScreenProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { width: windowWidth } = useWindowDimensions();
   const defaultLocationLabel = t("locationDefault", { defaultValue: "Tournai center" });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -136,7 +135,8 @@ export function SearchResourcesScreen({
   const [remoteLoading, setRemoteLoading] = useState(false);
   const [remoteErrorMessage, setRemoteErrorMessage] = useState<string | null>(null);
   const [referenceLocation, setReferenceLocation] = useState<ProximityLocationValue | null>({
-    label: defaultLocationLabel
+    label: defaultLocationLabel,
+    ...DEFAULT_LOCATION_COORDINATES
   });
   const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
   const requestIdRef = useRef(0);
@@ -172,43 +172,59 @@ export function SearchResourcesScreen({
     }
     return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
   }, [distanceFilter]);
-  const hasReferenceLocation = referenceLocation !== null;
+  const latitude = referenceLocation?.latitude;
+  const longitude = referenceLocation?.longitude;
+  const hasReferenceLocation = typeof latitude === "number" && Number.isFinite(latitude) && Math.abs(latitude) <= 90 &&
+    typeof longitude === "number" && Number.isFinite(longitude) && Math.abs(longitude) <= 180;
+  const unresolvedLocation = referenceLocation !== null && !hasReferenceLocation;
+  const searchLatitude = hasReferenceLocation ? latitude : undefined;
+  const searchLongitude = hasReferenceLocation ? longitude : undefined;
+  const searchDistance = hasReferenceLocation ? distanceKmValue : 10;
 
-  const filterSnapshot = useMemo(
+  // Only server-side inputs belong in this snapshot: picker changes must not restart a request.
+  const remoteFilters = useMemo(
     () => ({
       searchTerm,
-      selectedCategories,
-      distanceFilter,
-      excludeUnlocated,
-      referenceLocationLabel: referenceLocation?.label ?? null,
-      natureOptions,
-      transportOptions,
-      exchangeOptions,
-      selectedCampaignIds
+      hasReferenceLocation,
+      latitude: searchLatitude,
+      longitude: searchLongitude,
+      distanceKm: searchDistance,
+      natureOptions: { isProduct: natureOptions.isProduct, isService: natureOptions.isService },
+      transportOptions: { canBeTakenAway: transportOptions.canBeTakenAway, canBeDelivered: transportOptions.canBeDelivered },
+      exchangeOptions: { canBeExchanged: exchangeOptions.canBeExchanged, canBeGifted: exchangeOptions.canBeGifted }
     }),
     [
-      distanceFilter,
-      excludeUnlocated,
-      exchangeOptions,
-      natureOptions,
-      referenceLocation,
+      exchangeOptions.canBeExchanged,
+      exchangeOptions.canBeGifted,
+      hasReferenceLocation,
+      searchDistance,
+      searchLatitude,
+      searchLongitude,
+      natureOptions.isProduct,
+      natureOptions.isService,
       searchTerm,
-      selectedCampaignIds,
-      selectedCategories,
-      transportOptions
+      transportOptions.canBeTakenAway,
+      transportOptions.canBeDelivered
     ]
   );
-  const debouncedFilters = useDebouncedValue(filterSnapshot, 500);
-  const debouncedDistanceKmValue = useMemo(() => {
-    const parsed = Number.parseFloat(debouncedFilters.distanceFilter);
-    if (!Number.isFinite(parsed)) {
-      return 10;
-    }
-    return Math.max(1, Math.min(MAX_DISTANCE_KM, parsed));
-  }, [debouncedFilters.distanceFilter]);
+  const debouncedFilters = useDebouncedValue(remoteFilters, 500);
+  const latestFiltersRef = useRef(remoteFilters);
+  latestFiltersRef.current = remoteFilters;
+  const [resultFilters, setResultFilters] = useState(debouncedFilters);
+  const [hasLoadedResources, setHasLoadedResources] = useState(false);
+
+  // Invalidate immediately when inputs change, not only after the debounce expires.
+  useEffect(() => () => {
+    requestIdRef.current += 1;
+  }, [remoteFilters, hasInjectedResources]);
 
   const loadResources = useCallback(async () => {
     if (hasInjectedResources) {
+      return;
+    }
+
+    if (unresolvedLocation) {
+      setRemoteLoading(false);
       return;
     }
 
@@ -221,75 +237,82 @@ export function SearchResourcesScreen({
     try {
       const nextResources = await fetchSearchResources({
         searchTerm: debouncedFilters.searchTerm,
-        hasReferenceLocation: debouncedFilters.referenceLocationLabel !== null,
-        distanceKm: debouncedDistanceKmValue,
+        hasReferenceLocation: debouncedFilters.hasReferenceLocation,
+        referenceLocation: debouncedFilters.hasReferenceLocation
+          ? { latitude: debouncedFilters.latitude!, longitude: debouncedFilters.longitude! }
+          : null,
+        distanceKm: debouncedFilters.distanceKm,
         natureOptions: debouncedFilters.natureOptions,
         transportOptions: debouncedFilters.transportOptions,
         exchangeOptions: debouncedFilters.exchangeOptions
       });
 
-      if (requestIdRef.current !== currentRequestId) {
+      if (requestIdRef.current !== currentRequestId || latestFiltersRef.current !== debouncedFilters) {
         return;
       }
 
       setRemoteResources(nextResources);
+      setResultFilters(debouncedFilters);
+      setHasLoadedResources(true);
     } catch {
-      if (requestIdRef.current !== currentRequestId) {
+      if (requestIdRef.current !== currentRequestId || latestFiltersRef.current !== debouncedFilters) {
         return;
       }
 
       setRemoteErrorMessage(t("resourceSearchLoadError", { defaultValue: "We could not load resources." }));
     } finally {
-      if (requestIdRef.current === currentRequestId) {
+      if (requestIdRef.current === currentRequestId && latestFiltersRef.current === debouncedFilters) {
         setRemoteLoading(false);
       }
     }
   }, [
-    debouncedDistanceKmValue,
     debouncedFilters,
     hasInjectedResources,
-    t
+    t,
+    unresolvedLocation
   ]);
 
   useEffect(() => {
     void loadResources();
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [loadResources]);
 
   const filteredResources = useMemo(() => {
-    const normalizedSearch = debouncedFilters.searchTerm.trim().toLowerCase();
-    const maxDistance = Number.parseFloat(debouncedFilters.distanceFilter);
+    const filters = hasInjectedResources ? debouncedFilters : resultFilters;
+    const normalizedSearch = filters.searchTerm.trim().toLowerCase();
+    const maxDistance = filters.distanceKm;
     const hasDistanceFilter = Number.isFinite(maxDistance);
-    const hasNatureFilter = debouncedFilters.natureOptions.isProduct || debouncedFilters.natureOptions.isService;
+    const hasNatureFilter = filters.natureOptions.isProduct || filters.natureOptions.isService;
     const hasTransportFilter =
-      debouncedFilters.transportOptions.canBeTakenAway || debouncedFilters.transportOptions.canBeDelivered;
+      filters.transportOptions.canBeTakenAway || filters.transportOptions.canBeDelivered;
     const hasExchangeFilter =
-      debouncedFilters.exchangeOptions.canBeExchanged || debouncedFilters.exchangeOptions.canBeGifted;
+      filters.exchangeOptions.canBeExchanged || filters.exchangeOptions.canBeGifted;
 
     return sourceResources.filter((resource) => {
       const searchableText = `${resource.title} ${resource.description}`.toLowerCase();
-      const matchesSearch = normalizedSearch.length === 0 || searchableText.includes(normalizedSearch);
+      const matchesSearch = !hasInjectedResources || normalizedSearch.length === 0 || searchableText.includes(normalizedSearch);
       const matchesCategory =
-        debouncedFilters.selectedCategories.length === 0 ||
-        debouncedFilters.selectedCategories.includes(resource.category);
-      const hasDebouncedReferenceLocation = debouncedFilters.referenceLocationLabel !== null;
+        selectedCategories.length === 0 || selectedCategories.includes(resource.category);
       const matchesDistance =
-        !hasDebouncedReferenceLocation || !hasDistanceFilter || resource.distanceKm <= maxDistance;
-      const matchesUnlocated = !debouncedFilters.excludeUnlocated || resource.located;
+        !filters.hasReferenceLocation || !hasDistanceFilter || resource.distanceKm <= maxDistance;
+      const matchesUnlocated = !excludeUnlocated || resource.located;
       const matchesNature =
         !hasNatureFilter ||
-        (debouncedFilters.natureOptions.isProduct && resource.type === "product") ||
-        (debouncedFilters.natureOptions.isService && resource.type === "service");
+        (filters.natureOptions.isProduct && resource.type === "product") ||
+        (filters.natureOptions.isService && resource.type === "service");
       const matchesTransport =
         !hasTransportFilter ||
-        (debouncedFilters.transportOptions.canBeTakenAway && resource.canBeTakenAway) ||
-        (debouncedFilters.transportOptions.canBeDelivered && resource.canBeDelivered);
+        (filters.transportOptions.canBeTakenAway && resource.canBeTakenAway) ||
+        (filters.transportOptions.canBeDelivered && resource.canBeDelivered);
       const matchesExchange =
         !hasExchangeFilter ||
-        (debouncedFilters.exchangeOptions.canBeExchanged && resource.canBeExchanged) ||
-        (debouncedFilters.exchangeOptions.canBeGifted && resource.canBeGifted);
+        (filters.exchangeOptions.canBeExchanged && resource.canBeExchanged) ||
+        (filters.exchangeOptions.canBeGifted && resource.canBeGifted);
       const matchesCampaigns =
-        debouncedFilters.selectedCampaignIds.length === 0 ||
-        debouncedFilters.selectedCampaignIds.every((campaignId) => resource.campaignIds.includes(campaignId));
+        selectedCampaignIds.length === 0 ||
+        selectedCampaignIds.every((campaignId) => resource.campaignIds.includes(campaignId));
 
       return (
         matchesSearch &&
@@ -304,6 +327,11 @@ export function SearchResourcesScreen({
     });
   }, [
     debouncedFilters,
+    excludeUnlocated,
+    hasInjectedResources,
+    resultFilters,
+    selectedCampaignIds,
+    selectedCategories,
     sourceResources
   ]);
 
@@ -327,11 +355,11 @@ export function SearchResourcesScreen({
     setNatureOptions({ isProduct: false, isService: false });
     setTransportOptions({ canBeTakenAway: false, canBeDelivered: false });
     setExchangeOptions({ canBeExchanged: false, canBeGifted: false });
-    setReferenceLocation({ label: defaultLocationLabel });
+    setReferenceLocation({ label: defaultLocationLabel, ...DEFAULT_LOCATION_COORDINATES });
     setSelectedCampaignIds([]);
   };
 
-  if (resolvedErrorMessage) {
+  if (resolvedErrorMessage && (hasInjectedResources || !hasLoadedResources)) {
     return <ErrorState message={resolvedErrorMessage} onRetry={handleRetry} />;
   }
 
@@ -545,6 +573,12 @@ export function SearchResourcesScreen({
             <View style={styles.proximitySection}>
               <ProximityLocationEditor value={referenceLocation} onChange={setReferenceLocation} />
 
+              {referenceLocation && !hasReferenceLocation ? (
+                <Text variant="bodySmall">
+                  {t("locationCoordinatesUnavailable", { defaultValue: "Choose a location with coordinates to filter by distance." })}
+                </Text>
+              ) : null}
+
               {hasReferenceLocation ? (
                 <View style={styles.distanceZone}>
                   <Text variant="bodySmall" style={styles.distanceSummaryText}>
@@ -576,9 +610,12 @@ export function SearchResourcesScreen({
             </View>
           ) : null}
 
-          {resolvedLoading ? (
-            <LoadingState label={t("loading", { defaultValue: "Loading..." })} />
-          ) : filteredResources.length === 0 ? (
+          {resolvedErrorMessage ? <ErrorState message={resolvedErrorMessage} onRetry={handleRetry} /> : null}
+          {!hasInjectedResources && sourceResources.length >= 50 ? (
+            <Text variant="bodySmall">{t("searchResourcesLimit", { defaultValue: "Showing up to 50 results. Refine your search; other matches may be missing." })}</Text>
+          ) : null}
+          {resolvedLoading ? <LoadingState label={t("loading", { defaultValue: "Loading..." })} /> : null}
+          {resolvedLoading && (loading || !hasLoadedResources) ? null : filteredResources.length === 0 ? (
             <EmptyState
               message={t("searchResourcesEmpty", {
                 defaultValue: "No resources found. Try changing your filters."

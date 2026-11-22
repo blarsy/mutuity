@@ -125,7 +125,7 @@ describe("AccountPublicProfileScreen", () => {
 
   it.each([
     { field: "bio", bio: "Just a bio", profileLinks: [], location: null, expected: "Just a bio" },
-    { field: "links", bio: "", profileLinks: profile.profileLinks, location: null, expected: "Website" },
+    { field: "links", bio: "", profileLinks: profile.profileLinks ?? [], location: null, expected: "Website" },
     { field: "location", bio: "", profileLinks: [], location: profile.location, expected: "Location" }
   ])("offers more info when only $field is present", ({ bio, profileLinks, location, expected }) => {
     const screen = render(
@@ -145,7 +145,7 @@ describe("AccountPublicProfileScreen", () => {
     screen.rerender(
       <AccountPublicProfileScreen
         accountId={profile.accountId}
-        profile={{ ...profile, bio: "", profileLinks: [], location: { label: "  ", latitude: null, longitude: null } }}
+        profile={{ ...profile, bio: "", profileLinks: [], location: { label: "  " } }}
       />
     );
 

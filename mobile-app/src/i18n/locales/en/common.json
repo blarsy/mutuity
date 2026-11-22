@@ -237,6 +237,8 @@
   "languageEnglish": "English",
   "languageFrench": "Français",
   "locationLookupFailedLabel": "Unable to retrieve location details right now.",
+  "locationCoordinatesUnavailable": "Choose a location with coordinates to filter by distance.",
+  "searchResourcesLimit": "Showing up to 50 results. Refine your search; other matches may be missing.",
   "locationPermissionDeniedLabel": "Location permission is required to use your current location.",
   "locationPlaceholderLabel": "Enter a location",
   "locationSuggestionsRateLimitedLabel": "Address suggestions are temporarily limited. Please keep typing or tap the map.",

@@ -69,6 +69,8 @@ export const SEARCH_RESOURCES_QUERY = gql`
   query SearchResources(
     $first: Int
     $after: Cursor
+    $latitude: BigFloat
+    $longitude: BigFloat
     $searchText: String
     $favorLocalResources: Boolean
     $maxDistanceKm: BigFloat
@@ -82,6 +84,8 @@ export const SEARCH_RESOURCES_QUERY = gql`
     searchResources(
       first: $first
       after: $after
+      latitude: $latitude
+      longitude: $longitude
       searchText: $searchText
       favorLocalResources: $favorLocalResources
       maxDistanceKm: $maxDistanceKm
@@ -170,14 +174,26 @@ export const MY_RESOURCES_QUERY = gql`
 `;
 
 export const SEARCH_NEEDS_QUERY = gql`
-  query SearchNeeds($first: Int, $after: Cursor) {
-    allNeeds(first: $first, after: $after) {
+  query SearchNeeds(
+    $latitude: BigFloat
+    $longitude: BigFloat
+    $searchText: String
+    $maxDistanceKm: BigFloat
+    $viewerId: UUID
+    $includeClaims: Boolean!
+  ) {
+    searchNeeds(
+      latitude: $latitude
+      longitude: $longitude
+      searchText: $searchText
+      maxDistanceKm: $maxDistanceKm
+      favorLocalResources: true
+      limitCount: 50
+    ) {
       nodes {
         id
         creatorAccountId
-        accountByCreatorAccountId {
-          displayName
-        }
+        creatorDisplayName
         title
         description
         imageUrls
@@ -185,20 +201,22 @@ export const SEARCH_NEEDS_QUERY = gql`
         latitude
         longitude
         createdAt
+        expiresAt
         proposedTopesAmount
         intensity
-        needClaimsByNeedId(first: 20, orderBy: PRIMARY_KEY_DESC) {
-          nodes {
-            id
-            claimerAccountId
-            status
-          }
-        }
+        objectRequired
+        competenceRequired
+        toolingRequired
+        multiplePeopleRequired
+        requiredCompetenceText
+        requiredToolingText
+        requiredPeopleCount
+        queryLatitude
+        queryLongitude
       }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
+    }
+    allNeedClaims(condition: { claimerAccountId: $viewerId }) @include(if: $includeClaims) {
+      nodes { needId status }
     }
     publicCampaignNeedLinks {
       nodes {

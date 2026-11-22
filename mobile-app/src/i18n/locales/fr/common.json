@@ -238,6 +238,8 @@
   "languageEnglish": "English",
   "languageFrench": "Français",
   "locationLookupFailedLabel": "Impossible de récupérer les détails de l'adresse pour le moment.",
+  "locationCoordinatesUnavailable": "Choisissez un lieu avec des coordonnées pour filtrer par distance.",
+  "searchResourcesLimit": "Affichage limité à 50 résultats. Affinez votre recherche ; d'autres résultats peuvent manquer.",
   "locationPermissionDeniedLabel": "L'autorisation de localisation est requise pour utiliser votre position actuelle.",
   "locationPlaceholderLabel": "Saisir un lieu",
   "locationSuggestionsRateLimitedLabel": "Les suggestions d'adresses sont temporairement limitées. Continuez à taper ou touchez la carte.",
