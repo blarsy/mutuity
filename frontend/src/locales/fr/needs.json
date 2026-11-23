@@ -37,6 +37,7 @@
     "ease": "Facilité",
     "expiry": "Expiration",
     "expires": "Expire",
+    "expiresSoon": "Expire bientôt",
     "queryOrigin": "Origine de la requête",
     "noExpirySet": "Aucune expiration définie"
   },

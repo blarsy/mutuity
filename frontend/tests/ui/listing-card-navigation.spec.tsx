@@ -24,6 +24,19 @@ jest.mock("react-i18next", () => ({
 describe("listing card navigation", () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it.each([NeedCard, ResourceCard])("uses the imminent-expiry warning for card headers (%p)", Card => {
+    const expiresAt = "2026-06-01T10:00:00.000Z";
+    renderToStaticMarkup(createElement(Card, {
+      title: "Listing title",
+      creatorName: "Alice",
+      expiresAt
+    }));
+
+    const props = jest.mocked(ListingHeader).mock.calls[0][0] as ComponentProps<typeof ListingHeader>;
+    expect(props.expiresAt).toBe(expiresAt);
+    expect(props.expiryWarningLabel).toBeTruthy();
+  });
+
   it.each([NeedCard, ResourceCard])("forwards listing and creator navigation separately (%p)", Card => {
     const onClick = jest.fn();
     const onCreatorClick = jest.fn();

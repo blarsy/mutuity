@@ -74,6 +74,47 @@ describe("ListingHeader", () => {
     expect(html).toContain("No expiry set");
   });
 
+  it.each([
+    ["exactly 72 hours away", "2026-06-04T10:00:00.000Z", true],
+    ["within 72 hours", "2026-06-02T10:00:00.000Z", true],
+    ["due now", "2026-06-01T10:00:00.000Z", true],
+    ["more than 72 hours away", "2026-06-04T10:00:00.001Z", false],
+    ["already expired", "2026-06-01T09:59:59.999Z", false],
+    ["missing", null, false],
+    ["invalid", "not a date", false]
+  ])("shows only the warning for an expiration %s", (_description, expiresAt, visible) => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-06-01T10:00:00.000Z"));
+    try {
+      const html = renderToStaticMarkup(createElement(ListingHeader, {
+        creatorName: "Alice",
+        listingTitle: "Listing",
+        expiresAt,
+        expiresLabel: "Expires",
+        noDateLabel: "No expiry set",
+        expiryWarningLabel: "Expires within 72 hours"
+      }));
+      expect(html.includes('data-testid="NotificationImportantIcon"')).toBe(visible);
+      expect(html.includes('aria-label="Expires within 72 hours"')).toBe(visible);
+      expect(html).not.toContain("Expires:");
+      expect(html).not.toContain("No expiry set");
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("hides the warning when expiry display is disabled", () => {
+    const html = renderToStaticMarkup(createElement(ListingHeader, {
+      creatorName: "Alice",
+      listingTitle: "Listing",
+      expiresAt: new Date(Date.now() + 1000).toISOString(),
+      expiresLabel: "Expires",
+      noDateLabel: "No expiry set",
+      expiryWarningLabel: "Expires within 72 hours",
+      showExpiry: false
+    }));
+    expect(html).not.toContain("NotificationImportantIcon");
+  });
+
   it.each([null, "https://example.com/listing.jpg"])(
     "calls the listing callback from both title and thumbnail (image: %s)",
     thumbnailUrl => {

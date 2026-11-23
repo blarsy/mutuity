@@ -131,6 +131,7 @@
     "suggestedTokenAmount": "Montant de Topes suggéré",
     "notSet": "non défini",
     "expires": "Expire",
+    "expiresSoon": "Expire bientôt",
     "permanent": "Permanent",
     "noImageYet": "Pas encore d'image",
     "noDescriptionYet": "Pas encore de description."

@@ -1,5 +1,7 @@
+import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
 import { Box, ButtonBase, Chip, Stack, Typography } from "@mui/material";
 import type { MouseEvent, ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 import { AvatarIconButton } from "./AvatarIconButton";
 
@@ -11,6 +13,7 @@ type ListingHeaderProps = {
   noDateLabel: string;
   expiresAt?: string | null;
   showExpiry?: boolean;
+  expiryWarningLabel?: string;
   endAdornment?: ReactNode;
   thumbnailUrl?: string | null;
   thumbnailAlt?: string;
@@ -28,6 +31,29 @@ function formatExpiry(value: string | null | undefined, noDateLabel: string) {
   return new Date(value).toLocaleDateString();
 }
 
+const EXPIRY_WARNING_WINDOW_MS = 72 * 60 * 60 * 1000;
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+
+function ExpiryWarning({ expiresAt, label }: { expiresAt?: string | null; label: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  const expiry = expiresAt ? new Date(expiresAt).getTime() : NaN;
+  const remaining = expiry - now;
+
+  useEffect(() => {
+    if (!Number.isFinite(expiry)) return;
+    const remainingNow = expiry - Date.now();
+    if (remainingNow < 0) return;
+    const untilChange = remainingNow > EXPIRY_WARNING_WINDOW_MS
+      ? remainingNow - EXPIRY_WARNING_WINDOW_MS
+      : remainingNow + 1;
+    const timer = setTimeout(() => setNow(Date.now()), Math.min(untilChange, MAX_TIMEOUT_MS));
+    return () => clearTimeout(timer);
+  }, [expiry, now]);
+
+  if (!Number.isFinite(expiry) || remaining < 0 || remaining > EXPIRY_WARNING_WINDOW_MS) return null;
+  return <NotificationImportantIcon aria-label={label} color="warning" sx={{ flexShrink: 0, ml: "auto" }} titleAccess={label} />;
+}
+
 export function ListingHeader({
   creatorName,
   listingTitle,
@@ -36,6 +62,7 @@ export function ListingHeader({
   noDateLabel,
   expiresAt,
   showExpiry = true,
+  expiryWarningLabel,
   endAdornment,
   thumbnailUrl,
   thumbnailAlt,
@@ -151,7 +178,9 @@ export function ListingHeader({
       </Stack>
 
       {endAdornment}
-      {showExpiry ? <Chip label={`${expiresLabel}: ${formatExpiry(expiresAt, noDateLabel)}`} size="small" variant="outlined" /> : null}
+      {showExpiry ? expiryWarningLabel ? (
+        <ExpiryWarning key={expiresAt ?? ""} expiresAt={expiresAt} label={expiryWarningLabel} />
+      ) : <Chip label={`${expiresLabel}: ${formatExpiry(expiresAt, noDateLabel)}`} size="small" variant="outlined" /> : null}
     </Stack>
   );
 }

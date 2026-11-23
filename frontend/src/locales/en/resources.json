@@ -135,6 +135,7 @@
     "suggestedTokenAmount": "Suggested Tope amount",
     "notSet": "not set",
     "expires": "Expires",
+    "expiresSoon": "Expires soon",
     "permanent": "Permanent",
     "noImageYet": "No image yet",
     "noDescriptionYet": "No description yet."

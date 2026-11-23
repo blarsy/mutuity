@@ -79,6 +79,7 @@ export function NeedCard({
         creatorName={creatorName}
         expiresAt={expiresAt}
         expiresLabel="Expires"
+        expiryWarningLabel={t("browse.expiresSoon")}
         listingTitle={title}
         noDateLabel="No expiry set"
         noImageLabel="No image"

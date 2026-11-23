@@ -84,6 +84,7 @@ export function ResourceCard({
           creatorName={creatorName}
           expiresAt={expiresAt}
           expiresLabel={t("card.expires")}
+          expiryWarningLabel={t("card.expiresSoon")}
           listingTitle={title}
           noDateLabel={t("card.permanent")}
           noImageLabel={t("card.noImageYet")}

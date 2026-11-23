@@ -37,6 +37,7 @@
     "ease": "Ease",
     "expiry": "Expiry",
     "expires": "Expires",
+    "expiresSoon": "Expires soon",
     "queryOrigin": "Query origin",
     "noExpirySet": "No expiry set"
   },
