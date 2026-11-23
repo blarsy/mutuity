@@ -7,7 +7,7 @@ import {
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-type CampaignOption = { id: string; title: string };
+type CampaignOption = { id: string; title: string; startAt?: string };
 
 interface CampaignPickerProps {
   name?: string;
@@ -29,7 +29,14 @@ export function CampaignPicker({
   const titleId = useId();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<string[]>([]);
-  const selectedTitles = options.filter(option => selected.includes(option.id)).map(option => option.title);
+  const sortedOptions = [...options].sort((a, b) => {
+    const aStart = a.startAt ? Date.parse(a.startAt) : Number.POSITIVE_INFINITY;
+    const bStart = b.startAt ? Date.parse(b.startAt) : Number.POSITIVE_INFINITY;
+    const validAStart = Number.isNaN(aStart) ? Number.POSITIVE_INFINITY : aStart;
+    const validBStart = Number.isNaN(bStart) ? Number.POSITIVE_INFINITY : bStart;
+    return validAStart - validBStart;
+  });
+  const selectedTitles = sortedOptions.filter(option => selected.includes(option.id)).map(option => option.title);
   const emptyLabel = t(multiple ? "picker.allCampaigns" : "picker.noCampaign");
 
   return (
@@ -64,7 +71,7 @@ export function CampaignPicker({
                 label={emptyLabel}
               />
             ) : null}
-            {options.map(campaign => (
+            {sortedOptions.map(campaign => (
               <Stack key={campaign.id} direction="row" alignItems="center" justifyContent="space-between">
                 <FormControlLabel
                   sx={{ flex: 1, minWidth: 0 }}

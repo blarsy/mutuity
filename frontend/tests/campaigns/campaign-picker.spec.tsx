@@ -19,4 +19,19 @@ describe("campaign picker trigger", () => {
     expect(html).toContain("MuiButton-fullWidth");
     expect(html).not.toContain('data-testid="FactCheckIcon"');
   });
+
+  it("orders selected campaign titles by start date ascending", () => {
+    const html = renderToStaticMarkup(
+      <CampaignPicker
+        {...props}
+        options={[
+          { id: "later", title: "Later", startAt: "2026-06-01T00:00:00Z" },
+          { id: "earlier", title: "Earlier", startAt: "2026-01-01T00:00:00Z" }
+        ]}
+        selected={["later", "earlier"]}
+      />
+    );
+
+    expect(html.indexOf("Earlier, Later")).toBeGreaterThan(-1);
+  });
 });
