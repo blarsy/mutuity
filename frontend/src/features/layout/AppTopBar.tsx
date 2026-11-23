@@ -186,6 +186,12 @@ export function AppTopBar({
     void router.push(href);
   };
 
+  const homeLink = (
+    <Box component={NextLink} href="/" sx={{ display: "inline-flex", alignItems: "stretch", justifyContent: "center", width: 44, height: 44, flexShrink: 0 }}>
+      <Box component="img" src="/minilogo.svg" alt="Tope-là" sx={{ display: "block", width: 38, height: "auto", filter: colorMode === "dark" ? "invert(1)" : "none" }} />
+    </Box>
+  );
+
   return (
     <>
       <AppBar color="inherit" elevation={0} position="sticky" sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
@@ -201,22 +207,7 @@ export function AppTopBar({
               </IconButton>
 
               <Box sx={{ display: "flex", flex: 1, justifyContent: "center", minWidth: 0 }}>
-                <Typography
-                  component={NextLink}
-                  href="/"
-                  sx={{
-                    color: "inherit",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    textAlign: "center",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis"
-                  }}
-                  variant="h6"
-                >
-                  Tope-là
-                </Typography>
+                {homeLink}
               </Box>
 
               <Stack alignItems="center" direction="row" spacing={0.5}>
@@ -256,9 +247,7 @@ export function AppTopBar({
           ) : (
             <>
               <Stack alignItems={{ xs: "flex-start", md: "center" }} direction={{ xs: "column", md: "row" }} spacing={2} sx={{ flex: 1 }}>
-                <Typography component={NextLink} href="/" sx={{ color: "inherit", fontWeight: 700, textDecoration: "none" }} variant="h6">
-                  Tope-là
-                </Typography>
+                {homeLink}
 
                 <Stack direction="row" flexWrap="wrap" gap={1}>
                   {links.map(link => (

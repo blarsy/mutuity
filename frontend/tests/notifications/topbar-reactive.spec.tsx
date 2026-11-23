@@ -1,5 +1,6 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
-import { Badge } from "@mui/material";
+import { Badge, Box } from "@mui/material";
+import NextLink from "next/link";
 import { AppTopBar } from "../../src/features/layout/AppTopBar";
 import { TokenBalanceDisplay } from "../../src/features/contribution/TokenBalanceDisplay";
 import { TokenAmount } from "../../src/components/TokenAmount";
@@ -32,7 +33,7 @@ jest.mock("../../src/services/graphql/accountEvents", () => ({ useAccountEventSi
 jest.mock("next/router", () => ({ useRouter: () => ({ pathname: "/app/search", push: jest.fn() }) }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }) }));
 
-type Props = { children?: ReactNode; primary?: ReactNode; badgeContent?: number; invisible?: boolean; balance?: number | null; format?: (amount: number) => ReactNode };
+type Props = { children?: ReactNode; primary?: ReactNode; badgeContent?: number; invisible?: boolean; balance?: number | null; format?: (amount: number) => ReactNode; component?: unknown; href?: string; src?: string; alt?: string; sx?: { filter?: string } };
 function find(node: ReactNode, type: unknown): ReactElement<Props>[] {
   const results: ReactElement<Props>[] = [];
   Children.forEach(node, child => {
@@ -45,6 +46,15 @@ function find(node: ReactNode, type: unknown): ReactElement<Props>[] {
 }
 
 describe.each([false, true])("topbar reactive values (mobile=%s)", mobile => {
+  it.each(["light", "dark"] as const)("links the mini logo to home in %s mode", colorMode => {
+    mockMobile = mobile;
+    const tree = AppTopBar({ colorMode, onToggleColorMode: jest.fn() });
+    const homeLink = find(tree, Box).find(box => box.props.component === NextLink && box.props.href === "/");
+    expect(homeLink).toBeDefined();
+    const logo = find(homeLink?.props.children, Box)[0];
+    expect(logo.props).toMatchObject({ component: "img", src: "/minilogo.svg", alt: "Tope-là", sx: { filter: colorMode === "dark" ? "invert(1)" : "none" } });
+  });
+
   it("renders shared updated values without replacing unknown balance with zero", () => {
     mockMobile = mobile;
     mockBalance = null;
