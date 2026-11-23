@@ -8,13 +8,38 @@ jest.mock("next/router", () => ({ useRouter: () => ({ query: { campaignId: "camp
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }) }));
 jest.mock("@apollo/client/react", () => ({ useQuery: jest.fn(), useMutation: () => [jest.fn(), { loading: false }] }));
 jest.mock("../../src/components/PageContainer", () => ({ PageContainer: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-jest.mock("../../src/features/campaigns/CampaignModerationHistory", () => ({ CampaignModerationHistory: () => null }));
+jest.mock("../../src/features/campaigns/CampaignModerationHistory", () => ({
+  CampaignModerationHistory: () => <div data-testid="moderation-history-content">Moderation history entries</div>
+}));
 jest.mock("../../src/features/campaigns/CampaignListingPreviewDialog", () => ({ CampaignListingPreviewDialog: () => null }));
 jest.mock("../../src/components/richText/RichTextEditor", () => ({ RichTextEditor: () => null }));
 jest.mock("../../src/components/richText/RichTextContent", () => ({ RichTextContent: ({ html }: { html: string }) => <>{html}</> }));
 jest.mock("../../src/components/ImageUploadField", () => ({ ImageUploadField: () => null }));
 
 describe("campaign moderation saved details", () => {
+  it.each([
+    ["PENDING", "2099-01-01T00:00:00Z", true],
+    ["AWAITING_ADAPTATION", "2099-01-01T00:00:00Z", true],
+    ["APPROVED", "2099-01-01T00:00:00Z", false],
+    ["PENDING", "2020-01-01T00:00:00Z", false],
+    ["APPROVED", "2020-01-01T00:00:00Z", false]
+  ])("defaults history expanded=%s", (moderationStatus, endAt, expanded) => {
+    jest.mocked(useQuery).mockReturnValue({ data: {
+      campaignById: {
+        id: "campaign-1", title: "Campaign", theme: "Theme", moderationStatus,
+        createdAt: "2026-01-01", startAt: "2020-01-01", airdropAt: "2026-11-01", endAt,
+        rewardsMultiplier: 5, airdropAmount: 3500,
+      },
+      allCampaignNeeds: { nodes: [] }, allCampaignResources: { nodes: [] }
+    }, loading: false } as unknown as ReturnType<typeof useQuery>);
+
+    const html = renderToStaticMarkup(<CampaignModerationPage />);
+    expect(html).toContain(`aria-expanded="${expanded}"`);
+    expect(html).toContain(expanded ? 'data-testid="history-expanded-icon"' : 'data-testid="history-collapsed-icon"');
+    expect(html.includes("moderation-history-content")).toBe(expanded);
+  });
+
+
   it("only renders ongoing current submissions in the embedded need and resource triage", () => {
     const node = {
       campaignId: "campaign-1", needId: "need-1", resourceId: "resource-1", submissionId: "submission-1",

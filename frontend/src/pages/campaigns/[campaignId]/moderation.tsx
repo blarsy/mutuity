@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import {
   Alert,
   Button,
+  ButtonBase,
   Chip,
   CircularProgress,
   Dialog,
@@ -16,7 +17,9 @@ import {
   Box
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CloseIcon from "@mui/icons-material/Close";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { Form, Formik } from "formik";
 import { useTranslation } from "react-i18next";
 
@@ -196,6 +199,7 @@ export default function CampaignModerationPage() {
   const now = useCampaignLifecycleNow();
   const [rejection, setRejection] = useState<{ kind: "need"; node: CampaignNeedNode } | { kind: "resource"; node: CampaignResourceNode } | null>(null);
   const [triageActionError, setTriageActionError] = useState<string | null>(null);
+  const [historyExpansion, setHistoryExpansion] = useState<{ campaignId: string; expanded: boolean } | null>(null);
 
   const campaignIdValue = (campaignId as string) ?? "";
 
@@ -250,6 +254,14 @@ export default function CampaignModerationPage() {
   );
 
   const campaign = data?.campaignById ?? null;
+  const campaignEnd = Date.parse(campaign?.endAt ?? "");
+  const campaignEnded = Number.isFinite(campaignEnd) && campaignEnd <= now;
+  const historyExpandedByDefault = campaign
+    ? campaign.moderationStatus !== "APPROVED" && !campaignEnded
+    : true;
+  const historyExpanded = historyExpansion?.campaignId === campaignIdValue
+    ? historyExpansion.expanded
+    : historyExpandedByDefault;
   const detailsErrorMessage = getUserFacingGraphQLErrorMessage(error);
   const updateErrorMessage = getUserFacingGraphQLErrorMessage(updateError);
   const needTriageErrorMessage = getUserFacingGraphQLErrorMessage(needTriageError)
@@ -405,10 +417,37 @@ export default function CampaignModerationPage() {
         {!loading && !detailsErrorMessage && campaign ? (
           <Stack spacing={2}>
             <Box component="section" aria-labelledby="campaign-moderation-journal-title">
-              <Typography component="h1" id="campaign-moderation-journal-title" variant="h6" sx={{ mb: 1 }}>
-                {t("moderationNotes.journalTitle")}
-              </Typography>
-              <CampaignModerationHistory campaignId={campaignId as string} />
+              <ButtonBase
+                aria-controls="campaign-moderation-journal-content"
+                aria-expanded={historyExpanded}
+                id="campaign-moderation-journal-title"
+                onClick={() => setHistoryExpansion({ campaignId: campaignIdValue, expanded: !historyExpanded })}
+                sx={{
+                  borderRadius: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 1,
+                  px: 1,
+                  py: 0.5,
+                  textAlign: "left",
+                  width: "100%"
+                }}
+              >
+                <Typography component="span" variant="h6">
+                  {t("moderationNotes.journalTitle")}
+                </Typography>
+                {historyExpanded
+                  ? <KeyboardArrowDownIcon aria-hidden="true" data-testid="history-expanded-icon" />
+                  : <ChevronRightIcon aria-hidden="true" data-testid="history-collapsed-icon" />}
+              </ButtonBase>
+              <Box
+                aria-labelledby="campaign-moderation-journal-title"
+                hidden={!historyExpanded}
+                id="campaign-moderation-journal-content"
+                role="region"
+              >
+                {historyExpanded ? <CampaignModerationHistory campaignId={campaignId as string} /> : null}
+              </Box>
             </Box>
 
             <Box component="section" aria-labelledby="campaign-data-title">
