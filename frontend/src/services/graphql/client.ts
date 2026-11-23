@@ -91,7 +91,14 @@ const transportLink = wsLink
 
 export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
-  link: from([accountBoundaryLink, errorLink, languageLink, transportLink])
+  link: from([accountBoundaryLink, errorLink, languageLink, transportLink]),
+  // Mutations do not update list root fields, so revalidate cached data each time a view mounts.
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first"
+    }
+  }
 });
 
 export async function resetAccountGraphqlState() {
