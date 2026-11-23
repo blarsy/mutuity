@@ -79,7 +79,6 @@
       "resourcesTitle": "Ressources de cette campagne",
       "loading": "Chargement des besoins et ressources de la campagne…",
       "error": "Impossible de charger les besoins et ressources de la campagne.",
-      "unavailable": "Les annonces de la campagne sont visibles pendant qu'une campagne approuvée est en cours.",
       "retry": "Réessayer",
       "emptyNeeds": "Aucun besoin accepté dans cette campagne.",
       "emptyResources": "Aucune ressource acceptée dans cette campagne.",

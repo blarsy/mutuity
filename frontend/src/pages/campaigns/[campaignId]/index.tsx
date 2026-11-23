@@ -754,9 +754,9 @@ export default function PublicCampaignDetailPage({
                       </Alert>
                     )}
 
-                    {participationState === "running" || participationState === "ended" ? <PublicCampaignJoinedListings campaignId={campaignId} /> : (
-                      <Alert severity="info">{t("public.joinedListings.unavailable")}</Alert>
-                    )}
+                    {(participationState === "running" || participationState === "ended") ? (
+                      <PublicCampaignJoinedListings campaignId={campaignId} />
+                    ) : null}
                   </Stack>
                 </CardContent>
               </Card>

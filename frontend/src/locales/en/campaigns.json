@@ -79,7 +79,6 @@
       "resourcesTitle": "Resources in this campaign",
       "loading": "Loading campaign needs and resources…",
       "error": "Unable to load campaign needs and resources.",
-      "unavailable": "Campaign listings are available while an approved campaign is running.",
       "retry": "Retry",
       "emptyNeeds": "No accepted needs in this campaign.",
       "emptyResources": "No accepted resources in this campaign.",
