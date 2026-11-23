@@ -74,6 +74,23 @@
     },
     "loading": "Loading campaigns…",
     "empty": "No active approved campaigns at the moment.",
+    "joinedListings": {
+      "needsTitle": "Needs in this campaign",
+      "resourcesTitle": "Resources in this campaign",
+      "loading": "Loading campaign needs and resources…",
+      "error": "Unable to load campaign needs and resources.",
+      "unavailable": "Campaign listings are available while an approved campaign is running.",
+      "retry": "Retry",
+      "emptyNeeds": "No accepted needs in this campaign.",
+      "emptyResources": "No accepted resources in this campaign.",
+      "unknownCreator": "Unknown creator"
+    },
+    "joinDialog": {
+      "open": "Join your needs and resources",
+      "title": "Join your needs and resources to this campaign",
+      "close": "Close",
+      "signInRequired": "Sign in to join your needs and resources to this campaign."
+    },
     "participation": {
       "upcoming": "You can join your resources and needs to this approved campaign from {{start}} until {{end}}.",
       "pending": "This campaign is awaiting approval. You can join your resources and needs once it is approved and running, between {{start}} and {{end}}.",

@@ -74,6 +74,23 @@
     },
     "loading": "Chargement des campagnes…",
     "empty": "Aucune campagne approuvée active pour le moment.",
+    "joinedListings": {
+      "needsTitle": "Besoins de cette campagne",
+      "resourcesTitle": "Ressources de cette campagne",
+      "loading": "Chargement des besoins et ressources de la campagne…",
+      "error": "Impossible de charger les besoins et ressources de la campagne.",
+      "unavailable": "Les annonces de la campagne sont visibles pendant qu'une campagne approuvée est en cours.",
+      "retry": "Réessayer",
+      "emptyNeeds": "Aucun besoin accepté dans cette campagne.",
+      "emptyResources": "Aucune ressource acceptée dans cette campagne.",
+      "unknownCreator": "Créateur inconnu"
+    },
+    "joinDialog": {
+      "open": "Rattacher vos besoins et ressources",
+      "title": "Rattacher vos besoins et ressources à cette campagne",
+      "close": "Fermer",
+      "signInRequired": "Connectez-vous pour rattacher vos besoins et ressources à cette campagne."
+    },
     "participation": {
       "upcoming": "Vous pourrez rattacher vos ressources et besoins à cette campagne approuvée du {{start}} au {{end}}.",
       "pending": "Cette campagne attend son approbation. Vous pourrez y rattacher vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",

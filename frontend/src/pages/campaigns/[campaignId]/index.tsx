@@ -41,6 +41,7 @@ import { centeredResponsiveListingCardGridSx } from "../../../features/ui/listin
 import { getUserFacingGraphQLErrorMessage } from "../../../services/graphql/errorMessages";
 import { campaignJoinStatus, campaignSelectionLocked, effectiveCampaignRelation, useCampaignLifecycleNow, type CampaignListingRelation } from "../../../features/campaigns/campaignListingLifecycle";
 import { CampaignListingFeedback } from "../../../features/campaigns/CampaignListingFeedback";
+import { PublicCampaignJoinedListings } from "../../../features/campaigns/PublicCampaignJoinedListings";
 
 type PublicCampaignDetailData = {
   campaignById: {
@@ -280,6 +281,8 @@ const PUBLIC_CAMPAIGN_DETAIL_SSR_QUERY = `
       startAt
       airdropAt
       endAt
+      airdropAmount
+      rewardsMultiplier
       accountByCreatorAccountId {
         id
         displayName
@@ -324,8 +327,21 @@ export default function PublicCampaignDetailPage({
   const [bulkNeedRunning, setBulkNeedRunning] = useState(false);
   const [needJoinActionError, setNeedJoinActionError] = useState<string | null>(null);
   const [needJoinActionSuccessCount, setNeedJoinActionSuccessCount] = useState(0);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [explainerOpen, setExplainerOpen] = useState(false);
   const [explainerSlideIndex, setExplainerSlideIndex] = useState(0);
+  useEffect(() => {
+    if (!canJoinCampaign || !session.authenticated) setJoinDialogOpen(false);
+  }, [canJoinCampaign, session.authenticated]);
+  useEffect(() => {
+    setJoinDialogOpen(false);
+    setSelectedResourceIds([]);
+    setSelectedNeedIds([]);
+    setJoinActionError(null);
+    setNeedJoinActionError(null);
+    setJoinActionSuccessCount(0);
+    setNeedJoinActionSuccessCount(0);
+  }, [campaignId]);
   const storeLinks = useMemo(() => resolveMobileStoreLinks(), []);
   const explainerSlides = useMemo(() => {
     const nextDestination = encodeURIComponent(`/campaigns/${campaignId}`);
@@ -364,7 +380,8 @@ export default function PublicCampaignDetailPage({
   } = useQuery<MyActiveResourcesForCampaignData, MyActiveResourcesForCampaignVariables>(
     MY_ACTIVE_RESOURCES_FOR_CAMPAIGN_QUERY,
     {
-      skip: !canJoinCampaign || !session.authenticated || !session.account?.id,
+      skip: !joinDialogOpen || !canJoinCampaign || !session.authenticated || !session.account?.id,
+      fetchPolicy: "cache-and-network",
       variables: {
         creatorAccountId: session.account?.id ?? "",
         campaignId
@@ -382,7 +399,8 @@ export default function PublicCampaignDetailPage({
   } = useQuery<MyActiveNeedsForCampaignData, MyActiveNeedsForCampaignVariables>(
     MY_ACTIVE_NEEDS_FOR_CAMPAIGN_QUERY,
     {
-      skip: !canJoinCampaign || !session.authenticated || !session.account?.id,
+      skip: !joinDialogOpen || !canJoinCampaign || !session.authenticated || !session.account?.id,
+      fetchPolicy: "cache-and-network",
       variables: {
         creatorAccountId: session.account?.id ?? "",
         campaignId
@@ -723,6 +741,31 @@ export default function PublicCampaignDetailPage({
                       <Typography variant="body2">{t("create.fields.airdropAmount")}: {campaign.airdropAmount}</Typography>
                       <Typography variant="body2">{t("create.fields.rewardsMultiplier")}: {campaign.rewardsMultiplier}</Typography>
                     </Stack>
+
+                    {canJoinCampaign ? (
+                      session.authenticated ? (
+                        <Box>
+                          <Button onClick={() => setJoinDialogOpen(true)} variant="contained">
+                            {t("public.joinDialog.open")}
+                          </Button>
+                        </Box>
+                      ) : (
+                        <Alert action={<Button component={NextLink} href={`/login?next=%2Fcampaigns%2F${campaignId}`} size="small" variant="outlined">{t("public.resourceJoin.signInAction")}</Button>} severity="info">
+                          {t("public.joinDialog.signInRequired")}
+                        </Alert>
+                      )
+                    ) : (
+                      <Alert severity="info">
+                        {t(`public.participation.${participationState}`, {
+                          start: formattedDates.startAt,
+                          end: formattedDates.endAt
+                        })}
+                      </Alert>
+                    )}
+
+                    {participationState === "running" || participationState === "ended" ? <PublicCampaignJoinedListings campaignId={campaignId} /> : (
+                      <Alert severity="info">{t("public.joinedListings.unavailable")}</Alert>
+                    )}
                   </Stack>
                 </CardContent>
               </Card>
@@ -799,7 +842,16 @@ export default function PublicCampaignDetailPage({
                 </DialogActions>
               </Dialog>
 
-                {canJoinCampaign ? <>
+              <Dialog
+                aria-labelledby="campaign-join-dialog-title"
+                fullWidth
+                maxWidth="lg"
+                onClose={() => setJoinDialogOpen(false)}
+                open={joinDialogOpen && canJoinCampaign && session.authenticated}
+              >
+                <DialogTitle id="campaign-join-dialog-title">{t("public.joinDialog.title")}</DialogTitle>
+                <DialogContent>
+                  <Stack spacing={4} sx={{ pt: 1 }}>
                 <Stack spacing={2}>
                     <Typography component="h2" variant="h5">{t("public.resourceJoin.title")}</Typography>
                     <Typography color="text.secondary" variant="body2">{t("public.resourceJoin.subtitle")}</Typography>
@@ -1026,14 +1078,12 @@ export default function PublicCampaignDetailPage({
                   </>
                 )}
               </Stack>
-              </> : (
-                <Alert severity="info">
-                  {t(`public.participation.${participationState}`, {
-                    start: formattedDates.startAt,
-                    end: formattedDates.endAt
-                  })}
-                </Alert>
-              )}
+                  </Stack>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setJoinDialogOpen(false)}>{t("public.joinDialog.close")}</Button>
+                </DialogActions>
+              </Dialog>
             </>
           ) : <Alert severity="warning">{t("public.empty")}</Alert>}
         </Stack>

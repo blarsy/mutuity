@@ -1,5 +1,7 @@
-import { renderToStaticMarkup } from "react-dom/server";
-import { useQuery } from "@apollo/client/react";
+/** @jest-environment jsdom */
+import { act } from "react";
+import type { Root } from "react-dom/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 
 import PublicCampaignDetailPage from "../../src/pages/campaigns/[campaignId]/index";
 import { PUBLIC_CAMPAIGN_DETAIL_QUERY } from "../../src/features/campaigns/campaigns.queries";
@@ -10,6 +12,9 @@ import type { CampaignListingRelation } from "../../src/features/campaigns/campa
 
 let mockAuthenticated = true;
 let mockRelations: CampaignListingRelation[] = [];
+const mockResourceRefetch = jest.fn();
+const mockNeedRefetch = jest.fn();
+const mockMutations: Record<string, jest.Mock> = {};
 
 jest.mock("next/head", () => ({ __esModule: true, default: () => null }));
 jest.mock("next/router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
@@ -21,198 +26,273 @@ jest.mock("react-i18next", () => ({
   })
 }));
 jest.mock("../../src/features/auth/AuthProvider", () => ({
-  useAuth: () => ({ session: { authenticated: mockAuthenticated, account: { id: "viewer" } } })
+  useAuth: () => ({ session: { authenticated: mockAuthenticated, account: mockAuthenticated ? { id: "viewer" } : null } })
 }));
 jest.mock("../../src/components/richText/RichTextContent", () => ({ RichTextContent: () => null }));
-jest.mock("@apollo/client/react", () => ({ useQuery: jest.fn(), useMutation: () => [jest.fn()] }));
+// The accepted public list has separate integration tests; keep it distinct
+// from the owner picker and avoid requiring an Apollo provider here.
+jest.mock("../../src/features/campaigns/PublicCampaignJoinedListings", () => ({
+  PublicCampaignJoinedListings: ({ campaignId }: { campaignId: string }) => (
+    <section data-testid="public-accepted-listings">Accepted public listings for {campaignId}</section>
+  )
+}));
+jest.mock("@apollo/client/react", () => ({ useQuery: jest.fn(), useMutation: jest.fn() }));
 
 const now = Date.parse("2026-10-13T12:00:00Z");
 const campaign = {
-  id: "campaign",
-  creatorAccountId: "creator",
-  title: "Campaign title",
-  description: "Description",
-  theme: "Theme",
-  moderationStatus: "APPROVED",
-  imageUrl: null,
-  startAt: "2026-10-12T12:00:00Z",
-  airdropAt: "2026-10-13T12:00:00Z",
-  endAt: "2026-10-14T12:00:00Z",
-  airdropAmount: 3500,
-  rewardsMultiplier: 7,
-  accountByCreatorAccountId: null
+  id: "campaign", creatorAccountId: "creator", title: "Campaign title", description: "Description", theme: "Theme",
+  moderationStatus: "APPROVED", imageUrl: null, startAt: "2026-10-12T12:00:00Z", airdropAt: "2026-10-13T12:00:00Z",
+  endAt: "2026-10-14T12:00:00Z", airdropAmount: 3500, rewardsMultiplier: 7, accountByCreatorAccountId: null
 };
 const formattedDates = { startAt: "October 12", airdropAt: "October 13", endAt: "October 14" };
 
-function renderCampaign(overrides: Partial<typeof campaign> = {}) {
-  return renderToStaticMarkup(
-    <PublicCampaignDetailPage campaignId={campaign.id} initialCampaign={{ ...campaign, ...overrides }} formattedDates={formattedDates} />
-  );
+function page(overrides: Partial<typeof campaign> = {}) {
+  return <PublicCampaignDetailPage campaignId={campaign.id} initialCampaign={{ ...campaign, ...overrides }} formattedDates={formattedDates} />;
+}
+function submission(patch: Partial<CampaignListingRelation> = {}): CampaignListingRelation {
+  return {
+    campaignId: campaign.id, submissionId: "submission", submittedAt: new Date(now - 3_600_000).toISOString(),
+    status: "PENDING", isCurrent: true, actedAt: null, rejectionNote: null,
+    campaignByCampaignId: { title: "Linked campaign", startAt: campaign.startAt, endAt: campaign.endAt }, ...patch
+  };
+}
+function latestQueryOptions(operation: string) {
+  const calls = jest.mocked(useQuery).mock.calls.filter(([query]) => query.loc?.source.body.includes(`query ${operation}`));
+  expect(calls.length).toBeGreaterThan(0);
+  return calls[calls.length - 1][1];
+}
+function expectOwnerQueriesSkipped(skip: boolean) {
+  for (const operation of ["MyActiveResourcesForCampaign", "MyActiveNeedsForCampaign"]) {
+    expect(latestQueryOptions(operation)).toMatchObject({ skip, variables: { creatorAccountId: mockAuthenticated ? "viewer" : "", campaignId: campaign.id } });
+  }
 }
 
+let container: HTMLDivElement;
+let root: Root;
+beforeAll(() => { Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true }); });
 beforeEach(() => {
   jest.spyOn(Date, "now").mockReturnValue(now);
   mockAuthenticated = true;
   mockRelations = [];
+  mockResourceRefetch.mockReset().mockResolvedValue({});
+  mockNeedRefetch.mockReset().mockResolvedValue({});
+  for (const name of ["RequestResourceJoinToCampaign", "ReopenResourceJoinToCampaign", "RequestNeedJoinToCampaign", "ReopenNeedJoinToCampaign"]) {
+    mockMutations[name] = jest.fn().mockResolvedValue({});
+  }
+  jest.mocked(useMutation).mockReset();
+  jest.mocked(useMutation).mockImplementation(((query: { loc?: { source: { body: string } } }) => {
+    const name = Object.keys(mockMutations).find(operation => query.loc?.source.body.includes(`mutation ${operation}`));
+    if (!name) throw new Error("Unexpected mutation");
+    return [mockMutations[name]];
+  }) as unknown as typeof useMutation);
   jest.mocked(useQuery).mockReset();
-  jest.mocked(useQuery).mockImplementation(query => {
-    const operation = query.definitions.find(definition => definition.kind === "OperationDefinition");
-    const isResource = operation?.kind === "OperationDefinition" && operation.name?.value === "MyActiveResourcesForCampaign";
+  jest.mocked(useQuery).mockImplementation(((query: { loc?: { source: { body: string } } }) => {
+    const isResource = query.loc?.source.body.includes("query MyActiveResourcesForCampaign");
+    if (!isResource && !query.loc?.source.body.includes("query MyActiveNeedsForCampaign")) throw new Error("Unexpected query");
     const listing = {
-      id: isResource ? "resource" : "need",
-      creatorAccountId: "viewer",
-      title: isResource ? "My resource" : "My need",
-      description: "Listing description",
-      location: "Brussels",
-      expiresAt: null,
-      imageUrls: [],
+      id: isResource ? "resource" : "need", creatorAccountId: "viewer", title: isResource ? "My resource" : "My need",
+      description: "Listing description", location: "Brussels", expiresAt: null, imageUrls: [],
       accountByCreatorAccountId: { id: "viewer", displayName: "Contributor", externalSubject: "viewer" },
-      categoryLabels: [],
-      defaultTokenAmount: 25,
-      proposedTopesAmount: 50,
-      intensity: "SHARING",
-      campaignResourcesByResourceId: { nodes: mockRelations },
-      campaignNeedsByNeedId: { nodes: mockRelations }
+      categoryLabels: [], defaultTokenAmount: 25, proposedTopesAmount: 50, intensity: "SHARING",
+      campaignResourcesByResourceId: { nodes: mockRelations }, campaignNeedsByNeedId: { nodes: mockRelations }
     };
-    return {
-      data: { [isResource ? "allResources" : "allNeeds"]: { nodes: [listing] } },
-      loading: false,
-      refetch: jest.fn()
-    } as unknown as ReturnType<typeof useQuery>;
-  });
+    return { data: { [isResource ? "allResources" : "allNeeds"]: { nodes: [listing] } }, loading: false,
+      refetch: isResource ? mockResourceRefetch : mockNeedRefetch };
+  }) as unknown as typeof useQuery);
+  container = document.createElement("div");
+  document.body.appendChild(container);
+  root = require("react-dom/client").createRoot(container);
 });
-
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  jest.restoreAllMocks();
+});
+async function renderCampaign(overrides: Partial<typeof campaign> = {}) {
+  await act(async () => { root.render(page(overrides)); });
+}
+function button(text: string, scope: ParentNode = document.body): HTMLButtonElement {
+  const result = [...scope.querySelectorAll("button")].find(item => item.textContent?.trim() === text);
+  if (!result) throw new Error(`Button not found: ${text}`);
+  return result;
+}
+async function click(element: HTMLElement) { await act(async () => { element.click(); }); }
+function dialog(): HTMLElement {
+  const result = document.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="campaign-join-dialog-title"]');
+  if (!result) throw new Error("Join dialog not found");
+  return result;
+}
+async function openDialog() { await click(button("public.joinDialog.open")); return dialog(); }
+async function closeDialog() {
+  await click(button("public.joinDialog.close", dialog()));
+  // MUI keeps the modal mounted until its exit transition completes.
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
+  expect(document.querySelector('[aria-labelledby="campaign-join-dialog-title"]')).toBeNull();
+}
 
 describe("campaign participation state", () => {
   it.each([
-    [{}, "running"],
-    [{ startAt: new Date(now).toISOString() }, "running"],
-    [{ startAt: "2026-10-14T00:00:00Z" }, "upcoming"],
-    [{ moderationStatus: "PENDING" }, "pending"],
-    [{ moderationStatus: "AWAITING_ADAPTATION" }, "awaitingAdaptation"],
-    [{ moderationStatus: "REJECTED" }, "unavailable"],
-    [{ endAt: new Date(now).toISOString() }, "ended"],
-    [{ moderationStatus: "PENDING", endAt: new Date(now).toISOString() }, "ended"],
-    [{ startAt: "invalid" }, "unavailable"],
-    [{ endAt: "invalid" }, "unavailable"],
-    [{ startAt: campaign.endAt }, "unavailable"]
+    [{}, "running"], [{ startAt: new Date(now).toISOString() }, "running"],
+    [{ startAt: "2026-10-14T00:00:00Z" }, "upcoming"], [{ moderationStatus: "PENDING" }, "pending"],
+    [{ moderationStatus: "AWAITING_ADAPTATION" }, "awaitingAdaptation"], [{ moderationStatus: "REJECTED" }, "unavailable"],
+    [{ endAt: new Date(now).toISOString() }, "ended"], [{ moderationStatus: "PENDING", endAt: new Date(now).toISOString() }, "ended"],
+    [{ startAt: "invalid" }, "unavailable"], [{ endAt: "invalid" }, "unavailable"], [{ startAt: campaign.endAt }, "unavailable"]
   ])("resolves %p as %s", (overrides, expected) => {
     expect(resolveCampaignParticipationState({ ...campaign, ...overrides }, now)).toBe(expected);
   });
-
-  it("does not allow missing campaigns", () => {
-    expect(resolveCampaignParticipationState(null, now)).toBe("unavailable");
-  });
+  it("does not allow missing campaigns", () => expect(resolveCampaignParticipationState(null, now)).toBe("unavailable"));
 });
 
-describe("campaign detail listing layout and visibility", () => {
-  function submission(patch: Partial<CampaignListingRelation> = {}): CampaignListingRelation {
-    return {
-      campaignId: campaign.id, submissionId: "submission", submittedAt: new Date(now - 3_600_000).toISOString(),
-      status: "PENDING", isCurrent: true, actedAt: null, rejectionNote: null,
-      campaignByCampaignId: { title: "Linked campaign", startAt: campaign.startAt, endAt: campaign.endAt }, ...patch
-    };
-  }
+describe("campaign detail participation", () => {
+  it("shows accepted public listings separately, loads owner cards only in the dialog, submits both types and reopens and closes", async () => {
+    await renderCampaign();
+    expect(container.textContent).toContain("Accepted public listings for campaign");
+    expect(container.textContent).not.toContain("My resource");
+    expect(container.textContent).not.toContain("My need");
+    expectOwnerQueriesSkipped(true);
+    const modal = await openDialog();
+    expectOwnerQueriesSkipped(false);
+    expect(container.querySelector('[data-testid="public-accepted-listings"]')).not.toBeNull();
+    expect(modal.querySelector('[data-testid="public-accepted-listings"]')).toBeNull();
+    expect(modal.textContent).toContain("My resource");
+    expect(modal.textContent).toContain("My need");
+    expect(modal.textContent).toContain("Contributor");
+    expect(modal.querySelectorAll('[data-testid="token-amount"]')).toHaveLength(2);
+    expect(modal.querySelector('[data-testid="resource-card"]')).not.toBeNull();
+    expect(modal.querySelector('[data-testid="need-card"]')).not.toBeNull();
+    for (const card of modal.querySelectorAll<HTMLElement>('[data-testid="resource-card"], [data-testid="need-card"]')) {
+      expect(getComputedStyle(card).maxWidth).toBe("400px");
+    }
+    const styles = [...document.styleSheets].flatMap(sheet => [...sheet.cssRules].map(rule => rule.cssText)).join(" ");
+    expect(styles).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+    expect(styles).not.toContain("auto-fit");
+    for (const operation of ["MyActiveResourcesForCampaign", "MyActiveNeedsForCampaign"]) {
+      const call = jest.mocked(useQuery).mock.calls.find(([query]) => query.loc?.source.body.includes(`query ${operation}`));
+      expect(call?.[0].loc?.source.body).toMatch(/\bactedAt\b/);
+    }
+    await click(button("public.resourceJoin.joinSingle", modal));
+    expect(mockMutations.RequestResourceJoinToCampaign).toHaveBeenCalledWith({ variables: { campaignId: "campaign", resourceId: "resource" } });
+    expect(mockResourceRefetch).toHaveBeenCalledTimes(1);
+    expect(modal.textContent).toContain("public.resourceJoin.joinSuccess");
+    const needCard = modal.querySelector<HTMLElement>('[data-testid="need-card"]')!;
+    const checkbox = needCard.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+    await click(checkbox);
+    expect(checkbox.checked).toBe(true);
+    await click(button("public.needJoin.joinSelected", modal));
+    expect(mockMutations.RequestNeedJoinToCampaign).toHaveBeenCalledWith({ variables: { campaignId: "campaign", needId: "need" } });
+    expect(mockNeedRefetch).toHaveBeenCalledTimes(1);
+    expect(modal.textContent).toContain("public.needJoin.joinSuccess");
+    expect(checkbox.checked).toBe(false);
+    await closeDialog();
+    expectOwnerQueriesSkipped(true);
+    expect(container.textContent).toContain("Accepted public listings for campaign");
+    expect(container.textContent).not.toContain("My resource");
+    await openDialog();
+    expectOwnerQueriesSkipped(false);
+    expect(dialog().textContent).toContain("My need");
+    await closeDialog();
+    expectOwnerQueriesSkipped(true);
+  });
 
-  it("offers explicit same-campaign resubmit and displays rejection feedback for both listing kinds", () => {
+  it("shows rejection feedback for both kinds and explicitly resubmits each", async () => {
     const actedAt = "2026-10-13T11:30:00Z";
     mockRelations = [submission({ status: "REJECTED", isCurrent: false, actedAt, rejectionNote: "Add more details" })];
-    const html = renderCampaign();
-    const buttons = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) ?? [];
-    const resubmit = buttons.filter(button => button.includes("listingLifecycle.resubmit"));
-    expect(resubmit).toHaveLength(2);
-    expect(resubmit.every(button => !button.includes("disabled="))).toBe(true);
-    expect(html.match(/Add more details/g)).toHaveLength(2);
-    expect(html.split(`listingLifecycle.rejectedAt ${new Date(actedAt).toLocaleString("en")}`)).toHaveLength(3);
-    expect(html.match(/listingLifecycle.saveDoesNotResubmit/g)).toHaveLength(2);
-    for (const [query] of jest.mocked(useQuery).mock.calls) {
-      expect(query.loc?.source.body).toMatch(/\bactedAt\b/);
+    await renderCampaign();
+    expect(container.textContent).not.toContain("Add more details");
+    const modal = await openDialog();
+    expect(modal.textContent?.match(/Add more details/g)).toHaveLength(2);
+    expect(modal.textContent?.split(`listingLifecycle.rejectedAt ${new Date(actedAt).toLocaleString("en")}`)).toHaveLength(3);
+    expect(modal.textContent?.match(/listingLifecycle.saveDoesNotResubmit/g)).toHaveLength(2);
+    for (const kind of ["resource", "need"] as const) {
+      const card = modal.querySelector<HTMLElement>(`[data-testid="${kind}-card"]`)!;
+      const resubmit = button("listingLifecycle.resubmit", card);
+      expect(resubmit.disabled).toBe(false);
+      await click(resubmit);
+    }
+    expect(mockMutations.ReopenResourceJoinToCampaign).toHaveBeenCalledWith({ variables: { campaignId: "campaign", resourceId: "resource" } });
+    expect(mockMutations.ReopenNeedJoinToCampaign).toHaveBeenCalledWith({ variables: { campaignId: "campaign", needId: "need" } });
+    expect(mockMutations.RequestResourceJoinToCampaign).not.toHaveBeenCalled();
+    expect(mockMutations.RequestNeedJoinToCampaign).not.toHaveBeenCalled();
+    expect(mockResourceRefetch).toHaveBeenCalledTimes(1);
+    expect(mockNeedRefetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["ACCEPTED", "PENDING"] as const)("prevents joining another campaign while an existing %s slot is locked", async status => {
+    mockRelations = [submission({ campaignId: "another-campaign", status })];
+    await renderCampaign();
+    const modal = await openDialog();
+    for (const kind of ["resource", "need"] as const) {
+      const card = modal.querySelector<HTMLElement>(`[data-testid="${kind}-card"]`)!;
+      expect(button(`public.${kind}Join.joinSingle`, card).disabled).toBe(true);
+      expect(card.querySelector<HTMLInputElement>('input[type="checkbox"]')?.disabled).toBe(true);
+      expect(card.textContent).toContain(status === "ACCEPTED" ? "listingLifecycle.acceptedLocked" : "listingLifecycle.pendingLocked");
+      expect(card.textContent).not.toContain("listingLifecycle.resubmit");
     }
   });
 
-  it.each(["ACCEPTED", "PENDING"] as const)("prevents joining another campaign while the existing %s slot is locked", status => {
-    mockRelations = [submission({ campaignId: "another-campaign", status })];
-    const html = renderCampaign();
-    const buttons = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) ?? [];
-    const joinButtons = buttons.filter(button => /public\.(resource|need)Join\.joinSingle/.test(button));
-    expect(joinButtons).toHaveLength(2);
-    expect(joinButtons.every(button => button.includes("disabled="))).toBe(true);
-    expect(html).not.toContain("listingLifecycle.resubmit");
-    expect(html).toContain(status === "ACCEPTED" ? "listingLifecycle.acceptedLocked" : "listingLifecycle.pendingLocked");
-  });
-
-  it.each(["24h pending", "ended accepted", "superseded"] as const)("allows a fresh join for %s history without obsolete rejection feedback", scenario => {
-    const old = submission({ status: "REJECTED", isCurrent: false, rejectionNote: "Obsolete feedback",
-      submittedAt: new Date(now - 100 * 3_600_000).toISOString() });
+  it.each(["24h pending", "ended accepted", "superseded"] as const)("allows explicit resubmit for %s history without obsolete feedback", async scenario => {
+    const old = submission({ status: "REJECTED", isCurrent: false, rejectionNote: "Obsolete feedback", submittedAt: new Date(now - 100 * 3_600_000).toISOString() });
     const latest = submission({ campaignId: "another-campaign", submittedAt: new Date(now - 24 * 3_600_000).toISOString(),
       ...(scenario === "ended accepted" ? { status: "ACCEPTED", campaignByCampaignId: { title: "Ended", startAt: "2020-01-01", endAt: new Date(now).toISOString() } }
         : scenario === "superseded" ? { status: "SUPERSEDED", isCurrent: false } : {}) });
     mockRelations = [old, latest];
-    const html = renderCampaign();
-    expect(html).not.toContain("Obsolete feedback");
-    // The historical rejection is still a valid explicit resubmit destination.
-    expect(html).toContain("listingLifecycle.resubmit");
+    await renderCampaign();
+    const modal = await openDialog();
+    expect(modal.textContent).not.toContain("Obsolete feedback");
+    expect([...modal.querySelectorAll("button")].filter(item => item.textContent === "listingLifecycle.resubmit")).toHaveLength(2);
   });
 
-  it("requests the campaign reward fields from GraphQL", () => {
+  it("requests and displays the actual campaign reward fields", async () => {
     const query = PUBLIC_CAMPAIGN_DETAIL_QUERY.loc?.source.body;
     expect(query).toMatch(/\bairdropAmount\b/);
     expect(query).toMatch(/\brewardsMultiplier\b/);
-  });
-
-  it("displays the actual campaign airdrop amount and rewards multiplier", () => {
-    const html = renderCampaign();
-    expect(html).toContain("create.fields.airdropAmount");
-    expect(html).toContain("create.fields.rewardsMultiplier");
-    expect(html).toMatch(/create.fields.airdropAmount[^<]*3500/);
-    expect(html).toMatch(/create.fields.rewardsMultiplier[^<]*7/);
-  });
-
-  it("renders both standard listing cards, headers, token visuals and responsive grids while running", () => {
-    const html = renderCampaign();
-    expect(html).toContain('data-testid="resource-card"');
-    expect(html).toContain('data-testid="need-card"');
-    expect(html).toContain("My resource");
-    expect(html).toContain("My need");
-    expect(html).toContain("Contributor");
-    expect(html.match(/data-testid="token-amount"/g)).toHaveLength(2);
-    expect(html).toContain("max-width:400px");
-    expect(html).toContain("repeat(3, minmax(0, 1fr))");
-    expect(html).not.toContain("auto-fit");
-    for (const [, options] of jest.mocked(useQuery).mock.calls) {
-      expect(typeof options === "object" ? options?.skip : undefined).toBe(false);
-    }
+    await renderCampaign();
+    expect(container.textContent).toMatch(/create.fields.airdropAmount[^<]*3500/);
+    expect(container.textContent).toMatch(/create.fields.rewardsMultiplier[^<]*7/);
   });
 
   it.each([
-    [{ startAt: "2026-10-14T00:00:00Z" }, "upcoming"],
-    [{ moderationStatus: "PENDING" }, "pending"],
-    [{ moderationStatus: "AWAITING_ADAPTATION" }, "awaitingAdaptation"],
-    [{ endAt: new Date(now).toISOString() }, "ended"],
-    [{ moderationStatus: "PENDING", endAt: new Date(now).toISOString() }, "ended"],
-    [{ moderationStatus: "REJECTED" }, "unavailable"]
-  ])("hides lists and skips queries for %p with a %s hint", (overrides, expected) => {
-    const html = renderCampaign(overrides);
-    expect(html).toContain(`public.participation.${expected}`);
-    expect(html).toContain(formattedDates.startAt);
-    expect(html).toContain(formattedDates.endAt);
-    expect(html).not.toContain('data-testid="resource-card"');
-    expect(html).not.toContain('data-testid="need-card"');
-    expect(html).not.toContain("public.resourceJoin.title");
-    expect(html).not.toContain("public.needJoin.title");
-    for (const [, options] of jest.mocked(useQuery).mock.calls) {
-      expect(typeof options === "object" ? options?.skip : undefined).toBe(true);
-    }
+    [{ startAt: "2026-10-14T00:00:00Z" }, "upcoming"], [{ moderationStatus: "PENDING" }, "pending"],
+    [{ moderationStatus: "AWAITING_ADAPTATION" }, "awaitingAdaptation"], [{ endAt: new Date(now).toISOString() }, "ended"],
+    [{ moderationStatus: "PENDING", endAt: new Date(now).toISOString() }, "ended"], [{ moderationStatus: "REJECTED" }, "unavailable"]
+  ])("hides public and owner listings and skips owner queries for %p with a %s hint", async (overrides, expected) => {
+    await renderCampaign(overrides);
+    expect(container.textContent).toContain(`public.participation.${expected}`);
+    expect(container.textContent).toContain(formattedDates.startAt);
+    expect(container.textContent).toContain(formattedDates.endAt);
+    expect(container.textContent).toContain("public.joinedListings.unavailable");
+    expect(container.querySelector('[data-testid="public-accepted-listings"]')).toBeNull();
+    expect(container.textContent).not.toContain("public.joinDialog.open");
+    expect(container.textContent).not.toContain("My resource");
+    expect(container.textContent).not.toContain("My need");
+    expectOwnerQueriesSkipped(true);
   });
 
-  it("only prompts anonymous users to sign in when joining is available", () => {
+  it("shows public listings and a sign-in link to anonymous users only while running", async () => {
     mockAuthenticated = false;
-    expect(renderCampaign()).toContain("public.resourceJoin.signInRequired");
-    const html = renderCampaign({ moderationStatus: "PENDING" });
-    expect(html).toContain("public.participation.pending");
-    expect(html).not.toContain("public.resourceJoin.signInRequired");
-    expect(html).not.toContain("public.needJoin.signInRequired");
+    await renderCampaign();
+    expect(container.textContent).toContain("Accepted public listings for campaign");
+    expect(container.textContent).toContain("public.joinDialog.signInRequired");
+    expect(container.querySelector('a[href="/login?next=%2Fcampaigns%2Fcampaign"]')?.textContent).toBe("public.resourceJoin.signInAction");
+    expect(container.textContent).not.toContain("public.joinDialog.open");
+    expectOwnerQueriesSkipped(true);
+    await renderCampaign({ moderationStatus: "PENDING" });
+    expect(container.textContent).toContain("public.participation.pending");
+    expect(container.textContent).not.toContain("public.joinDialog.signInRequired");
+    expect(container.querySelector('[data-testid="public-accepted-listings"]')).toBeNull();
+    expectOwnerQueriesSkipped(true);
+  });
+
+  it("closes an open picker and skips both owner queries if the campaign stops running", async () => {
+    await renderCampaign();
+    await openDialog();
+    expectOwnerQueriesSkipped(false);
+    await renderCampaign({ moderationStatus: "PENDING" });
+    expectOwnerQueriesSkipped(true);
+    expect(container.textContent).toContain("public.participation.pending");
+    expect(container.querySelector('[data-testid="public-accepted-listings"]')).toBeNull();
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
+    expect(document.querySelector('[aria-labelledby="campaign-join-dialog-title"]')).toBeNull();
   });
 
   it.each([en, fr])("provides all unavailable-state hints in each locale", locale => {
