@@ -23,6 +23,7 @@ import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { useTokenBalance } from "../features/contribution/useTokenBalance";
 import { TokenBalanceDisplay } from "../features/contribution/TokenBalanceDisplay";
 import { reportRealtimeError } from "../services/graphql/realtime";
+import { formatSiteDateTime } from "../features/shared/publicDateTime";
 
 type ContributionOverviewData = {
   currentTokenBalance: number;
@@ -109,7 +110,7 @@ const TOPES_EARNING_OPPORTUNITIES = [
 export default function ContributionPage() {
   const { session } = useAuth();
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
-  const { t } = useTranslation("contribution");
+  const { t, i18n } = useTranslation("contribution");
   const { data: currentData, previousData, loading, error, refetch } = useQuery<ContributionOverviewData>(CONTRIBUTION_OVERVIEW_QUERY, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
@@ -267,7 +268,7 @@ export default function ContributionPage() {
                           ) : null}
                           {giftMessage ? <Typography variant="body2">{giftMessage}</Typography> : null}
                           <Typography color="text.secondary" variant="caption">
-                            {new Date(movement.createdAt).toLocaleString()}
+                            {formatSiteDateTime(movement.createdAt, i18n?.language ?? "en")}
                             {movement.referenceType && movement.referenceId
                               ? ` • ${movement.referenceType} ${movement.referenceId}`
                               : ""}

@@ -31,6 +31,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { resolveMobileStoreLinks } from "../../features/shared/mobileStoreLinks";
 import type { MyCampaignsConnectionQuery, MyCampaignsConnectionQueryVariables, InspirationCampaignsQuery } from "../../graphql/generated";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type CampaignNode = {
   id: string;
@@ -64,9 +65,10 @@ type CampaignCardsProps = {
   campaigns: CampaignNode[];
   grayEnded: boolean;
   t: (key: string, options?: Record<string, unknown>) => string;
+  locale: string;
 };
 
-function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
+function CampaignCards({ campaigns, grayEnded, t, locale }: CampaignCardsProps) {
   const now = new Date();
 
   return (
@@ -118,10 +120,10 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
                 </Stack>
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ mt: 2 }}>
-                  <Typography variant="body2">{t("labels.created")}: {new Date(campaign.createdAt).toLocaleString()}</Typography>
-                  <Typography variant="body2">{t("labels.start")}: {new Date(campaign.startAt).toLocaleString()}</Typography>
-                  <Typography variant="body2">{t("labels.airdrop")}: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
-                  <Typography variant="body2">{t("labels.end")}: {new Date(campaign.endAt).toLocaleString()}</Typography>
+                  <Typography variant="body2">{t("labels.created")}: {formatSiteDateTime(campaign.createdAt, locale)}</Typography>
+                  <Typography variant="body2">{t("labels.start")}: {formatSiteDateTime(campaign.startAt, locale)}</Typography>
+                  <Typography variant="body2">{t("labels.airdrop")}: {formatSiteDateTime(campaign.airdropAt, locale)}</Typography>
+                  <Typography variant="body2">{t("labels.end")}: {formatSiteDateTime(campaign.endAt, locale)}</Typography>
                 </Stack>
 
                 <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
@@ -144,7 +146,7 @@ function CampaignCards({ campaigns, grayEnded, t }: CampaignCardsProps) {
 }
 
 export default function CampaignsPage() {
-  const { t } = useTranslation("campaigns");
+  const { t, i18n } = useTranslation("campaigns");
   const { session, status } = useAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [isInspirationOpen, setIsInspirationOpen] = useState(false);
@@ -299,6 +301,7 @@ export default function CampaignsPage() {
             <CampaignCards
               campaigns={myCampaigns}
               grayEnded
+              locale={i18n?.language ?? "en"}
               t={t}
             />
 
@@ -318,7 +321,7 @@ export default function CampaignsPage() {
             {!inspirationLoading && !inspirationErrorMessage && inspirationCampaigns.length === 0 ? (
               <Alert severity="info">{t("page.inspirationEmpty")}</Alert>
             ) : null}
-            <CampaignCards campaigns={inspirationCampaigns} grayEnded={false} t={t} />
+            <CampaignCards campaigns={inspirationCampaigns} grayEnded={false} locale={i18n?.language ?? "en"} t={t} />
           </DialogContent>
         </Dialog>
 

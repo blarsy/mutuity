@@ -1,4 +1,6 @@
 import { Chip, Stack, Typography, type ChipProps } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 export function formatNeedClaimStatus(status: string) {
   return status.replaceAll("_", " ").toLowerCase();
@@ -7,11 +9,12 @@ export function formatNeedClaimStatus(status: string) {
 export function buildNeedClaimStatusSummary(
   status: string,
   settledAt: string | null | undefined,
-  topesAmount: number | null | undefined
+  topesAmount: number | null | undefined,
+  locale = "en"
 ) {
   switch (status) {
     case "SETTLED": {
-      const datePart = settledAt ? `Settled on ${new Date(settledAt).toLocaleString()}` : "Claim settled";
+      const datePart = settledAt ? `Settled on ${formatSiteDateTime(settledAt, locale)}` : "Claim settled";
       return topesAmount && topesAmount > 0 ? `${datePart} • ${topesAmount} Topes recorded` : datePart;
     }
     case "DECLINED":
@@ -55,7 +58,8 @@ export function NeedClaimStatusChip({
   showSummary?: boolean;
   size?: ChipProps["size"];
 }) {
-  const summary = buildNeedClaimStatusSummary(status, settledAt, topesAmount);
+  const { i18n } = useTranslation("needs");
+  const summary = buildNeedClaimStatusSummary(status, settledAt, topesAmount, i18n?.language ?? "en");
   const chip = <Chip color={toStatusColor(status)} label={formatNeedClaimStatus(status)} size={size} />;
 
   if (!showSummary || !summary) {

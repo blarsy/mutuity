@@ -3,8 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import PublicCampaignDetailPage from "../../pages/campaigns/[campaignId]";
 import {
   MOCK_CAMPAIGN_ID,
-  mockCampaignDetail,
-  mockCampaignFormattedDates
+  mockCampaignDetail
 } from "../fixtures/listings";
 import { withAppShellOperations } from "../harness/appShellOperations";
 import { ANONYMOUS_SESSION, AUTHENTICATED_SESSION } from "../harness/mockAuth";
@@ -14,8 +13,7 @@ const meta: Meta<typeof PublicCampaignDetailPage> = {
   component: PublicCampaignDetailPage,
   args: {
     campaignId: MOCK_CAMPAIGN_ID,
-    initialCampaign: mockCampaignDetail,
-    formattedDates: mockCampaignFormattedDates
+    initialCampaign: mockCampaignDetail
   },
   parameters: {
     nextjs: {

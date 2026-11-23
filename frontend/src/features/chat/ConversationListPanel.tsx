@@ -24,6 +24,7 @@ import { conversationDraftUrl, conversationThreadUrl } from "./chatRouting";
 import { useAccountEventSignal } from "../../services/graphql/accountEvents";
 import { handleRealtimeRefresh } from "../../services/graphql/realtime";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 export type ConversationNode = {
   conversationKind: "need" | "resource";
@@ -84,7 +85,7 @@ export function ConversationListPanel({
   selectedDraft?: boolean;
   onAutoOpenConversation?: (conversation: ConversationNode) => void | Promise<void>;
 }) {
-  const { t } = useTranslation("chat");
+  const { t, i18n } = useTranslation("chat");
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounced(search, 300);
   const autoOpenedConversationId = useRef<string | null>(null);
@@ -242,7 +243,7 @@ function ConversationListItem({
   isDraft?: boolean;
   isSelected: boolean;
 }) {
-  const { t } = useTranslation("chat");
+  const { t, i18n } = useTranslation("chat");
   const effectiveUnreadCount = isSelected ? 0 : conv.unreadCount;
   const threadUrl = isDraft
     ? conversationDraftUrl({
@@ -335,7 +336,7 @@ function ConversationListItem({
                   display="block"
                   variant="caption"
                 >
-                  {new Date(conv.lastActivityAt).toLocaleString()}
+                  {formatSiteDateTime(conv.lastActivityAt, i18n?.language ?? "en")}
                 </Typography>
               )}
             </Box>

@@ -33,7 +33,7 @@ import {
   buildCampaignPageMeta,
   resolveCampaignAvailabilityState
 } from "../../../features/shared/publicPageSeo";
-import { formatPublicDateTime } from "../../../features/shared/publicDateTime";
+import { formatSiteDateTime } from "../../../features/shared/publicDateTime";
 import { resolveMobileStoreLinks } from "../../../features/shared/mobileStoreLinks";
 import { fetchServerGraphql, getLanguageFromHeaders } from "../../../features/shared/serverGraphql";
 import { NeedCard } from "../../../features/ui/NeedCard";
@@ -69,11 +69,6 @@ type PublicCampaignDetailData = {
 type PublicCampaignDetailPageProps = {
   campaignId: string;
   initialCampaign: PublicCampaignDetailData["campaignById"];
-  formattedDates: {
-    startAt: string;
-    airdropAt: string;
-    endAt: string;
-  };
 };
 
 type CampaignJoinStatus = CampaignListingRelation["status"];
@@ -295,14 +290,19 @@ const PUBLIC_CAMPAIGN_DETAIL_SSR_QUERY = `
 
 export default function PublicCampaignDetailPage({
   campaignId,
-  initialCampaign,
-  formattedDates
+  initialCampaign
 }: PublicCampaignDetailPageProps) {
   const { session } = useAuth();
-  const { t } = useTranslation("campaigns");
+  const { t, i18n } = useTranslation("campaigns");
   const router = useRouter();
   const lifecycleNow = useCampaignLifecycleNow();
   const campaign = initialCampaign;
+  const locale = i18n?.language ?? "fr";
+  const formattedDates = {
+    startAt: campaign ? formatSiteDateTime(campaign.startAt, locale) : "",
+    airdropAt: campaign ? formatSiteDateTime(campaign.airdropAt, locale) : "",
+    endAt: campaign ? formatSiteDateTime(campaign.endAt, locale) : ""
+  };
   const availabilityState = resolveCampaignAvailabilityState(campaign);
   const [now, setNow] = useState(() => Date.now());
   const participationState = resolveCampaignParticipationState(campaign, now);
@@ -1037,12 +1037,7 @@ export const getServerSideProps: GetServerSideProps<PublicCampaignDetailPageProp
   return {
     props: {
       campaignId: rawCampaignId,
-      initialCampaign: data.campaignById,
-      formattedDates: {
-        startAt: formatPublicDateTime(data.campaignById.startAt, locale),
-        airdropAt: formatPublicDateTime(data.campaignById.airdropAt, locale),
-        endAt: formatPublicDateTime(data.campaignById.endAt, locale)
-      }
+      initialCampaign: data.campaignById
     }
   };
 };

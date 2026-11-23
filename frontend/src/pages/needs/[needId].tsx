@@ -29,6 +29,7 @@ import {
   type PublicAvailabilityState
 } from "../../features/shared/publicPageSeo";
 import { fetchServerGraphql, getLanguageFromHeaders } from "../../features/shared/serverGraphql";
+import { formatSiteDateTime } from "../../features/shared/publicDateTime";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -376,12 +377,12 @@ function formatDate(value: string | null, fallback: string, language: string) {
     return fallback;
   }
 
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) {
+  const formatted = formatSiteDateTime(value, language);
+  if (!formatted || formatted === value) {
     return fallback;
   }
 
-  return new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short" }).format(date);
+  return formatted;
 }
 
 function DetailSection({ children, label }: { children: ReactNode; label: string }) {

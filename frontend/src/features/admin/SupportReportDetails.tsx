@@ -1,4 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 function displayText(value: unknown) {
   return typeof value === "string" && value.trim() ? value : "-";
@@ -27,13 +29,14 @@ function Detail({ label, value, monospace = false }: { label: string; value: str
 
 /** All report content is untrusted and deliberately rendered as text, never HTML. */
 export function SupportReportDetails({ report }: { report: Record<string, unknown> }) {
+  const { i18n } = useTranslation();
   const createdAt = displayText(report.createdAt);
   const date = new Date(createdAt);
 
   return (
     <Stack spacing={2}>
       <Detail label="Report ID" value={displayText(report.id)} />
-      <Detail label="Created" value={Number.isNaN(date.getTime()) ? createdAt : date.toLocaleString()} />
+      <Detail label="Created" value={Number.isNaN(date.getTime()) ? createdAt : formatSiteDateTime(date, i18n?.language ?? "en")} />
       <Detail label="Account" value={displayText(report.accountName)} />
       <Detail label="Account ID" value={displayText(report.accountId)} />
       <Detail label="Summary" value={displayText(report.summary)} />

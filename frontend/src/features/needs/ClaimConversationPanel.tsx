@@ -30,6 +30,7 @@ import { conversationThreadUrl } from "../chat/chatRouting";
 import { parseImageUrls, MAX_IMAGE_ATTACHMENTS } from "../chat/ConversationThread";
 import { ChatImageUploadDialog } from "../chat/ChatImageUploadDialog";
 import type { NeedClaimDetailQuery, ClaimConversationByPartiesQuery, SendClaimMessageMutation } from "../../graphql/generated";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 export type ClaimConversationViewMessage = {
   id: string;
@@ -72,7 +73,7 @@ export function ClaimConversationThreadView({
   currentAccountId: string;
   messages: ClaimConversationViewMessage[];
 }) {
-  const { t } = useTranslation("needs");
+  const { t, i18n } = useTranslation("needs");
 
   return (
     <Stack spacing={1.5}>
@@ -101,7 +102,7 @@ export function ClaimConversationThreadView({
                 </Stack>
               ) : null}
               <Typography color="text.secondary" sx={{ mt: 0.5 }} variant="caption">
-                {new Date(message.createdAt).toLocaleString()}
+                {formatSiteDateTime(message.createdAt, i18n?.language ?? "en")}
                 {message.readAt ? ` • ${t("claimConversation.read")}` : ""}
               </Typography>
             </Box>

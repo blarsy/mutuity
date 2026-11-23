@@ -49,12 +49,6 @@ export const mockCampaignDetail = {
   accountByCreatorAccountId: creator
 };
 
-export const mockCampaignFormattedDates = {
-  startAt: "1 avril 2026",
-  airdropAt: "1 mai 2026",
-  endAt: "1 juillet 2026"
-};
-
 export const mockAccountDetail = {
   id: MOCK_ACCOUNT_ID,
   displayName: "Camille Dupont",

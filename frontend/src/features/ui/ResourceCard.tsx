@@ -50,7 +50,7 @@ export function ResourceCard({
   onListingClick,
   onCreatorClick,
 }: ResourceCardProps) {
-  const { t } = useTranslation("resources");
+  const { t, i18n } = useTranslation("resources");
   const images = imageUrls ?? [];
   const [imageIndex, setImageIndex] = useState(0);
   const currentImage = images[imageIndex] ?? null;
@@ -83,6 +83,7 @@ export function ResourceCard({
           creatorImageUrl={creatorImageUrl}
           creatorName={creatorName}
           expiresAt={expiresAt}
+          locale={i18n?.language ?? "en"}
           expiresLabel={t("card.expires")}
           expiryWarningLabel={t("card.expiresSoon")}
           listingTitle={title}

@@ -46,7 +46,7 @@ export function NeedCard({
   onListingClick,
   onCreatorClick
 }: NeedCardProps) {
-  const { t } = useTranslation("needs");
+  const { t, i18n } = useTranslation("needs");
   // Older mobile builds persisted picker file/content URIs, which browsers cannot access.
   const images = (imageUrls ?? [])
     .map(url => url?.trim())
@@ -78,6 +78,7 @@ export function NeedCard({
         creatorImageUrl={creatorImageUrl}
         creatorName={creatorName}
         expiresAt={expiresAt}
+        locale={i18n?.language ?? "en"}
         expiresLabel="Expires"
         expiryWarningLabel={t("browse.expiresSoon")}
         listingTitle={title}

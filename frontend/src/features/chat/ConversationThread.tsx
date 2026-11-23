@@ -38,6 +38,7 @@ import { conversationContextUrl } from "./chatRouting";
 import { GiftTokensButton } from "../contribution/GiftTokensButton";
 import { sendNeedThreadMessage } from "./needThreadMessaging";
 import type { SendClaimMessageMutation } from "../../graphql/generated";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -163,7 +164,7 @@ export function ConversationThread({
   onMessagesRead?: () => void;
   onBack?: () => void;
 }) {
-  const { t } = useTranslation("chat");
+  const { t, i18n } = useTranslation("chat");
   const router = useRouter();
   const { session } = useAuth();
   const myAccountId = session?.account?.id ?? null;
@@ -364,6 +365,7 @@ export function ConversationThread({
       <ListingHeader
         creatorName={otherAccountDisplayName ?? "Unknown"}
         creatorImageUrl={otherAccountAvatarUrl}
+        locale={i18n?.language ?? "en"}
         expiresLabel={t("thread.listing")}
         noDateLabel={t("common.nolimit")}
         showExpiry={false}
@@ -421,6 +423,7 @@ export function ConversationThread({
               isMine={msg.senderAccountId === myAccountId}
               key={msg.id}
               message={msg}
+              locale={i18n?.language ?? "en"}
             />
           ))}
         </Stack>
@@ -465,11 +468,8 @@ export function ConversationThread({
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
 
-function MessageBubble({ message, isMine }: { message: Message; isMine: boolean }) {
-  const dateStr = new Date(message.createdAt).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+function MessageBubble({ message, isMine, locale }: { message: Message; isMine: boolean; locale: string }) {
+  const dateStr = formatSiteDateTime(message.createdAt, locale, "time");
 
   return (
     <Box

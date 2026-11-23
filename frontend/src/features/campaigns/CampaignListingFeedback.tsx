@@ -1,6 +1,7 @@
 import { Alert, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type { CampaignListingRelation } from "./campaignListingLifecycle";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 export function CampaignListingFeedback({ relation, locked }: {
   relation: CampaignListingRelation | null;
@@ -10,7 +11,7 @@ export function CampaignListingFeedback({ relation, locked }: {
   if (!relation) return null;
   const campaign = relation.campaignByCampaignId;
   const date = (value: string) => Number.isFinite(Date.parse(value))
-    ? new Date(value).toLocaleString(i18n.language) : "—";
+    ? formatSiteDateTime(value, i18n?.language ?? "en") : "—";
   const dateValue = relation.status === "ACCEPTED" || relation.status === "REJECTED"
     ? relation.actedAt : relation.submittedAt;
   const dateKey = relation.status === "ACCEPTED" ? "listingLifecycle.acceptedAt"

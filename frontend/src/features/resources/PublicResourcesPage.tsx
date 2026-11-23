@@ -60,18 +60,19 @@ import type {
   PublicResourcesQuery,
   ResourceCategoryOptionsQuery
 } from "../../graphql/generated";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type ToggleFilterKey = Exclude<
   keyof ResourceSearchFilters,
   "searchText" | "categoryCodes" | "favorLocalResources" | "maxDistanceKm"
 >;
 
-function formatDate(value: string | null, noDateLabel: string) {
+function formatDate(value: string | null, noDateLabel: string, locale: string) {
   if (!value) {
     return noDateLabel;
   }
 
-  return new Date(value).toLocaleString();
+  return formatSiteDateTime(value, locale);
 }
 
 function filterVariant(value: TriStateFilter) {
@@ -501,7 +502,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
                   imageUrls={(resource.imageUrls ?? []).filter((u): u is string => u != null)}
                   footer={
                     <Typography color="text.secondary" variant="body2">
-                      {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"))}
+                      {t("card.expires")}: {formatDate(resource.expiresAt, t("card.permanent"), i18n?.language ?? "en")}
                     </Typography>
                   }
                   key={resource.id}

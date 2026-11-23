@@ -24,6 +24,7 @@ import {
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
 import { handleRealtimeRefresh } from "../services/graphql/realtime";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
+import { formatSiteDateTime } from "../features/shared/publicDateTime";
 
 type ClaimOverviewNode = NonNullable<ViewerClaimOverviewQuery["sentNeedClaims"]>["nodes"][number];
 type ClaimOverviewNodeWithNeed = ClaimOverviewNode & {
@@ -84,21 +85,23 @@ export function buildAutoClosureReasonByClaimId(notifications: ClaimNotification
   return mapped;
 }
 
-function formatDate(value: string | null, noDateLabel: string) {
+function formatDate(value: string | null, noDateLabel: string, locale: string) {
   if (!value) {
     return noDateLabel;
   }
 
-  return new Date(value).toLocaleString();
+  return formatSiteDateTime(value, locale);
 }
 
 function InactiveExplanation({
   claim,
   t,
+  locale,
   autoClosureReason
 }: {
   claim: ClaimOverviewNode;
   t: (k: string, opts?: Record<string, unknown>) => string;
+  locale: string;
   autoClosureReason?: AutoClosureReason;
 }) {
   const { status } = claim;
@@ -109,7 +112,7 @@ function InactiveExplanation({
   if (key === "declined" && autoClosureReason === "need_deactivated") {
     return (
       <Alert severity={severity} sx={{ py: 0.5 }}>
-        {t("inactive.declinedNeedDeactivated", { date: formatDate(decisionDate, "") })}
+        {t("inactive.declinedNeedDeactivated", { date: formatDate(decisionDate, "", locale) })}
       </Alert>
     );
   }
@@ -117,19 +120,20 @@ function InactiveExplanation({
   if (key === "declined" && autoClosureReason === "need_expired") {
     return (
       <Alert severity={severity} sx={{ py: 0.5 }}>
-        {t("inactive.declinedNeedExpired", { date: formatDate(decisionDate, "") })}
+        {t("inactive.declinedNeedExpired", { date: formatDate(decisionDate, "", locale) })}
       </Alert>
     );
   }
 
-  const opts = key === "expired" ? {} : { date: formatDate(decisionDate, "") };
+  const opts = key === "expired" ? {} : { date: formatDate(decisionDate, "", locale) };
   return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, opts)}</Alert>;
 }
 
 export default function ClaimsPage() {
   const router = useRouter();
   const { session } = useAuth();
-  const { t } = useTranslation("claims");
+  const { t, i18n } = useTranslation("claims");
+  const locale = i18n?.language ?? "en";
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [settleConfirmClaimId, setSettleConfirmClaimId] = useState<string | null>(null);
@@ -364,12 +368,13 @@ export default function ClaimsPage() {
                             <InactiveExplanation
                               autoClosureReason={autoClosureReasonByClaimId.get(claim.id)}
                               claim={claim}
+                              locale={locale}
                               t={t}
                             />
                           ) : null}
                           <Typography color="text.secondary" variant="body2">
-                            {t("sent")}: {formatDate(claim.createdAt, t("noDateYet"))}
-                            {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"))}` : ""}
+                            {t("sent")}: {formatDate(claim.createdAt, t("noDateYet"), locale)}
+                            {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"), locale)}` : ""}
                           </Typography>
                         </Stack>
                       }
@@ -507,12 +512,13 @@ export default function ClaimsPage() {
                               <InactiveExplanation
                                 autoClosureReason={autoClosureReasonByClaimId.get(claim.id)}
                                 claim={claim}
+                                locale={locale}
                                 t={t}
                               />
                             ) : null}
                           <Typography color="text.secondary" variant="body2">
-                            {t("received")}: {formatDate(claim.createdAt, t("noDateYet"))}
-                            {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"))}` : ""}
+                            {t("received")}: {formatDate(claim.createdAt, t("noDateYet"), locale)}
+                            {claim.updatedAt !== claim.createdAt ? ` • ${t("updated")}: ${formatDate(claim.updatedAt, t("noDateYet"), locale)}` : ""}
                           </Typography>
                         </Stack>
                       }

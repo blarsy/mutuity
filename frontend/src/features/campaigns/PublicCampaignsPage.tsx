@@ -8,6 +8,7 @@ import { PUBLIC_CAMPAIGNS_QUERY } from "./campaigns.queries";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import type { PublicCampaignsQuery } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type CampaignNode = {
   id: string;
@@ -27,7 +28,7 @@ export function isCampaignActive(now: Date, startAtIso: string, endAtIso: string
 }
 
 export default function PublicCampaignsPage() {
-  const { t } = useTranslation("campaigns");
+  const { t, i18n } = useTranslation("campaigns");
   const { data, loading, error } = useQuery<PublicCampaignsQuery>(PUBLIC_CAMPAIGNS_QUERY);
   const errorMessage = getUserFacingGraphQLErrorMessage(error);
 
@@ -70,9 +71,9 @@ export default function PublicCampaignsPage() {
                   </Stack>
 
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ mt: 2 }}>
-                    <Typography variant="body2">{t("labels.start")}: {new Date(campaign.startAt).toLocaleString()}</Typography>
-                    <Typography variant="body2">{t("labels.airdrop")}: {new Date(campaign.airdropAt).toLocaleString()}</Typography>
-                    <Typography variant="body2">{t("labels.end")}: {new Date(campaign.endAt).toLocaleString()}</Typography>
+                    <Typography variant="body2">{t("labels.start")}: {formatSiteDateTime(campaign.startAt, i18n?.language ?? "en")}</Typography>
+                    <Typography variant="body2">{t("labels.airdrop")}: {formatSiteDateTime(campaign.airdropAt, i18n?.language ?? "en")}</Typography>
+                    <Typography variant="body2">{t("labels.end")}: {formatSiteDateTime(campaign.endAt, i18n?.language ?? "en")}</Typography>
                   </Stack>
                 </CardContent>
               </Card>

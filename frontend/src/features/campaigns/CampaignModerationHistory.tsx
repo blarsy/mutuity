@@ -4,13 +4,14 @@ import { useTranslation } from "react-i18next";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { CAMPAIGN_MODERATION_HISTORY_QUERY } from "./campaignModeration.queries";
 import type { CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables } from "../../graphql/generated";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type CampaignModerationHistoryProps = {
   campaignId: string;
 };
 
 export function CampaignModerationHistory({ campaignId }: CampaignModerationHistoryProps) {
-  const { t } = useTranslation("campaigns");
+  const { t, i18n } = useTranslation("campaigns");
   const { data, loading, error } = useQuery<CampaignModerationHistoryQuery, CampaignModerationHistoryQueryVariables>(
     CAMPAIGN_MODERATION_HISTORY_QUERY,
     {
@@ -49,7 +50,7 @@ export function CampaignModerationHistory({ campaignId }: CampaignModerationHist
             primary={
               <>
                 {t("moderationNotes.eventMeta", {
-                  createdAt: new Date(event.createdAt).toLocaleString()
+                  createdAt: formatSiteDateTime(event.createdAt, i18n?.language ?? "en")
                 })}{" "}
                 •{" "}
                 {event.eventType === "campaign_created"

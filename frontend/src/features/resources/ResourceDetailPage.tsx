@@ -31,6 +31,7 @@ import type { ResourceBidStatus, ResourceBidSummary, ResourceIntensity } from ".
 import type { ResourceCategoryOption } from "./types";
 import type { ResourceDetailQuery, ResourceBidsForResourceQuery, ResourceCategoryOptionsQuery, ResourceConversationLookupQuery } from "../../graphql/generated";
 import { PageContainer } from "../../components/PageContainer";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -38,12 +39,12 @@ type ResourceDetailPageProps = {
   resourceId: string;
 };
 
-function formatDate(value: string | null, noDateLabel: string) {
+function formatDate(value: string | null, noDateLabel: string, locale: string) {
   if (!value) {
     return noDateLabel;
   }
 
-  return new Date(value).toLocaleString();
+  return formatSiteDateTime(value, locale);
 }
 
 function formatBidStatus(status: ResourceBidStatus, t: (key: string, options?: Record<string, unknown>) => string) {
@@ -507,7 +508,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                     {t("card.expires")}
                   </Typography>
                   <Typography variant="body2">
-                    {formatDate(resource.expiresAt, t("card.permanent"))}
+                    {formatDate(resource.expiresAt, t("card.permanent"), i18n?.language ?? "en")}
                   </Typography>
                 </Stack>
                 <Stack spacing={0.25}>
@@ -515,7 +516,7 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                     {t("detail.published")}
                   </Typography>
                   <Typography variant="body2">
-                    {formatDate(resource.createdAt, t("card.permanent"))}
+                    {formatDate(resource.createdAt, t("card.permanent"), i18n?.language ?? "en")}
                   </Typography>
                 </Stack>
               </Stack>

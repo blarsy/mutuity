@@ -44,6 +44,7 @@ import { NeedCard } from "../ui/NeedCard";
 import { centeredResponsiveListingCardGridSx } from "../ui/listingCardGrid";
 import { DEFAULT_NEED_SEARCH_FILTERS, type NeedSearchFilters, type NeedSearchLocation, type TriStateFilter } from "./types";
 import type { PublicNeedsQuery } from "../../graphql/generated";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type NeedNode = {
   id: string;
@@ -90,12 +91,12 @@ type ToggleFilterKey = Exclude<keyof NeedSearchFilters, "searchText" | "favorLoc
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
-function formatDate(value: string | null, fallback: string) {
+function formatDate(value: string | null, fallback: string, locale: string) {
   if (!value) {
     return fallback;
   }
 
-  return new Date(value).toLocaleString();
+  return formatSiteDateTime(value, locale);
 }
 
 function buildNeedTags(need: NeedNode, t: (key: string, options?: Record<string, unknown>) => string) {
@@ -135,7 +136,7 @@ function formatClaimStatus(status: string) {
 export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode } = {}) {
   const router = useRouter();
   const { session, status } = useAuth();
-  const { t } = useTranslation("needs");
+  const { t, i18n } = useTranslation("needs");
   const [filters, setFilters] = useState(DEFAULT_NEED_SEARCH_FILTERS);
   const [selectedCampaignIds, setSelectedCampaignIds] = useState<string[]>([]);
   const [browserLocation, setBrowserLocation] = useState<NeedSearchLocation | undefined>(undefined);
@@ -497,7 +498,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
                     ) : null}
 
                     <Typography color="text.secondary" variant="caption">
-                      {need.location ?? ""} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"))}
+                      {need.location ?? ""} • {t("browse.expires")}: {formatDate(need.expiresAt, t("browse.noExpirySet"), i18n?.language ?? "en")}
                     </Typography>
                   </Stack>
                 }

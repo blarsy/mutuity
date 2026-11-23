@@ -24,6 +24,7 @@ import { getDisplayIntensityLabel } from "../../features/shared/displayIntensity
 import { NeedCard } from "../../features/ui/NeedCard";
 import { centeredResponsiveListingCardGridSx } from "../../features/ui/listingCardGrid";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
+import { formatSiteDateTime } from "../../features/shared/publicDateTime";
 
 type ManageNeedNode = {
   id: string;
@@ -67,8 +68,8 @@ type MyNeedsVariables = {
 
 const PAGE_SIZE = 10;
 
-function formatUpdatedAt(value: string) {
-  return new Date(value).toLocaleString();
+function formatUpdatedAt(value: string, locale: string) {
+  return formatSiteDateTime(value, locale);
 }
 
 function buildNeedTags(need: ManageNeedNode, t: (key: string, options?: Record<string, unknown>) => string) {
@@ -96,7 +97,7 @@ function buildNeedTags(need: ManageNeedNode, t: (key: string, options?: Record<s
 export default function ManageNeedsPage() {
   const router = useRouter();
   const { session } = useAuth();
-  const { t } = useTranslation("needs");
+  const { t, i18n } = useTranslation("needs");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [needPendingDelete, setNeedPendingDelete] = useState<ManageNeedNode | null>(null);
@@ -254,7 +255,7 @@ export default function ManageNeedsPage() {
                   tokenAmount={need.proposedTopesAmount}
                   footer={(
                     <Typography color="text.secondary" variant="body2">
-                      {t("lastUpdated", { ns: "common", date: formatUpdatedAt(need.updatedAt) })}
+                      {t("lastUpdated", { ns: "common", date: formatUpdatedAt(need.updatedAt, i18n?.language ?? "en") })}
                     </Typography>
                   )}
                   key={need.id}

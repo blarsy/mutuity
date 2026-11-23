@@ -9,8 +9,10 @@ import { resolveCampaignParticipationState } from "../../src/features/campaigns/
 import en from "../../src/locales/en/campaigns.json";
 import fr from "../../src/locales/fr/campaigns.json";
 import type { CampaignListingRelation } from "../../src/features/campaigns/campaignListingLifecycle";
+import { formatSiteDateTime } from "../../src/features/shared/publicDateTime";
 
 let mockAuthenticated = true;
+let mockLanguage = "en";
 let mockRelations: CampaignListingRelation[] = [];
 const mockResourceRefetch = jest.fn();
 const mockNeedRefetch = jest.fn();
@@ -20,7 +22,7 @@ jest.mock("next/head", () => ({ __esModule: true, default: () => null }));
 jest.mock("next/router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
-    i18n: { language: "en" },
+    i18n: { language: mockLanguage },
     t: (key: string, values?: Record<string, unknown>) =>
       [key, values?.date, values?.start, values?.end].filter(Boolean).join(" ")
   })
@@ -44,10 +46,16 @@ const campaign = {
   moderationStatus: "APPROVED", imageUrl: null, startAt: "2026-10-12T12:00:00Z", airdropAt: "2026-10-13T12:00:00Z",
   endAt: "2026-10-14T12:00:00Z", airdropAmount: 3500, rewardsMultiplier: 7, accountByCreatorAccountId: null
 };
-const formattedDates = { startAt: "October 12", airdropAt: "October 13", endAt: "October 14" };
+function formattedDates(overrides: Partial<typeof campaign> = {}) {
+  const dates = { ...campaign, ...overrides };
+  return {
+    startAt: formatSiteDateTime(dates.startAt, "en"),
+    endAt: formatSiteDateTime(dates.endAt, "en")
+  };
+}
 
 function page(overrides: Partial<typeof campaign> = {}) {
-  return <PublicCampaignDetailPage campaignId={campaign.id} initialCampaign={{ ...campaign, ...overrides }} formattedDates={formattedDates} />;
+  return <PublicCampaignDetailPage campaignId={campaign.id} initialCampaign={{ ...campaign, ...overrides }} />;
 }
 function submission(patch: Partial<CampaignListingRelation> = {}): CampaignListingRelation {
   return {
@@ -73,6 +81,7 @@ beforeAll(() => { Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 beforeEach(() => {
   jest.spyOn(Date, "now").mockReturnValue(now);
   mockAuthenticated = true;
+  mockLanguage = "en";
   mockRelations = [];
   mockResourceRefetch.mockReset().mockResolvedValue({});
   mockNeedRefetch.mockReset().mockResolvedValue({});
@@ -144,6 +153,13 @@ describe("campaign participation state", () => {
 });
 
 describe("campaign detail participation", () => {
+  it("formats the campaign dates using the active website language", async () => {
+    mockLanguage = "fr";
+    await renderCampaign();
+    expect(container.textContent).toContain("12/10/2026");
+    expect(container.textContent).toContain("14/10/2026");
+  });
+
   it("shows accepted public listings separately, loads owner cards only in the dialog, submits both types and reopens and closes", async () => {
     await renderCampaign();
     expect(container.textContent).toContain("Accepted public listings for campaign");
@@ -201,7 +217,7 @@ describe("campaign detail participation", () => {
     expect(container.textContent).not.toContain("Add more details");
     const modal = await openDialog();
     expect(modal.textContent?.match(/Add more details/g)).toHaveLength(2);
-    expect(modal.textContent?.split(`listingLifecycle.rejectedAt ${new Date(actedAt).toLocaleString("en")}`)).toHaveLength(3);
+    expect(modal.textContent?.split(`listingLifecycle.rejectedAt ${formatSiteDateTime(actedAt, "en")}`)).toHaveLength(3);
     expect(modal.textContent?.match(/listingLifecycle.saveDoesNotResubmit/g)).toHaveLength(2);
     for (const kind of ["resource", "need"] as const) {
       const card = modal.querySelector<HTMLElement>(`[data-testid="${kind}-card"]`)!;
@@ -258,8 +274,9 @@ describe("campaign detail participation", () => {
   ])("hides public and owner listings and skips owner queries for %p with a %s hint", async (overrides, expected) => {
     await renderCampaign(overrides);
     expect(container.textContent).toContain(`public.participation.${expected}`);
-    expect(container.textContent).toContain(formattedDates.startAt);
-    expect(container.textContent).toContain(formattedDates.endAt);
+    const dates = formattedDates(overrides);
+    expect(container.textContent).toContain(dates.startAt);
+    expect(container.textContent).toContain(dates.endAt);
     expect(container.textContent).toContain("public.joinedListings.unavailable");
     expect(container.querySelector('[data-testid="public-accepted-listings"]')).toBeNull();
     expect(container.textContent).not.toContain("public.joinDialog.open");

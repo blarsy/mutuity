@@ -8,6 +8,7 @@ import { CampaignListingFeedback } from "../../src/features/campaigns/CampaignLi
 import type { CampaignListingRelation } from "../../src/features/campaigns/campaignListingLifecycle";
 import { NEED_EDIT_DETAIL_QUERY } from "../../src/features/needs/needs.queries";
 import { RESOURCE_EDIT_DETAIL_QUERY } from "../../src/features/resources/resources.queries";
+import { formatSiteDateTime } from "../../src/features/shared/publicDateTime";
 
 let mockKind: "need" | "resource" = "need";
 const mockPush = jest.fn();
@@ -48,13 +49,13 @@ describe("campaign listing feedback dates", () => {
     ["SUPERSEDED", "submittedAt", submittedAt]
   ] as const)("shows only the %s status date", (status, key, expected) => {
     const html = renderToStaticMarkup(<CampaignListingFeedback relation={{ ...relation, status, submittedAt, actedAt }} locked={false} />);
-    expect(html).toContain(`listingLifecycle.${key}: ${new Date(expected).toLocaleString("en")}`);
+    expect(html).toContain(`listingLifecycle.${key}: ${formatSiteDateTime(expected, "en")}`);
     for (const other of ["submittedAt", "rejectedAt", "acceptedAt"].filter(value => value !== key)) {
       expect(html).not.toContain(`listingLifecycle.${other}`);
     }
     expect(html).not.toContain("listingLifecycle.campaignDates");
-    expect(html).not.toContain(new Date(relation.campaignByCampaignId!.startAt).toLocaleString("en"));
-    expect(html).not.toContain(new Date(relation.campaignByCampaignId!.endAt).toLocaleString("en"));
+    expect(html).not.toContain(formatSiteDateTime(relation.campaignByCampaignId!.startAt, "en"));
+    expect(html).not.toContain(formatSiteDateTime(relation.campaignByCampaignId!.endAt, "en"));
   });
   it.each(["ACCEPTED", "REJECTED"] as const)("does not substitute the submission date for a missing %s decision date", status => {
     const html = renderToStaticMarkup(<CampaignListingFeedback relation={{ ...relation, status, submittedAt, actedAt: null }} locked={false} />);
@@ -144,7 +145,7 @@ describe.each(["need", "resource"] as const)("%s editor campaign writes", kind =
     const feedback = controls().find(node => node.type === CampaignListingFeedback);
     expect(feedback?.props.relation).toEqual(relation);
     const html = renderToStaticMarkup(<CampaignListingFeedback relation={feedback!.props.relation} locked={false} />);
-    expect(html).toContain(`listingLifecycle.rejectedAt: ${new Date(relation.actedAt!).toLocaleString("en")}`);
+    expect(html).toContain(`listingLifecycle.rejectedAt: ${formatSiteDateTime(relation.actedAt!, "en")}`);
     expect(html).toContain("listingLifecycle.feedbackLabel");
     expect(html).toContain("Please add details");
     const query = kind === "need" ? NEED_EDIT_DETAIL_QUERY : RESOURCE_EDIT_DETAIL_QUERY;

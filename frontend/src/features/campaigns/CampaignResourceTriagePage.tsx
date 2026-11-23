@@ -27,6 +27,7 @@ import {
 } from "./campaignResourceTriage.queries";
 import { CampaignListingRejectionDialog } from "./CampaignListingRejectionDialog";
 import { isCurrentCampaignRelation, useCampaignLifecycleNow, type CampaignListingRelation } from "./campaignListingLifecycle";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type CampaignResourceNode = CampaignListingRelation & {
   campaignId: string;
@@ -90,7 +91,7 @@ function nodeKey(node: Pick<CampaignResourceNode, "campaignId" | "resourceId" | 
 }
 
 export default function CampaignResourceTriagePage() {
-  const { t } = useTranslation("campaigns");
+  const { t, i18n } = useTranslation("campaigns");
   const router = useRouter();
   const now = useCampaignLifecycleNow();
   const [rejectionNode, setRejectionNode] = useState<CampaignResourceNode | null>(null);
@@ -278,11 +279,11 @@ export default function CampaignResourceTriagePage() {
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 1 }}>
                       <Typography variant="caption">
-                        {t("resourceTriage.joined")}: {new Date(node.submittedAt).toLocaleString()}
+                        {t("resourceTriage.joined")}: {formatSiteDateTime(node.submittedAt, i18n?.language ?? "en")}
                       </Typography>
                       {node.actedAt ? (
                         <Typography variant="caption">
-                          {t("resourceTriage.triaged")}: {new Date(node.actedAt).toLocaleString()}
+                          {t("resourceTriage.triaged")}: {formatSiteDateTime(node.actedAt, i18n?.language ?? "en")}
                         </Typography>
                       ) : null}
                     </Stack>

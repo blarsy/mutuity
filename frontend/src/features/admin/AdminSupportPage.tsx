@@ -59,6 +59,8 @@ import {
 } from "./adminSupport.queries";
 import { resolveCampaignModerationPrefill } from "./adminCampaignFilters";
 import { SupportReportDetails } from "./SupportReportDetails";
+import { formatSiteDateTime } from "../shared/publicDateTime";
+import i18n from "../../i18n";
 
 const PAGE_SIZE = 25;
 
@@ -100,7 +102,7 @@ type AdminQueryDocument = TypedDocumentNode<AdminListQueryData, AdminListQueryVa
 type AdminColumn = {
   key: string;
   label: string;
-  render: (row: AdminRecord) => ReactNode;
+  render: (row: AdminRecord, locale: string) => ReactNode;
 };
 
 type AdminSectionConfig = {
@@ -127,14 +129,14 @@ function asString(value: unknown) {
   return "";
 }
 
-function renderDate(value: unknown) {
+function renderDate(value: unknown, locale: string) {
   const text = asString(value);
 
   if (!text) {
     return "-";
   }
 
-  return new Date(text).toLocaleString();
+  return formatSiteDateTime(text, locale);
 }
 
 function renderJson(value: unknown) {
@@ -370,8 +372,8 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
                     </Typography>
                   </Stack>
                   {renderCampaignField("Moderation status", campaign.moderationStatus)}
-                  {renderCampaignField("Created at", renderDate(campaign.createdAt))}
-                  {renderCampaignField("Updated at", renderDate(campaign.updatedAt))}
+                  {renderCampaignField("Created at", renderDate(campaign.createdAt, i18n?.language ?? "en"))}
+                  {renderCampaignField("Updated at", renderDate(campaign.updatedAt, i18n?.language ?? "en"))}
                 </Stack>
               </Box>
 
@@ -428,9 +430,9 @@ function CampaignRowActions({ row }: { row: AdminRecord }) {
                 <Stack spacing={1.25}>
                   {renderCampaignField("Rewards multiplier", campaign.rewardsMultiplier)}
                   {renderCampaignField("Airdrop amount", campaign.airdropAmount)}
-                  {renderCampaignField("Start at", renderDate(campaign.startAt))}
-                  {renderCampaignField("Airdrop at", renderDate(campaign.airdropAt))}
-                  {renderCampaignField("End at", renderDate(campaign.endAt))}
+                  {renderCampaignField("Start at", renderDate(campaign.startAt, i18n?.language ?? "en"))}
+                  {renderCampaignField("Airdrop at", renderDate(campaign.airdropAt, i18n?.language ?? "en"))}
+                  {renderCampaignField("End at", renderDate(campaign.endAt, i18n?.language ?? "en"))}
                 </Stack>
               </Box>
             </Stack>
@@ -771,7 +773,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "email", label: "Email", render: row => asString(row.email) || "-" },
       { key: "language", label: "Language", render: row => asString(row.language) || "-" },
       { key: "tokenAmount", label: "Topes", render: row => asString(row.tokenAmount) || "0" },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) },
       { key: "address", label: "Address", render: row => asString(row.address) || "-" }
     ]
   },
@@ -790,8 +792,8 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "intensity", label: "Intensity", render: row => asString(row.intensity) || "-" },
       { key: "tokenAmount", label: "Topes", render: row => asString(row.tokenAmount) || "0" },
       { key: "status", label: "Status", render: row => asString(row.status) || "-" },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
-      { key: "expirationDatetime", label: "Expires", render: row => renderDate(row.expirationDatetime) }
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) },
+      { key: "expirationDatetime", label: "Expires", render: (row, locale) => renderDate(row.expirationDatetime, locale) }
     ]
   },
   resources: {
@@ -809,8 +811,8 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "tokenAmount", label: "Topes", render: row => asString(row.tokenAmount) || "0" },
       { key: "imageCount", label: "Images", render: row => asString(row.imageCount) || "0" },
       { key: "location", label: "Location", render: row => asString(row.location) || "-" },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
-      { key: "expirationDatetime", label: "Expires", render: row => renderDate(row.expirationDatetime) }
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) },
+      { key: "expirationDatetime", label: "Expires", render: (row, locale) => renderDate(row.expirationDatetime, locale) }
     ]
   },
   notifications: {
@@ -824,8 +826,8 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "id", label: "ID", render: row => asString(row.id) },
       { key: "accountName", label: "Account", render: row => asString(row.accountName) || "-" },
       { key: "data", label: "Data", render: row => renderJson(row.data) },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
-      { key: "readAt", label: "Read", render: row => renderDate(row.readAt) }
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) },
+      { key: "readAt", label: "Read", render: (row, locale) => renderDate(row.readAt, locale) }
     ]
   },
   mails: {
@@ -844,7 +846,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
         label: "Recipient",
         render: row => asString(row.recipientAccountName) || "-"
       },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) }
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) }
     ],
     actions: (row) => <MailRowActions row={row} />
   },
@@ -865,15 +867,15 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
         label: "Airdrop Topes",
         render: row => asString(row.airdropTokenAmount) || "0"
       },
-      { key: "airdropDatetime", label: "Airdrop At", render: row => renderDate(row.airdropDatetime) },
-      { key: "beginDatetime", label: "Begin", render: row => renderDate(row.beginDatetime) },
-      { key: "endDatetime", label: "End", render: row => renderDate(row.endDatetime) },
+      { key: "airdropDatetime", label: "Airdrop At", render: (row, locale) => renderDate(row.airdropDatetime, locale) },
+      { key: "beginDatetime", label: "Begin", render: (row, locale) => renderDate(row.beginDatetime, locale) },
+      { key: "endDatetime", label: "End", render: (row, locale) => renderDate(row.endDatetime, locale) },
       {
         key: "resourceRewardsMultiplier",
         label: "Rewards Multiplier",
         render: row => asString(row.resourceRewardsMultiplier) || "-"
       },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) }
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) }
     ],
     actions: (row) => <CampaignRowActions row={row} />
   },
@@ -889,8 +891,8 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
       { key: "title", label: "Title", render: row => asString(row.title) || "-" },
       { key: "description", label: "Description", render: row => asString(row.description) || "-" },
       { key: "amountGranted", label: "Amount", render: row => asString(row.amountGranted) || "0" },
-      { key: "expirationDatetime", label: "Expires", render: row => renderDate(row.expirationDatetime) },
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) }
+      { key: "expirationDatetime", label: "Expires", render: (row, locale) => renderDate(row.expirationDatetime, locale) },
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) }
     ],
     pageActions: () => <GrantCreatePageAction />
   },
@@ -902,7 +904,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
     connectionKey: "adminListSupportReports",
     query: ADMIN_LIST_SUPPORT_REPORTS_QUERY,
     columns: [
-      { key: "createdAt", label: "Created", render: row => renderDate(row.createdAt) },
+      { key: "createdAt", label: "Created", render: (row, locale) => renderDate(row.createdAt, locale) },
       { key: "accountName", label: "Account", render: row => asString(row.accountName) || "-" },
       { key: "summary", label: "Summary", render: row => asString(row.summary) || "-" }
     ],
@@ -917,7 +919,7 @@ const ADMIN_SECTIONS: Record<AdminSectionKey, AdminSectionConfig> = {
     query: ADMIN_LIST_LOGS_QUERY,
     columns: [
       { key: "component", label: "Component", render: row => asString(row.component) || "-" },
-      { key: "timestamp", label: "Timestamp", render: row => renderDate(row.timestamp) },
+      { key: "timestamp", label: "Timestamp", render: (row, locale) => renderDate(row.timestamp, locale) },
       { key: "severity", label: "Severity", render: row => asString(row.severity) || "-" },
       { key: "message", label: "Message", render: row => asString(row.message) || "-" },
       { key: "context", label: "Context", render: row => asString(row.context) || "-" }
@@ -947,6 +949,7 @@ type AdminSupportPageProps = {
 };
 
 export default function AdminSupportPage({ section }: AdminSupportPageProps) {
+  const locale = i18n.language ?? "en";
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [searchValue, setSearchValue] = useState<string | undefined>(undefined);
@@ -1139,7 +1142,7 @@ export default function AdminSupportPage({ section }: AdminSupportPageProps) {
                 return (
                   <TableRow key={rowKey} hover>
                     {config.columns.map(column => (
-                      <TableCell key={column.key}>{column.render(row)}</TableCell>
+                      <TableCell key={column.key}>{column.render(row, locale)}</TableCell>
                     ))}
                     {config.actions ? <TableCell>{config.actions(row)}</TableCell> : null}
                   </TableRow>

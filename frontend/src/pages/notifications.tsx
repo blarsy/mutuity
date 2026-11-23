@@ -31,6 +31,7 @@ import {
 import { notificationUrlForEvent } from "../features/notifications/notificationRouting";
 import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessages";
 import { useAccountEventSignal } from "../services/graphql/accountEvents";
+import { formatSiteDateTime } from "../features/shared/publicDateTime";
 
 type NeedClaimNotificationNode = {
   id: string;
@@ -100,8 +101,8 @@ function formatEvent(eventType: string) {
   return eventType.replaceAll("_", " ").toLowerCase();
 }
 
-function formatTimestamp(value: string) {
-  return new Date(value).toLocaleString();
+function formatTimestamp(value: string, locale: string) {
+  return formatSiteDateTime(value, locale);
 }
 
 // Icons ported from Tope-là's notification artwork (frontend/public/topela/notifications).
@@ -241,7 +242,7 @@ function notificationUrl(notification: UnifiedNotification) {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { t } = useTranslation("notifications");
+  const { t, i18n } = useTranslation("notifications");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const { session } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -500,7 +501,7 @@ export default function NotificationsPage() {
 
                     <Stack alignItems="flex-end" spacing={0.5} sx={{ flexShrink: 0 }}>
                       <Typography color="primary" sx={{ fontWeight: unread ? 700 : 400 }} variant="caption">
-                        {formatTimestamp(item.createdAt)}
+                        {formatTimestamp(item.createdAt, i18n?.language ?? "en")}
                       </Typography>
                       {unread ? (
                         <Box sx={{ bgcolor: "primary.main", borderRadius: "50%", height: 10, width: 10 }} />

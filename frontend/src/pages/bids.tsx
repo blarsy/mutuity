@@ -35,6 +35,7 @@ import { getUserFacingGraphQLErrorMessage } from "../services/graphql/errorMessa
 import { ListingHeader } from "../features/ui/ListingHeader";
 import { TokenAmount } from "../components/TokenAmount";
 import { PageContainer } from "../components/PageContainer";
+import { formatSiteDateTime } from "../features/shared/publicDateTime";
 
 const PAGE_SIZE = 5;
 
@@ -85,9 +86,9 @@ type BidQueryData = {
   totalCount: number;
 };
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, locale: string) {
   if (!value) return "—";
-  return new Date(value).toLocaleString();
+  return formatSiteDateTime(value, locale);
 }
 
 function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warning" | "error" | "info" {
@@ -100,7 +101,7 @@ function bidChipColor(status: ResourceBidStatus): "default" | "success" | "warni
   }
 }
 
-function InactiveExplanation({ bid, t }: { bid: BidNode; t: (k: string, opts?: Record<string, unknown>) => string }) {
+function InactiveExplanation({ bid, t, locale }: { bid: BidNode; t: (k: string, opts?: Record<string, unknown>) => string; locale: string }) {
   const { status } = bid;
   const key = status.toLowerCase() as "accepted" | "declined" | "withdrawn" | "expired";
   const decisionDate =
@@ -108,7 +109,7 @@ function InactiveExplanation({ bid, t }: { bid: BidNode; t: (k: string, opts?: R
       ? bid.updatedAt
       : bid.respondedAt ?? bid.updatedAt;
   const severity = status === "ACCEPTED" ? "success" : status === "DECLINED" ? "error" : "warning";
-  return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, { date: formatDate(decisionDate) })}</Alert>;
+  return <Alert severity={severity} sx={{ py: 0.5 }}>{t(`inactive.${key}`, { date: formatDate(decisionDate, locale) })}</Alert>;
 }
 
 function BidCard({
@@ -117,7 +118,8 @@ function BidCard({
   counterpartyHref,
   actions,
   highlighted = false,
-  t
+  t,
+  locale
 }: {
   bid: BidNode;
   counterpartyLabel: string;
@@ -125,6 +127,7 @@ function BidCard({
   actions: React.ReactNode;
   highlighted?: boolean;
   t: (k: string, opts?: Record<string, unknown>) => string;
+  locale: string;
 }) {
   const resource = bid.resourceByResourceId;
   const router = useRouter();
@@ -148,6 +151,7 @@ function BidCard({
         creatorName={counterpartyLabel}
         expiresAt={bid.validUntil}
         expiresLabel="Valid until"
+        locale={locale}
         listingTitle={resource.title}
         noDateLabel="No date"
         noImageLabel="No image"
@@ -171,9 +175,9 @@ function BidCard({
       </Stack>
 
       <Typography color="text.secondary" variant="body2">
-        {t("sentAt", { date: formatDate(bid.createdAt) })}
-        {bid.respondedAt ? ` · ${t("reviewedAt", { date: formatDate(bid.respondedAt) })}` : ""}
-        {bid.isActive ? ` · ${t("validity", { date: formatDate(bid.validUntil) })}` : ""}
+        {t("sentAt", { date: formatDate(bid.createdAt, locale) })}
+        {bid.respondedAt ? ` · ${t("reviewedAt", { date: formatDate(bid.respondedAt, locale) })}` : ""}
+        {bid.isActive ? ` · ${t("validity", { date: formatDate(bid.validUntil, locale) })}` : ""}
       </Typography>
 
       {bid.message ? (
@@ -182,7 +186,7 @@ function BidCard({
         </Typography>
       ) : null}
 
-      {!bid.isActive ? <InactiveExplanation bid={bid} t={t} /> : null}
+      {!bid.isActive ? <InactiveExplanation bid={bid} locale={locale} t={t} /> : null}
 
       {actions}
     </Box>
@@ -254,7 +258,7 @@ function BidSection({
 export default function BidsPage() {
   const router = useRouter();
   const { session } = useAuth();
-  const { t } = useTranslation("bids");
+  const { t, i18n } = useTranslation("bids");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
 
   const [sentActiveOnly, setSentActiveOnly] = useState(false);
@@ -411,6 +415,7 @@ export default function BidsPage() {
         counterpartyHref={`/accounts/${resource.creatorAccountId}`}
         counterpartyLabel={creatorLabel}
         highlighted={highlightedBidId === bid.id}
+        locale={i18n?.language ?? "en"}
         t={t}
       />
     );
@@ -452,6 +457,7 @@ export default function BidsPage() {
         counterpartyHref={`/accounts/${bid.bidderAccountId}`}
         counterpartyLabel={bidderLabel}
         highlighted={highlightedBidId === bid.id}
+        locale={i18n?.language ?? "en"}
         t={t}
       />
     );

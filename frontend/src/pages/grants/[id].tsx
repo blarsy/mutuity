@@ -5,6 +5,7 @@ import { Alert, Box, Button, CircularProgress, Stack, Typography } from "@mui/ma
 import { useTranslation } from "react-i18next";
 
 import { PageContainer } from "../../components/PageContainer";
+import { formatSiteDateTime } from "../../features/shared/publicDateTime";
 import { useRequireAuth } from "../../features/auth/requireAuth";
 import {
   ClaimGrantDocument,
@@ -17,7 +18,7 @@ type GrantInfo = NonNullable<NonNullable<GetGrantForClaimQuery["getGrantForClaim
 type ClaimOutcome = NonNullable<NonNullable<ClaimGrantMutation["claimGrant"]>["grantClaimResult"]>;
 
 export default function GrantClaimPage() {
-  const { t } = useTranslation("grants");
+  const { t, i18n } = useTranslation("grants");
   const router = useRouter();
   const { isChecking, isRedirecting } = useRequireAuth();
   const grantId = typeof router.query.id === "string" ? router.query.id : null;
@@ -99,7 +100,7 @@ export default function GrantClaimPage() {
           </Typography>
           {grant.expiresAt && (
             <Typography variant="body2" color="text.secondary">
-              {t("expiresAt", { date: new Date(grant.expiresAt).toLocaleDateString() })}
+              {t("expiresAt", { date: formatSiteDateTime(grant.expiresAt, i18n?.language ?? "en", "date") })}
             </Typography>
           )}
           {grant.maxSuccessfulClaimCount != null && (

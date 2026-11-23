@@ -4,6 +4,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import { AvatarIconButton } from "./AvatarIconButton";
+import { formatSiteDateTime } from "../shared/publicDateTime";
 
 type ListingHeaderProps = {
   creatorName: string;
@@ -12,6 +13,7 @@ type ListingHeaderProps = {
   expiresLabel: string;
   noDateLabel: string;
   expiresAt?: string | null;
+  locale?: string;
   showExpiry?: boolean;
   expiryWarningLabel?: string;
   endAdornment?: ReactNode;
@@ -23,12 +25,12 @@ type ListingHeaderProps = {
   onListingClick?: () => void;
 };
 
-function formatExpiry(value: string | null | undefined, noDateLabel: string) {
+function formatExpiry(value: string | null | undefined, noDateLabel: string, locale: string) {
   if (!value) {
     return noDateLabel;
   }
 
-  return new Date(value).toLocaleDateString();
+  return formatSiteDateTime(value, locale, "date");
 }
 
 const EXPIRY_WARNING_WINDOW_MS = 72 * 60 * 60 * 1000;
@@ -61,6 +63,7 @@ export function ListingHeader({
   expiresLabel,
   noDateLabel,
   expiresAt,
+  locale = "en",
   showExpiry = true,
   expiryWarningLabel,
   endAdornment,
@@ -180,7 +183,7 @@ export function ListingHeader({
       {endAdornment}
       {showExpiry ? expiryWarningLabel ? (
         <ExpiryWarning key={expiresAt ?? ""} expiresAt={expiresAt} label={expiryWarningLabel} />
-      ) : <Chip label={`${expiresLabel}: ${formatExpiry(expiresAt, noDateLabel)}`} size="small" variant="outlined" /> : null}
+      ) : <Chip label={`${expiresLabel}: ${formatExpiry(expiresAt, noDateLabel, locale)}`} size="small" variant="outlined" /> : null}
     </Stack>
   );
 }

@@ -23,6 +23,7 @@ import { MY_RESOURCES_CONNECTION_QUERY, RESOURCE_OPEN_BID_COUNT_QUERY, SOFT_DELE
 import { ResourceCard } from "../../features/ui/ResourceCard";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { centeredResponsiveListingCardGridSx } from "../../features/ui/listingCardGrid";
+import { formatSiteDateTime } from "../../features/shared/publicDateTime";
 
 type ManageResourceNode = {
   id: string;
@@ -67,14 +68,14 @@ type MyResourcesVariables = {
 
 const PAGE_SIZE = 10;
 
-function formatUpdatedAt(value: string) {
-  return new Date(value).toLocaleString();
+function formatUpdatedAt(value: string, locale: string) {
+  return formatSiteDateTime(value, locale);
 }
 
 export default function ManageResourcesPage() {
   const router = useRouter();
   const { session } = useAuth();
-  const { t } = useTranslation("resources");
+  const { t, i18n } = useTranslation("resources");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [resourcePendingDelete, setResourcePendingDelete] = useState<ManageResourceNode | null>(null);
@@ -244,7 +245,7 @@ export default function ManageResourcesPage() {
                   tokenAmount={resource.defaultTokenAmount}
                   footer={(
                     <Typography color="text.secondary" variant="body2">
-                      {t("lastUpdated", { ns: "common", date: formatUpdatedAt(resource.updatedAt) })}
+                      {t("lastUpdated", { ns: "common", date: formatUpdatedAt(resource.updatedAt, i18n?.language ?? "en") })}
                     </Typography>
                   )}
                   imageUrls={resource.imageUrls ?? []}
