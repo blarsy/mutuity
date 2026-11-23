@@ -155,6 +155,7 @@ export default function CreateCampaignPage() {
                 />
                 <ImageUploadField
                   imageUrls={values.imageUrls}
+                  label={t("create.fields.image")}
                   onImageAdded={(url) => {
                     void setFieldValue("imageUrls", [url]);
                   }}

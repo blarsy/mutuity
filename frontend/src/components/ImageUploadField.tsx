@@ -21,6 +21,7 @@ type Props = {
   onImageAdded: (url: string) => void;
   onImageRemoved: (index: number) => void;
   showExistingImages?: boolean;
+  label?: string;
 };
 
 export const ACCEPTED_IMAGE_TYPES = "image/gif,image/png,image/jpeg,image/webp";
@@ -69,7 +70,7 @@ export async function cropAndUpload(image: HTMLImageElement, crop: Crop): Promis
   return urlFromPublicId(publicId);
 }
 
-export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, showExistingImages = true }: Props) {
+export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, showExistingImages = true, label }: Props) {
   const { t } = useTranslation("resources");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -112,7 +113,7 @@ export function ImageUploadField({ imageUrls, onImageAdded, onImageRemoved, show
 
   return (
     <Stack spacing={1}>
-      <Typography variant="subtitle1">{t("imageUpload.title")}</Typography>
+      <Typography variant="subtitle1">{label ?? t("imageUpload.title")}</Typography>
 
       {showExistingImages && imageUrls.length > 0 && (
         <Box
