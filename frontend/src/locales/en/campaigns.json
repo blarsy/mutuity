@@ -41,23 +41,23 @@
     "subtitle": "Browse campaigns currently active on the platform.",
     "explainer": {
       "openButton": "What is this campaign?",
-      "dialogTitle": "Campaign explainer",
+      "dialogTitle": "Campaigns",
       "previous": "Previous",
       "next": "Next",
       "close": "Close",
       "progress": "Slide {{current}} of {{total}}",
       "slides": {
         "purpose": {
-          "title": "Why campaigns exist",
+          "title": "Why campaigns exist ?",
           "body": "Campaigns focus collective effort around a shared theme for a limited period so contributors can coordinate faster."
         },
         "rewards": {
-          "title": "How rewards and timing work",
-          "body": "Campaign timing (start, airdrop, end) structures participation windows and reward distribution while keeping expectations explicit."
+          "title": "How rewards, airdrop, and timing work ?",
+          "body": "Campaign timing (start, airdrop, end) structures participation windows and airdrop distribution. Needs and resources created for the campaign have their rewards multiplied. Contributors who add at least two needs or resources before the airdrop receive the airdrop amount. Existing needs and resources can also join the campaign and potentially win the airdrop!"
         },
         "governance": {
-          "title": "Who reviews contributions",
-          "body": "Campaign governance combines creator triage decisions and platform moderation controls.",
+          "title": "Who reviews contributions ?",
+          "body": "Campaign governance is first a quality control on the campaign itself by the platform staff, followed by  the campaign's creator triage decisions and platform moderation controls.",
           "triage": {
             "creator": "As creator, you triage incoming resource and need join requests from your moderation workspace.",
             "contributor": "Contributors can submit resource and need join requests that are triaged by the campaign creator."

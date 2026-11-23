@@ -41,26 +41,26 @@
     "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
     "explainer": {
       "openButton": "Qu'est-ce que cette campagne ?",
-      "dialogTitle": "Explication de la campagne",
+      "dialogTitle": "Les campagnes",
       "previous": "Precedent",
       "next": "Suivant",
       "close": "Fermer",
       "progress": "Slide {{current}} sur {{total}}",
       "slides": {
         "purpose": {
-          "title": "Pourquoi les campagnes existent",
-          "body": "Les campagnes concentrent l'effort collectif autour d'un theme partage sur une periode limitee pour mieux coordonner les contributions."
+          "title": "Pourquoi les campagnes ?",
+          "body": "Les campagnes concentrent l'effort collectif autour d'un theme sur une periode limitée pour mieux coordonner les contributions."
         },
         "rewards": {
-          "title": "Comment fonctionnent rewards et calendrier",
-          "body": "Le calendrier de campagne (debut, airdrop, fin) structure les periodes de participation et la distribution des rewards avec des attentes claires."
+          "title": "Comment fonctionnent les récompenses, le larguage, et le calendrier de la campagne ?",
+          "body": "Le calendrier de campagne (debut, larguage, fin) structure la période de participation. Toute ressource ou besoin qui est créé pour la campagne voit ses récompenses multipliées. Chaque contributeur qui ajoute au moins deux ressources ou besoins avant le larguage reçoit le montant du larguage. Les ressources et besoins déjà existant peuvent aussi rejoindre la campagne, et potentiellement faire remporter le larguage !"
         },
         "governance": {
-          "title": "Qui examine les contributions",
-          "body": "La gouvernance de campagne combine le triage du createur et les controles de moderation de la plateforme.",
+          "title": "Qui examine les contributions ?",
+          "body": "La gouvernance de campagne, c'est d'abord un contrôle de qualité sur la campagne elle-même par le staff de Tope-là, puis un triage des ressources et besoins par le créateur de la campagne.",
           "triage": {
             "creator": "En tant que createur, vous triez les demandes de rattachement des ressources et besoins depuis votre espace de moderation.",
-            "contributor": "Les contributeurs peuvent envoyer des demandes de rattachement de ressources et besoins, triées par le createur de campagne."
+            "contributor": "Pendant toute la durée de la campagne, les contributeurs peuvent envoyer des demandes de rattachement de ressources et besoins."
           },
           "status": {
             "approved": "Etat de moderation actuel : approuvee et visible publiquement.",

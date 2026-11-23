@@ -22,6 +22,7 @@ export function TokenExplainerDialog({ visible, onClose, testID }: TokenExplaine
       testID={testID}
       title={t("topesGuide.title", { defaultValue: "Topes guide" })}
       slides={slides}
+      navigationMode="separate-close"
       labels={{
         stepLabel: t("topesGuide.stepLabel", { defaultValue: "Step {{current}} of {{total}}" }),
         close: t("topesGuide.closeButton", { defaultValue: "Close" }),

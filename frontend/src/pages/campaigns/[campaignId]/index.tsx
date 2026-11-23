@@ -27,6 +27,7 @@ import { RichTextContent } from "../../../components/richText/RichTextContent";
 import { PageContainer } from "../../../components/PageContainer";
 import { useAuth } from "../../../features/auth/AuthProvider";
 import { buildCampaignExplainerSlides } from "../../../features/campaigns/campaignExplainer";
+import { CampaignExplainerDialog } from "../../../features/campaigns/CampaignExplainerDialog";
 import { resolveCampaignParticipationState } from "../../../features/campaigns/campaignParticipation";
 import {
   buildCampaignPageMeta,
@@ -329,7 +330,6 @@ export default function PublicCampaignDetailPage({
   const [needJoinActionSuccessCount, setNeedJoinActionSuccessCount] = useState(0);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [explainerOpen, setExplainerOpen] = useState(false);
-  const [explainerSlideIndex, setExplainerSlideIndex] = useState(0);
   useEffect(() => {
     if (!canJoinCampaign || !session.authenticated) setJoinDialogOpen(false);
   }, [canJoinCampaign, session.authenticated]);
@@ -365,12 +365,6 @@ export default function PublicCampaignDetailPage({
     storeLinks.iosUrl,
     t
   ]);
-
-  useEffect(() => {
-    setExplainerSlideIndex(current => Math.min(current, Math.max(0, explainerSlides.length - 1)));
-  }, [explainerSlides.length]);
-
-  const activeExplainerSlide = explainerSlides[Math.min(explainerSlideIndex, Math.max(0, explainerSlides.length - 1))];
 
   const {
     data: myResourcesData,
@@ -721,10 +715,7 @@ export default function PublicCampaignDetailPage({
                     <Typography variant="body1">{campaign.description}</Typography>
                     <Box>
                       <Button
-                        onClick={() => {
-                          setExplainerSlideIndex(0);
-                          setExplainerOpen(true);
-                        }}
+                        onClick={() => setExplainerOpen(true)}
                         variant="outlined"
                       >
                         {t("public.explainer.openButton")}
@@ -770,77 +761,11 @@ export default function PublicCampaignDetailPage({
                 </CardContent>
               </Card>
 
-              <Dialog
-                fullWidth
-                maxWidth="sm"
+              <CampaignExplainerDialog
                 onClose={() => setExplainerOpen(false)}
                 open={explainerOpen}
-              >
-                <DialogTitle>{t("public.explainer.dialogTitle")}</DialogTitle>
-                <DialogContent>
-                  <Stack spacing={2} sx={{ pt: 1 }}>
-                    <Typography component="h3" variant="h6">
-                      {activeExplainerSlide.title}
-                    </Typography>
-                    <Typography variant="body1">{activeExplainerSlide.body}</Typography>
-                    {activeExplainerSlide.details?.length ? (
-                      <Stack spacing={0.6}>
-                        {activeExplainerSlide.details.map(detail => (
-                          <Typography color="text.secondary" key={detail} variant="body2">
-                            • {detail}
-                          </Typography>
-                        ))}
-                      </Stack>
-                    ) : null}
-                    {activeExplainerSlide.ctas?.length ? (
-                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-                        {activeExplainerSlide.ctas.map(cta => (
-                          <Button
-                            component={cta.external ? "a" : NextLink}
-                            href={cta.href}
-                            key={cta.label}
-                            rel={cta.external ? "noreferrer" : undefined}
-                            size="small"
-                            target={cta.external ? "_blank" : undefined}
-                            variant="outlined"
-                          >
-                            {cta.label}
-                          </Button>
-                        ))}
-                      </Stack>
-                    ) : null}
-                    <Typography color="text.secondary" variant="caption">
-                      {t("public.explainer.progress", {
-                        current: explainerSlideIndex + 1,
-                        total: explainerSlides.length
-                      })}
-                    </Typography>
-                  </Stack>
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    disabled={explainerSlideIndex === 0}
-                    onClick={() => setExplainerSlideIndex(current => Math.max(0, current - 1))}
-                  >
-                    {t("public.explainer.previous")}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      if (explainerSlideIndex === explainerSlides.length - 1) {
-                        setExplainerOpen(false);
-                        return;
-                      }
-
-                      setExplainerSlideIndex(current => Math.min(explainerSlides.length - 1, current + 1));
-                    }}
-                    variant="contained"
-                  >
-                    {explainerSlideIndex === explainerSlides.length - 1
-                      ? t("public.explainer.close")
-                      : t("public.explainer.next")}
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                slides={explainerSlides}
+              />
 
               <Dialog
                 aria-labelledby="campaign-join-dialog-title"

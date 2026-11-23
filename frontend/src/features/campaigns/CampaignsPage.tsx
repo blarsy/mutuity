@@ -11,7 +11,6 @@ import {
   CardContent,
   Chip,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
@@ -25,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { getUserFacingGraphQLErrorMessage } from "../../services/graphql/errorMessages";
 import { buildCampaignExplainerSlides } from "./campaignExplainer";
+import { CampaignExplainerDialog } from "./CampaignExplainerDialog";
 import { INSPIRATION_CAMPAIGNS_QUERY, MY_CAMPAIGNS_CONNECTION_QUERY } from "./campaigns.queries";
 import { RichTextContent } from "../../components/richText/RichTextContent";
 import { PageContainer } from "../../components/PageContainer";
@@ -149,7 +149,6 @@ export default function CampaignsPage() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [isInspirationOpen, setIsInspirationOpen] = useState(false);
   const [isExplainerOpen, setIsExplainerOpen] = useState(false);
-  const [explainerSlideIndex, setExplainerSlideIndex] = useState(0);
   const storeLinks = useMemo(() => resolveMobileStoreLinks(), []);
   const explainerSlides = useMemo(() => {
     const nextDestination = encodeURIComponent("/campaigns");
@@ -164,8 +163,6 @@ export default function CampaignsPage() {
       iosUrl: storeLinks.iosUrl
     });
   }, [session.authenticated, storeLinks.androidUrl, storeLinks.iosUrl, t]);
-  const activeExplainerSlide = explainerSlides[explainerSlideIndex];
-
   const createCampaignHref = session.authenticated
     ? "/campaigns/create"
     : "/login?next=%2Fcampaigns%2Fcreate";
@@ -260,10 +257,7 @@ export default function CampaignsPage() {
             {t("page.launchCampaign")}
           </Button>
           <Button
-            onClick={() => {
-              setExplainerSlideIndex(0);
-              setIsExplainerOpen(true);
-            }}
+            onClick={() => setIsExplainerOpen(true)}
             startIcon={<InfoIcon />}
             sx={{ mb: 2 }}
           >
@@ -328,77 +322,11 @@ export default function CampaignsPage() {
           </DialogContent>
         </Dialog>
 
-        <Dialog
-          fullWidth
-          maxWidth="sm"
+        <CampaignExplainerDialog
           onClose={() => setIsExplainerOpen(false)}
           open={isExplainerOpen}
-        >
-          <DialogTitle>{t("public.explainer.dialogTitle")}</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} sx={{ pt: 1 }}>
-              <Typography component="h3" variant="h6">
-                {activeExplainerSlide.title}
-              </Typography>
-              <Typography variant="body1">{activeExplainerSlide.body}</Typography>
-              {activeExplainerSlide.details?.length ? (
-                <Stack spacing={0.6}>
-                  {activeExplainerSlide.details.map(detail => (
-                    <Typography color="text.secondary" key={detail} variant="body2">
-                      • {detail}
-                    </Typography>
-                  ))}
-                </Stack>
-              ) : null}
-              {activeExplainerSlide.ctas?.length ? (
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-                  {activeExplainerSlide.ctas.map(cta => (
-                    <Button
-                      component={cta.external ? "a" : NextLink}
-                      href={cta.href}
-                      key={cta.label}
-                      rel={cta.external ? "noreferrer" : undefined}
-                      size="small"
-                      target={cta.external ? "_blank" : undefined}
-                      variant="outlined"
-                    >
-                      {cta.label}
-                    </Button>
-                  ))}
-                </Stack>
-              ) : null}
-              <Typography color="text.secondary" variant="caption">
-                {t("public.explainer.progress", {
-                  current: explainerSlideIndex + 1,
-                  total: explainerSlides.length
-                })}
-              </Typography>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              disabled={explainerSlideIndex === 0}
-              onClick={() => setExplainerSlideIndex(current => Math.max(0, current - 1))}
-            >
-              {t("public.explainer.previous")}
-            </Button>
-            <Button
-              onClick={() => {
-                if (explainerSlideIndex === explainerSlides.length - 1) {
-                  setIsExplainerOpen(false);
-                  return;
-                }
-
-                setExplainerSlideIndex(current => Math.min(explainerSlides.length - 1, current + 1));
-              }}
-              variant="contained"
-            >
-              {explainerSlideIndex === explainerSlides.length - 1
-                ? t("public.explainer.close")
-                : t("public.explainer.next")}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          slides={explainerSlides}
+        />
       </Box>
     </PageContainer>
   );
