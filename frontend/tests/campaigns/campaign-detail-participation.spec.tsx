@@ -153,6 +153,38 @@ describe("campaign participation state", () => {
 });
 
 describe("campaign detail participation", () => {
+  it.each([
+    ["2026-10-11T12:00:00Z", ["false", "false", "false"]],
+    ["2026-10-12T12:00:00Z", ["true", "false", "false"]],
+    ["2026-10-13T12:00:00Z", ["true", "true", "false"]],
+    ["2026-10-14T12:00:00Z", ["true", "true", "true"]]
+  ])("marks only elapsed timeline dates at %s", async (timestamp, expected) => {
+    jest.mocked(Date.now).mockReturnValue(Date.parse(timestamp as string));
+    await renderCampaign();
+    expect([...container.querySelectorAll('ol[aria-label="public.timeline"] li')]
+      .map(item => item.getAttribute("data-elapsed"))).toEqual(expected);
+  });
+
+  it("presents ordered timeline dates and prominent campaign rewards", async () => {
+    await renderCampaign();
+    const timeline = container.querySelector('ol[aria-label="public.timeline"]');
+    expect(timeline).not.toBeNull();
+    expect([...timeline!.querySelectorAll("li")].map(item => item.querySelector(".MuiTypography-subtitle2")?.textContent))
+      .toEqual(["labels.start", "labels.airdrop", "labels.end"]);
+    expect([...timeline!.querySelectorAll("time")].map(item => item.dateTime))
+      .toEqual([campaign.startAt, campaign.airdropAt, campaign.endAt]);
+    const airdrop = container.querySelector('[aria-labelledby="campaign-airdrop-heading"]')!;
+    expect(airdrop.querySelector('[data-testid="token-amount"]')?.textContent).toContain("3500");
+    expect(getComputedStyle(airdrop.querySelector('img[src="/token-symbol.svg"]')!).width).toBe("64px");
+    const multiplier = container.querySelector('[aria-labelledby="campaign-multiplier-heading"]')!;
+    expect(multiplier.textContent).toContain("×7");
+    expect(multiplier.textContent).toContain("public.rewardsMultiplierHint");
+    for (const translations of [en, fr]) {
+      expect(translations.public.timeline).toBeTruthy();
+      expect(translations.public.rewardsMultiplierHint).toBeTruthy();
+    }
+  });
+
   it("formats the campaign dates using the active website language", async () => {
     mockLanguage = "fr";
     await renderCampaign();

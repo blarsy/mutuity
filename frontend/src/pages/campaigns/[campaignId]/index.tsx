@@ -20,11 +20,14 @@ import {
   Stack,
   Typography
 } from "@mui/material";
+import LinkIcon from '@mui/icons-material/Link';
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { alpha } from "@mui/material/styles";
 
 import { RichTextContent } from "../../../components/richText/RichTextContent";
 import { PageContainer } from "../../../components/PageContainer";
+import { TokenAmount } from "../../../components/TokenAmount";
 import { useAuth } from "../../../features/auth/AuthProvider";
 import { buildCampaignExplainerSlides } from "../../../features/campaigns/campaignExplainer";
 import { CampaignExplainerDialog } from "../../../features/campaigns/CampaignExplainerDialog";
@@ -309,14 +312,14 @@ export default function PublicCampaignDetailPage({
   const canJoinCampaign = participationState === "running";
 
   useEffect(() => {
-    const nextBoundary = [Date.parse(campaign?.startAt ?? ""), Date.parse(campaign?.endAt ?? "")]
+    const nextBoundary = [Date.parse(campaign?.startAt ?? ""), Date.parse(campaign?.airdropAt ?? ""), Date.parse(campaign?.endAt ?? "")]
       .filter(timestamp => Number.isFinite(timestamp) && timestamp > now)
       .sort((a, b) => a - b)[0];
     if (nextBoundary === undefined) return;
 
     const timer = setTimeout(() => setNow(Date.now()), Math.min(Math.max(0, nextBoundary - Date.now()), 2_147_483_647));
     return () => clearTimeout(timer);
-  }, [campaign?.startAt, campaign?.endAt, now]);
+  }, [campaign?.startAt, campaign?.airdropAt, campaign?.endAt, now]);
 
   const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
   const [runningResourceIds, setRunningResourceIds] = useState<string[]>([]);
@@ -723,20 +726,109 @@ export default function PublicCampaignDetailPage({
                     </Box>
                     <Typography color="text.secondary" variant="caption">{t("labels.theme")}</Typography>
                     <RichTextContent html={campaign.theme} />
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
-                      <Typography variant="body2">{t("labels.start")}: {formattedDates.startAt}</Typography>
-                      <Typography variant="body2">{t("labels.airdrop")}: {formattedDates.airdropAt}</Typography>
-                      <Typography variant="body2">{t("labels.end")}: {formattedDates.endAt}</Typography>
-                    </Stack>
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
-                      <Typography variant="body2">{t("create.fields.airdropAmount")}: {campaign.airdropAmount}</Typography>
-                      <Typography variant="body2">{t("create.fields.rewardsMultiplier")}: {campaign.rewardsMultiplier}</Typography>
-                    </Stack>
+                    <Box
+                      component="ol"
+                      aria-label={t("public.timeline")}
+                      sx={{
+                        justifyContent: "center",
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", sm: "repeat(3, minmax(0, 1fr))" },
+                        listStyle: "none",
+                        m: 0,
+                        py: 2,
+                        px: 0
+                      }}
+                    >
+                      {([
+                        { key: "startAt", label: "labels.start" },
+                        { key: "airdropAt", label: "labels.airdrop" },
+                        { key: "endAt", label: "labels.end" }
+                      ] as const).map(({ key, label }, index) => {
+                        const elapsed = Date.parse(campaign[key]) <= now;
+                        return (
+                        <Box
+                          component="li"
+                          data-elapsed={elapsed}
+                          key={key}
+                          sx={{
+                            position: "relative",
+                            minWidth: 0,
+                            pl: { xs: 4, sm: 0 },
+                            pr: { xs: 0, sm: 2 },
+                            pt: { xs: 0, sm: 4 },
+                            pb: { xs: index < 2 ? 3 : 0, sm: 0 },
+                            "&::before": {
+                              content: '""',
+                              position: "absolute",
+                              top: 6,
+                              left: 0,
+                              width: 14,
+                              height: 14,
+                              borderRadius: "50%",
+                              bgcolor: elapsed ? "primary.main" : "background.paper",
+                              border: "2px solid",
+                              borderColor: "primary.main",
+                              boxSizing: "border-box",
+                              zIndex: 1
+                            },
+                            ...(index < 2 ? {
+                              "&::after": {
+                                content: '""',
+                                position: "absolute",
+                                bgcolor: "primary.main",
+                                opacity: 0.25,
+                                top: { xs: 13, sm: 12 },
+                                left: { xs: 6, sm: 7 },
+                                width: { xs: 2, sm: "100%" },
+                                height: { xs: "100%", sm: 2 }
+                              }
+                            } : {})
+                          }}
+                        >
+                          <Typography variant="subtitle2" color={elapsed ? "primary.main" : "text.primary"}>
+                            {t(label)}
+                          </Typography>
+                          <Typography component="time" dateTime={campaign[key]} color="text.secondary" variant="body2">
+                            {formattedDates[key]}
+                          </Typography>
+                        </Box>
+                        );
+                      })}
+                    </Box>
+                    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, gap: 2 }}>
+                      <Stack
+                        component="section"
+                        aria-labelledby="campaign-airdrop-heading"
+                        spacing={1}
+                        sx={{ alignItems: "center", justifyContent: "center", p: { xs: 2.5, sm: 3 }, borderRadius: 2, bgcolor: theme => alpha(theme.palette.primary.main, 0.1), border: "1px solid", borderColor: "divider" }}
+                      >
+                        <Typography component="h2" id="campaign-airdrop-heading" variant="subtitle2">
+                          {t("create.fields.airdropAmount")}
+                        </Typography>
+                        <TokenAmount amount={campaign.airdropAmount} size={64} textColor="inherit" />
+                      </Stack>
+                      <Stack
+                        component="section"
+                        aria-labelledby="campaign-multiplier-heading"
+                        spacing={1}
+                        sx={{ justifyContent: "center", alignItems: "center", p: { xs: 2.5, sm: 3 }, borderRadius: 2, border: "1px solid", borderColor: "divider", bgcolor: "action.hover" }}
+                      >
+                        <Typography component="h2" id="campaign-multiplier-heading" variant="subtitle2">
+                          {t("create.fields.rewardsMultiplier")}
+                        </Typography>
+                        <Typography sx={{ fontSize: 48, fontWeight: 700, lineHeight: "64px", color: "primary.main" }}>
+                          ×{campaign.rewardsMultiplier}
+                        </Typography>
+                        <Typography color="text.secondary" variant="body2">
+                          {t("public.rewardsMultiplierHint")}
+                        </Typography>
+                      </Stack>
+                    </Box>
 
                     {canJoinCampaign ? (
                       session.authenticated ? (
-                        <Box>
-                          <Button onClick={() => setJoinDialogOpen(true)} variant="contained">
+                        <Box alignItems="center" display="flex" justifyContent="center">
+                          <Button sx={{ margin: 2 }} startIcon={<LinkIcon />} onClick={() => setJoinDialogOpen(true)} variant="contained">
                             {t("public.joinDialog.open")}
                           </Button>
                         </Box>

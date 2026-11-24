@@ -37,6 +37,8 @@
   },
   "public": {
     "title": "Campagnes publiques",
+    "timeline": "Calendrier de la campagne",
+    "rewardsMultiplierHint": "Multiplie les récompenses pour la création d’annonces et leur rattachement à cette campagne.",
     "ownCampaignHint": "Vous êtes le créateur de cette campagne.",
     "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
     "explainer": {
@@ -85,24 +87,24 @@
       "unknownCreator": "Créateur inconnu"
     },
     "joinDialog": {
-      "open": "Rattacher vos besoins et ressources",
-      "title": "Rattacher vos besoins et ressources à cette campagne",
+      "open": "Joindre vos besoins et ressources",
+      "title": "Joindre vos besoins et ressources à cette campagne",
       "close": "Fermer",
-      "signInRequired": "Connectez-vous pour rattacher vos besoins et ressources à cette campagne."
+      "signInRequired": "Connectez-vous pour joindre vos besoins et ressources à cette campagne."
     },
     "participation": {
-      "upcoming": "Vous pourrez rattacher vos ressources et besoins à cette campagne approuvée du {{start}} au {{end}}.",
-      "pending": "Cette campagne attend son approbation. Vous pourrez y rattacher vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",
-      "awaitingAdaptation": "Le créateur doit apporter des modifications avant que cette campagne puisse être approuvée. Vous pourrez y rattacher vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",
-      "ended": "Cette campagne s’est terminée le {{end}}. Il n’est plus possible d’y rattacher des ressources ou des besoins.",
-      "unavailable": "Cette campagne n’est pas ouverte aux rattachements. Les ressources et besoins ne peuvent rejoindre qu’une campagne approuvée pendant les dates prévues."
+      "upcoming": "Vous pourrez joindre vos ressources et besoins à cette campagne approuvée du {{start}} au {{end}}.",
+      "pending": "Cette campagne attend son approbation. Vous pourrez y joindre vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",
+      "awaitingAdaptation": "Le créateur doit apporter des modifications avant que cette campagne puisse être approuvée. Vous pourrez y joindre vos ressources et besoins une fois approuvée et en cours, entre le {{start}} et le {{end}}.",
+      "ended": "Cette campagne s’est terminée le {{end}}. Il n’est plus possible d’y joindre des ressources ou des besoins.",
+      "unavailable": "Cette campagne n’est pas ouverte aux rattachements. Les ressources et besoins ne peuvent joindre qu’une campagne approuvée pendant les dates prévues."
     },
     "resourceJoin": {
       "title": "Joindre vos ressources a cette campagne",
       "subtitle": "Selectionnez une ou plusieurs ressources actives et envoyez des demandes de rattachement au createur de la campagne.",
       "loading": "Chargement de vos ressources actives…",
       "loadingFailed": "Impossible de charger vos ressources pour le moment.",
-      "empty": "Vous n'avez aucune ressource active a rattacher.",
+      "empty": "Vous n'avez aucune ressource active a joindre.",
       "signInRequired": "Connectez-vous pour demander le rattachement de vos ressources a cette campagne.",
       "signInAction": "Se connecter",
       "selectResource": "Selectionner",
@@ -127,7 +129,7 @@
       "subtitle": "Selectionnez un ou plusieurs besoins actifs et envoyez des demandes de rattachement au createur de la campagne.",
       "loading": "Chargement de vos besoins actifs…",
       "loadingFailed": "Impossible de charger vos besoins pour le moment.",
-      "empty": "Vous n'avez aucun besoin actif a rattacher.",
+      "empty": "Vous n'avez aucun besoin actif a joindre.",
       "signInRequired": "Connectez-vous pour demander le rattachement de vos besoins a cette campagne.",
       "signInAction": "Se connecter",
       "selectNeed": "Selectionner",
