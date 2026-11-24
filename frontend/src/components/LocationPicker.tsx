@@ -285,7 +285,7 @@ export function LocationPicker({
             }}
           />
         {onClear && (value.address || value.latitude !== "" || value.longitude !== "") ? (
-          <IconButton onClick={() => {
+          <IconButton aria-label={t("locationPicker.remove")} title={t("locationPicker.remove")} onClick={() => {
             changeVersion.current++;
             setResetKey(key => key + 1);
             onClear();

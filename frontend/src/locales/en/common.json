@@ -48,6 +48,7 @@
   "checking": "Checking your session…",
   "locationPicker": {
     "addressLabel": "Location",
+    "remove": "Remove location",
     "loadError": "Failed to load address search"
   },
   "publicAccount": {

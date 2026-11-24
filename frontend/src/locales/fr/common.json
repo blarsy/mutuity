@@ -48,6 +48,7 @@
   "checking": "Vérification de votre session…",
   "locationPicker": {
     "addressLabel": "Localisation",
+    "remove": "Supprimer la localisation",
     "loadError": "Échec du chargement de la recherche d'adresse"
   },
   "publicAccount": {

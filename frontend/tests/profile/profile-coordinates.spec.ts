@@ -15,4 +15,10 @@ describe("normalizeCoordinate", () => {
     expect(normalizeCoordinate(null, 50.6072)).toBe(50.6072);
     expect(normalizeCoordinate("not-a-coordinate", 3.3889)).toBe(3.3889);
   });
+
+  it("keeps missing coordinates empty without inventing a location", () => {
+    expect(normalizeCoordinate(null, "")).toBe("");
+    expect(normalizeCoordinate("not-a-coordinate", "")).toBe("");
+    expect(normalizeCoordinate("0", "")).toBe(0);
+  });
 });

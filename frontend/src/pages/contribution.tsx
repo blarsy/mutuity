@@ -288,7 +288,7 @@ export default function ContributionPage() {
                 ))}
 
                 {hasMoreMovements ? (
-                  <Stack direction="row" justifyContent="center">
+                  <Stack direction="row" justifyContent="center" marginTop={2}>
                     <Button disabled={isLoadingMore} onClick={() => void handleLoadMoreMovements()} variant="outlined">
                       {isLoadingMore ? t("loadingMore") : t("loadMore")}
                     </Button>

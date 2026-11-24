@@ -65,8 +65,6 @@ type CurrentAccountEmailData = {
 };
 
 const EMAIL_FORMAT_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const DEFAULT_LATITUDE = 50.6072;
-const DEFAULT_LONGITUDE = 3.3889;
 
 const PROFILE_LINK_TYPE_OPTIONS: Array<{ value: ProfileLinkType; label: string }> = [
   { value: "website", label: "linkTypes.website" },
@@ -102,8 +100,8 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
-  const [latitude, setLatitude] = useState<number>(DEFAULT_LATITUDE);
-  const [longitude, setLongitude] = useState<number>(DEFAULT_LONGITUDE);
+  const [latitude, setLatitude] = useState<number | "">("");
+  const [longitude, setLongitude] = useState<number | "">("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>("fr");
   const [profileLinks, setProfileLinks] = useState<ProfileLink[]>([]);
@@ -159,8 +157,8 @@ export default function ProfilePage() {
     setDisplayName(profile.displayName ?? "");
     setBio(profile.bio ?? "");
     setLocation(profile.location ?? "");
-    setLatitude(normalizeCoordinate(profile.latitude, DEFAULT_LATITUDE));
-    setLongitude(normalizeCoordinate(profile.longitude, DEFAULT_LONGITUDE));
+    setLatitude(normalizeCoordinate(profile.latitude, ""));
+    setLongitude(normalizeCoordinate(profile.longitude, ""));
     setAvatarUrl(profile.avatarUrl ?? "");
     setPreferredLanguage(profile.preferredLanguage === "en" ? "en" : "fr");
     setProfileLinks(
@@ -188,8 +186,8 @@ export default function ProfilePage() {
           displayName: displayName.trim() || null,
           bio: bio.trim() || null,
           location: location.trim() || null,
-          latitude,
-          longitude,
+          latitude: latitude === "" ? null : latitude,
+          longitude: longitude === "" ? null : longitude,
           avatarUrl: avatarUrl.trim() || null,
           preferredLanguage,
           profileLinks: profileLinks
@@ -263,130 +261,140 @@ export default function ProfilePage() {
 
           <Card variant="outlined">
             <CardContent>
-              <Stack spacing={2}>
-                <TextField label={t("fields.displayName")} onChange={event => setDisplayName(event.target.value)} value={displayName} />
-                <TextField
-                  label={t("fields.email")}
-                  onChange={event => {
-                    setEmailDraft(event.target.value);
-                    setEmailChangeError(null);
-                  }}
-                  type="email"
-                  value={emailDraft}
-                />
-                {emailChangeError ? <Alert severity="error">{emailChangeError}</Alert> : null}
-                {canRequestEmailChange ? (
-                  <Stack direction="row" justifyContent="flex-end">
-                    <Button disabled={requestingEmailChange} onClick={() => void handleRequestEmailChange()} variant="outlined">
-                      {t("emailChange.sendConfirmationButton")}
-                    </Button>
-                  </Stack>
-                ) : null}
-                {pendingEmailChangeAddress ? (
-                  <Alert severity="info">{t("emailChange.pendingNote", { email: pendingEmailChangeAddress })}</Alert>
-                ) : null}
-                <TextField
-                  label={t("fields.bio")}
-                  minRows={3}
-                  multiline
-                  onChange={event => setBio(event.target.value)}
-                  value={bio}
-                />
-                <LocationPicker
-                  value={{
-                    address: location,
-                    latitude,
-                    longitude
-                  }}
-                  addressLabel={t("fields.location")}
-                  onChange={(loc) => {
-                    setLocation(loc.address);
-                    setLatitude(loc.latitude);
-                    setLongitude(loc.longitude);
-                  }}
-                />
-                <TextField
-                  select
-                  label={t("fields.language")}
-                  onChange={event => {
-                    const nextLanguage = event.target.value === "en" ? "en" : "fr";
-                    setPreferredLanguage(nextLanguage);
-                  }}
-                  value={preferredLanguage}
-                >
-                  <MenuItem value="fr">{t("languages.fr")}</MenuItem>
-                  <MenuItem value="en">{t("languages.en")}</MenuItem>
-                </TextField>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Stack flexBasis="50%" gap={2}>
+                  <TextField label={t("fields.displayName")} onChange={event => setDisplayName(event.target.value)} value={displayName} />
+                  <TextField
+                    label={t("fields.email")}
+                    onChange={event => {
+                      setEmailDraft(event.target.value);
+                      setEmailChangeError(null);
+                    }}
+                    type="email"
+                    value={emailDraft}
+                  />
+                  {emailChangeError ? <Alert severity="error">{emailChangeError}</Alert> : null}
+                  {canRequestEmailChange ? (
+                    <Stack direction="row" justifyContent="flex-end">
+                      <Button disabled={requestingEmailChange} onClick={() => void handleRequestEmailChange()} variant="outlined">
+                        {t("emailChange.sendConfirmationButton")}
+                      </Button>
+                    </Stack>
+                  ) : null}
+                  {pendingEmailChangeAddress ? (
+                    <Alert severity="info">{t("emailChange.pendingNote", { email: pendingEmailChangeAddress })}</Alert>
+                  ) : null}
+                  <TextField
+                    label={t("fields.bio")}
+                    minRows={3}
+                    multiline
+                    onChange={event => setBio(event.target.value)}
+                    value={bio}
+                  />
+                  <TextField
+                    select
+                    label={t("fields.language")}
+                    onChange={event => {
+                      const nextLanguage = event.target.value === "en" ? "en" : "fr";
+                      setPreferredLanguage(nextLanguage);
+                    }}
+                    value={preferredLanguage}
+                  >
+                    <MenuItem value="fr">{t("languages.fr")}</MenuItem>
+                    <MenuItem value="en">{t("languages.en")}</MenuItem>
+                  </TextField>
 
-                <Stack spacing={1.5}>
-                  <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>
-                    <Typography variant="subtitle1">{t("profileLinksTitle")}</Typography>
-                    <Button onClick={() => setProfileLinks(current => [...current, createEmptyProfileLink()])} variant="outlined">
-                      {t("addLink")}
-                    </Button>
-                  </Stack>
+                  <Stack spacing={1.5}>
+                    <Stack alignItems="center" direction="row" justifyContent="space-between" spacing={2}>
+                      <Typography variant="subtitle1">{t("profileLinksTitle")}</Typography>
+                      <Button onClick={() => setProfileLinks(current => [...current, createEmptyProfileLink()])} variant="outlined">
+                        {t("addLink")}
+                      </Button>
+                    </Stack>
 
-                  {profileLinks.length === 0 ? (
-                    <Alert severity="info">{t("noLinksYet")}</Alert>
-                  ) : (
-                    profileLinks.map((link, index) => (
-                      <Card key={`profile-link-${index}`} variant="outlined">
-                        <CardContent>
-                          <Stack spacing={1.5}>
-                            <TextField
-                              select
-                              label={t("fields.linkType")}
-                              onChange={event => {
-                                const nextType = event.target.value as ProfileLinkType;
-                                setProfileLinks(current =>
-                                  current.map((item, itemIndex) => (itemIndex === index ? { ...item, type: nextType } : item))
-                                );
-                              }}
-                              value={link.type}
-                            >
-                              {PROFILE_LINK_TYPE_OPTIONS.map(option => (
-                                <MenuItem key={option.value} value={option.value}>
-                                  {t(option.label)}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                            <TextField
-                              label={t("fields.caption")}
-                              onChange={event => {
-                                const nextLabel = event.target.value;
-                                setProfileLinks(current =>
-                                  current.map((item, itemIndex) => (itemIndex === index ? { ...item, label: nextLabel } : item))
-                                );
-                              }}
-                              placeholder={t("fields.captionPlaceholder")}
-                              value={link.label}
-                            />
-                            <TextField
-                              label={t("fields.url")}
-                              onChange={event => {
-                                const nextUrl = event.target.value;
-                                setProfileLinks(current =>
-                                  current.map((item, itemIndex) => (itemIndex === index ? { ...item, url: nextUrl } : item))
-                                );
-                              }}
-                              placeholder={t("fields.urlPlaceholder")}
-                              value={link.url}
-                            />
-                            <Stack direction="row" justifyContent="flex-end">
-                              <Button
-                                color="error"
-                                onClick={() => setProfileLinks(current => current.filter((_, itemIndex) => itemIndex !== index))}
+                    {profileLinks.length === 0 ? (
+                      <Alert severity="info">{t("noLinksYet")}</Alert>
+                    ) : (
+                      profileLinks.map((link, index) => (
+                        <Card key={`profile-link-${index}`} variant="outlined">
+                          <CardContent>
+                            <Stack spacing={1.5}>
+                              <TextField
+                                select
+                                label={t("fields.linkType")}
+                                onChange={event => {
+                                  const nextType = event.target.value as ProfileLinkType;
+                                  setProfileLinks(current =>
+                                    current.map((item, itemIndex) => (itemIndex === index ? { ...item, type: nextType } : item))
+                                  );
+                                }}
+                                value={link.type}
                               >
-                                {t("removeLink")}
-                              </Button>
+                                {PROFILE_LINK_TYPE_OPTIONS.map(option => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {t(option.label)}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                              <TextField
+                                label={t("fields.caption")}
+                                onChange={event => {
+                                  const nextLabel = event.target.value;
+                                  setProfileLinks(current =>
+                                    current.map((item, itemIndex) => (itemIndex === index ? { ...item, label: nextLabel } : item))
+                                  );
+                                }}
+                                placeholder={t("fields.captionPlaceholder")}
+                                value={link.label}
+                              />
+                              <TextField
+                                label={t("fields.url")}
+                                onChange={event => {
+                                  const nextUrl = event.target.value;
+                                  setProfileLinks(current =>
+                                    current.map((item, itemIndex) => (itemIndex === index ? { ...item, url: nextUrl } : item))
+                                  );
+                                }}
+                                placeholder={t("fields.urlPlaceholder")}
+                                value={link.url}
+                              />
+                              <Stack direction="row" justifyContent="flex-end">
+                                <Button
+                                  color="error"
+                                  onClick={() => setProfileLinks(current => current.filter((_, itemIndex) => itemIndex !== index))}
+                                >
+                                  {t("removeLink")}
+                                </Button>
+                              </Stack>
                             </Stack>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </Stack>
                 </Stack>
-
+                <Stack flexBasis="50%">
+                  <LocationPicker
+                    value={{
+                      address: location,
+                      latitude,
+                      longitude
+                    }}
+                    addressLabel={t("fields.location")}
+                    onClear={() => {
+                      setLocation("");
+                      setLatitude("");
+                      setLongitude("");
+                    }}
+                    onChange={(loc) => {
+                      setLocation(loc.address);
+                      setLatitude(loc.latitude);
+                      setLongitude(loc.longitude);
+                    }}
+                  />
+                </Stack>
+              </Stack>
+              <Stack marginTop={2}>
                 <Stack direction="row" justifyContent="flex-end">
                   <Button disabled={saving || loading} onClick={() => void handleSave()} variant="contained">
                     {saving ? t("savingButton") : t("saveButton")}
