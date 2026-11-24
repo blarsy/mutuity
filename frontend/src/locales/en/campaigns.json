@@ -257,6 +257,8 @@
   "statuses": {
     "pending": "Pending",
     "approved": "Approved",
+    "awaiting_adaptation": "Changes requested",
+    "rejected": "Rejected",
     "active": "Active",
     "ended": "Ended",
     "upcoming": "Upcoming"

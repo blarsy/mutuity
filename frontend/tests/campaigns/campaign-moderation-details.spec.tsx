@@ -3,6 +3,8 @@ import { useQuery } from "@apollo/client/react";
 
 import CampaignModerationPage from "../../src/pages/campaigns/[campaignId]/moderation";
 import { formatPublicDateTime } from "../../src/features/shared/publicDateTime";
+import en from "../../src/locales/en/campaigns.json";
+import fr from "../../src/locales/fr/campaigns.json";
 
 jest.mock("next/router", () => ({ useRouter: () => ({ query: { campaignId: "campaign-1" }, push: jest.fn() }) }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }) }));
@@ -17,6 +19,25 @@ jest.mock("../../src/components/richText/RichTextContent", () => ({ RichTextCont
 jest.mock("../../src/components/ImageUploadField", () => ({ ImageUploadField: () => null }));
 
 describe("campaign moderation saved details", () => {
+  it.each(["PENDING", "APPROVED", "AWAITING_ADAPTATION", "REJECTED"])("localizes the %s status chip", moderationStatus => {
+    jest.mocked(useQuery).mockReturnValue({ data: {
+      campaignById: {
+        id: "campaign-1", title: "Campaign", theme: "Theme", moderationStatus,
+        createdAt: "2026-01-01", startAt: "2020-01-01", airdropAt: "2026-11-01", endAt: "2099-01-01",
+        rewardsMultiplier: 5, airdropAmount: 3500
+      }
+    }, loading: false } as unknown as ReturnType<typeof useQuery>);
+
+    const key = moderationStatus.toLowerCase() as keyof typeof en.statuses;
+    const html = renderToStaticMarkup(<CampaignModerationPage />);
+    expect(html).toContain(`statuses.${key}</span>`);
+    expect(html).not.toContain(`>${moderationStatus}</span>`);
+    for (const translations of [en, fr]) {
+      expect(translations.statuses[key]).toEqual(expect.any(String));
+      expect(translations.statuses[key].length).toBeGreaterThan(0);
+    }
+  });
+
   it.each([
     ["PENDING", "2099-01-01T00:00:00Z", true],
     ["AWAITING_ADAPTATION", "2099-01-01T00:00:00Z", true],

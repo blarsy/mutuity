@@ -462,7 +462,7 @@ export default function CampaignModerationPage() {
                   {t("moderationNotes.campaignDataTitle")}
                 </Typography>
                 <Stack alignItems="center" direction="row" spacing={1}>
-                  <Chip label={campaign.moderationStatus} size="small" variant="outlined" />
+                  <Chip label={t(`statuses.${campaign.moderationStatus.toLowerCase()}`)} size="small" variant="outlined" />
                   {canEdit ? (
                     <Button
                       onClick={() => setEditOpen(true)}
