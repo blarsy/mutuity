@@ -320,7 +320,7 @@ export default function CreateResourcePage() {
                   helperText={touched.title ? errors.title : ""}
                   required
                 />
-                <Stack direction="row" gap={2}>
+                <Stack direction={{ xs: "column", sm: "row" }} gap={2}>
                   <Stack direction="column" gap={2} style={{ flexBasis: "50%" }}>
                     <IntensityPicker
                       intensity={values.intensity}

@@ -1,4 +1,33 @@
-# Mobile monitoring (GlitchTip)
+# Mobile app
+
+## iOS development build troubleshooting
+
+If an x86_64 simulator Debug build fails to link `RCTPackagerConnection` from
+`expo-dev-launcher`, check whether the installed React Native prebuilt framework
+is the Release variant. React Native's artifact switcher assumes an unmarked
+framework is Debug; a stale Release framework with no configuration marker can
+therefore cause this error. The iOS deployment-target warnings for the Maps and
+Sentry privacy bundles are separate warnings, not the cause of the link failure.
+
+To restore the cached Debug framework without deleting the native project or
+clearing all Xcode caches, run the following from the mobile app directory while
+no other iOS build is running:
+
+```sh
+cd ios/Pods
+RN_VERSION=$(node -p "require('../../node_modules/react-native/package.json').version")
+tar -tzf "ReactNativeCore-artifacts/reactnative-core-$RN_VERSION-release.tar.gz" >/dev/null && \
+   tar -tzf "ReactNativeCore-artifacts/reactnative-core-$RN_VERSION-debug.tar.gz" >/dev/null && \
+   node ../../node_modules/react-native/scripts/replace-rncore-version.js -c Release -r "$RN_VERSION" -p "$PWD" && \
+   node ../../node_modules/react-native/scripts/replace-rncore-version.js -c Debug -r "$RN_VERSION" -p "$PWD" && \
+   cd ../.. && npm run ios
+```
+
+This uses the Debug and Release tarballs already downloaded by CocoaPods. If they
+are missing or damaged, reinstall the pods first. Do not use Expo prebuild
+`--clean` on a native project containing uncommitted customizations.
+
+## Mobile monitoring (GlitchTip)
 
 Monitoring is opt-in. Set `EXPO_PUBLIC_GLITCHTIP_DSN` to the **public project DSN**
 when building a native release with `TARGET_ENV=test`, `review` or `prod`. An empty
@@ -35,9 +64,9 @@ GlitchTip server-side scrubbing/retention before enabling production. A stricter
 native allowlist would require separately reviewed native SDK callbacks; this
 change does not claim JS sanitization applies to native crashes.
 
-## Checked-in native projects: required follow-up
+## Existing native projects: required follow-up
 
-This Expo 54 app commits both native projects. Adding the dependency and Expo
+This Expo 54 app ignores its generated native projects in Git. Adding the dependency and Expo
 plugin **does not modify those existing projects or install pods**. No large native
 project files were hand-edited for this integration. Before enabling monitoring:
 

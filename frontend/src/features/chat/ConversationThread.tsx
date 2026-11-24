@@ -13,6 +13,7 @@ import {
   Typography
 } from "@mui/material";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { useTranslation } from "react-i18next";
@@ -362,6 +363,15 @@ export function ConversationThread({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
+      {onBack && (
+        <Box sx={{ display: { xs: "flex", sm: "none" }, px: 1, pt: 1 }}>
+          <Tooltip title={t("thread.back")}>
+            <IconButton aria-label={t("thread.back")} onClick={onBack}>
+              <ArrowBackIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
       <ListingHeader
         creatorName={otherAccountDisplayName ?? "Unknown"}
         creatorImageUrl={otherAccountAvatarUrl}

@@ -238,129 +238,135 @@ export default function NeedDetailsPage({ needId, initialNeed }: NeedDetailsPage
               <Card variant="outlined">
                 <CardContent>
                   <Stack spacing={2.5}>
-                    <Box sx={{ alignItems: "center", display: "flex", justifyContent: "center", gap: 1 }}>
-                      <IconButton
-                        aria-label={t("detail.previousImage")}
-                        disabled={currentImageIndex === 0 || imageUrls.length <= 1}
-                        onClick={() => setCurrentImageIndex(index => Math.max(0, index - 1))}
-                        size="large"
-                        sx={{ visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible" }}
-                      >
-                        <ArrowBackIosNewIcon />
-                      </IconButton>
-                      <Box
-                        sx={{
-                          alignItems: "center",
-                          bgcolor: currentImageUrl ? "grey.100" : "grey.50",
-                          borderRadius: 3,
-                          color: "text.secondary",
-                          display: "flex",
-                          justifyContent: "center",
-                          overflow: "hidden",
-                          width: "100%",
-                          maxWidth: 520,
-                          aspectRatio: "1 / 1"
-                        }}
-                      >
-                        {currentImageUrl ? (
-                          <ZoomableImage
-                            alt={`${need.title} ${currentImageIndex + 1}`}
-                            src={currentImageUrl}
-                            sx={{ display: "block", height: "100%", objectFit: "cover", width: "100%" }}
-                          />
-                        ) : <Typography variant="body2">{t("detail.noImage")}</Typography>}
-                      </Box>
-                      <IconButton
-                        aria-label={t("detail.nextImage")}
-                        disabled={currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1}
-                        onClick={() => setCurrentImageIndex(index => Math.min(imageUrls.length - 1, index + 1))}
-                        size="large"
-                        sx={{ visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible" }}
-                      >
-                        <ArrowForwardIosIcon />
-                      </IconButton>
-                    </Box>
-
-                    {imageUrls.length > 1 ? (
-                      <Stack direction="row" justifyContent="center" spacing={0.75}>
-                        {imageUrls.map((_, index) => (
+                    { imageUrls.length > 0 && (
+                      <>
+                        <Box sx={{ alignItems: "center", display: "flex", justifyContent: "center", gap: 1 }}>
+                          <IconButton
+                            aria-label={t("detail.previousImage")}
+                            disabled={currentImageIndex === 0 || imageUrls.length <= 1}
+                            onClick={() => setCurrentImageIndex(index => Math.max(0, index - 1))}
+                            size="large"
+                            sx={{ visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible" }}
+                          >
+                            <ArrowBackIosNewIcon />
+                          </IconButton>
                           <Box
-                            key={`need-detail-image-dot-${index}`}
-                            sx={theme => ({
-                              bgcolor: index === currentImageIndex ? theme.palette.primary.main : theme.palette.action.disabled,
-                              borderRadius: "50%",
-                              height: 8,
-                              width: 8
-                            })}
-                          />
-                        ))}
-                      </Stack>
-                    ) : null}
+                            sx={{
+                              alignItems: "center",
+                              bgcolor: currentImageUrl ? "grey.100" : "grey.50",
+                              borderRadius: 3,
+                              color: "text.secondary",
+                              display: "flex",
+                              justifyContent: "center",
+                              overflow: "hidden",
+                              width: "100%",
+                              maxWidth: 520,
+                              aspectRatio: "1 / 1"
+                            }}
+                          >
+                            {currentImageUrl ? (
+                              <ZoomableImage
+                                alt={`${need.title} ${currentImageIndex + 1}`}
+                                src={currentImageUrl}
+                                sx={{ display: "block", height: "100%", objectFit: "cover", width: "100%" }}
+                              />
+                            ) : <Typography variant="body2">{t("detail.noImage")}</Typography>}
+                          </Box>
+                          <IconButton
+                            aria-label={t("detail.nextImage")}
+                            disabled={currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1}
+                            onClick={() => setCurrentImageIndex(index => Math.min(imageUrls.length - 1, index + 1))}
+                            size="large"
+                            sx={{ visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible" }}
+                          >
+                            <ArrowForwardIosIcon />
+                          </IconButton>
+                        </Box>
+                        {imageUrls.length > 1 ? (
+                          <Stack direction="row" justifyContent="center" spacing={0.75}>
+                            {imageUrls.map((_, index) => (
+                              <Box
+                                key={`need-detail-image-dot-${index}`}
+                                sx={theme => ({
+                                  bgcolor: index === currentImageIndex ? theme.palette.primary.main : theme.palette.action.disabled,
+                                  borderRadius: "50%",
+                                  height: 8,
+                                  width: 8
+                                })}
+                              />
+                            ))}
+                          </Stack>
+                        ) : null}
+                      </>
+                    )}
 
-                    <DetailSection label={t("form.titleLabel")}>
-                      <Typography variant="h5">{need.title}</Typography>
-                    </DetailSection>
 
                     <DetailSection label={t("form.descriptionLabel")}>
                       <RichTextContent emptyFallback={t("detail.noDescription")} html={need.description ?? ""} />
                     </DetailSection>
 
-                    <DetailSection label={t("form.intensityLabel")}>
-                      <IntensityDisplay intensity={need.intensity} tokenAmount={need.proposedTopesAmount} />
-                    </DetailSection>
+                    <Stack spacing={0.5} gap={2} direction={{ xs: 'column', sm:'row' }}>
+                      <Stack flexBasis={hasCompleteLocation ? "50%" : "100%"}>
+                        <DetailSection label={t("form.intensityLabel")}>
+                          <IntensityDisplay intensity={need.intensity} tokenAmount={need.proposedTopesAmount} />
+                        </DetailSection>
 
-                    <DetailSection label={t("form.needNatureLabel")}>
-                      <Stack direction="row" flexWrap="wrap" gap={1}>
-                        <RequirementChip label={t("form.objectRequired")} required={need.objectRequired} t={t} />
-                        <RequirementChip label={t("form.toolingRequired")} required={need.toolingRequired} t={t} />
-                        <RequirementChip label={t("form.competenceRequired")} required={need.competenceRequired} t={t} />
-                        <RequirementChip label={t("form.multiplePeopleRequired")} required={need.multiplePeopleRequired} t={t} />
-                      </Stack>
-                      {need.requiredToolingText ? (
-                        <Typography variant="body2"><strong>{t("form.requiredToolingLabel")}:</strong> {need.requiredToolingText}</Typography>
-                      ) : null}
-                      {need.requiredCompetenceText ? (
-                        <Typography variant="body2"><strong>{t("form.requiredCompetenceLabel")}:</strong> {need.requiredCompetenceText}</Typography>
-                      ) : null}
-                      {need.requiredPeopleCount !== null ? (
-                        <Typography variant="body2"><strong>{t("form.requiredPeopleCountLabel")}:</strong> {need.requiredPeopleCount}</Typography>
-                      ) : null}
-                    </DetailSection>
-
-                    <DetailSection label={t("form.locationLabel")}>
-                      <Typography variant="body2">{need.location}</Typography>
-                      {hasCompleteLocation ? (
-                        <Box sx={{ aspectRatio: "16 / 9", bgcolor: "grey.100", borderRadius: 1, overflow: "hidden", width: "100%" }}>
-                          {MAPS_API_KEY ? (
-                            <APIProvider apiKey={MAPS_API_KEY}>
-                              <GoogleMap
-                                center={{ lat: latitude, lng: longitude }}
-                                defaultZoom={14}
-                                disableDefaultUI={false}
-                                clickableIcons={false}
-                                mapTypeControl={false}
-                                streetViewControl={false}
-                                fullscreenControl={false}
-                                style={{ width: "100%", height: "100%" }}
-                              >
-                                <Marker position={{ lat: latitude, lng: longitude }} />
-                              </GoogleMap>
-                            </APIProvider>
+                        <DetailSection label={t("form.needNatureLabel")}>
+                          <Stack direction="row" flexWrap="wrap" gap={1}>
+                            <RequirementChip label={t("form.objectRequired")} required={need.objectRequired} t={t} />
+                            <RequirementChip label={t("form.toolingRequired")} required={need.toolingRequired} t={t} />
+                            <RequirementChip label={t("form.competenceRequired")} required={need.competenceRequired} t={t} />
+                            <RequirementChip label={t("form.multiplePeopleRequired")} required={need.multiplePeopleRequired} t={t} />
+                          </Stack>
+                          {need.requiredToolingText ? (
+                            <Typography variant="body2"><strong>{t("form.requiredToolingLabel")}:</strong> {need.requiredToolingText}</Typography>
                           ) : null}
-                        </Box>
-                      ) : null}
-                    </DetailSection>
+                          {need.requiredCompetenceText ? (
+                            <Typography variant="body2"><strong>{t("form.requiredCompetenceLabel")}:</strong> {need.requiredCompetenceText}</Typography>
+                          ) : null}
+                          {need.requiredPeopleCount !== null ? (
+                            <Typography variant="body2"><strong>{t("form.requiredPeopleCountLabel")}:</strong> {need.requiredPeopleCount}</Typography>
+                          ) : null}
+                        </DetailSection>
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
-                      <Stack spacing={0.25}>
-                        <Typography color="text.secondary" variant="overline">{t("browse.expires")}</Typography>
-                        <Typography variant="body2">{formatDate(need.expiresAt, t("detail.permanent"), i18n.language)}</Typography>
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
+                          <Stack spacing={0.25}>
+                            <Typography color="text.secondary" variant="overline">{t("browse.expires")}</Typography>
+                            <Typography variant="body2">{formatDate(need.expiresAt, t("detail.permanent"), i18n.language)}</Typography>
+                          </Stack>
+                          <Stack spacing={0.25}>
+                            <Typography color="text.secondary" variant="overline">{t("detail.published")}</Typography>
+                            <Typography variant="body2">{formatDate(need.createdAt, t("detail.unknownDate"), i18n.language)}</Typography>
+                          </Stack>
+                        </Stack>
                       </Stack>
-                      <Stack spacing={0.25}>
-                        <Typography color="text.secondary" variant="overline">{t("detail.published")}</Typography>
-                        <Typography variant="body2">{formatDate(need.createdAt, t("detail.unknownDate"), i18n.language)}</Typography>
-                      </Stack>
+                      {hasCompleteLocation ? (
+                        <Stack flexBasis={"50%"}>  
+                          <DetailSection label={t("form.locationLabel")}>
+                            <Typography variant="body2">{need.location}</Typography>
+                              <Box sx={{ aspectRatio: "16 / 9", bgcolor: "grey.100", borderRadius: 1, overflow: "hidden", width: "100%" }}>
+                                {MAPS_API_KEY ? (
+                                  <APIProvider apiKey={MAPS_API_KEY}>
+                                    <GoogleMap
+                                      center={{ lat: latitude, lng: longitude }}
+                                      defaultZoom={14}
+                                      disableDefaultUI={false}
+                                      clickableIcons={false}
+                                      mapTypeControl={false}
+                                      streetViewControl={false}
+                                      fullscreenControl={false}
+                                      style={{ width: "100%", height: "100%" }}
+                                    >
+                                      <Marker position={{ lat: latitude, lng: longitude }} />
+                                    </GoogleMap>
+                                  </APIProvider>
+                                ) : null}
+                              </Box>
+                          </DetailSection>
+                        </Stack>
+                      ) : null}
                     </Stack>
+
                   </Stack>
                 </CardContent>
               </Card>

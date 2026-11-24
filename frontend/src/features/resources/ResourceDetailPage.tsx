@@ -281,110 +281,104 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
         <Card sx={{ mb: 3 }} variant="outlined">
           <CardContent>
             <Stack spacing={2.5}>
-              <Box
-                sx={{
-                  alignItems: "center",
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: 1
-                }}
-              >
-                <IconButton
-                  disabled={currentImageIndex === 0 || imageUrls.length <= 1}
-                  onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 1))}
-                  size="large"
-                  sx={(theme) => ({
-                    visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible",
-                    bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.78)" : "rgba(255, 255, 255, 0.94)",
-                    border: `1px solid ${theme.palette.divider}`,
-                    color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
-                    height: 56,
-                    width: 56,
-                    transition: "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease",
-                    "&:hover": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 1)",
-                      boxShadow: theme.shadows[5],
-                      transform: "translateY(-1px) scale(1.08)"
-                    },
-                    "&:active": {
-                      transform: "scale(0.96)"
-                    }
-                  })}
-                >
-                  <ArrowBackIosNewIcon fontSize="medium" />
-                </IconButton>
-
-                <Box
-                  sx={{
-                    alignItems: "center",
-                    bgcolor: currentImageUrl ? "grey.100" : "grey.50",
-                    backgroundImage: currentImageUrl ? `url(${currentImageUrl})` : "none",
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                    borderRadius: 3,
-                    color: "text.secondary",
-                    display: "flex",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                    width: "100%",
-                    maxWidth: 520,
-                    aspectRatio: "1 / 1"
-                  }}
-                >
-                  {!currentImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
-                </Box>
-
-                <IconButton
-                  disabled={currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1}
-                  onClick={() => setCurrentImageIndex((prev) => Math.min(imageUrls.length - 1, prev + 1))}
-                  size="large"
-                  sx={(theme) => ({
-                    visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible",
-                    bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.78)" : "rgba(255, 255, 255, 0.94)",
-                    border: `1px solid ${theme.palette.divider}`,
-                    color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
-                    height: 56,
-                    width: 56,
-                    transition: "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease",
-                    "&:hover": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 1)",
-                      boxShadow: theme.shadows[5],
-                      transform: "translateY(-1px) scale(1.08)"
-                    },
-                    "&:active": {
-                      transform: "scale(0.96)"
-                    }
-                  })}
-                >
-                  <ArrowForwardIosIcon fontSize="medium" />
-                </IconButton>
-              </Box>
-
-              {imageUrls.length > 1 ? (
-                <Stack direction="row" justifyContent="center" spacing={0.75}>
-                  {imageUrls.map((_, index) => (
-                    <Box
-                      key={`detail-image-dot-${index}`}
+              { imageUrls.length > 0 && (
+                <>
+                  <Box
+                    sx={{
+                      alignItems: "center",
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: 1
+                    }}
+                  >
+                    <IconButton
+                      disabled={currentImageIndex === 0 || imageUrls.length <= 1}
+                      onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 1))}
+                      size="large"
                       sx={(theme) => ({
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        bgcolor: index === currentImageIndex ? theme.palette.primary.main : theme.palette.action.disabled
+                        visibility: currentImageIndex === 0 || imageUrls.length <= 1 ? "hidden" : "visible",
+                        bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.78)" : "rgba(255, 255, 255, 0.94)",
+                        border: `1px solid ${theme.palette.divider}`,
+                        color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
+                        height: 56,
+                        width: 56,
+                        transition: "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease",
+                        "&:hover": {
+                          bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 1)",
+                          boxShadow: theme.shadows[5],
+                          transform: "translateY(-1px) scale(1.08)"
+                        },
+                        "&:active": {
+                          transform: "scale(0.96)"
+                        }
                       })}
-                    />
-                  ))}
-                </Stack>
-              ) : null}
+                    >
+                      <ArrowBackIosNewIcon fontSize="medium" />
+                    </IconButton>
 
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("form.titleLabel")}
-                </Typography>
-                <Typography variant="h5">
-                  {resource.title}
-                </Typography>
-              </Stack>
+                    <Box
+                      sx={{
+                        alignItems: "center",
+                        bgcolor: currentImageUrl ? "grey.100" : "grey.50",
+                        backgroundImage: currentImageUrl ? `url(${currentImageUrl})` : "none",
+                        backgroundPosition: "center",
+                        backgroundSize: "cover",
+                        borderRadius: 3,
+                        color: "text.secondary",
+                        display: "flex",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        width: "100%",
+                        maxWidth: 520,
+                        aspectRatio: "1 / 1"
+                      }}
+                    >
+                      {!currentImageUrl ? <Typography variant="body2">{t("detail.noImageYet")}</Typography> : null}
+                    </Box>
 
+                    <IconButton
+                      disabled={currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1}
+                      onClick={() => setCurrentImageIndex((prev) => Math.min(imageUrls.length - 1, prev + 1))}
+                      size="large"
+                      sx={(theme) => ({
+                        visibility: currentImageIndex >= imageUrls.length - 1 || imageUrls.length <= 1 ? "hidden" : "visible",
+                        bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.78)" : "rgba(255, 255, 255, 0.94)",
+                        border: `1px solid ${theme.palette.divider}`,
+                        color: theme.palette.mode === "dark" ? theme.palette.grey[100] : theme.palette.grey[900],
+                        height: 56,
+                        width: 56,
+                        transition: "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease",
+                        "&:hover": {
+                          bgcolor: theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 1)",
+                          boxShadow: theme.shadows[5],
+                          transform: "translateY(-1px) scale(1.08)"
+                        },
+                        "&:active": {
+                          transform: "scale(0.96)"
+                        }
+                      })}
+                    >
+                      <ArrowForwardIosIcon fontSize="medium" />
+                    </IconButton>
+                  </Box>
+
+                  {imageUrls.length > 1 ? (
+                    <Stack direction="row" justifyContent="center" spacing={0.75}>
+                      {imageUrls.map((_, index) => (
+                        <Box
+                          key={`detail-image-dot-${index}`}
+                          sx={(theme) => ({
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            bgcolor: index === currentImageIndex ? theme.palette.primary.main : theme.palette.action.disabled
+                          })}
+                        />
+                      ))}
+                    </Stack>
+                  ) : null}
+                </>
+              )}
               <Stack spacing={0.5}>
                 <Typography color="text.secondary" variant="overline">
                   {t("form.descriptionLabel")}
@@ -392,115 +386,119 @@ export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
                 <RichTextContent emptyFallback={t("detail.noDescription")} html={resource.description ?? ""} />
               </Stack>
 
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("form.intensityLabel")}
-                </Typography>
-                <IntensityDisplay intensity={resource.intensity} tokenAmount={resource.defaultTokenAmount} />
-              </Stack>
-
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("form.categoriesLabel")}
-                </Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {resource.categoryLabels?.length === 0 ? (
-                    <Chip label={t("categories.noCategories")} size="small" variant="outlined" />
-                  ) : (resource.categoryLabels ?? []).map(label => (
-                    <Chip
-                      key={`${resource.id}-category-${label}`}
-                      color="primary"
-                      label={localizedCategoryByLabel.get(label ?? "") ?? label}
-                      size="small"
-                      variant="outlined"
-                    />
-                  ))}
-                </Stack>
-              </Stack>
-
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("form.resourceTypeTitle")}
-                </Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {natureLabels.map(label => (
-                    <Chip key={`nature-${label}`} label={label} size="small" variant="outlined" />
-                  ))}
-                </Stack>
-              </Stack>
-
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("filters.canBeExchanged")}
-                </Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {exchangeLabels.map(label => (
-                    <Chip key={`exchange-${label}`} label={label} size="small" variant="outlined" />
-                  ))}
-                </Stack>
-              </Stack>
-
-              <Stack spacing={0.5}>
-                <Typography color="text.secondary" variant="overline">
-                  {t("filters.canBeDelivered")}
-                </Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {deliveryLabels.map(label => (
-                    <Chip key={`delivery-${label}`} label={label} size="small" variant="outlined" />
-                  ))}
-                </Stack>
-              </Stack>
-
-              {hasCompleteLocation ? (
-                <Stack spacing={0.5}>
-                  <Typography color="text.secondary" variant="overline">
-                    {t("form.locationLabel")}
-                  </Typography>
-                  <Stack spacing={1.25}>
-                    <Typography variant="body2">
-                      {locationLabel}
+              <Stack spacing={0.5} direction={{ xs: 'column', sm:'row' }} gap={2}>
+                <Stack flexBasis={hasCompleteLocation ? "50%" : "100%"}>
+                  <Stack spacing={0.5}>
+                    <Typography color="text.secondary" variant="overline">
+                      {t("form.intensityLabel")}
                     </Typography>
-                    <Box
-                      sx={{
-                        borderRadius: 1,
-                        overflow: "hidden",
-                        width: "100%",
-                        aspectRatio: "16 / 9",
-                        bgcolor: "grey.100"
-                      }}
-                    >
-                      {MAPS_API_KEY ? (
-                        <APIProvider apiKey={MAPS_API_KEY}>
-                          <GoogleMap
-                            center={{ lat: latitude, lng: longitude }}
-                            defaultZoom={14}
-                            disableDefaultUI={false}
-                            clickableIcons={false}
-                            mapTypeControl={false}
-                            streetViewControl={false}
-                            fullscreenControl={false}
-                            style={{ width: "100%", height: "100%" }}
-                          >
-                            <Marker position={{ lat: latitude, lng: longitude }} />
-                          </GoogleMap>
-                        </APIProvider>
-                      ) : (
-                        <Box
-                          sx={{
-                            alignItems: "center",
-                            color: "text.secondary",
-                            display: "flex",
-                            height: "100%",
-                            justifyContent: "center"
-                          }}
-                        >
-                          <Typography variant="caption">{locationLabel}</Typography>
-                        </Box>
-                      )}
-                    </Box>
+                    <IntensityDisplay intensity={resource.intensity} tokenAmount={resource.defaultTokenAmount} />
+                  </Stack>
+
+                  <Stack spacing={0.5}>
+                    <Typography color="text.secondary" variant="overline">
+                      {t("form.categoriesLabel")}
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                      {resource.categoryLabels?.length === 0 ? (
+                        <Chip label={t("categories.noCategories")} size="small" variant="outlined" />
+                      ) : (resource.categoryLabels ?? []).map(label => (
+                        <Chip
+                          key={`${resource.id}-category-${label}`}
+                          color="primary"
+                          label={localizedCategoryByLabel.get(label ?? "") ?? label}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Stack>
+                  </Stack>
+
+                  <Stack spacing={0.5}>
+                    <Typography color="text.secondary" variant="overline">
+                      {t("form.resourceTypeTitle")}
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                      {natureLabels.map(label => (
+                        <Chip key={`nature-${label}`} label={label} size="small" variant="outlined" />
+                      ))}
+                    </Stack>
+                  </Stack>
+
+                  <Stack spacing={0.5}>
+                    <Typography color="text.secondary" variant="overline">
+                      {t("filters.canBeExchanged")}
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                      {exchangeLabels.map(label => (
+                        <Chip key={`exchange-${label}`} label={label} size="small" variant="outlined" />
+                      ))}
+                    </Stack>
+                  </Stack>
+
+                  <Stack spacing={0.5}>
+                    <Typography color="text.secondary" variant="overline">
+                      {t("filters.canBeDelivered")}
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                      {deliveryLabels.map(label => (
+                        <Chip key={`delivery-${label}`} label={label} size="small" variant="outlined" />
+                      ))}
+                    </Stack>
                   </Stack>
                 </Stack>
-              ) : null}
+
+                {hasCompleteLocation ? (
+                  <Stack spacing={0.5} flexBasis={hasCompleteLocation ? "50%" : "100%"}>
+                    <Typography color="text.secondary" variant="overline">
+                      {t("form.locationLabel")}
+                    </Typography>
+                    <Stack spacing={1.25}>
+                      <Typography variant="body2">
+                        {locationLabel}
+                      </Typography>
+                      <Box
+                        sx={{
+                          borderRadius: 1,
+                          overflow: "hidden",
+                          width: "100%",
+                          aspectRatio: "16 / 9",
+                          bgcolor: "grey.100"
+                        }}
+                      >
+                        {MAPS_API_KEY ? (
+                          <APIProvider apiKey={MAPS_API_KEY}>
+                            <GoogleMap
+                              center={{ lat: latitude, lng: longitude }}
+                              defaultZoom={14}
+                              disableDefaultUI={false}
+                              clickableIcons={false}
+                              mapTypeControl={false}
+                              streetViewControl={false}
+                              fullscreenControl={false}
+                              style={{ width: "100%", height: "100%" }}
+                            >
+                              <Marker position={{ lat: latitude, lng: longitude }} />
+                            </GoogleMap>
+                          </APIProvider>
+                        ) : (
+                          <Box
+                            sx={{
+                              alignItems: "center",
+                              color: "text.secondary",
+                              display: "flex",
+                              height: "100%",
+                              justifyContent: "center"
+                            }}
+                          >
+                            <Typography variant="caption">{locationLabel}</Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </Stack>
+                  </Stack>
+                ) : null}
+              </Stack>
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
                 <Stack spacing={0.25}>

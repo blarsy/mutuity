@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Alert, Box, Stack, Typography } from "@mui/material";
+import { Alert, Box, Stack, Typography, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
 
 import { PageContainer } from "../components/PageContainer";
@@ -15,6 +16,8 @@ export default function ChatPage() {
   const { session } = useAuth();
   const { t } = useTranslation("chat");
   const { isAuthenticated, isChecking, isRedirecting } = useRequireAuth();
+  const theme = useTheme();
+  const showSideBySide = useMediaQuery(theme.breakpoints.up("sm"));
 
   const selectedConversationId =
     typeof router.query.id === "string" ? router.query.id : null;
@@ -118,7 +121,7 @@ export default function ChatPage() {
             draftThread={draftThread}
             isAuthenticated={isAuthenticated && Boolean(session.account)}
             listRefreshToken={listRefreshToken}
-            onAutoOpenConversation={handleAutoOpenConversation}
+            onAutoOpenConversation={showSideBySide ? handleAutoOpenConversation : undefined}
             selectedDraft={Boolean(draftThread)}
             selectedConversationId={selectedConversationId}
           />

@@ -213,60 +213,64 @@ export default function AccountDetailsPage({
                     <GiftTokensButton key={account.id} recipientAccountId={account.id} recipientDisplayName={displayName} />
                   </Stack>
 
-                  {account.bio ? (
-                    <Typography variant="body1">{account.bio}</Typography>
-                  ) : null}
-
-                  {account.location ? (
-                    <Stack spacing={1}>
-                      <Typography color="text.secondary" variant="body2">{account.location}</Typography>
-                      {mounted && hasCompleteLocation && MAPS_API_KEY ? (
-                        <Box sx={{ aspectRatio: "16 / 9", borderRadius: 1, overflow: "hidden", width: "100%" }}>
-                          <APIProvider apiKey={MAPS_API_KEY}>
-                            <GoogleMap
-                              center={{ lat: latitude, lng: longitude }}
-                              defaultZoom={14}
-                              clickableIcons={false}
-                              mapTypeControl={false}
-                              streetViewControl={false}
-                              fullscreenControl={false}
-                              style={{ width: "100%", height: "100%" }}
-                            >
-                              <Marker position={{ lat: latitude, lng: longitude }} />
-                            </GoogleMap>
-                          </APIProvider>
-                        </Box>
+                  <Stack flexDirection={{ xs: "column", sm: "row" }} spacing={2}>
+                    <Stack flexBasis={mounted && hasCompleteLocation && MAPS_API_KEY ? "50%" : "100%"} gap={2}>
+                      {account.bio ? (
+                        <Typography variant="body1">{account.bio}</Typography>
                       ) : null}
-                    </Stack>
-                  ) : null}
 
-                  {profileLinks.length > 0 ? (
-                    <Stack spacing={0.5}>
-                      <Typography color="text.secondary" variant="overline">
-                        {t("publicAccount.links")}
-                      </Typography>
-                      <Stack spacing={0.5}>
-                        {profileLinks.map((link, idx) => (
-                          <Stack key={idx} alignItems="center" direction="row" spacing={1}>
-                            <ProfileLinkIcon type={link.type} />
-                            <Link
-                              href={link.url}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                              underline="hover"
-                              variant="body2"
-                            >
-                              {link.label || link.url}
-                            </Link>
+                      {profileLinks.length > 0 ? (
+                        <Stack spacing={0.5}>
+                          <Typography color="text.secondary" variant="overline">
+                            {t("publicAccount.links")}
+                          </Typography>
+                          <Stack spacing={0.5}>
+                            {profileLinks.map((link, idx) => (
+                              <Stack key={idx} alignItems="center" direction="row" spacing={1}>
+                                <ProfileLinkIcon type={link.type} />
+                                <Link
+                                  href={link.url}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                  underline="hover"
+                                  variant="body2"
+                                >
+                                  {link.label || link.url}
+                                </Link>
+                              </Stack>
+                            ))}
                           </Stack>
-                        ))}
+                        </Stack>
+                      ) : null}
+
+                      <Stack direction="row" spacing={1}>
+                        <Chip label={t("publicAccount.needsCount", { count: initialNeeds.length })} size="small" />
+                        <Chip label={t("publicAccount.resourcesCount", { count: initialResources.length })} size="small" />
                       </Stack>
                     </Stack>
+                    
+                    {account.location ? (
+                      <Stack spacing={1} flexBasis="50%">
+                        <Typography color="text.secondary" variant="body2">{account.location}</Typography>
+                        {mounted && hasCompleteLocation && MAPS_API_KEY ? (
+                          <Box sx={{ aspectRatio: "16 / 9", borderRadius: 1, overflow: "hidden", width: "100%" }}>
+                            <APIProvider apiKey={MAPS_API_KEY}>
+                              <GoogleMap
+                                center={{ lat: latitude, lng: longitude }}
+                                defaultZoom={14}
+                                clickableIcons={false}
+                                mapTypeControl={false}
+                                streetViewControl={false}
+                                fullscreenControl={false}
+                                style={{ width: "100%", height: "100%" }}
+                              >
+                                <Marker position={{ lat: latitude, lng: longitude }} />
+                              </GoogleMap>
+                            </APIProvider>
+                          </Box>
+                        ) : null}
+                      </Stack>
                   ) : null}
-
-                  <Stack direction="row" spacing={1}>
-                    <Chip label={t("publicAccount.needsCount", { count: initialNeeds.length })} size="small" />
-                    <Chip label={t("publicAccount.resourcesCount", { count: initialResources.length })} size="small" />
                   </Stack>
                 </Stack>
               </CardContent>

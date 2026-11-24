@@ -304,7 +304,7 @@ export default function EditNeedPage() {
                   required
                 />
 
-                <Stack direction="row" gap={2}>
+                <Stack direction={{ xs: "column", sm: "row" }} gap={2}>
                   <Stack gap={2} style={{ flexBasis: "50%" }}>
                     <IntensityPicker
                       intensity={values.intensity}
