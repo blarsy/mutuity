@@ -1,3 +1,4 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
@@ -8,6 +9,7 @@ import App from "../../src/App";
 import { authenticateWithPassword, requestPasswordReset } from "../../src/services/graphql/auth";
 
 jest.mock("../../src/services/graphql/auth", () => ({
+  ...jest.requireActual("../../src/services/graphql/auth"),
   authenticateWithPassword: jest.fn(),
   registerWithSocialIdentity: jest.fn(),
   requestPasswordReset: jest.fn()
@@ -80,7 +82,7 @@ describe("US5 social password-reset-required acceptance", () => {
 
     await waitFor(() => {
       expect(requestPasswordReset).toHaveBeenCalledWith("person@example.com");
-      expect(screen.getByText(/If an account exists for this email/)).toBeTruthy();
+      expect(screen.getByText("Password reset instructions have been sent. Check your inbox in the next few minutes, including your spam folder.")).toBeTruthy();
     });
   });
 

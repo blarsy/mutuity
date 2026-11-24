@@ -1,3 +1,4 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
@@ -52,6 +53,7 @@ jest.mock("../../src/services/auth/session", () => ({
 }));
 
 jest.mock("../../src/services/graphql/auth", () => ({
+  ...jest.requireActual("../../src/services/graphql/auth"),
   authenticateWithPassword: jest.fn(),
   registerWithPassword: jest.fn()
 }));

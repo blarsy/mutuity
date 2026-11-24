@@ -1,6 +1,10 @@
 import "@testing-library/jest-native/extend-expect";
 import "../src/i18n";
 
+jest.mock("@react-native-community/netinfo", () =>
+	require("@react-native-community/netinfo/jest/netinfo-mock")
+);
+
 jest.mock("expo-localization", () => ({
 	getLocales: () => [{ languageCode: "en" }]
 }));

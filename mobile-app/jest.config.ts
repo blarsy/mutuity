@@ -3,6 +3,8 @@ import type { Config } from "jest";
 const config: Config = {
   preset: "jest-expo",
   testEnvironment: "node",
+  // Full Paper/navigation trees need bounded worker contention, not longer timeouts.
+  maxWorkers: 2,
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
   testMatch: ["**/tests/**/*.(test|spec).(ts|tsx)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],

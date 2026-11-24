@@ -1,7 +1,23 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
 import App from "../../src/App";
+import { bootstrapSession } from "../../src/services/auth/session";
+
+jest.mock("../../src/services/auth/session", () => ({
+  bootstrapSession: jest.fn().mockResolvedValue({
+    token: "session-token-from-social-auth",
+    accountId: "123e4567-e89b-12d3-a456-426614174000"
+  }),
+  clearPersistedToken: jest.fn(),
+  getPersistedToken: jest.fn().mockResolvedValue("session-token-from-social-auth"),
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  getPersistedLanguage: jest.fn().mockResolvedValue(null),
+  setPersistedToken: jest.fn(),
+  setPersistedAccountId: jest.fn(),
+  setPersistedLanguage: jest.fn()
+}));
 
 jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
@@ -29,17 +45,12 @@ jest.mock("@react-navigation/native-stack", () => {
 
 describe("US5 social session restore acceptance", () => {
   it("restores the signed-in shell after a social token is persisted", async () => {
-    jest.doMock("../../src/services/auth/session", () => ({
-      bootstrapSession: jest.fn().mockResolvedValue({ token: "session-token-from-social-auth" }),
-      clearPersistedToken: jest.fn(),
-      getPersistedToken: jest.fn().mockResolvedValue("session-token-from-social-auth"),
-      setPersistedToken: jest.fn()
-    }));
-
     const screen = render(React.createElement(App));
 
     await waitFor(() => {
       expect(screen.getByLabelText("Main navigation")).toBeTruthy();
+      expect(screen.queryAllByRole("button", { name: "Sign in" })).toHaveLength(0);
     });
+    expect(bootstrapSession).toHaveBeenCalledTimes(1);
   });
 });

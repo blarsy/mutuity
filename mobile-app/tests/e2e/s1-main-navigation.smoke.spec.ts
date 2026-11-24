@@ -1,3 +1,4 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
@@ -29,6 +30,8 @@ jest.mock("@react-navigation/native-stack", () => {
 });
 
 jest.mock("../../src/services/auth/session", () => ({
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  setPersistedAccountId: jest.fn(),
   bootstrapSession: jest.fn().mockResolvedValue({ token: "mock:123e4567-e89b-12d3-a456-426614174000", language: null }),
   clearPersistedToken: jest.fn(),
   getPersistedToken: jest.fn().mockResolvedValue("mock:123e4567-e89b-12d3-a456-426614174000"),

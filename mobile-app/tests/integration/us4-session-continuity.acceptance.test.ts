@@ -1,7 +1,20 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
 import App from "../../src/App";
+import { bootstrapSession } from "../../src/services/auth/session";
+
+jest.mock("../../src/services/auth/session", () => ({
+  bootstrapSession: jest.fn(),
+  clearPersistedToken: jest.fn(),
+  getPersistedToken: jest.fn().mockResolvedValue(null),
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  getPersistedLanguage: jest.fn().mockResolvedValue(null),
+  setPersistedToken: jest.fn(),
+  setPersistedAccountId: jest.fn(),
+  setPersistedLanguage: jest.fn()
+}));
 
 jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
@@ -28,13 +41,10 @@ jest.mock("@react-navigation/native-stack", () => {
 });
 
 describe("US4 session continuity acceptance", () => {
+  beforeEach(() => jest.clearAllMocks());
+
   it("restores session when a valid token is persisted", async () => {
-    jest.doMock("../../src/services/auth/session", () => ({
-      bootstrapSession: jest.fn().mockResolvedValue({ token: "mock:123e4567-e89b-12d3-a456-426614174000" }),
-      clearPersistedToken: jest.fn(),
-      getPersistedToken: jest.fn().mockResolvedValue("mock:123e4567-e89b-12d3-a456-426614174000"),
-      setPersistedToken: jest.fn()
-    }));
+    jest.mocked(bootstrapSession).mockResolvedValueOnce({ token: "mock:123e4567-e89b-12d3-a456-426614174000", accountId: "123e4567-e89b-12d3-a456-426614174000", language: null });
 
     const screen = render(React.createElement(App));
 
@@ -42,16 +52,12 @@ describe("US4 session continuity acceptance", () => {
       // With a valid session token, the app should render the main navigation
       expect(screen.getByLabelText("Main navigation")).toBeTruthy();
       expect(screen.getByRole("header", { name: "Explore" })).toBeTruthy();
+      expect(screen.queryAllByRole("button", { name: "Sign in" })).toHaveLength(0);
     });
   });
 
   it("shows main navigation in anonymous mode when no token is persisted", async () => {
-    jest.doMock("../../src/services/auth/session", () => ({
-      bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
-      clearPersistedToken: jest.fn(),
-      getPersistedToken: jest.fn().mockResolvedValue(null),
-      setPersistedToken: jest.fn()
-    }));
+    jest.mocked(bootstrapSession).mockResolvedValueOnce({ token: null, accountId: null, language: null });
 
     const screen = render(React.createElement(App));
 
@@ -63,14 +69,7 @@ describe("US4 session continuity acceptance", () => {
   });
 
   it("clears invalid session and returns to safe signed-out state", async () => {
-    const mockClearPersistedToken = jest.fn();
-
-    jest.doMock("../../src/services/auth/session", () => ({
-      bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
-      clearPersistedToken: mockClearPersistedToken,
-      getPersistedToken: jest.fn().mockResolvedValue(null),
-      setPersistedToken: jest.fn()
-    }));
+    jest.mocked(bootstrapSession).mockResolvedValueOnce({ token: null, accountId: null, language: null });
 
     const screen = render(React.createElement(App));
 
@@ -81,12 +80,7 @@ describe("US4 session continuity acceptance", () => {
   });
 
   it("does not loop indefinitely when session bootstrap fails", async () => {
-    jest.doMock("../../src/services/auth/session", () => ({
-      bootstrapSession: jest.fn().mockRejectedValue(new Error("SecureStore unavailable")),
-      clearPersistedToken: jest.fn(),
-      getPersistedToken: jest.fn().mockRejectedValue(new Error("SecureStore unavailable")),
-      setPersistedToken: jest.fn()
-    }));
+    jest.mocked(bootstrapSession).mockRejectedValueOnce(new Error("SecureStore unavailable"));
 
     const screen = render(React.createElement(App));
 
@@ -94,5 +88,6 @@ describe("US4 session continuity acceptance", () => {
       // App should still render in a safe state even when bootstrap fails
       expect(screen.getByLabelText("Main navigation")).toBeTruthy();
     });
+    expect(bootstrapSession).toHaveBeenCalledTimes(1);
   });
 });

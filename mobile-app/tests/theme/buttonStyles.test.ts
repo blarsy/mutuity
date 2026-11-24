@@ -3,7 +3,7 @@ import { buttonStyles, getButtonFlavor } from "../../src/theme/buttonStyles";
 describe("mobile button flavor styles", () => {
   it("defines color, radius, and border settings for every flavor", () => {
     for (const style of Object.values(buttonStyles)) {
-      expect(style.roundness).toBe(4);
+      expect(style.roundness).toBe(8);
       expect(style.fontColor).toEqual(expect.any(String));
       expect(style.backgroundColor).toEqual(expect.any(String));
       expect(style.borderColor).toEqual(expect.any(String));

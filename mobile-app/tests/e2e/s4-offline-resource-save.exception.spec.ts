@@ -1,3 +1,4 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { render } from "@testing-library/react-native";
 import { PaperProvider } from "react-native-paper";

@@ -1,7 +1,19 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
 import App from "../../src/App";
+
+jest.mock("../../src/services/auth/session", () => ({
+  bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
+  clearPersistedToken: jest.fn(),
+  getPersistedToken: jest.fn().mockResolvedValue(null),
+  getPersistedAccountId: jest.fn().mockResolvedValue(null),
+  getPersistedLanguage: jest.fn().mockResolvedValue(null),
+  setPersistedToken: jest.fn(),
+  setPersistedAccountId: jest.fn(),
+  setPersistedLanguage: jest.fn()
+}));
 
 jest.mock("@react-navigation/native", () => {
   const mockReact = require("react");
@@ -29,17 +41,11 @@ jest.mock("@react-navigation/native-stack", () => {
 
 describe("US5 social invalid token acceptance", () => {
   it("falls back to the signed-out shell when a social token is invalid", async () => {
-    jest.doMock("../../src/services/auth/session", () => ({
-      bootstrapSession: jest.fn().mockResolvedValue({ token: null }),
-      clearPersistedToken: jest.fn(),
-      getPersistedToken: jest.fn().mockResolvedValue(null),
-      setPersistedToken: jest.fn()
-    }));
-
     const screen = render(React.createElement(App));
 
     await waitFor(() => {
       expect(screen.getByLabelText("Main navigation")).toBeTruthy();
+      expect(screen.getAllByRole("button", { name: "Sign in" }).length).toBeGreaterThan(0);
     });
   });
 });

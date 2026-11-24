@@ -1,3 +1,4 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { View } from "react-native";
@@ -18,6 +19,7 @@ jest.mock("../../src/services/auth/session", () => ({
 }));
 
 jest.mock("../../src/services/graphql/auth", () => ({
+  ...jest.requireActual("../../src/services/graphql/auth"),
   authenticateWithPassword: jest.fn().mockResolvedValue({
     accountId: "123e4567-e89b-12d3-a456-426614174000",
     sessionToken: "authenticated-mobile-token"

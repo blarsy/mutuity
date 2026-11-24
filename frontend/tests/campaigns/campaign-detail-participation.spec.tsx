@@ -303,14 +303,15 @@ describe("campaign detail participation", () => {
     [{ startAt: "2026-10-14T00:00:00Z" }, "upcoming"], [{ moderationStatus: "PENDING" }, "pending"],
     [{ moderationStatus: "AWAITING_ADAPTATION" }, "awaitingAdaptation"], [{ endAt: new Date(now).toISOString() }, "ended"],
     [{ moderationStatus: "PENDING", endAt: new Date(now).toISOString() }, "ended"], [{ moderationStatus: "REJECTED" }, "unavailable"]
-  ])("hides public and owner listings and skips owner queries for %p with a %s hint", async (overrides, expected) => {
+  ])("gates public listings and skips owner queries for %p with a %s hint", async (overrides, expected) => {
     await renderCampaign(overrides);
     expect(container.textContent).toContain(`public.participation.${expected}`);
     const dates = formattedDates(overrides);
     expect(container.textContent).toContain(dates.startAt);
     expect(container.textContent).toContain(dates.endAt);
-    expect(container.textContent).toContain("public.joinedListings.unavailable");
-    expect(container.querySelector('[data-testid="public-accepted-listings"]')).toBeNull();
+    // Ended campaigns retain their public accepted listings; other non-running
+    // states show the participation hint instead of mounting the public list.
+    expect(Boolean(container.querySelector('[data-testid="public-accepted-listings"]'))).toBe(expected === "ended");
     expect(container.textContent).not.toContain("public.joinDialog.open");
     expect(container.textContent).not.toContain("My resource");
     expect(container.textContent).not.toContain("My need");

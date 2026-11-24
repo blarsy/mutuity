@@ -57,7 +57,10 @@ describe("PickerDialog viewport bounds", () => {
       marginHorizontal: 16,
       marginVertical: 16
     });
-    expect(screen.UNSAFE_getByType(Dialog.Content)).toHaveStyle({ flexShrink: 1, minHeight: 0 });
+    expect(ReactNative.StyleSheet.flatten(screen.UNSAFE_getByType(Dialog.Content).props.style)).toMatchObject({
+      flexShrink: 1,
+      minHeight: 0
+    });
     expect(screen.UNSAFE_getByType(ReactNative.ScrollView)).toBeTruthy();
 
     fireEvent.press(screen.getByText("Campaign 99"));

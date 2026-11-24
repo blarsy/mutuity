@@ -1,3 +1,4 @@
+import "../utils/smokeBackend";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
