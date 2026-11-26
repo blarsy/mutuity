@@ -34,6 +34,7 @@ export function SocialAuthButtons({ nextDestination }: SocialAuthButtonsProps) {
           href={entry.href ?? undefined}
           key={entry.provider}
           rel="noopener noreferrer"
+          type="button"
           variant="outlined"
         >
           {providerLabel(entry.provider, t)}

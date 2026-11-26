@@ -51,6 +51,7 @@ export function LoginForm({
   return (
     <Formik
       initialValues={loginInitialValues}
+      validateOnBlur={false}
       validationSchema={loginValidationSchema}
       onSubmit={async (values, helpers) => {
         try {
@@ -68,8 +69,8 @@ export function LoginForm({
       }}
     >
       {({ values, errors, touched, handleBlur, handleChange, isSubmitting }) => (
-        <Form>
-          <Stack spacing={2}>
+        <Stack spacing={2}>
+          <Stack component={Form} spacing={2}>
             {submitError ? (
               <Alert
                 severity="error"
@@ -117,36 +118,36 @@ export function LoginForm({
             <Button disabled={isSubmitting || status === "loading"} type="submit" variant="contained">
               {t("form.submitButton")}
             </Button>
-
-            <SocialAuthButtons nextDestination={nextDestination} />
-
-            {showSecondaryActions ? (
-              <Stack alignItems="flex-start" spacing={0.5}>
-                <Typography color="text.secondary" variant="body2">
-                  {t("form.otherActions")}
-                </Typography>
-                <Button
-                  component={NextLink}
-                  href="/restore-access"
-                  onClick={onSecondaryActionClick}
-                  size="small"
-                  type="button"
-                >
-                  {t("form.passwordReset")}
-                </Button>
-                <Button
-                  component={NextLink}
-                  href="/register"
-                  onClick={onSecondaryActionClick}
-                  size="small"
-                  type="button"
-                >
-                  {t("form.createAccount")}
-                </Button>
-              </Stack>
-            ) : null}
           </Stack>
-        </Form>
+
+          <SocialAuthButtons nextDestination={nextDestination} />
+
+          {showSecondaryActions ? (
+            <Stack alignItems="flex-start" spacing={0.5}>
+              <Typography color="text.secondary" variant="body2">
+                {t("form.otherActions")}
+              </Typography>
+              <Button
+                component={NextLink}
+                href="/restore-access"
+                onClick={onSecondaryActionClick}
+                size="small"
+                type="button"
+              >
+                {t("form.passwordReset")}
+              </Button>
+              <Button
+                component={NextLink}
+                href="/register"
+                onClick={onSecondaryActionClick}
+                size="small"
+                type="button"
+              >
+                {t("form.createAccount")}
+              </Button>
+            </Stack>
+          ) : null}
+        </Stack>
       )}
     </Formik>
   );
