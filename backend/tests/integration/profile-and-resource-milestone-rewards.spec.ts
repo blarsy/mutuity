@@ -168,7 +168,7 @@ describe("profile and resource milestone rewards", () => {
     }
   });
 
-  it("grants first resource image and default Topes rewards at most once per resource lifetime", async () => {
+  it("defers first resource image and default Topes rewards until the 24-hour checkpoint", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `resource-rewards-${stamp}@example.com`,
@@ -277,10 +277,7 @@ describe("profile and resource milestone rewards", () => {
         [creator.accountId, resourceId]
       );
 
-      expect(rewardCounts.rows).toEqual([
-        { event_type: "resource_first_default_token_amount_reward", count: "1" },
-        { event_type: "resource_first_image_reward", count: "1" }
-      ]);
+      expect(rewardCounts.rows).toEqual([]);
     } finally {
       await client.end();
     }

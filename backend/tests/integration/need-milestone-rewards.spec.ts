@@ -15,7 +15,7 @@ async function loginAs(account: SeededAccount) {
 }
 
 describe("need milestone rewards", () => {
-  it("grants first-image reward on INSERT when need is created with images", async () => {
+  it("defers the first-image reward when a new need is created with images", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `need-image-insert-${stamp}@example.com`,
@@ -87,15 +87,13 @@ describe("need milestone rewards", () => {
         [creator.accountId]
       );
 
-      expect(rewardCounts.rows).toEqual([
-        { event_type: "need_first_image_reward", count: "1" }
-      ]);
+      expect(rewardCounts.rows).toEqual([]);
     } finally {
       await client.end();
     }
   });
 
-  it("grants first-default-token-amount reward on INSERT when need is created with a Topes amount", async () => {
+  it("defers the first-default-token-amount reward when a new need is created with a Topes amount", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `need-topes-insert-${stamp}@example.com`,
@@ -165,15 +163,13 @@ describe("need milestone rewards", () => {
         [creator.accountId]
       );
 
-      expect(rewardCounts.rows).toEqual([
-        { event_type: "need_first_default_token_amount_reward", count: "1" }
-      ]);
+      expect(rewardCounts.rows).toEqual([]);
     } finally {
       await client.end();
     }
   });
 
-  it("grants both rewards on INSERT when need is created with images and a Topes amount", async () => {
+  it("defers both rewards on INSERT until the new need reaches 24 hours", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `need-both-insert-${stamp}@example.com`,
@@ -250,16 +246,13 @@ describe("need milestone rewards", () => {
         [creator.accountId, needId]
       );
 
-      expect(rewardCounts.rows).toEqual([
-        { event_type: "need_first_default_token_amount_reward", count: "1" },
-        { event_type: "need_first_image_reward", count: "1" }
-      ]);
+      expect(rewardCounts.rows).toEqual([]);
     } finally {
       await client.end();
     }
   });
 
-  it("grants rewards on UPDATE when need initially has no images or Topes", async () => {
+  it("defers rewards added by UPDATE before a new need reaches 24 hours", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `need-update-${stamp}@example.com`,
@@ -359,16 +352,13 @@ describe("need milestone rewards", () => {
         [creator.accountId, needId]
       );
 
-      expect(afterUpdate.rows).toEqual([
-        { event_type: "need_first_default_token_amount_reward", count: "1" },
-        { event_type: "need_first_image_reward", count: "1" }
-      ]);
+      expect(afterUpdate.rows).toEqual([]);
     } finally {
       await client.end();
     }
   });
 
-  it("does not grant duplicate rewards on repeated updates", async () => {
+  it("does not pay deferred rewards on repeated pre-checkpoint updates", async () => {
     const stamp = Date.now();
     const creator = await seedDemoAccount({
       identifier: `need-dup-${stamp}@example.com`,
@@ -376,7 +366,7 @@ describe("need milestone rewards", () => {
     });
     const sessionCookie = await loginAs(creator);
 
-    // Create a need WITH both images and Topes amount so rewards fire on INSERT
+    // Create a need with both milestones already met; both remain deferred.
     const createResponse = await fetch(`${TEST_BACKEND_URL}/graphql`, {
       method: "POST",
       headers: {
@@ -468,11 +458,7 @@ describe("need milestone rewards", () => {
         [creator.accountId, needId]
       );
 
-      // Still exactly one of each
-      expect(rewardCounts.rows).toEqual([
-        { event_type: "need_first_default_token_amount_reward", count: "1" },
-        { event_type: "need_first_image_reward", count: "1" }
-      ]);
+      expect(rewardCounts.rows).toEqual([]);
     } finally {
       await client.end();
     }

@@ -80,6 +80,8 @@
     "need_first_image_reward": "Première image de besoin ajoutée",
     "need_first_default_token_amount_reward": "Montant de Topes defini sur un besoin",
     "need_age_24h_reward": "Le besoin est resté actif pendant 24 heures",
+    "resource_campaign_multiplier_adjustment": "Ajustement du multiplicateur de campagne pour une ressource",
+    "need_campaign_multiplier_adjustment": "Ajustement du multiplicateur de campagne pour un besoin",
     "campaign_airdrop_received": "Airdrop de campagne reçu"
   },
   "movementDetails": {

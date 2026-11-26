@@ -225,6 +225,8 @@ declare
   v_current_image_count integer := coalesce(array_length(coalesce(new.image_urls, array[]::text[]), 1), 0);
   v_previous_default_token_amount integer;
   v_current_default_token_amount integer := new.default_token_amount;
+  v_effective_at timestamptz;
+  v_now timestamptz := clock_timestamp();
 begin
   if tg_op = 'INSERT' then
     v_previous_image_count := 0;
@@ -234,39 +236,39 @@ begin
     v_previous_default_token_amount := old.default_token_amount;
   end if;
 
-  if v_previous_image_count = 0 and v_current_image_count > 0 then
-    perform app_private.create_token_movement(
-      new.creator_account_id,
-      20,
-      'resource_first_image_reward',
-      'resource',
-      new.id,
-      null,
-      jsonb_build_object(
-        'resourceId', new.id,
-        'resourceName', new.title,
-        'rewardType', 'resource_image_milestone'
-      ),
-      format('resource:%s:first-image', new.id)
-    );
-  end if;
+  select policy.effective_at into v_effective_at
+  from app_private.listing_reward_policy policy where policy.singleton;
 
-  if v_previous_default_token_amount is null and v_current_default_token_amount is not null then
-    perform app_private.create_token_movement(
-      new.creator_account_id,
-      20,
-      'resource_first_default_token_amount_reward',
-      'resource',
-      new.id,
-      null,
-      jsonb_build_object(
-        'resourceId', new.id,
-        'resourceName', new.title,
-        'defaultTokenAmount', new.default_token_amount,
-        'rewardType', 'resource_default_token_amount_milestone'
-      ),
-      format('resource:%s:first-default-token-amount', new.id)
-    );
+  if new.created_at < v_effective_at then
+    if v_previous_image_count = 0 and v_current_image_count > 0 then
+      perform app_private.create_token_movement(
+        new.creator_account_id, 20, 'resource_first_image_reward', 'resource', new.id, null,
+        jsonb_build_object('resourceId', new.id, 'resourceName', new.title, 'rewardType', 'resource_image_milestone'),
+        format('resource:%s:first-image', new.id)
+      );
+    end if;
+    if v_previous_default_token_amount is null and v_current_default_token_amount is not null then
+      perform app_private.create_token_movement(
+        new.creator_account_id, 20, 'resource_first_default_token_amount_reward', 'resource', new.id, null,
+        jsonb_build_object('resourceId', new.id, 'resourceName', new.title,
+          'defaultTokenAmount', new.default_token_amount, 'rewardType', 'resource_default_token_amount_milestone'),
+        format('resource:%s:first-default-token-amount', new.id)
+      );
+    end if;
+  elsif new.created_at + interval '24 hours' <= v_now then
+    if v_current_image_count > 0 then
+      perform app_private.issue_listing_token_reward(
+        'resource', new.id, 'first_image', 20, v_now,
+        jsonb_build_object('resourceId', new.id, 'resourceName', new.title), v_now
+      );
+    end if;
+    if v_current_default_token_amount is not null then
+      perform app_private.issue_listing_token_reward(
+        'resource', new.id, 'first_default_token_amount', 20, v_now,
+        jsonb_build_object('resourceId', new.id, 'resourceName', new.title,
+          'defaultTokenAmount', v_current_default_token_amount), v_now
+      );
+    end if;
   end if;
 
   return new;

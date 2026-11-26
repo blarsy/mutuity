@@ -80,6 +80,8 @@
     "need_first_image_reward": "First need image added",
     "need_first_default_token_amount_reward": "Topes amount set on a need",
     "need_age_24h_reward": "Need stayed active for 24 hours",
+    "resource_campaign_multiplier_adjustment": "Campaign multiplier adjustment for a resource",
+    "need_campaign_multiplier_adjustment": "Campaign multiplier adjustment for a need",
     "campaign_airdrop_received": "Campaign airdrop received"
   },
   "movementDetails": {

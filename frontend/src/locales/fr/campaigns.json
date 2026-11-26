@@ -38,7 +38,7 @@
   "public": {
     "title": "Campagnes publiques",
     "timeline": "Calendrier de la campagne",
-    "rewardsMultiplierHint": "Multiplie les récompenses pour la création d’annonces et leur rattachement à cette campagne.",
+    "rewardsMultiplierHint": "Multiplie les récompenses des ressources et des besoins créés pendant cette campagne et acceptés par son créateur.",
     "ownCampaignHint": "Vous êtes le créateur de cette campagne.",
     "subtitle": "Parcourez les campagnes actuellement actives sur la plateforme.",
     "explainer": {

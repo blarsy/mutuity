@@ -38,7 +38,7 @@
   "public": {
     "title": "Public campaigns",
     "timeline": "Campaign timeline",
-    "rewardsMultiplierHint": "Multiplies rewards for creating listings and joining them to this campaign.",
+    "rewardsMultiplierHint": "Multiplies resource and need rewards for listings created during this campaign and accepted by its creator.",
     "ownCampaignHint": "You are the creator of this campaign.",
     "subtitle": "Browse campaigns currently active on the platform.",
     "explainer": {
