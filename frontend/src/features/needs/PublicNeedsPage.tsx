@@ -314,7 +314,7 @@ export default function PublicNeedsPage({ modeToggle }: { modeToggle?: ReactNode
             {modeToggle}
           </Box>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "center", alignItems: "center" }}>
             {!session.authenticated &&(
               <Button component={NextLink} href="/login?next=%2Fneeds" variant="contained">
                 {t("browse.signInButton")}

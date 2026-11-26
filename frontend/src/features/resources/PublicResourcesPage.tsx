@@ -276,7 +276,7 @@ export default function PublicResourcesPage({ modeToggle }: { modeToggle?: React
             {modeToggle}
           </Box>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "center", alignItems: "center" }}>
             {!session.authenticated &&
               <Button component={NextLink} href="/login?next=%2Fresources" variant="contained">
                 {t("browse.signInButton")}
