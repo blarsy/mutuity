@@ -66,17 +66,25 @@ const wsLink = typeof window !== "undefined"
 
 // Cancel old-account operations before clearing the cache. Late HTTP responses
 // must never repopulate account-specific root fields after an identity switch.
-const accountBoundaryLink = new ApolloLink((operation, forward) => new Observable(observer => {
-  const generation = accountGeneration;
-  const subscription = forward(operation).subscribe({
-    next: value => { if (generation === accountGeneration) observer.next(value); },
-    error: error => { if (generation === accountGeneration) observer.error(error); },
-    complete: () => observer.complete()
+const accountBoundaryLink = new ApolloLink((operation, forward) => {
+  // These public, token-scoped mutations return only a boolean and never write
+  // account cache data. A bootstrap identity reset must not abort their response
+  // after the server has already consumed the one-use token.
+  if (operation.getContext().tokenConfirmation === true) {
+    return forward(operation);
+  }
+  return new Observable(observer => {
+    const generation = accountGeneration;
+    const subscription = forward(operation).subscribe({
+      next: value => { if (generation === accountGeneration) observer.next(value); },
+      error: error => { if (generation === accountGeneration) observer.error(error); },
+      complete: () => observer.complete()
+    });
+    const cancel = () => { subscription.unsubscribe(); observer.complete(); };
+    pendingOperations.add(cancel);
+    return () => { pendingOperations.delete(cancel); subscription.unsubscribe(); };
   });
-  const cancel = () => { subscription.unsubscribe(); observer.complete(); };
-  pendingOperations.add(cancel);
-  return () => { pendingOperations.delete(cancel); subscription.unsubscribe(); };
-}));
+});
 
 const transportLink = wsLink
   ? split(

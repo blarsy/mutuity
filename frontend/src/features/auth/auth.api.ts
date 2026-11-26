@@ -178,10 +178,35 @@ export function requestEmailVerification(input: { identifier: string }) {
     });
 }
 
-export function confirmEmailVerification(input: { token: string }) {
+// Effect replay, language changes and AuthProvider identity remounts must not
+// consume the same one-use token twice. Keep only the most recent request per
+// confirmation flow (including its successful result), in this JS runtime only.
+// Failed requests can be retried; the server still rejects real token replays.
+function oncePerToken<T>(confirm: (input: { token: string }) => Promise<T>) {
+  let latest: { token: string; promise: Promise<T> } | undefined;
+
+  return (input: { token: string }): Promise<T> => {
+    if (latest?.token === input.token) {
+      return latest.promise;
+    }
+
+    const promise = confirm(input).catch(error => {
+      if (latest?.promise === promise) {
+        latest = undefined;
+      }
+      throw error;
+    });
+    latest = { token: input.token, promise };
+    return promise;
+  };
+}
+
+export const confirmEmailVerification = oncePerToken(input => {
   return apolloClient
     .mutate<{ confirmEmailVerification?: { boolean?: boolean | null } }>({
       mutation: CONFIRM_EMAIL_VERIFICATION_MUTATION,
+      fetchPolicy: "no-cache",
+      context: { tokenConfirmation: true },
       variables: {
         token: input.token
       }
@@ -192,12 +217,14 @@ export function confirmEmailVerification(input: { token: string }) {
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
     });
-}
+});
 
-export function confirmAccountEmailChange(input: { token: string }) {
+export const confirmAccountEmailChange = oncePerToken(input => {
   return apolloClient
     .mutate<{ confirmAccountEmailChange?: { boolean?: boolean | null } }>({
       mutation: CONFIRM_ACCOUNT_EMAIL_CHANGE_MUTATION,
+      fetchPolicy: "no-cache",
+      context: { tokenConfirmation: true },
       variables: {
         token: input.token
       }
@@ -208,7 +235,7 @@ export function confirmAccountEmailChange(input: { token: string }) {
     .catch(error => {
       throw new Error(toGraphQLErrorMessage(error, "Something went wrong. Please try again."));
     });
-}
+});
 
 export function requestPasswordReset(input: { identifier: string }) {
   return apolloClient

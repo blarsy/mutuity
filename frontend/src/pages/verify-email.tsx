@@ -31,10 +31,13 @@ export default function VerifyEmailPage() {
     }
 
     let cancelled = false;
+    setStatus("loading");
+    setMessage("");
 
     const run = async () => {
       try {
         const { message: successMessage } = await confirmEmailVerification({ token });
+        if (cancelled) return;
         await refreshSession();
 
         if (!cancelled) {

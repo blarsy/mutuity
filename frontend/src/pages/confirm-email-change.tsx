@@ -31,10 +31,13 @@ export default function ConfirmEmailChangePage() {
     }
 
     let cancelled = false;
+    setStatus("loading");
+    setMessage("");
 
     const run = async () => {
       try {
         const { message: successMessage } = await confirmAccountEmailChange({ token });
+        if (cancelled) return;
         await refreshSession();
 
         if (!cancelled) {

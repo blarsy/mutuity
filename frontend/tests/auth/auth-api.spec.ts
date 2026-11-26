@@ -1,5 +1,6 @@
 import {
   changePassword,
+  confirmAccountEmailChange,
   confirmEmailVerification,
   confirmPasswordReset,
   getCurrentSession,
@@ -257,6 +258,48 @@ describe("auth api local flow coverage", () => {
         externalSubject: "alice@example.com",
         emailVerified: true
       }
+    });
+  });
+
+  describe.each([
+    ["verification", confirmEmailVerification],
+    ["email change", confirmAccountEmailChange]
+  ] as const)("%s confirmation deduplication", (flow, confirm) => {
+    it("shares in-flight and successful results, but submits a different token", async () => {
+      let resolve!: (value: object) => void;
+      mockedApollo().mutate.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+      const input = { token: `${flow}-deduplicated` };
+      const first = confirm(input);
+      expect(confirm(input)).toBe(first);
+      expect(mockedApollo().mutate).toHaveBeenCalledTimes(1);
+      resolve({ data: {} });
+      await first;
+      await confirm(input);
+      expect(mockedApollo().mutate).toHaveBeenCalledTimes(1);
+
+      mockedApollo().mutate.mockResolvedValueOnce({ data: {} });
+      await confirm({ token: `${flow}-different` });
+      expect(mockedApollo().mutate).toHaveBeenCalledTimes(2);
+    });
+
+    it("allows retry after failure without a late old failure clearing a newer result", async () => {
+      const input = { token: `${flow}-retry` };
+      mockedApollo().mutate.mockRejectedValueOnce(new Error("Offline"));
+      await expect(confirm(input)).rejects.toThrow("Offline");
+      mockedApollo().mutate.mockResolvedValueOnce({ data: {} });
+      await confirm(input);
+      expect(mockedApollo().mutate).toHaveBeenCalledTimes(2);
+
+      let reject!: (error: Error) => void;
+      mockedApollo().mutate.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+      const old = confirm({ token: `${flow}-old` });
+      const failure = expect(old).rejects.toThrow("Expired");
+      mockedApollo().mutate.mockResolvedValueOnce({ data: {} });
+      await confirm(input);
+      reject(new Error("Expired"));
+      await failure;
+      await confirm(input);
+      expect(mockedApollo().mutate).toHaveBeenCalledTimes(4);
     });
   });
 

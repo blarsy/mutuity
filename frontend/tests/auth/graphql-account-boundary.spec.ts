@@ -84,4 +84,45 @@ describe("GraphQL account boundary", () => {
     graphql.apolloClient.writeQuery({ query: badgeQuery, data: { countUnreadNotifications: 0 } });
     expect(graphql.apolloClient.readQuery({ query: combinedPageQuery })).toEqual({ currentTokenBalance: 19, countUnreadNotifications: 0 });
   });
+
+  it.each([
+    ["confirmEmailVerification", "confirmEmailVerification"],
+    ["confirmAccountEmailChange", "confirmAccountEmailChange"]
+  ] as const)("preserves a committed %s response across bootstrap identity resets", async (method, field) => {
+    const api = await import("../../src/features/auth/auth.api");
+    mockFetch.mockClear();
+    let resolve!: (response: Response) => void;
+    mockFetch.mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
+    const input = { token: `${method}-bootstrap-race` };
+    const confirmation = api[method](input);
+    await flushLinks();
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // The server has consumed the token, but the response is delayed while
+    // AuthProvider restores the existing logged-in account and clears its cache.
+    await graphql.resetAccountGraphqlState();
+    resolve(new Response(JSON.stringify({ data: { [field]: { boolean: true } } }), {
+      headers: { "content-type": "application/json" }
+    }));
+    await expect(confirmation).resolves.toEqual({ message: method === "confirmEmailVerification" ? "Email verified." : "Email changed." });
+    await api[method](input);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(graphql.apolloClient.cache.extract())).not.toContain(field);
+  });
+
+  it("reproduces the lost mutation response without token-confirmation isolation", async () => {
+    let resolve!: (response: Response) => void;
+    mockFetch.mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
+    const mutation = graphql.apolloClient.mutate({
+      mutation: gql`mutation BoundaryCancelledConfirmation { confirmEmailVerification(input: { token: "negative-control" }) { boolean } }`,
+      fetchPolicy: "no-cache"
+    });
+    const rejected = expect(mutation).rejects.toThrow();
+    await flushLinks();
+    await graphql.resetAccountGraphqlState();
+    resolve(new Response(JSON.stringify({ data: { confirmEmailVerification: { boolean: true } } }), {
+      headers: { "content-type": "application/json" }
+    }));
+    await rejected;
+  });
 });
