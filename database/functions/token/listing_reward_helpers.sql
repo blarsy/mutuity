@@ -94,7 +94,6 @@ declare
   v_created_at timestamptz;
   v_is_active boolean;
   v_expires_at timestamptz;
-  v_title text;
   v_effective_at timestamptz;
   v_multiplier integer;
   v_amount integer;
@@ -104,8 +103,8 @@ declare
   v_reward_type text;
 begin
   if p_listing_kind = 'resource' then
-    select r.creator_account_id, r.created_at, r.is_active, r.expires_at, r.title
-    into v_account_id, v_created_at, v_is_active, v_expires_at, v_title
+    select r.creator_account_id, r.created_at, r.is_active, r.expires_at
+    into v_account_id, v_created_at, v_is_active, v_expires_at
     from app_public.resource r
     where r.id = p_listing_id;
     v_event_type := case p_reward_code
@@ -124,8 +123,8 @@ begin
       when 'first_default_token_amount' then 'resource_default_token_amount_milestone'
       else p_reward_code end;
   elsif p_listing_kind = 'need' then
-    select n.creator_account_id, n.created_at, n.is_active, n.expires_at, n.title
-    into v_account_id, v_created_at, v_is_active, v_expires_at, v_title
+    select n.creator_account_id, n.created_at, n.is_active, n.expires_at
+    into v_account_id, v_created_at, v_is_active, v_expires_at
     from app_public.need n
     where n.id = p_listing_id;
     v_event_type := case p_reward_code
@@ -343,16 +342,10 @@ set search_path = pg_catalog, app_public, app_private
 as $$
 declare
   v_listing_kind text := case when tg_table_name = 'campaign_resource' then 'resource' else 'need' end;
-  v_listing_id uuid;
+  v_listing_id uuid := (to_jsonb(new) ->> (case when tg_table_name = 'campaign_resource' then 'resource_id' else 'need_id' end))::uuid;
 begin
   if old.status = 'accepted' or new.status <> 'accepted' or not new.is_current then
     return new;
-  end if;
-
-  if v_listing_kind = 'resource' then
-    v_listing_id := new.resource_id;
-  else
-    v_listing_id := new.need_id;
   end if;
 
   perform app_private.apply_campaign_multiplier_to_listing_rewards(
